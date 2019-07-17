@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2019 Contributors to the Eclipse Foundation
+  ~
+  ~ See the NOTICE file(s) distributed with this work for additional
+  ~ information regarding copyright ownership.
+  ~
+  ~ This program and the accompanying materials are made available under the
+  ~ terms of the Eclipse Public License 2.0 which is available at
+  ~ http://www.eclipse.org/legal/epl-2.0
+  ~
+  ~ SPDX-License-Identifier: EPL-2.0
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.eclipse.ditto</groupId>
+        <artifactId>ditto</artifactId>
+        <version>0.9.0</version>
+    </parent>
+
+    <artifactId>ditto-client</artifactId>
+    <packaging>pom</packaging>
+    <name>Eclipse Ditto Client</name>
+    <description>Eclipse Ditto client SDK for Java.</description>
+
+    <url>https://eclipse.org/ditto/</url>
+    <inceptionYear>2019</inceptionYear>
+
+    <organization>
+        <name>Eclipse Foundation</name>
+        <url>http://www.eclipse.org/</url>
+    </organization>
+
+    <licenses>
+        <license>
+            <name>Eclipse Public License - Version 2.0</name>
+            <url>https://www.eclipse.org/org/documents/epl-2.0/index.php</url>
+        </license>
+    </licenses>
+
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/eclipse/ditto-clients/issues</url>
+    </issueManagement>
+
+    <prerequisites>
+        <maven>3.5.0</maven>
+    </prerequisites>
+
+    <scm>
+        <connection>${release.scm.connection}</connection>
+        <developerConnection>${release.scm.developerConnection}</developerConnection>
+        <url>${release.scm.url}</url>
+    </scm>
+
+    <ciManagement>
+        <system>Jenkins</system>
+        <url>https://ci.eclipse.org/ditto/</url>
+    </ciManagement>
+
+    <distributionManagement>
+        <repository>
+            <id>repo.eclipse.org</id>
+            <name>Ditto Releases</name>
+            <url>https://repo.eclipse.org/content/repositories/ditto-releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>repo.eclipse.org</id>
+            <name>Ditto Snapshots</name>
+            <url>https://repo.eclipse.org/content/repositories/ditto-snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <properties>
+        <revision>0-SNAPSHOT</revision>
+
+        <!-- ### Compile dependencies versions -->
+        <ditto.version>0.9.0</ditto.version>
+        <minimal-json.version>0.9.5</minimal-json.version>
+        <nv-websocket-client.version>2.9</nv-websocket-client.version>
+        <slf4j.version>1.7.25</slf4j.version>
+
+        <!-- ### Provided dependencies versions -->
+        <jsr305.version>3.0.1</jsr305.version>
+
+        <!-- ### Testing dependencies versions -->
+        <logback.version>1.2.3</logback.version>
+        <junit.version>4.12</junit.version>
+        <assertj.version>3.11.1</assertj.version>
+        <mutability-detector.version>0.9.6</mutability-detector.version>
+        <equals-verifier.version>3.0.3</equals-verifier.version>
+        <mockito.version>2.9.0</mockito.version>
+        <jsonassert.version>1.2.3</jsonassert.version>
+
+        <json-unit.version>1.28.1</json-unit.version>
+        <osgi.version>6.0.0</osgi.version>
+        <pax.exam.version>4.8.0</pax.exam.version>
+        <felix.version>5.4.0</felix.version>
+
+
+        <release.scm.connection>scm:git:git@github.com:eclipse/ditto-clients.git</release.scm.connection>
+        <release.scm.developerConnection>scm:git:https://github.com/eclipse/ditto-clients.git</release.scm.developerConnection>
+        <release.scm.url>https://github.com/eclipse/ditto-clients.git</release.scm.url>
+
+        <argLine>-Dfile.encoding=${project.build.sourceEncoding}</argLine>
+
+        <!-- globally set version for checking binary compatibility against -->
+        <!-- whoever changes this to ${revision} or ${project.version} is responsible for API breakage caused by this! -->
+        <!-- in other words: never do that here! exclude the 'breakages' locally in the japicmp maven plugin if you intentionally break something -->
+<!--        <binary-compatibility-check.version>0.9.0-M2</binary-compatibility-check.version>-->
+        <!-- skip until first release: -->
+        <binary-compatibility-check.skip>true</binary-compatibility-check.skip>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Import-Package>
+                            !org.eclipse.ditto.utils.jsr305.annotations,
+                            org.eclipse.ditto.*
+                        </Import-Package>
+                        <Export-Package>
+                            org.eclipse.ditto.client.*
+                        </Export-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>com.github.siom79.japicmp</groupId>
+                <artifactId>japicmp-maven-plugin</artifactId>
+                <configuration>
+                    <parameter>
+                        <excludes>
+                        </excludes>
+                    </parameter>
+                    <skip>${binary-compatibility-check.skip}</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
