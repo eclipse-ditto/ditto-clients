@@ -1,0 +1,19 @@
+dist: trusty
+matrix:
+  include:
+    - language: java
+      jdk:
+        - openjdk8
+        - openjdk11
+        - oraclejdk8
+      script:
+        - if [ ! -n "$TRAVIS_TAG" ]; then
+          mvn install javadoc:jar source:jar --batch-mode --errors --quiet -DcreateJavadoc=true;
+          fi;
+        - if [ -n "$TRAVIS_TAG" ]; then
+          echo "nothing to do - only a tag!";
+          fi;
+
+    - language: node_js
+      node_js:
+        - "7"
