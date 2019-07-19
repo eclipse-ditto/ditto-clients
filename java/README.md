@@ -120,3 +120,9 @@ client.live().forId("org.eclipse.ditto:new-thing")
       System.out.println("Got response: " + response.getPayload().orElse(null))
    );
 ```
+
+## Further Examples
+
+For further examples on how to use the Ditto client, please have a look at the class 
+[DittoClientUsageExamples](src/test/java/org/eclipse/ditto/client/DittoClientUsageExamples.java) which is
+configured to connect to the [Ditto sandbox](https://ditto.eclipse.org).
