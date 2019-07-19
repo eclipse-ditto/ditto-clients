@@ -193,7 +193,7 @@
         <ditto.version>0.9.0</ditto.version>
         <minimal-json.version>0.9.5</minimal-json.version>
         <nv-websocket-client.version>2.9</nv-websocket-client.version>
-        <classindex.version>3.7</classindex.version> <!-- TODO update once OSGi capable version is released -->
+        <classindex.version>3.8</classindex.version>
         <slf4j.version>1.7.25</slf4j.version>
 
         <!-- ### Provided dependencies versions -->
