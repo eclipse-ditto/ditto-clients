@@ -1,0 +1,29 @@
+dist: trusty
+matrix:
+  include:
+    - name: "Java client build"
+      language: java
+      jdk:
+        - openjdk8
+        - openjdk11
+      before_script: cd java
+      script:
+        - if [ ! -n "$TRAVIS_TAG" ]; then
+          mvn install javadoc:jar source:jar --batch-mode --errors --quiet -DcreateJavadoc=true;
+          fi;
+        - if [ -n "$TRAVIS_TAG" ]; then
+          echo "nothing to do - only a tag!";
+          fi;
+
+    - name: "JavaScript client build"
+      language: node_js
+      node_js:
+        - "7"
+      before_script: cd javascript
+      script:
+        - if [ ! -n "$TRAVIS_TAG" ]; then
+          echo "TODO: add node build steps!";
+          fi;
+        - if [ -n "$TRAVIS_TAG" ]; then
+          echo "nothing to do - only a tag!";
+          fi;

@@ -1,0 +1,4 @@
+   com.eclipsesource.minimal-json:minimal-json:jar:0.9.5:compile
+   com.neovisionaries:nv-websocket-client:jar:2.9:compile
+   org.atteo.classindex:classindex:jar:3.7:compile
+   org.slf4j:slf4j-api:jar:1.7.25:compile

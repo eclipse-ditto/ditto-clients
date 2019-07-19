@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2019 Contributors to the Eclipse Foundation
+  ~
+  ~ See the NOTICE file(s) distributed with this work for additional
+  ~ information regarding copyright ownership.
+  ~
+  ~ This program and the accompanying materials are made available under the
+  ~ terms of the Eclipse Public License 2.0 which is available at
+  ~ http://www.eclipse.org/legal/epl-2.0
+  ~
+  ~ SPDX-License-Identifier: EPL-2.0
+  -->
+
+<assembly xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2
+                              http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+    <id>bundles</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <baseDirectory>/</baseDirectory>
+
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>${artifactId}-${version}-bundles</outputDirectory>
+            <includes>
+                <include>org.slf4j:slf4j-api</include>
+                <include>com.eclipsesource.minimal-json:minimal-json</include>
+                <include>com.neovisionaries:nv-websocket-client</include>
+                <include>org.atteo.classindex:classindex</include>
+                <include>org.eclipse.ditto:ditto-json</include>
+                <include>org.eclipse.ditto:ditto-model-base</include>
+                <include>org.eclipse.ditto:ditto-model-things</include>
+                <include>org.eclipse.ditto:ditto-model-messages</include>
+                <include>org.eclipse.ditto:ditto-signals-base</include>
+                <include>org.eclipse.ditto:ditto-signals-commands-base</include>
+                <include>org.eclipse.ditto:ditto-signals-commands-things</include>
+                <include>org.eclipse.ditto:ditto-signals-commands-messages</include>
+                <include>org.eclipse.ditto:ditto-signals-commands-live</include>
+                <include>org.eclipse.ditto:ditto-signals-events-base</include>
+                <include>org.eclipse.ditto:ditto-signals-events-things</include>
+                <include>org.eclipse.ditto:ditto-protocol-adapter</include>
+                <include>org.eclipse.ditto:ditto-client</include>
+            </includes>
+            <scope>runtime</scope>
+            <unpack>false</unpack>
+            <useTransitiveDependencies>true</useTransitiveDependencies>
+        </dependencySet>
+    </dependencySets>
+
+</assembly>
