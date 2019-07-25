@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
-import org.eclipse.ditto.client.configuration.CredentialsAuthenticationConfiguration;
 import org.eclipse.ditto.client.messaging.AuthenticationProvider;
 import org.eclipse.ditto.client.messaging.websocket.WsProviderConfiguration;
 
@@ -121,7 +120,6 @@ public final class WsMessagingProviderConfigurationImpl implements WsProviderCon
         private AuthenticationProvider<WebSocket> authenticationProvider;
 
         DefaultWebSocketMessagingProviderConfigurationBuilder() {
-            endpointUri = URI.create(WsProviderConfiguration.DEFAULT_END_POINT_URI);
             reconnectionEnabled = WsProviderConfiguration.DEFAULT_RECONNECTION_ENABLED;
         }
 
@@ -132,7 +130,7 @@ public final class WsMessagingProviderConfigurationImpl implements WsProviderCon
         }
 
         @Override
-        public WebSocketMessagingProviderConfigurationBuilder endpoint(final String endpoint) {
+        public AuthenticationConfigurationSettable endpoint(final String endpoint) {
             final URI uri = URI.create(checkNotNull(endpoint));
             final String uriScheme = uri.getScheme();
             checkArgument(uriScheme, ALLOWED_URI_SCHEME::contains, () -> {
@@ -153,9 +151,9 @@ public final class WsMessagingProviderConfigurationImpl implements WsProviderCon
 
         @Override
         public WebSocketMessagingProviderConfigurationBuilder authenticationConfiguration(
-                final CredentialsAuthenticationConfiguration authenticationConfiguration) {
+                final AuthenticationConfiguration authenticationConfiguration) {
             this.authenticationConfiguration = authenticationConfiguration;
-            this.authenticationProvider = WsCredentialsAuthenticationProvider.getInstance(authenticationConfiguration);
+            this.authenticationProvider = WsAuthenticationProvider.getInstance(authenticationConfiguration);
             return this;
         }
 

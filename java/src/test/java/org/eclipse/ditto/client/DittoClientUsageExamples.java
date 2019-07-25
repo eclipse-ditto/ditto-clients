@@ -31,9 +31,11 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.ditto.client.changes.ChangeAction;
+import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.BusConfiguration;
 import org.eclipse.ditto.client.configuration.CommonConfiguration;
 import org.eclipse.ditto.client.configuration.CredentialsAuthenticationConfiguration;
+import org.eclipse.ditto.client.configuration.DummyAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.ProxyConfiguration;
 import org.eclipse.ditto.client.configuration.TrustStoreConfiguration;
 import org.eclipse.ditto.client.messaging.MessagingProviders;
@@ -62,14 +64,15 @@ public final class DittoClientUsageExamples {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DittoClientUsageExamples.class);
 
-    //    private static final String PROPERTIES_FILE = "ditto-client-starter-local.properties"; // for local development
-    private static final String PROPERTIES_FILE = "ditto-client-starter-sandbox.properties";
+    private static final String PROPERTIES_FILE = "ditto-client-starter-local.properties"; // for local development
+//    private static final String PROPERTIES_FILE = "ditto-client-starter-sandbox.properties";
     private static final String PROXY_HOST;
     private static final String PROXY_PORT;
     private static final String DITTO_ENDPOINT_URL;
 
     private static final URL DITTO_TRUSTSTORE_LOCATION;
     private static final String DITTO_TRUSTSTORE_PASSWORD;
+    private static final String DITTO_DUMMY_AUTH_USER;
     private static final String DITTO_USERNAME;
     private static final String DITTO_PASSWORD;
     private static final String NAMESPACE;
@@ -537,17 +540,25 @@ public final class DittoClientUsageExamples {
             proxyConfiguration = null;
         }
 
-        final CredentialsAuthenticationConfiguration authenticationConfiguration =
-                CredentialsAuthenticationConfiguration.newBuilder()
-                        .username(DITTO_USERNAME)
-                        .password(DITTO_PASSWORD)
-                        .build();
+        final AuthenticationConfiguration authenticationConfiguration;
+        if (DITTO_DUMMY_AUTH_USER != null) {
+            authenticationConfiguration = DummyAuthenticationConfiguration.newBuilder()
+                    .dummyUsername(DITTO_DUMMY_AUTH_USER)
+                    .build();
+        } else {
+            authenticationConfiguration = CredentialsAuthenticationConfiguration.newBuilder()
+                    .username(DITTO_USERNAME)
+                    .password(DITTO_PASSWORD)
+                    .build();
+        }
 
         final CommonConfiguration.OptionalConfigurationStep commonConfigurationBuilder =
                 CommonConfiguration.newBuilder()
                         .providerConfiguration(MessagingProviders.dittoWebsocketProviderBuilder()
+                                .endpoint(DITTO_ENDPOINT_URL)
                                 .authenticationConfiguration(authenticationConfiguration)
-                                .endpoint(DITTO_ENDPOINT_URL).build())
+                                .build()
+                        )
                         .schemaVersion(JsonSchemaVersion.V_1)
                         .busConfiguration(BusConfiguration.newBuilder().build());
 
@@ -587,6 +598,7 @@ public final class DittoClientUsageExamples {
                 DITTO_TRUSTSTORE_LOCATION = null;
             }
             DITTO_TRUSTSTORE_PASSWORD = config.getProperty("ditto.truststore.password");
+            DITTO_DUMMY_AUTH_USER = config.getProperty("ditto.dummy-auth-user");
             DITTO_USERNAME = config.getProperty("ditto.username");
             DITTO_PASSWORD = config.getProperty("ditto.password");
             NAMESPACE = config.getProperty("ditto.namespace");

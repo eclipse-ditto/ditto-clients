@@ -32,8 +32,7 @@ public final class MessagingProviders {
      *
      * @return the created Ditto WebSocket provider builder.
      */
-    public static WsProviderConfiguration.AuthenticationConfigurationSettable
-    dittoWebsocketProviderBuilder() {
+    public static WsProviderConfiguration.EndpointSettable dittoWebsocketProviderBuilder() {
 
         return WsMessagingProviderConfigurationImpl.newBuilder();
     }

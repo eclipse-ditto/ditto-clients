@@ -14,7 +14,7 @@ package org.eclipse.ditto.client.messaging.websocket;
 
 import java.net.URI;
 
-import org.eclipse.ditto.client.configuration.CredentialsAuthenticationConfiguration;
+import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.ProviderConfiguration;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 
@@ -26,11 +26,6 @@ import com.neovisionaries.ws.client.WebSocket;
  * @since 1.0.0
  */
 public interface WsProviderConfiguration<T extends MessagingProvider> extends ProviderConfiguration<T, WebSocket> {
-
-    /**
-     * The default Ditto WS endpoint URI - the Ditto sandbox.
-     */
-    String DEFAULT_END_POINT_URI = "wss://ditto.eclipse.org/";
 
     /**
      * The default whether automatic reconnection on connection loss is enabled or not.
@@ -50,6 +45,22 @@ public interface WsProviderConfiguration<T extends MessagingProvider> extends Pr
     boolean isReconnectionEnabled();
 
     /**
+     * Defines a method for setting the Websocket endpoint.
+     */
+    interface EndpointSettable {
+
+        /**
+         * Sets the {@code endpoint} of the Websocket.
+         *
+         * @param endpoint the value of the Ditto WebSocket endpoint to connect to.
+         * @return an object handle for building a {@link AuthenticationConfiguration} object based on the arguments
+         * provided to this builder.
+         */
+        AuthenticationConfigurationSettable endpoint(String endpoint);
+
+    }
+
+    /**
      * Defines a method for setting the required authentication configuration for the message provider.
      */
     interface AuthenticationConfigurationSettable {
@@ -62,23 +73,7 @@ public interface WsProviderConfiguration<T extends MessagingProvider> extends Pr
          * on the arguments provided to this builder.
          */
         WebSocketMessagingProviderConfigurationBuilder authenticationConfiguration(
-                CredentialsAuthenticationConfiguration authenticationConfiguration);
-
-    }
-
-    /**
-     * Defines a method for setting the Websocket endpoint.
-     */
-    interface EndpointSettable {
-
-        /**
-         * Sets the {@code endpoint} of the Websocket.
-         *
-         * @param endpoint the value of the Ditto WebSocket endpoint to connect to.
-         * @return an object handle for building a {@link WsProviderConfiguration} object based on the
-         * arguments provided to this builder.
-         */
-        WebSocketMessagingProviderConfigurationBuilder endpoint(String endpoint);
+                AuthenticationConfiguration authenticationConfiguration);
 
     }
 
@@ -93,32 +88,31 @@ public interface WsProviderConfiguration<T extends MessagingProvider> extends Pr
          * successfully.
          *
          * @param reconnectionEnabled enables/disables reconnection
-         * @return an object handle for building a {@link WsProviderConfiguration} object based on the
-         * arguments provided to this builder.
+         * @return an object handle for building a {@link WsProviderConfiguration} object based on the arguments
+         * provided to this builder.
          */
         WebSocketMessagingProviderConfigurationBuilder reconnectionEnabled(boolean reconnectionEnabled);
 
     }
 
     /**
-     * Defines a method for building a {@link WsProviderConfiguration} object based on the arguments
-     * provided to this builder.
+     * Defines a method for building a {@link WsProviderConfiguration} object based on the arguments provided to this
+     * builder.
      */
     interface WebSocketMessagingProviderConfigurationBuildable {
 
         /**
          * Creates a new instance of {@link WsProviderConfiguration}.
          *
-         * @return a new {@code WsProviderConfiguration} object based on the arguments
-         * provided to this builder.
+         * @return a new {@code WsProviderConfiguration} object based on the arguments provided to this builder.
          */
         WsProviderConfiguration build();
 
     }
 
     /**
-     * Builder for creating an instance of {@link WsProviderConfiguration} by utilizing Object Scoping
-     * and Method Chaining.
+     * Builder for creating an instance of {@link WsProviderConfiguration} by utilizing Object Scoping and Method
+     * Chaining.
      */
     interface WebSocketMessagingProviderConfigurationBuilder
             extends EndpointSettable, WebSocketMessagingProviderConfigurationBuildable,

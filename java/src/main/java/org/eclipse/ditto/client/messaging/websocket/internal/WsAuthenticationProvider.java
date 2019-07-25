@@ -19,7 +19,9 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
 
+import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.CredentialsAuthenticationConfiguration;
+import org.eclipse.ditto.client.configuration.DummyAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.ProxyConfiguration;
 import org.eclipse.ditto.client.messaging.AuthenticationProvider;
 import org.slf4j.Logger;
@@ -33,30 +35,30 @@ import com.neovisionaries.ws.client.WebSocket;
  * @since 1.0.0
  */
 @NotThreadSafe
-final class WsCredentialsAuthenticationProvider implements AuthenticationProvider<WebSocket> {
+final class WsAuthenticationProvider implements AuthenticationProvider<WebSocket> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WsCredentialsAuthenticationProvider.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WsAuthenticationProvider.class);
 
-    private final CredentialsAuthenticationConfiguration configuration;
+    private static final String X_DITTO_DUMMY_AUTH_HEADER = "x-ditto-dummy-auth";
 
-    private WsCredentialsAuthenticationProvider(final CredentialsAuthenticationConfiguration theConfiguration) {
+    private final AuthenticationConfiguration configuration;
+
+    private WsAuthenticationProvider(final AuthenticationConfiguration theConfiguration) {
 
         configuration = theConfiguration;
     }
 
     /**
-     * Returns an instance of {@code CredentialsAuthenticationConfiguration}.
+     * Returns an instance of {@code WsAuthenticationProvider}.
      *
      * @param configuration the AuthenticationConfiguration to use when connecting.
      * @return the instance.
      * @throws NullPointerException if {@code } is {@code null}.
      */
-    public static WsCredentialsAuthenticationProvider getInstance(
-            final CredentialsAuthenticationConfiguration configuration) {
+    public static WsAuthenticationProvider getInstance(final AuthenticationConfiguration configuration) {
 
         checkNotNull(configuration, "configuration");
-        LOGGER.info("Using Basic Auth. Authenticating user <{}>", configuration.getUsername());
-        return new WsCredentialsAuthenticationProvider(configuration);
+        return new WsAuthenticationProvider(configuration);
     }
 
     @Override
@@ -70,7 +72,19 @@ final class WsCredentialsAuthenticationProvider implements AuthenticationProvide
             @Nullable final ProxyConfiguration proxyConfiguration) {
 
         additionalAuthenticationHeaders.forEach(channel::addHeader);
-        return channel
-                .setUserInfo(configuration.getUsername(), configuration.getPassword());
+
+        if (configuration instanceof CredentialsAuthenticationConfiguration) {
+            final String username = ((CredentialsAuthenticationConfiguration) configuration).getUsername();
+            LOGGER.info("Using Basic Auth. Authenticating user <{}>", username);
+            return channel.setUserInfo(username,
+                    ((CredentialsAuthenticationConfiguration) configuration).getPassword());
+        } else if (configuration instanceof DummyAuthenticationConfiguration) {
+            final String dummyUsername = ((DummyAuthenticationConfiguration) configuration).getDummyUsername();
+            LOGGER.warn("Using Ditto Dummy auth with dummy user <{}>, do not use for production!", dummyUsername);
+            return channel.addHeader(X_DITTO_DUMMY_AUTH_HEADER, dummyUsername);
+        } else {
+            throw new IllegalArgumentException("Unsupported AuthenticationConfiguration mechanism for WebSocket " +
+                    "provider: " + configuration.getClass().getSimpleName());
+        }
     }
 }
