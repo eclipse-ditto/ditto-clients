@@ -15,7 +15,7 @@ node {
       jdk: 'JDK8',
       mavenLocalRepo: theMvnRepo) {
 
-      sh "mvn clean deploy javadoc:jar source:jar" +
+      sh "mvn -f $WORKSPACE/java/pom.xml clean deploy javadoc:jar source:jar" +
               " -T16 --batch-mode --errors" +
               " -Pinternal-repos -DcreateJavadoc=true" +
               " -Drevision=${theVersion}"
