@@ -10,7 +10,7 @@ node {
   }
 
   stage('Build') {
-    dir($WORKSPACE/java) {
+    dir("$WORKSPACE/java") {
       withMaven(
               maven: 'maven-3.6.0',
               jdk: 'JDK8',
