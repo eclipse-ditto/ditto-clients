@@ -1,0 +1,11 @@
+.idea/
+**/coverage/
+**/dist/
+**/node_modules/
+**/build/
+**/test/
+**/target/
+*.iml
+.npmrc
+.lerna_backup
+lerna-debug.log

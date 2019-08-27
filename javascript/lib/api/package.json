@@ -1,0 +1,60 @@
+{
+  "name": "@eclipse-ditto/ditto-javascript-client-api_0",
+  "version": "0.0.1",
+  "description": "API interfaces for implementing TypeScript clients for Eclipse Ditto 0.x.",
+  "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
+  "repository": "https://github.com/eclipse/ditto-clients",
+  "license": "SEE LICENSE IN LICENSE",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "browser": "dist/index.bundle.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "registry": "http://localhost:4873"
+  },
+  "devDependencies": {
+    "@types/jasmine": "^3.3.12",
+    "@types/lodash": "^4.14.134",
+    "barrelsby": "^2.1.1",
+    "jasmine-core": "^3.4.0",
+    "karma": "^4.1.0",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-coverage": "^1.1.2",
+    "karma-edge-launcher": "^0.4.2",
+    "karma-firefox-launcher": "^1.1.0",
+    "karma-jasmine": "^2.0.1",
+    "karma-junit-reporter": "^1.2.0",
+    "karma-typescript": "^4.0.0",
+    "lodash": "^4.17.11",
+    "rollup": "^1.20.3",
+    "rollup-plugin-typescript2": "^0.24.0",
+    "tslint": "^5.18.x",
+    "tslint-config-airbnb": "^5.11.1",
+    "tslint-sonarts": "^1.8.0",
+    "typescript": "^3.4.3"
+  },
+  "scripts": {
+    "build": "npm run build:tsc && npm run build:barrels && npm run build:modules",
+    "build:tsc": "tsc -p tsconfig.json",
+    "build:barrels": "npm run build:barrels:generate-sources && npm run build:barrels:copyright-header && npm run build:barrels:compile",
+    "build:barrels:generate-sources": "barrelsby --config barrelsby.json",
+    "build:barrels:copyright-header": "tslint --config tslint.json --project tsconfig-barrels.json --quiet --fix dist/index.ts",
+    "build:barrels:compile": "tsc --project tsconfig-barrels.json",
+    "build:modules": "rollup -c",
+    "lint": "tslint --project tsconfig.json",
+    "test": "karma start karma.conf.js --single-run",
+    "test:full": "karma start karma-full.conf.js --single-run",
+    "test:watch": "karma start karma.conf.js"
+  },
+  "keywords": [
+    "ditto",
+    "eclipse",
+    "eclipseditto",
+    "client",
+    "iot",
+    "api"
+  ]
+}

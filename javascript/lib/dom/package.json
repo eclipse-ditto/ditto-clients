@@ -1,0 +1,55 @@
+{
+  "name": "@eclipse-ditto/ditto-javascript-client-dom_0",
+  "version": "0.0.1",
+  "description": "DOM implementation of Eclipse Ditto 0.x JavaScript API to be used in browsers.",
+  "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
+  "repository": "https://github.com/eclipse/ditto-clients",
+  "license": "SEE LICENSE IN LICENSE",
+  "module": "./dist/index.js",
+  "main": "./dist/index.js",
+  "browser": "./dist/index.bundle.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "registry": "http://localhost:4873"
+  },
+  "dependencies": {
+    "@eclipse-ditto/ditto-javascript-client-api_0": "^0.0.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.18",
+    "barrelsby": "^2.1.1",
+    "jest": "^24.9.0",
+    "rollup": "^1.20.3",
+    "rollup-plugin-typescript2": "^0.24.0",
+    "ts-jest": "^24.0.2",
+    "tslint": "^5.18.x",
+    "tslint-config-airbnb": "^5.11.1",
+    "tslint-sonarts": "^1.8.0",
+    "typescript": "^3.4.3"
+  },
+  "scripts": {
+    "build": "npm run build:tsc && npm run build:barrels && npm run build:modules",
+    "build:tsc": "tsc -p tsconfig.json",
+    "build:barrels": "npm run build:barrels:generate-sources && npm run build:barrels:copyright-header && npm run build:barrels:compile",
+    "build:barrels:generate-sources": "barrelsby --config barrelsby.json",
+    "build:barrels:copyright-header": "tslint --config tslint.json --project tsconfig-barrels.json --quiet --fix dist/index.ts",
+    "build:barrels:compile": "tsc --project tsconfig-barrels.json",
+    "build:modules": "rollup -c",
+    "lint": "tslint --project tsconfig.json",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "keywords": [
+    "ditto",
+    "eclipse",
+    "eclipseditto",
+    "client",
+    "iot",
+    "iife",
+    "dom",
+    "browser"
+  ]
+}
