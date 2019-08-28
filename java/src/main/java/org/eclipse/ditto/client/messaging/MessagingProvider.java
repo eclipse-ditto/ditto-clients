@@ -19,6 +19,7 @@ import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.configuration.CommonConfiguration;
 import org.eclipse.ditto.model.messages.Message;
+import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.commands.base.Command;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
@@ -41,6 +42,15 @@ public interface MessagingProvider {
     void initialize(CommonConfiguration configuration, ExecutorService callbackExecutor);
 
     /**
+     * Send Ditto Protocol {@link Adaptable} using the underlying connection.
+     *
+     * @param adaptable the adaptable to be sent
+     * @return a CompletableFuture containing the correlated response to the sent {@code dittoProtocolAdaptable}
+     * @throws UnsupportedOperationException if the MessagingProvider is not able to send Messages
+     */
+    CompletableFuture<Adaptable> sendAdaptable(Adaptable adaptable);
+
+    /**
      * Send message using the underlying connection.
      *
      * @param message the message to be sent
@@ -56,7 +66,7 @@ public interface MessagingProvider {
      * @param channel the Channel to use for sending the command (Live/Twin)
      * @throws UnsupportedOperationException if the MessagingProvider is not able to send Commands
      */
-    void sendCommand(final Command<?> command, TopicPath.Channel channel);
+    void sendCommand(Command<?> command, TopicPath.Channel channel);
 
     /**
      * Send CommandResponse using the underlying connection.
@@ -65,7 +75,7 @@ public interface MessagingProvider {
      * @param channel the Channel to use for sending the commandResponse (Live/Twin)
      * @throws UnsupportedOperationException if the MessagingProvider is not able to send CommandResponses
      */
-    void sendCommandResponse(final CommandResponse<?> commandResponse, TopicPath.Channel channel);
+    void sendCommandResponse(CommandResponse<?> commandResponse, TopicPath.Channel channel);
 
     /**
      * Emits Event using the underlying connection.
