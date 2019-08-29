@@ -51,6 +51,8 @@ import org.eclipse.ditto.model.things.FeatureProperties;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingBuilder;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
+import org.eclipse.ditto.protocoladapter.JsonifiableAdaptable;
+import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommandAnswerBuilder;
 import org.eclipse.ditto.signals.commands.live.modify.ModifyFeaturePropertyLiveCommandAnswerBuilder;
 import org.slf4j.Logger;
@@ -80,6 +82,40 @@ public final class DittoClientUsageExamples {
     public static void main(final String... args) throws ExecutionException, InterruptedException {
         final DittoClient client = DittoClientFactory.newInstance(createConfig());
         final DittoClient client2 = DittoClientFactory.newInstance(createConfig());
+
+        final JsonifiableAdaptable jsonifiableAdaptable = ProtocolFactory.jsonifiableAdaptableFromJson(
+                JsonFactory.readFrom("{\n" +
+                        "  \"topic\": \"com.acme/xdk_53/things/twin/commands/modify\",\n" +
+                        "  \"headers\": {},\n" +
+                        "  \"path\": \"/\",\n" +
+                        "  \"value\": {\n" +
+                        "    \"thingId\": \"com.acme:xdk_53\",\n" +
+                        "    \"attributes\": {\n" +
+                        "      \"location\": {\n" +
+                        "        \"latitude\": 44.673856,\n" +
+                        "        \"longitude\": 8.261719\n" +
+                        "      }\n" +
+                        "    },\n" +
+                        "    \"features\": {\n" +
+                        "      \"accelerometer\": {\n" +
+                        "        \"properties\": {\n" +
+                        "          \"x\": 3.141,\n" +
+                        "          \"y\": 2.718,\n" +
+                        "          \"z\": 1,\n" +
+                        "          \"unit\": \"g\"\n" +
+                        "        }\n" +
+                        "      }\n" +
+                        "    }\n" +
+                        "  }\n" +
+                        "}").asObject());
+        client.sendDittoProtocol(jsonifiableAdaptable).whenComplete((a, t) -> {
+            if (a != null) {
+                LOGGER.info("sendDittoProtocol: Received adaptable as response: {}", a);
+            }
+            if (t != null) {
+                LOGGER.warn("sendDittoProtocol: Received throwable as response", t);
+            }
+        });
 
         client.twin().startConsumption().get();
         client2.twin().startConsumption().get();

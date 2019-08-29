@@ -12,8 +12,11 @@
  */
 package org.eclipse.ditto.client;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.eclipse.ditto.client.live.Live;
 import org.eclipse.ditto.client.twin.Twin;
+import org.eclipse.ditto.protocoladapter.Adaptable;
 
 /**
  * The client API for Eclipse Ditto Client acting as the entry point for getting access to {@link Twin} and {@link Live}
@@ -43,5 +46,14 @@ public interface DittoClient {
      * Initiates termination of this {@code DittoClient} client and waits for its graceful shutdown.
      */
     void destroy();
+
+    /**
+     * Directly sends a Ditto Protocol {@link Adaptable} message to the established Ditto backend connection.
+     *
+     * @param dittoProtocolAdaptable the adaptable to send
+     * @throws IllegalStateException when no twin/live connection was configured for this client
+     * @return a CompletableFuture containing the correlated response to the sent {@code dittoProtocolAdaptable}
+     */
+    CompletableFuture<Adaptable> sendDittoProtocol(Adaptable dittoProtocolAdaptable);
 
 }

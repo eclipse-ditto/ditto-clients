@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -154,6 +155,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
     private final AtomicBoolean initiallyConnected = new AtomicBoolean(false);
     private final Map<String, MessageResponseConsumer<?>> messageCommandResponseConsumers;
     private final Map<String, Map<String, String>> registrationConfigs;
+    private final Map<String, CompletableFuture<Adaptable>> customAdaptableResponseFutures;
 
     private JsonSchemaVersion schemaVersion;
     private Consumer<ThingCommandResponse> commandResponseConsumer;
@@ -188,6 +190,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
         // limit the max. outstanding MessageResponseConsumers to not produce a memory leak if messages are never answered
         messageCommandResponseConsumers = new LimitedHashMap<>(MAX_OUTSTANDING_MESSAGE_RESPONSES);
         registrationConfigs = new HashMap<>();
+        customAdaptableResponseFutures = new HashMap<>();
     }
 
     private static ScheduledThreadPoolExecutor createScheduledThreadPoolExecutor() {
@@ -470,7 +473,27 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
                 .build();
     }
 
-    private void sendAdaptable(@Nullable final Adaptable adaptable) {
+    @Override
+    public CompletableFuture<Adaptable> sendAdaptable(final Adaptable adaptable) {
+
+        DittoHeaders headers = adaptable.getHeaders().orElseGet(DittoHeaders::empty);
+        Adaptable adaptableToSend = adaptable;
+        if (!headers.getCorrelationId().isPresent()) {
+            final String newCorrelationId = UUID.randomUUID().toString();
+            headers = headers.toBuilder().correlationId(newCorrelationId)
+                    .build();
+            adaptableToSend = adaptable.setDittoHeaders(headers);
+        }
+
+        final String correlationId = getCorrelationIdOrThrow(headers).toString();
+        doSendAdaptable(adaptableToSend);
+
+        final CompletableFuture<Adaptable> responseFuture = new CompletableFuture<>();
+        customAdaptableResponseFutures.put(correlationId, responseFuture);
+        return responseFuture;
+    }
+
+    private void doSendAdaptable(@Nullable final Adaptable adaptable) {
         if (null == adaptable) {
             return;
         }
@@ -788,8 +811,12 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
 
         final TopicPath.Channel channel = getChannelOrNull(jsonifiableAdaptable);
         final DittoHeaders headers = jsonifiableAdaptable.getHeaders().orElseGet(DittoHeaders::empty);
-        final CharSequence correlationId = getCorrelationIdOrThrow(headers);
-        if (TopicPath.Channel.TWIN == channel) {
+        final String correlationId = getCorrelationIdOrThrow(headers).toString();
+        if (customAdaptableResponseFutures.containsKey(correlationId)) {
+            customAdaptableResponseFutures.remove(correlationId)
+                    .complete(jsonifiableAdaptable);
+        }
+        else if (TopicPath.Channel.TWIN == channel) {
             handleTwinMessage(message, correlationId, signal);
         } else if (TopicPath.Channel.LIVE == channel) {
             handleLiveMessage(message, correlationId, signal);
