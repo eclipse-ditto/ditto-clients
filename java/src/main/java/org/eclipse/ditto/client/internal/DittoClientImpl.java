@@ -14,6 +14,7 @@ package org.eclipse.ditto.client.internal;
 
 import java.text.MessageFormat;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.ditto.client.DittoClient;
@@ -35,6 +36,8 @@ import org.eclipse.ditto.client.twin.internal.TwinImpl;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
+import org.eclipse.ditto.protocoladapter.Adaptable;
+import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.events.things.AclEntryCreated;
 import org.eclipse.ditto.signals.events.things.AclEntryDeleted;
 import org.eclipse.ditto.signals.events.things.AclEntryModified;
@@ -146,6 +149,20 @@ public final class DittoClientImpl implements DittoClient {
         configuration.getLiveMessagingProvider().ifPresent(MessagingProvider::close);
         configuration.getTwinBus().ifPresent(PointerBus::close);
         configuration.getLiveBus().ifPresent(PointerBus::close);
+    }
+
+    @Override
+    public CompletableFuture<Adaptable> sendDittoProtocol(final Adaptable dittoProtocolAdaptable) {
+
+        final TopicPath.Channel channel = dittoProtocolAdaptable.getTopicPath().getChannel();
+        switch (channel) {
+            case TWIN:
+                return configuration.getTwinMessagingProviderOrFail().sendAdaptable(dittoProtocolAdaptable);
+            case LIVE:
+                return configuration.getLiveMessagingProviderOrFail().sendAdaptable(dittoProtocolAdaptable);
+            default:
+                throw new IllegalArgumentException("Unknown channel: " + channel);
+        }
     }
 
     private void init(final PointerBus bus, final CommonConfiguration commonConfiguration,

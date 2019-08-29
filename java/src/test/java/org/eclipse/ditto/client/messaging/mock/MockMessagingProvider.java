@@ -37,6 +37,7 @@ import org.eclipse.ditto.model.messages.MessageBuilder;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessageHeadersBuilder;
+import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.WithFeatureId;
 import org.eclipse.ditto.signals.commands.base.Command;
@@ -96,6 +97,11 @@ public class MockMessagingProvider implements MessagingProvider {
     @Override
     public void initialize(final CommonConfiguration configuration, final ExecutorService callbackExecutor) {
         // noop
+    }
+
+    @Override
+    public CompletableFuture<Adaptable> sendAdaptable(final Adaptable adaptable) {
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override
