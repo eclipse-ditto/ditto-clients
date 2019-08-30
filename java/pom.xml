@@ -190,7 +190,7 @@
         <revision>0-SNAPSHOT</revision>
 
         <!-- ### Compile dependencies versions -->
-        <ditto.version>0.9.0</ditto.version>
+        <ditto.version>0-SNAPSHOT</ditto.version>
         <minimal-json.version>0.9.5</minimal-json.version>
         <nv-websocket-client.version>2.9</nv-websocket-client.version>
         <classindex.version>3.8</classindex.version>
