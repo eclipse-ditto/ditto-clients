@@ -65,6 +65,7 @@ final class DefaultRegistry<T> implements Registry<T> {
         });
         registrations.add(reg);
 
+        pointerCache.clear();
         return reg;
     }
 
