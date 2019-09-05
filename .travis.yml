@@ -21,12 +21,13 @@ matrix:
         - 10
       before_script: cd javascript
       script:
-        - if [ ! -n "$TRAVIS_TAG" ]; then
-          npm ci
-          npm run lint
-          npm run build
-          npm test
-          fi;
+        - |
+          if [ ! -n "$TRAVIS_TAG" ]; then
+            npm ci
+            npm run lint
+            npm run build
+            npm test
+          fi
         - if [ -n "$TRAVIS_TAG" ]; then
           echo "nothing to do - only a tag!";
           fi;
