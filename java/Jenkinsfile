@@ -26,6 +26,7 @@ node {
                 " -T16 --batch-mode --errors" +
                 " -Pinternal-repos -DcreateJavadoc=true" +
                 " -Drevision=${theVersion}"
+                " -Dditto.version=${dittoVersion}"
       }
     }
   }
