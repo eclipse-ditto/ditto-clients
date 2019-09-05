@@ -13,6 +13,7 @@
 package org.eclipse.ditto.client;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
 import java.util.concurrent.CountDownLatch;
@@ -33,6 +34,7 @@ import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Thing;
+import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
 import org.eclipse.ditto.signals.events.things.ThingCreated;
@@ -45,7 +47,6 @@ import org.junit.Test;
  */
 public final class DittoClientThingTest extends AbstractDittoClientTest {
 
-    private static final String THING_ID = "org.eclipse.ditto:aThing";
     private static final String FEATURE_ID = "someFeature";
     private static final JsonPointer ATTRIBUTE_KEY_NEW = JsonFactory.newPointer("new");
     private static final String ATTRIBUTE_VALUE = "value";
@@ -296,7 +297,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
     @Test
     public void testCreateThingWithoutFeatures() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
-        final String thingIdWithoutFeatures = "demo:mything1";
+        final ThingId thingIdWithoutFeatures = ThingId.of("demo:mything1");
 
         messaging.onSend(m -> {
             assertThat(m).hasThingId(thingIdWithoutFeatures);

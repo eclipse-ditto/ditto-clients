@@ -24,10 +24,12 @@ import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.client.changes.FeatureChange;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.entity.id.EntityId;
 import org.eclipse.ditto.model.things.Feature;
+import org.eclipse.ditto.model.things.ThingId;
 
 /**
- * An immutable implementation of {@code FeatureChange}.
+ * An immutable implementation of {@link org.eclipse.ditto.client.changes.FeatureChange}.
  *
  * @since 1.0.0
  */
@@ -38,9 +40,9 @@ public final class ImmutableFeatureChange implements FeatureChange {
     private final Feature feature;
 
     /**
-     * Constructs a new {@code ImmutableThingFeatureChange} object.
+     * Constructs a new {@code ImmutableFeatureChange} object.
      *
-     * @param thingId the identifier of the changed Thing.
+     * @param entityId the identifier of the changed Thing.
      * @param feature the Feature which was changed.
      * @param changeAction the operation which caused the change.
      * @param path the JsonPointer of the changed json field.
@@ -48,14 +50,14 @@ public final class ImmutableFeatureChange implements FeatureChange {
      * @param timestamp the timestamp of the change.
      * @throws IllegalArgumentException if any argument is {@code null}.
      */
-    public ImmutableFeatureChange(final String thingId,
+    public ImmutableFeatureChange(final EntityId entityId,
             final ChangeAction changeAction,
             @Nullable final Feature feature,
             final JsonPointer path,
             final long revision,
             @Nullable final Instant timestamp) {
 
-        change = new ImmutableChange(thingId, changeAction, path, getJsonValueForFeature(feature), revision, timestamp);
+        change = new ImmutableChange(entityId, changeAction, path, getJsonValueForFeature(feature), revision, timestamp);
         this.feature = feature;
     }
 
@@ -65,8 +67,8 @@ public final class ImmutableFeatureChange implements FeatureChange {
     }
 
     @Override
-    public String getThingId() {
-        return change.getThingId();
+    public EntityId getEntityId() {
+        return change.getEntityId();
     }
 
     @Override

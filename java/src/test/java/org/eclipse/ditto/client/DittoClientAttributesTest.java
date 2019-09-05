@@ -12,6 +12,7 @@
  */
 package org.eclipse.ditto.client;
 
+import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
 import java.util.concurrent.CountDownLatch;
@@ -50,7 +51,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     public void testAddStringAttributeWithoutExistsOption() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        messaging.onSend((m) -> {
+        messaging.onSend(m -> {
             assertThat(m)
                     .hasThingId(THING_ID)
                     .hasSubject(ModifyAttribute.TYPE)
@@ -70,7 +71,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     public void testAddStringAttributeWithExistsOptionFalse() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        messaging.onSend((m) -> {
+        messaging.onSend(m -> {
             assertThat(m)
                     .hasThingId(THING_ID)
                     .hasSubject(ModifyAttribute.TYPE)
@@ -90,7 +91,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     public void testAddStringAttributeWithExistsOptionTrue() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        messaging.onSend((m) -> {
+        messaging.onSend(m -> {
             assertThat(m)
                     .hasThingId(THING_ID)
                     .hasSubject(ModifyAttribute.TYPE)
@@ -110,7 +111,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     public void testAddBooleanAttribute() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        messaging.onSend((m) -> {
+        messaging.onSend(m -> {
             assertThat(m)
                     .hasThingId(THING_ID)
                     .hasSubject(ModifyAttribute.TYPE);
@@ -129,7 +130,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     public void testAddObjectAttribute() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        messaging.onSend((m) -> {
+        messaging.onSend(m -> {
             assertThat(m)
                     .hasThingId(THING_ID)
                     .hasSubject(ModifyAttribute.TYPE);
@@ -148,7 +149,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     public void testAddArrayAttribute() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        messaging.onSend((m) -> {
+        messaging.onSend(m -> {
             assertThat(m)
                     .hasThingId(THING_ID)
                     .hasSubject(ModifyAttribute.TYPE);
@@ -167,7 +168,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     public void testAddObjectAttributePartial() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        messaging.onSend((m) -> {
+        messaging.onSend(m -> {
             assertThat(m)
                     .hasThingId(THING_ID)
                     .hasSubject(ModifyAttribute.TYPE);
@@ -314,7 +315,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     public void testAddArrayAttributeObject() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        messaging.onSend((m) -> {
+        messaging.onSend(m -> {
             assertThat(m)
                     .hasThingId(THING_ID)
                     .hasSubject(ModifyAttribute.TYPE);
@@ -336,7 +337,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     public void testAddAttributesStructure() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        messaging.onSend((m) -> {
+        messaging.onSend(m -> {
             assertThat(m)
                     .hasThingId(THING_ID)
                     .hasSubject(ModifyAttributes.TYPE);

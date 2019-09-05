@@ -50,6 +50,7 @@ import org.eclipse.ditto.model.messages.KnownMessageSubjects;
 import org.eclipse.ditto.model.things.FeatureProperties;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingBuilder;
+import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.JsonifiableAdaptable;
 import org.eclipse.ditto.protocoladapter.ProtocolFactory;
@@ -67,7 +68,7 @@ public final class DittoClientUsageExamples {
     private static final Logger LOGGER = LoggerFactory.getLogger(DittoClientUsageExamples.class);
 
     private static final String PROPERTIES_FILE = "ditto-client-starter-local.properties"; // for local development
-//    private static final String PROPERTIES_FILE = "ditto-client-starter-sandbox.properties";
+    //    private static final String PROPERTIES_FILE = "ditto-client-starter-sandbox.properties";
     private static final String PROXY_HOST;
     private static final String PROXY_PORT;
     private static final String DITTO_ENDPOINT_URL;
@@ -154,7 +155,7 @@ public final class DittoClientUsageExamples {
 
     private static void useTwinCommandsAndEvents(final DittoClient client, final DittoClient client2)
             throws InterruptedException, ExecutionException {
-        final String thingId = NAMESPACE + ":dummy-" + UUID.randomUUID();
+        final ThingId thingId = ThingId.of(NAMESPACE + ":dummy-" + UUID.randomUUID());
 
         client2.twin().registerForThingChanges("globalThingChangeHandler", change ->
                 LOGGER.info("Received Change on Client 2: {}", change.toString()));
@@ -221,7 +222,7 @@ public final class DittoClientUsageExamples {
             return client.twin().forId(thingId).putAttribute("new", OffsetDateTime.now().toString());
         }).get();
 
-        final String newId = NAMESPACE + ":dummy-" + UUID.randomUUID();
+        final ThingId newId = ThingId.of(NAMESPACE + ":dummy-" + UUID.randomUUID());
         final ThingBuilder.FromScratch newThingBuilder = Thing.newBuilder().setId(newId);
         final Thing newThing = newThingBuilder.build();
         client.twin().create(newThing).get();
@@ -236,7 +237,7 @@ public final class DittoClientUsageExamples {
             LOGGER.info("Expected Exception: {}", ex.getMessage());
         });
 
-        final String evenNewerId = NAMESPACE + ":dummy-" + UUID.randomUUID();
+        final ThingId evenNewerId = ThingId.of(NAMESPACE + ":dummy-" + UUID.randomUUID());
         final Thing thing = ThingsModelFactory.newThingBuilder().setId(evenNewerId).build();
 
         try {
@@ -254,7 +255,7 @@ public final class DittoClientUsageExamples {
 
         try {
             final ThingBuilder.FromScratch dummyThingBuilder =
-                    Thing.newBuilder().setId(NAMESPACE + ":dummy-" + UUID.randomUUID());
+                    Thing.newBuilder().setId(ThingId.of(NAMESPACE + ":dummy-" + UUID.randomUUID()));
             final Thing dummyThing = dummyThingBuilder.build();
             client.twin().create(dummyThing).get(10, SECONDS);
         } catch (final TimeoutException e) {
@@ -275,7 +276,7 @@ public final class DittoClientUsageExamples {
     private static void useLiveCommands(final DittoClient backendClient, final DittoClient clientAtDevice)
             throws ExecutionException, InterruptedException {
 
-        final String thingId = NAMESPACE + ":live-" + UUID.randomUUID().toString();
+        final ThingId thingId = ThingId.of(NAMESPACE + ":live-" + UUID.randomUUID().toString());
 
         backendClient.twin().create(thingId).get();
 
@@ -313,29 +314,29 @@ public final class DittoClientUsageExamples {
         promptEnterKey();
         backendClient.live()
                 .create(thingId)
-                .whenComplete(((thing, throwable) -> {
+                .whenComplete((thing, throwable) -> {
                     if (throwable != null) {
                         LOGGER.error("[AT BACKEND] Received error when creating the thing.", throwable);
-                    } else if (thing.getId().filter(thingId::equals).isPresent()) {
+                    } else if (thing.getEntityId().filter(thingId::equals).isPresent()) {
                         LOGGER.info("[AT BACKEND] Successfully created live Thing and got response: {}", thing);
                     } else {
                         LOGGER.warn("[AT BACKEND] Received unexpected thing {}.", thing);
                     }
-                }));
+                });
 
         LOGGER.info("[AT BACKEND] put 'temperature' property of 'temp-sensor' LIVE Feature..");
         promptEnterKey();
         backendClient.live()
                 .forFeature(thingId, "temp-sensor")
                 .putProperty("temperature", 23.21)
-                .whenComplete(((_void, throwable) -> {
+                .whenComplete((_void, throwable) -> {
                     if (throwable != null) {
                         LOGGER.error("[AT BACKEND] Received error when putting the property: {}",
                                 throwable.getMessage(), throwable);
                     } else {
                         LOGGER.info("[AT BACKEND] Putting the property succeeded");
                     }
-                }));
+                });
 
         // ##
         // ##
@@ -345,7 +346,7 @@ public final class DittoClientUsageExamples {
         promptEnterKey();
         backendClient.live()
                 .registerForAttributeChanges("locationHandler", "location", change -> {
-                    change.getThingId();
+                    change.getEntityId();
                     LOGGER.info("[AT BACKEND] Received change of attribute 'location': {}",
                             change.getValue().orElse(null));
                 });
@@ -353,10 +354,10 @@ public final class DittoClientUsageExamples {
         LOGGER.info("[AT BACKEND] register for LIVE feature property changes of feature 'lamp'..");
         backendClient.live()
                 .forFeature(thingId, "lamp")
-                .registerForPropertyChanges("lampPropertiesHandler", change -> {
-                    LOGGER.info("[AT BACKEND] Received change of Feature 'lamp' property '{}': {}", change.getPath(),
-                            change.getValue().orElse(null));
-                });
+                .registerForPropertyChanges("lampPropertiesHandler",
+                        change -> LOGGER.info("[AT BACKEND] Received change of Feature 'lamp' property '{}': {}",
+                                change.getPath(),
+                                change.getValue().orElse(null)));
 
         LOGGER.info("[AT DEVICE] Emitting LIVE event AttributeModified for attribute 'location'..");
         promptEnterKey();
@@ -385,7 +386,7 @@ public final class DittoClientUsageExamples {
 
     private static void useLiveMessages(final DittoClient backendClient, final DittoClient clientAtDevice)
             throws InterruptedException, ExecutionException {
-        final String thingId = NAMESPACE + ":messages-" + UUID.randomUUID();
+        final ThingId thingId = ThingId.of(NAMESPACE + ":messages-" + UUID.randomUUID());
 
         // first create Thing:
         backendClient.twin().create(thingId).get();
@@ -446,7 +447,7 @@ public final class DittoClientUsageExamples {
             final int thingIdx = k;
             executorService.execute(() ->
             {
-                final String thingId = NAMESPACE + ":load-" + thingIdx + "-" + UUID.randomUUID();
+                final ThingId thingId = ThingId.of(NAMESPACE + ":load-" + thingIdx + "-" + UUID.randomUUID());
                 final Thing thing = Thing.newBuilder().setId(thingId)
                         .setAttributes(attributesExample)
                         .setFeature("the-feature", featurePropertiesExample)
@@ -519,13 +520,13 @@ public final class DittoClientUsageExamples {
 
     private static double getDuration(final long startTimeStamp) {
         final int nanosecondsToMillisecondsFactor = 1_000_000;
-        return ((double) (System.nanoTime() - startTimeStamp)) / nanosecondsToMillisecondsFactor;
+        return (double) (System.nanoTime() - startTimeStamp) / nanosecondsToMillisecondsFactor;
     }
 
     private static void performLoadTestRead(final DittoClient client, final int count, final boolean log)
             throws InterruptedException, ExecutionException {
 
-        final String thingId = NAMESPACE + ":load-read-" + UUID.randomUUID();
+        final ThingId thingId = ThingId.of(NAMESPACE + ":load-read-" + UUID.randomUUID());
         client.twin().create(thingId).get();
         if (log) {
             LOGGER.info("performLoadTestRead: Created new thing: {}", thingId);

@@ -29,6 +29,7 @@ import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.model.base.headers.entitytag.EntityTagMatcher;
 import org.eclipse.ditto.model.messages.Message;
+import org.eclipse.ditto.model.things.ThingId;
 
 import net.javacrumbs.jsonunit.JsonAssert;
 
@@ -52,8 +53,8 @@ public final class MessageAssert extends AbstractAssert<MessageAssert, Message<?
         return assertThatEqual(expectedSubject, actual.getSubject(), "subject");
     }
 
-    public MessageAssert hasThingId(final String expectedThingId) {
-        return assertThatEqual(expectedThingId, actual.getThingId(), "Thing identifier");
+    public MessageAssert hasThingId(final ThingId expectedThingId) {
+        return assertThatEqual(expectedThingId, actual.getThingEntityId(), "Thing identifier");
     }
 
     public MessageAssert hasFeatureId(final String expectedFeatureId) {

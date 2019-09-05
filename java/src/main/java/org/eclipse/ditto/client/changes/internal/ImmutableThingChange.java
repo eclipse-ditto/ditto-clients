@@ -27,10 +27,12 @@ import org.eclipse.ditto.client.changes.ThingChange;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.entity.id.EntityId;
 import org.eclipse.ditto.model.things.Thing;
+import org.eclipse.ditto.model.things.ThingId;
 
 /**
- * Immutable implementation for {@link ThingChange}.
+ * Immutable implementation for {@link org.eclipse.ditto.client.changes.ThingChange}.
  *
  * @since 1.0.0
  */
@@ -43,7 +45,7 @@ public final class ImmutableThingChange implements ThingChange {
     /**
      * Constructs a new {@code ImmutableThingChange} object.
      *
-     * @param thingId the ID of the Thing to which this event belongs.
+     * @param entityId the ID of the Thing to which this event belongs.
      * @param changeAction the operation which caused this change.
      * @param thing the Thing to which this event belongs. May be {@code null}, e.g. in case the thing has been
      * deleted.
@@ -52,17 +54,17 @@ public final class ImmutableThingChange implements ThingChange {
      * @param timestamp the timestamp of the change.
      * @throws NullPointerException if any required argument is {@code null}.
      */
-    public ImmutableThingChange(final String thingId,
+    public ImmutableThingChange(final EntityId entityId,
             final ChangeAction changeAction,
             @Nullable final Thing thing,
             final JsonPointer path,
             final long revision,
             @Nullable final Instant timestamp) {
 
-        checkNotNull(thingId, "Thing ID");
+        checkNotNull(entityId, "Thing ID");
         checkNotNull(changeAction, "change action");
         this.thing = thing;
-        change = new ImmutableChange(thingId, changeAction, path, getJsonValueForThing(thing), revision, timestamp);
+        change = new ImmutableChange(entityId, changeAction, path, getJsonValueForThing(thing), revision, timestamp);
     }
 
     /**
@@ -76,7 +78,7 @@ public final class ImmutableThingChange implements ThingChange {
      * @param timestamp the timestamp of the change.
      * @throws NullPointerException if any required argument is {@code null}.
      */
-    public ImmutableThingChange(final String thingId, final ChangeAction changeAction, @Nullable final Thing thing,
+    public ImmutableThingChange(final ThingId thingId, final ChangeAction changeAction, @Nullable final Thing thing,
             final long revision, @Nullable final Instant timestamp) {
         this(thingId, changeAction, thing, JsonFactory.emptyPointer(), revision, timestamp);
     }
@@ -87,8 +89,8 @@ public final class ImmutableThingChange implements ThingChange {
     }
 
     @Override
-    public String getThingId() {
-        return change.getThingId();
+    public EntityId getEntityId() {
+        return change.getEntityId();
     }
 
     @Override

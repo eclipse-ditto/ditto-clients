@@ -18,6 +18,7 @@ package org.eclipse.ditto.client.changes;
  * @since 1.0.0
  */
 public enum ChangeAction {
+
     /**
      * New entry was for the first time created.
      */

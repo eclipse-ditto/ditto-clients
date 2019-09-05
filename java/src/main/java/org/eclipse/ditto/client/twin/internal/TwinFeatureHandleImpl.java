@@ -21,6 +21,7 @@ import org.eclipse.ditto.client.management.internal.FeatureHandleImpl;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.twin.TwinFeatureHandle;
 import org.eclipse.ditto.client.twin.TwinThingHandle;
+import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 
 /**
@@ -43,7 +44,7 @@ final class TwinFeatureHandleImpl extends FeatureHandleImpl<TwinThingHandle, Twi
      * @param handlerRegistry handler registry
      */
     TwinFeatureHandleImpl(
-            final String thingId,
+            final ThingId thingId,
             final String featureId,
             final MessagingProvider twinMessagingProvider,
             final ResponseForwarder responseForwarder,

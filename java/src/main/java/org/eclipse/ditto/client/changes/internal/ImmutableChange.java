@@ -25,17 +25,18 @@ import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.entity.id.EntityId;
 
 /**
- * An immutable holder for a Thing ID and a {@link ChangeAction}. Objects of this class are meant to be used in a
- * composition scenario.
+ * An immutable holder for an {@link org.eclipse.ditto.model.base.entity.id.EntityId} and a {@link ChangeAction}.
+ * Objects of this class are meant to be used in a composition scenario.
  *
  * @since 1.0.0
  */
 @Immutable
 public final class ImmutableChange implements Change {
 
-    private final String thingId;
+    private final EntityId entityId;
     private final ChangeAction action;
     private final JsonPointer path;
     @Nullable private final JsonValue value;
@@ -43,24 +44,24 @@ public final class ImmutableChange implements Change {
     @Nullable private final Instant timestamp;
 
     /**
-     * Constructs a new {@code ImmutableThingChange} object.
+     * Constructs a new {@code ImmutableChange} object.
      *
-     * @param thingId ID of the changed Thing.
-     * @param action the operation which caused the change.
+     * @param entityId ID of the changed entity.
+     * @param changeAction the operation which caused the change.
      * @param path the JsonPointer of the changed json field.
      * @param value the value of the changed json field.
      * @param revision the revision (change counter) of the change.
      * @param timestamp the timestamp of the change.
      */
-    public ImmutableChange(final String thingId,
-            final ChangeAction action,
+    public ImmutableChange(final EntityId entityId,
+            final ChangeAction changeAction,
             final JsonPointer path,
             @Nullable final JsonValue value,
             final long revision,
             @Nullable final Instant timestamp) {
 
-        this.thingId = argumentNotNull(thingId, "Thing ID");
-        this.action = argumentNotNull(action, "change action");
+        this.entityId = argumentNotNull(entityId, "entityId");
+        this.action = argumentNotNull(changeAction, "changeAction");
         this.path = argumentNotNull(path, "path");
         this.value = value;
         this.revision = revision;
@@ -68,8 +69,8 @@ public final class ImmutableChange implements Change {
     }
 
     @Override
-    public String getThingId() {
-        return thingId;
+    public EntityId getEntityId() {
+        return entityId;
     }
 
     @Override
@@ -106,7 +107,7 @@ public final class ImmutableChange implements Change {
             return false;
         }
         final ImmutableChange that = (ImmutableChange) o;
-        return Objects.equals(thingId, that.thingId) &&
+        return Objects.equals(entityId, that.entityId) &&
                 action == that.action &&
                 Objects.equals(path, that.path) &&
                 Objects.equals(value, that.value) &&
@@ -116,13 +117,13 @@ public final class ImmutableChange implements Change {
 
     @Override
     public int hashCode() {
-        return Objects.hash(thingId, action, path, value, revision, timestamp);
+        return Objects.hash(entityId, action, path, value, revision, timestamp);
     }
 
     @Override
     public String toString() {
         return getClass().getSimpleName() + " [" +
-                "thingId=" + thingId +
+                "entityId=" + entityId +
                 ", action=" + action +
                 ", path=" + path +
                 ", value=" + value +

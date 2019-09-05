@@ -18,6 +18,7 @@ import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable
 
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.entity.id.EntityId;
 import org.junit.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
@@ -33,7 +34,7 @@ public final class ImmutableChangeTest {
     @Test
     public void assertImmutability() {
         assertInstancesOf(ImmutableChange.class, areImmutable(),
-                provided(JsonValue.class, JsonPointer.class).isAlsoImmutable());
+                provided(JsonValue.class, JsonPointer.class, EntityId.class).isAlsoImmutable());
     }
 
     /**

@@ -24,6 +24,7 @@ import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.things.FeatureProperties;
+import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.signals.events.things.FeatureDeleted;
 import org.eclipse.ditto.signals.events.things.FeaturePropertiesCreated;
 import org.eclipse.ditto.signals.events.things.FeaturePropertiesDeleted;
@@ -60,7 +61,7 @@ public final class ImmutableFeatureEventFactory implements FeatureEventFactory {
      * @throws IllegalArgumentException if {@code source}, {@code thingId} or {@code featureId} is empty.
      */
     public static ImmutableFeatureEventFactory getInstance(final String source, final JsonSchemaVersion
-            schemaVersion, final String thingId, final String featureId) {
+            schemaVersion, final ThingId thingId, final String featureId) {
         return new ImmutableFeatureEventFactory(ImmutableThingEventFactory.getInstance(source, schemaVersion, thingId),
                 argumentNotEmpty(featureId, "Feature ID"));
     }
