@@ -25,7 +25,7 @@ node {
         sh "mvn clean deploy javadoc:jar source:jar" +
                 " -T16 --batch-mode --errors" +
                 " -Pinternal-repos -DcreateJavadoc=true" +
-                " -Drevision=${theVersion}"
+                " -Drevision=${theVersion}" +
                 " -Dditto.version=${dittoVersion}"
       }
     }
