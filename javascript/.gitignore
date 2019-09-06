@@ -9,3 +9,4 @@
 .npmrc
 .lerna_backup
 lerna-debug.log
+*.gdsl

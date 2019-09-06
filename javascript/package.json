@@ -17,8 +17,7 @@
     "test:full": "lerna run test:full",
     "test:coverage": "lerna run test:coverage --parallel",
     "test:watch": "lerna run test:watch --parallel",
-    "release:prepare": "lerna version --no-git-tag-version",
-    "release:publish": "lerna publish from-package --yes",
+    "release": "lerna publish --yes --force-publish=*",
     "lint": "lerna run lint --stream"
   },
   "devDependencies": {

@@ -12,11 +12,16 @@
  */
 
 module.exports = {
-    "roots": [
+    roots: [
         "tests"
     ],
-    "transform": {
+    transform: {
         "^.+\\.tsx?$": "ts-jest"
     },
-    "testEnvironment": "node" // use node env instead of jsdom for the node implementation tests
+    testEnvironment: "node", // use node env instead of jsdom for the node implementation tests
+    collectCoverage: true,
+    collectCoverageFrom: [
+        "src/**/*.ts"
+    ],
+    coverageReporters: ["text"]
 };

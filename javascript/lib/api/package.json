@@ -12,9 +12,6 @@
   "files": [
     "dist"
   ],
-  "publishConfig": {
-    "registry": "http://localhost:4873"
-  },
   "devDependencies": {
     "@types/jasmine": "^3.3.12",
     "@types/lodash": "^4.14.134",

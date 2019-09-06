@@ -12,10 +12,15 @@
  */
 
 module.exports = {
-    "roots": [
+    roots: [
         "tests"
     ],
-    "transform": {
+    transform: {
         "^.+\\.tsx?$": "ts-jest"
     },
+    collectCoverage: true,
+    collectCoverageFrom: [
+        "src/**/*.ts"
+    ],
+    coverageReporters: ["text"]
 };

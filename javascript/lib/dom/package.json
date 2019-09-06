@@ -12,9 +12,6 @@
   "files": [
     "dist"
   ],
-  "publishConfig": {
-    "registry": "http://localhost:4873"
-  },
   "dependencies": {
     "@eclipse-ditto/ditto-javascript-client-api_0": "^0.0.1"
   },
