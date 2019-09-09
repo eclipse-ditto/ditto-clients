@@ -379,7 +379,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
                     )
             );
         }
-        sendAdaptable(adaptable);
+        doSendAdaptable(adaptable);
     }
 
     @Nullable
@@ -411,7 +411,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
 
     @Override
     public void sendCommand(final Command<?> command, final TopicPath.Channel channel) {
-        sendAdaptable(tryToConvertToAdaptable(command, channel));
+        doSendAdaptable(tryToConvertToAdaptable(command, channel));
     }
 
     @Nullable
@@ -428,7 +428,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
 
     @Override
     public void sendCommandResponse(final CommandResponse<?> commandResponse, final TopicPath.Channel channel) {
-        sendAdaptable(tryToConvertToAdaptable(commandResponse, channel));
+        doSendAdaptable(tryToConvertToAdaptable(commandResponse, channel));
     }
 
     @Nullable
@@ -447,7 +447,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
 
     @Override
     public void emitEvent(final Event<?> event, final TopicPath.Channel channel) {
-        sendAdaptable(tryToConvertToAdaptable(event, channel));
+        doSendAdaptable(tryToConvertToAdaptable(event, channel));
     }
 
     @Nullable
@@ -815,8 +815,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
         if (customAdaptableResponseFutures.containsKey(correlationId)) {
             customAdaptableResponseFutures.remove(correlationId)
                     .complete(jsonifiableAdaptable);
-        }
-        else if (TopicPath.Channel.TWIN == channel) {
+        } else if (TopicPath.Channel.TWIN == channel) {
             handleTwinMessage(message, correlationId, signal);
         } else if (TopicPath.Channel.LIVE == channel) {
             handleLiveMessage(message, correlationId, signal);
