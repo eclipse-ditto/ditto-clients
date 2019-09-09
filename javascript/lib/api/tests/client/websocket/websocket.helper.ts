@@ -28,21 +28,27 @@ export enum MockWebSocketStates {
 
 export class MockWebSocketStateTracker implements WebSocketStateHandler {
   public readonly events: string[] = [];
+
   connected() {
     this.events.push(MockWebSocketStates.CONNECTED);
   }
+
   buffering(): void {
     this.events.push(MockWebSocketStates.BUFFERING);
   }
+
   backPressure() {
     this.events.push(MockWebSocketStates.BACK_PRESSURE);
   }
+
   reconnecting() {
     this.events.push(MockWebSocketStates.RECONNECTING);
   }
+
   disconnected() {
     this.events.push(MockWebSocketStates.DISCONNECTED);
   }
+
   bufferFull() {
     this.events.push(MockWebSocketStates.BUFFER_FULL);
   }
@@ -76,8 +82,11 @@ export class WebSocketHelper extends Helper {
     .withStateHandler(WebSocketHelper.stateTracker)
     .build();
 
-  public static get standardHeaders() {
-    return { version: 2, 'content-type': 'application/json' };
+  public static get standardHeaders(): { [key: string]: any } {
+    return {
+      version: 2,
+      'content-type': 'application/json'
+    };
   }
 
   public static splitThingId = WebSocketHelper.thing.thingId.split(':')[1];
@@ -87,17 +96,12 @@ export class WebSocketHelper extends Helper {
     const topic = options.topic;
     const path = options.path === undefined ? '/' : options.path;
     this.requester.addResponse(this.buildRequest(options), this.buildResponse(options));
-    if (options.expected !== undefined) {
-      return options.toTest()
-        .then(response => {
-          expect(response).toEqual(options.expected);
-        })
-        .catch(reason => {
-          fail(`${topic} ${path} ${JSON.stringify(reason)}`);
-        });
-    }
+
     return options.toTest()
-      .then(() => {
+      .then(response => {
+        if (options.expected) {
+          expect(response).toEqual(options.expected);
+        }
       })
       .catch(reason => {
         fail(`${topic} ${path}: ${reason}`);

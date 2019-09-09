@@ -127,7 +127,7 @@ describe('Http Policies Handle', () => {
     return H.test({
       toTest: () => handle.putPolicy(policy),
       testBody: policy.toObject(),
-      expected: new PutResponse(policy),
+      expected: new PutResponse(policy, 201, undefined),
       request: baseRequest,
       method: 'put',
       status: 201,
@@ -139,7 +139,7 @@ describe('Http Policies Handle', () => {
     return H.test({
       toTest: () => handle.putEntries(policy.id, entries),
       testBody: entries.toObject(),
-      expected: new PutResponse(entries),
+      expected: new PutResponse(entries, 201, undefined),
       request: `${baseRequest}/entries`,
       method: 'put',
       status: 201,
@@ -151,7 +151,7 @@ describe('Http Policies Handle', () => {
     return H.test({
       toTest: () => handle.putEntry(policy.id, anEntry),
       testBody: anEntry.toObject(),
-      expected: new PutResponse(anEntry),
+      expected: new PutResponse(anEntry, 201, undefined),
       request: `${baseRequest}/entries/${label}`,
       method: 'put',
       status: 201,
@@ -163,7 +163,7 @@ describe('Http Policies Handle', () => {
     return H.test({
       toTest: () => handle.putSubjects(policy.id, label, subjects),
       testBody: subjects.toObject(),
-      expected: new PutResponse(subjects),
+      expected: new PutResponse(subjects, 201, undefined),
       request: `${baseRequest}/entries/${label}/subjects`,
       method: 'put',
       status: 201,
@@ -175,7 +175,7 @@ describe('Http Policies Handle', () => {
     return H.test({
       toTest: () => handle.putSubject(policy.id, label, aSubject),
       testBody: aSubject.toObject(),
-      expected: new PutResponse(aSubject),
+      expected: new PutResponse(aSubject, 201, undefined),
       request: `${baseRequest}/entries/${label}/subjects/${subjectId}`,
       method: 'put',
       status: 201,
@@ -187,7 +187,7 @@ describe('Http Policies Handle', () => {
     return H.test({
       toTest: () => handle.putResources(policy.id, label, resources),
       testBody: resources.toObject(),
-      expected: new PutResponse(resources),
+      expected: new PutResponse(resources, 201, undefined),
       request: `${baseRequest}/entries/${label}/resources`,
       method: 'put',
       status: 201,
@@ -199,7 +199,7 @@ describe('Http Policies Handle', () => {
     return H.test({
       toTest: () => handle.putResource(policy.id, label, aResource),
       testBody: aResource.toObject(),
-      expected: new PutResponse(aResource),
+      expected: new PutResponse(aResource, 201, undefined),
       request: `${baseRequest}/entries/${label}/resources/${resourcePath}`,
       method: 'put',
       status: 201,

@@ -131,7 +131,7 @@ export class HttpClientBuilder extends AbstractBuilder<BuildStepApi1, BuildStepA
     return this;
   }
 
-  withCustomFeaturesHandle(factory: (requestSenderBuilder: HttpRequestSenderBuilder, string: any,
+  withCustomFeaturesHandle(factory: (requestSenderBuilder: HttpRequestSenderBuilder, thingId: string,
                                      customBuilderContext?: CustomBuilderContext) => FeaturesHandle): this {
     this.customHandles = Object.assign(this.customHandles, { featuresHandle: factory });
     return this;

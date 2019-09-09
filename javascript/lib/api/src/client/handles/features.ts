@@ -61,7 +61,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
   public getDefinition(featureId: string, options?: MatchOptions): Promise<string[]> {
     return this.requestFactory.fetchJsonRequest({
       verb: 'GET',
-      parser: o => Object(o).map(obj => String(obj)),
+      parser: o => Object(o).map((obj: any) => String(obj)),
       id: this.thingId,
       path: `features/${featureId}/definition`,
       requestOptions: options
@@ -158,7 +158,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
   public putDefinition(featureId: string, definition: string[], options?: MatchOptions): Promise<PutResponse<string[]>> {
     return this.requestFactory.fetchPutRequest({
       verb: 'PUT',
-      parser: o => Object(o).map(obj => String(obj)),
+      parser: o => o !== undefined ? Object.values(o).map((obj: any) => String(obj)) : [],
       id: this.thingId,
       path: `features/${featureId}/definition`,
       requestOptions: options,

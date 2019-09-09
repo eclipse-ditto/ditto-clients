@@ -19,16 +19,17 @@ const HttpsProxyAgent = require('https-proxy-agent');
  */
 export class ProxyAgent {
   /** The Agent that provides the proxy connection. */
-  public readonly proxyAgent;
+  public readonly proxyAgent: any;
 
-  public constructor(options: ProxyOptions) {
+  public constructor(options: ProxyOptions | undefined) {
+    /* tslint:disable-next-line:strict-boolean-expressions */
     const environmentProxy = process.env.https_proxy || process.env.HTTPS_PROXY;
-    let proxyOptions = environmentProxy ? Url.parse(environmentProxy) : {};
+    let proxyOptions = environmentProxy !== undefined ? Url.parse(environmentProxy) : {};
     if (options !== undefined) {
-      if (options.url) {
+      if (options.url !== undefined) {
         proxyOptions = Url.parse(options.url);
       }
-      if (options.username && options.password) {
+      if (options.username !== undefined && options.password !== undefined) {
         const credentials = `${options.username}:${options.password}`;
         proxyOptions = Object.assign(proxyOptions,
           { headers: { 'Proxy-Authorization': `Basic ${Buffer.from(credentials).toString('base64')}` } });

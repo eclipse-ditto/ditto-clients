@@ -17,8 +17,8 @@ import { DefaultDittoProtocolResponse, DittoProtocolEnvelope, DittoProtocolRespo
  * An abstract factory that builds ResilienceHandlers.
  */
 export abstract class ResilienceHandlerFactory implements ResilienceHandlerFactoryBuildStep, ResilienceHandlerFactoryContextStep {
-  protected webSocketBuilder: WebSocketImplementationBuilderHandler;
-  protected stateHandler: WebSocketStateHandler;
+  protected webSocketBuilder!: WebSocketImplementationBuilderHandler;
+  protected stateHandler!: WebSocketStateHandler;
 
   public withContext(webSocketBuilder: WebSocketImplementationBuilderHandler,
                      stateHandler: WebSocketStateHandler): ResilienceHandlerFactoryBuildStep {
@@ -157,7 +157,7 @@ export abstract class AbstractResilienceHandler implements ResilienceHandler {
   }
 
   private handleWebSocketBindingMessage(message: string): void {
-    this.protocolMessages.get(message.replace(':ACK', '')).resolve();
+    this.protocolMessages.get(message.replace(':ACK', ''))!.resolve();
   }
 
   handleMessage(message: DittoProtocolResponse): void {
@@ -178,9 +178,9 @@ export abstract class AbstractResilienceHandler implements ResilienceHandler {
 
   protected abstract resolveWebSocket(promise: Promise<WebSocketImplementation>): void;
 
-  abstract handleFailure(id: string, reason: any): void;
+  abstract handleFailure(correlationId: string, reason: any): void;
 
-  abstract handleResponse(id: string, response: DittoProtocolResponse): void;
+  abstract handleResponse(correlationId: string | undefined, response: DittoProtocolResponse): void;
 
   abstract send(message: string): Promise<void>;
 

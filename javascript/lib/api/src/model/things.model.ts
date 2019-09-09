@@ -36,11 +36,13 @@ export class Thing extends EntityWithId<Thing> {
    * @param o - The object to parse.
    * @returns The Thing
    */
-  public static fromObject(o: object): Thing {
+  public static fromObject(o: any): Thing {
     if (o === undefined) {
-      return undefined;
+      return o;
     }
+    // @ts-ignore
     return new Thing(o['thingId'], o['policyId'], o['attributes'],
+      // @ts-ignore
       Features.fromObject(o['features']), o['_revision'], o['_modified'], Acl.fromObject(o['acl']));
   }
 
@@ -50,7 +52,7 @@ export class Thing extends EntityWithId<Thing> {
 
   public toObject(): object {
     const featuresObj = this.features ? this.features.toObject() : undefined;
-    const aclObj = this._acl ? this.acl.toObject() : undefined;
+    const aclObj = this._acl ? this._acl.toObject() : undefined;
     return EntityModel.buildObject(new Map<string, any>([
       ['thingId', this.thingId],
       ['policyId', this.policyId],
@@ -70,23 +72,23 @@ export class Thing extends EntityWithId<Thing> {
     return this._thingId;
   }
 
-  get policyId(): string {
+  get policyId(): string | undefined {
     return this._policyId;
   }
 
-  get attributes(): object {
+  get attributes(): object | undefined {
     return this._attributes;
   }
 
-  get features(): Features {
+  get features(): Features | undefined {
     return this._features;
   }
 
-  get _modified(): string {
+  get _modified(): string | undefined {
     return this.__modified;
   }
 
-  get _revision(): number {
+  get _revision(): number | undefined {
     return this.__revision;
   }
 
@@ -94,7 +96,7 @@ export class Thing extends EntityWithId<Thing> {
     return this.separateNamespaceAndThingId().namespace;
   }
 
-  get acl(): Acl {
+  get acl(): Acl | undefined {
     return this._acl;
   }
 
@@ -132,9 +134,9 @@ export class Features extends IndexedEntityModel<Features, Feature> {
    * @param o - The object to parse.
    * @returns The Features
    */
-  public static fromObject(o: object): Features {
+  public static fromObject(o: any): Features {
     if (o === undefined) {
-      return undefined;
+      return o;
     }
     return new Features(IndexedEntityModel.fromPlainObject(o, Feature.fromObject));
   }
@@ -158,10 +160,11 @@ export class Feature extends EntityWithId<Feature> {
    * @param key - The key of the new Feature.
    * @returns The Feature
    */
-  public static fromObject(o: object, key: string): Feature {
+  public static fromObject(o: any, key: string): Feature {
     if (o === undefined) {
-      return undefined;
+      return o;
     }
+    // @ts-ignore
     return new Feature(key, o['definition'], o['properties']);
   }
 
@@ -176,11 +179,11 @@ export class Feature extends EntityWithId<Feature> {
     return this._id;
   }
 
-  get definition(): string[] {
+  get definition(): string[] | undefined {
     return this._definition;
   }
 
-  get properties(): object {
+  get properties(): object | undefined {
     return this._properties;
   }
 }
@@ -201,9 +204,9 @@ export class Acl extends IndexedEntityModel<Acl, AclEntry> {
    * @param o - The object to parse.
    * @returns The Acl
    */
-  public static fromObject(o: object): Acl {
+  public static fromObject(o: any): Acl {
     if (o === undefined) {
-      return undefined;
+      return o;
     }
     return new Acl(IndexedEntityModel.fromPlainObject(o, AclEntry.fromObject));
   }
@@ -225,10 +228,11 @@ export class AclEntry extends EntityWithId<AclEntry> {
    * @param id - The id of the new AclEntry.
    * @returns The Feature
    */
-  public static fromObject(o: object, id: string): AclEntry {
+  public static fromObject(o: any, id: string): AclEntry {
     if (o === undefined) {
-      return undefined;
+      return o;
     }
+    // @ts-ignore
     return new AclEntry(id, o['READ'], o['WRITE'], o['ADMINISTRATE']);
   }
 

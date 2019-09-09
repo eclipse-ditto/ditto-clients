@@ -22,8 +22,7 @@ import {
 } from '@eclipse-ditto/ditto-javascript-client-api_0';
 import { ClientOptions } from 'ws';
 import { ProxyAgent } from './proxy-settings';
-
-const WebSocket = require('ws');
+import WebSocket = require('ws');
 
 /**
  * Converts a Map to a plain js object.
@@ -42,7 +41,7 @@ const mapToPlainObject = (aMap: Map<string, string>): { [key: string]: string } 
 export class NodeWebSocket implements WebSocketImplementation {
   private connected = true;
 
-  private constructor(private webSocket,
+  private constructor(private webSocket: WebSocket,
                       private readonly webSocketUrl: string,
                       private readonly handler: ResponseHandler,
                       private readonly options: ClientOptions) {
@@ -114,14 +113,14 @@ export class NodeWebSocket implements WebSocketImplementation {
    */
   private setHandles(): void {
     this.webSocket.on('message', data => {
-      this.handler.handleInput(data);
+      this.handler.handleInput(data.toString());
     });
     this.webSocket.on('close', () => {
       this.connected = false;
       this.handler.handleClose(Promise.resolve(this.reconnect(1000)));
     });
     this.webSocket.on('error', event => {
-      this.handler.handleError(event);
+      this.handler.handleError(event.toString());
     });
   }
 }
@@ -130,8 +129,8 @@ export class NodeWebSocket implements WebSocketImplementation {
  * Builder for the Node implementation of a web socket.
  */
 export class NodeWebSocketBuilder implements WebSocketImplementationBuilderUrl, WebSocketImplementationBuilderHandler {
-  private authProviders: AuthProvider[];
-  private dittoUrl: DittoURL;
+  private authProviders!: AuthProvider[];
+  private dittoUrl!: DittoURL;
 
   public constructor(private readonly agent: ProxyAgent) {
   }

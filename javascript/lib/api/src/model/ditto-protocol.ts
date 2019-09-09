@@ -11,8 +11,10 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-export { ApiVersion, Channel, DittoHeaders, ReservedDittoProtocolDittoHeaders, DittoProtocolEnvelope, DittoProtocolResponse,
-  DefaultDittoProtocolEnvelope, DefaultDittoProtocolResponse };
+export {
+  ApiVersion, Channel, DittoHeaders, ReservedDittoProtocolDittoHeaders, DittoProtocolEnvelope, DittoProtocolResponse,
+  DefaultDittoProtocolEnvelope, DefaultDittoProtocolResponse
+};
 
 enum ApiVersion {
   V1 = 1,
@@ -72,7 +74,7 @@ interface DittoProtocolResponse {
   topic: string;
   path: string;
   status: number;
-  headers: object;
+  headers: { [key: string]: any };
   value: object;
 
   correlationId(): string | undefined;
@@ -80,7 +82,7 @@ interface DittoProtocolResponse {
 
 class DefaultDittoProtocolResponse implements DittoProtocolResponse {
   topic: string;
-  headers: object;
+  headers: { [key: string]: any };
   path: string;
   value: object;
   status: number;
@@ -106,7 +108,7 @@ class DefaultDittoProtocolResponse implements DittoProtocolResponse {
     const parsed = this.tryParseJson(json);
     return new DefaultDittoProtocolResponse(
       parsed['topic'],
-      parsed['headers'] ? parsed['headers'] : {},
+      parsed['headers'] !== undefined ? parsed['headers'] : {},
       parsed['path'],
       parsed['value'],
       parsed['status']
@@ -114,7 +116,7 @@ class DefaultDittoProtocolResponse implements DittoProtocolResponse {
   }
 
   correlationId(): string | undefined {
-    if (this.headers) {
+    if (this.headers !== undefined) {
       return this.headers[ReservedDittoProtocolDittoHeaders.CORRELATION_ID];
     }
   }

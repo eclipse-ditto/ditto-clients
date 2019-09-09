@@ -30,8 +30,8 @@ export class WebSocketRequestSender extends RequestSender {
     super();
   }
 
-  private static buildPath(path: string) {
-    if (path) {
+  private static buildPath(path: string | undefined) {
+    if (path !== undefined) {
       return path.startsWith('/') ? path : `/${path}`;
     }
     return '/';
@@ -45,8 +45,8 @@ export class WebSocketRequestSender extends RequestSender {
    * @param subject - The subject of the message.
    * @returns The path for a Message request
    */
-  private static buildMessagePath(path: string, mailbox: string, subject: string) {
-    return `${path ? path : ''}/${mailbox}/messages/${subject}`;
+  private static buildMessagePath(path: string | undefined, mailbox: string, subject: string) {
+    return `${path !== undefined ? path : ''}/${mailbox}/messages/${subject}`;
   }
 
   /**
@@ -55,12 +55,15 @@ export class WebSocketRequestSender extends RequestSender {
    * @param idWithNamespace - The id to separate.
    * @returns The Array containing namespace and name
    */
-  private static separateNamespace(idWithNamespace: string): string[] {
-    const splitName = idWithNamespace.split(':');
-    const namespace = splitName[0];
-    splitName.shift();
-    const name = splitName.join('');
-    return [namespace, name];
+  private static separateNamespace(idWithNamespace: string | undefined): string[] {
+    if (idWithNamespace !== undefined) {
+      const splitName = idWithNamespace.split(':');
+      const namespace = splitName[0];
+      splitName.shift();
+      const name = splitName.join('');
+      return [namespace, name];
+    }
+    return ['', ''];
   }
 
   /**
@@ -85,7 +88,7 @@ export class WebSocketRequestSender extends RequestSender {
    *
    * @returns The headers
    */
-  private get baseHeaders(): object {
+  private get baseHeaders(): { [key: string]: any } {
     return { version: this.apiVersion };
   }
 
@@ -93,7 +96,7 @@ export class WebSocketRequestSender extends RequestSender {
     const topic = this.buildTopic(options.id, this.group, 'commands', WebSocketRequestSender.translateVerb(options.verb));
     const path = WebSocketRequestSender.buildPath(options.path);
     const headers = this.buildHeaders(options.requestOptions, { 'content-type': 'application/json' });
-    return this.requester.sendRequest(topic,  path, options.payload, headers)
+    return this.requester.sendRequest(topic, path, options.payload, headers)
       .then(response => {
         if (response.status >= 200 && response.status < 300) {
           return Promise.resolve(response);
@@ -135,10 +138,11 @@ export class WebSocketRequestSender extends RequestSender {
    * @returns The id of the subscription. It can be used to delete the subscription.
    */
   public subscribe(options: SubscribeRequest): string {
-    const topic = this.buildTopic(options.id, 'things', options.type, options.action ? options.action : '');
-    const path = options.path ? options.path : '';
+    const topic = this.buildTopic(options.id, 'things', options.type,
+      options.action !== undefined ? options.action : '');
+    const path = options.path !== undefined ? options.path : '';
     const subResources = typeof options.subResources === 'boolean' ? options.subResources : true;
-    return this.requester.subscribe(new StandardSubscription(options. callback, topic, path, subResources));
+    return this.requester.subscribe(new StandardSubscription(options.callback, topic, path, subResources));
   }
 
   /**
@@ -148,10 +152,10 @@ export class WebSocketRequestSender extends RequestSender {
    * @param additionalHeaders - Additional headers to add.
    * @returns The combined headers
    */
-  private buildHeaders(options: RequestOptions, additionalHeaders?: object) {
+  private buildHeaders(options: RequestOptions | undefined, additionalHeaders?: object) {
     let headers = this.baseHeaders;
     if (options !== undefined) {
-      const headersMap = options.getHeaders();
+      const headersMap: Map<string, string> = options.getHeaders();
       headersMap.forEach((v, k) => headers[k] = v);
       headers = Object.assign(headers, additionalHeaders);
       return headers;
@@ -179,7 +183,7 @@ export class WebSocketRequestSender extends RequestSender {
    * @param action - The action to perform.
    * @returns The topic for a request
    */
-  private buildTopic(id: string, group: string, criterion: string, action: string) {
+  private buildTopic(id: string | undefined, group: string, criterion: string, action: string) {
     const splitName: string[] = WebSocketRequestSender.separateNamespace(id);
     return `${splitName[0]}/${splitName[1]}/${group}/${this.channel}/${criterion}/${action}`;
   }

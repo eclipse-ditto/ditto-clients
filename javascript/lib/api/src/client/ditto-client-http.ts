@@ -97,23 +97,23 @@ export class DefaultDittoHttpClient extends AbstractDittoClient<HttpRequestSende
   }
 
   public getFeaturesHandle(thingId: string, customBuildContext?: CustomBuilderContext): FeaturesHandle {
-    return this.handles.featuresHandle(this.builder, thingId, customBuildContext);
+    return this.handles.featuresHandle!(this.builder, thingId, customBuildContext);
   }
 
   public getThingsHandle(customBuildContext?: CustomBuilderContext): HttpThingsHandleV1 & HttpThingsHandleV2 {
-    return this.handles.thingsHandle(this.builder, customBuildContext) as HttpThingsHandleV1 & HttpThingsHandleV2;
+    return this.handles.thingsHandle!(this.builder, customBuildContext) as HttpThingsHandleV1 & HttpThingsHandleV2;
   }
 
   public getMessagesHandle(customBuildContext?: CustomBuilderContext): HttpMessagesHandle {
-    return this.handles.messagesHandle(this.builder, customBuildContext);
+    return this.handles.messagesHandle!(this.builder, customBuildContext);
   }
 
   public getPoliciesHandle(customBuildContext?: CustomBuilderContext): PoliciesHandle {
-    return this.handles.policiesHandle(this.builder, customBuildContext);
+    return this.handles.policiesHandle!(this.builder, customBuildContext);
   }
 
   public getSearchHandle(customBuildContext?: CustomBuilderContext): SearchHandle {
-    return this.handles.searchHandle(this.builder, customBuildContext);
+    return this.handles.searchHandle!(this.builder, customBuildContext);
   }
 
 }

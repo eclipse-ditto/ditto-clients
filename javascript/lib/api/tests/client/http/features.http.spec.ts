@@ -80,7 +80,7 @@ describe('Http Features Handle', () => {
     return H.test({
       toTest: () => handle.putFeatures(H.features),
       testBody: H.features.toObject(),
-      expected: new PutResponse(H.features),
+      expected: new PutResponse(H.features, 201, undefined),
       request: baseRequest,
       method: 'put',
       status: 201,
@@ -92,7 +92,7 @@ describe('Http Features Handle', () => {
     return H.test({
       toTest: () => handle.putFeature(H.feature),
       testBody: H.feature.toObject(),
-      expected: new PutResponse(H.feature),
+      expected: new PutResponse(H.feature, 201, undefined),
       request: `${baseRequest}/${H.feature.id}`,
       method: 'put',
       status: 201,
@@ -104,7 +104,7 @@ describe('Http Features Handle', () => {
     return H.test({
       toTest: () => handle.putDefinition(H.feature.id, H.definition),
       testBody: H.definition,
-      expected: new PutResponse(H.definition),
+      expected: new PutResponse(H.definition, 201, undefined),
       request: `${baseRequest}/${H.feature.id}/definition`,
       method: 'put',
       status: 201,
@@ -116,7 +116,7 @@ describe('Http Features Handle', () => {
     return H.test({
       toTest: () => handle.putProperties(H.feature.id, H.properties),
       testBody: H.properties,
-      expected: new PutResponse(H.properties),
+      expected: new PutResponse(H.properties, 201, undefined),
       request: `${baseRequest}/${H.feature.id}/properties`,
       method: 'put',
       status: 201,
@@ -128,7 +128,7 @@ describe('Http Features Handle', () => {
     return H.test({
       toTest: () => handle.putProperty(H.feature.id, H.propertyPath, H.property),
       testBody: H.property,
-      expected: new PutResponse(H.property),
+      expected: new PutResponse(H.property, 201, undefined),
       request: `${baseRequest}/${H.feature.id}/properties/${H.propertyPath}`,
       method: 'put',
       status: 201,

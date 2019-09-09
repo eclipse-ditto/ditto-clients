@@ -105,8 +105,8 @@ export class FetchWebSocket implements WebSocketImplementation {
  * Builder for the Browser implementation of a web socket.
  */
 export class FetchWebSocketBuilder implements WebSocketImplementationBuilderUrl, WebSocketImplementationBuilderHandler {
-  private dittoUrl: DittoURL;
-  private authProviders: AuthProvider[];
+  private dittoUrl!: DittoURL;
+  private authProviders!: AuthProvider[];
 
   public constructor() {
   }

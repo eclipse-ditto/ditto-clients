@@ -27,9 +27,9 @@ export interface GenericResponse {
 }
 
 export class PutResponse<T> implements GenericResponse {
-  public constructor(private readonly _value?: T,
-                     private readonly _status?: number,
-                     private readonly _headers?: Map<string, string>) {
+  public constructor(private readonly _value: T,
+                     private readonly _status: number,
+                     private readonly _headers: Map<string, string>) {
   }
 
   public wasCreated(): boolean {
@@ -71,10 +71,11 @@ export class SearchThingsResponse extends EntityModel<SearchThingsResponse> {
    * @param o - The object to parse.
    * @returns The SearchThingsResponse
    */
-  public static fromObject(o: object): SearchThingsResponse {
+  public static fromObject(o: any): SearchThingsResponse {
     if (o === undefined) {
-      return undefined;
+      return o;
     }
+    // @ts-ignore
     return new SearchThingsResponse(o['items'].map((t: object) => Thing.fromObject(t)), o['nextPageOffset']);
   }
 
@@ -91,10 +92,10 @@ export class SearchThingsResponse extends EntityModel<SearchThingsResponse> {
   }
 
   get nextPageOffset(): number {
-    return this._nextPageOffset;
+    return this._nextPageOffset !== undefined ? this._nextPageOffset : 0;
   }
 
   get cursor(): string {
-    return this._cursor;
+    return this._cursor !== undefined ? this._cursor : '';
   }
 }

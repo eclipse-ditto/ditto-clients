@@ -162,12 +162,13 @@ export class ResilienceRequestBuffer {
       for (id of this.outstanding) {
         if (this.polling.indexOf(id) < 0) {
           this.polling.push(id);
+          // @ts-ignore
           webSocket.executeCommand(this.requests.get(id));
           return true;
         }
       }
-      return false;
     }
+    return false;
   }
 
   /**

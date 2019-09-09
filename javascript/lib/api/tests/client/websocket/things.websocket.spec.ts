@@ -14,7 +14,7 @@
 /* tslint:disable:no-duplicate-string */
 import { PutResponse } from '../../../src/model/response';
 import { FieldsOptions } from '../../../src/options/request.options';
-import { WebSocketHelper as H } from './websocket.helper';
+import { WebSocketHelper, WebSocketHelper as H } from './websocket.helper';
 
 describe('WebSocket Things Handle', () => {
   const handle = H.thingsClient.getThingsHandle();
@@ -61,7 +61,8 @@ describe('WebSocket Things Handle', () => {
       status: 201,
       requestBody: H.thing.toObject(),
       responseBody: H.thing.toObject(),
-      expected: new PutResponse(H.thing)
+      responseHeaders: {},
+      expected: new PutResponse(H.thing, 201, new Map())
     });
   });
 

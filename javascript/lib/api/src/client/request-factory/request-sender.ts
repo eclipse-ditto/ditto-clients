@@ -42,10 +42,10 @@ export abstract class RequestSender {
     return this.fetchRequest(options)
       .then(response => {
         if (response.status === 201) {
-          return new PutResponse(options.parser(response.body));
+          return new PutResponse(options.parser(response.body), response.status, response.headers);
         }
         if (response.status === 204) {
-          return new PutResponse();
+          return new PutResponse(options.parser(response.body), response.status, response.headers);
         }
         return Promise.reject(`Received unknown status code: ${response.status}`);
       });

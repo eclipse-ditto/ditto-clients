@@ -35,8 +35,9 @@ export interface DittoWebSocketClient extends DittoClient<WebSocketThingsHandle,
 }
 
 export interface DittoWebSocketClientHandles extends DittoClientHandles<WebSocketRequestSenderFactory> {
-  thingsHandle?: (WebSocketRequestSenderFactory, customBuildContext?: CustomBuilderContext) => WebSocketThingsHandle;
-  eventsHandle?: (WebSocketRequestSenderFactory, WebSocketRequestHandle, customBuildContext?: CustomBuilderContext) => EventsHandle;
+  thingsHandle?: (requestSender: WebSocketRequestSenderFactory, customBuildContext?: CustomBuilderContext) => WebSocketThingsHandle;
+  eventsHandle?: (requestSender: WebSocketRequestSenderFactory, requestHandler: WebSocketRequestHandler,
+                  customBuildContext?: CustomBuilderContext) => EventsHandle;
 }
 
 // tslint:disable-next-line:no-empty-interface
@@ -61,9 +62,10 @@ export interface DittoWebSocketLiveClient extends DittoWebSocketClient {
 }
 
 export interface DittoWebSocketLiveClientHandles extends DittoWebSocketClientHandles {
-  messagesHandle?: (WebSocketRequestSenderFactory, WebSocketRequestHandle,
+  messagesHandle?: (requestSenderFactory: WebSocketRequestSenderFactory, requestHandler: WebSocketRequestHandler,
                     customBuildContext?: CustomBuilderContext) => WebSocketMessagesHandle;
-  commandsHandle?: (WebSocketRequestSenderFactory, WebSocketRequestHandle, customBuildContext?: CustomBuilderContext) => CommandsHandle;
+  commandsHandle?: (requestSenderFactory: WebSocketRequestSenderFactory, requestHandler: WebSocketRequestHandler,
+                    customBuildContext?: CustomBuilderContext) => CommandsHandle;
 }
 
 export type AllDittoWebSocketHandles = DittoWebSocketLiveClientHandles;
@@ -100,18 +102,18 @@ export class DefaultDittoWebSocketClient extends AbstractDittoClient<WebSocketRe
   }
 
   public getThingsHandle(customBuildContext?: CustomBuilderContext): WebSocketThingsHandle {
-    return this.handles.thingsHandle(this.builder, customBuildContext);
+    return this.handles.thingsHandle!(this.builder, customBuildContext);
   }
 
   public getEventsHandle(customBuildContext?: CustomBuilderContext): EventsHandle {
-    return this.handles.eventsHandle(this.builder, this.responseHandler, customBuildContext);
+    return this.handles.eventsHandle!(this.builder, this.responseHandler, customBuildContext);
   }
 
   public getMessagesHandle(customBuildContext?: CustomBuilderContext): WebSocketMessagesHandle {
-    return this.handles.messagesHandle(this.builder, this.responseHandler, customBuildContext);
+    return this.handles.messagesHandle!(this.builder, this.responseHandler, customBuildContext);
   }
 
   public getCommandsHandle(customBuildContext?: CustomBuilderContext): CommandsHandle {
-    return this.handles.commandsHandle(this.builder, this.responseHandler, customBuildContext);
+    return this.handles.commandsHandle!(this.builder, this.responseHandler, customBuildContext);
   }
 }

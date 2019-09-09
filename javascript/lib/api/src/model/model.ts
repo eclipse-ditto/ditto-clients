@@ -26,6 +26,7 @@ export abstract class EntityModel<T extends EntityModel<T>> {
    */
   static objectToArray<T extends EntityWithId<T>>(o: Object, parser: (obj: Object, key: string) => T): T[] {
     return Object.keys(o).map((key: string) => {
+      // @ts-ignore
       return parser(o[key], key);
     });
   }
@@ -37,7 +38,7 @@ export abstract class EntityModel<T extends EntityModel<T>> {
    * @returns The object containing all elements of the content that aren't undefined.
    */
   protected static buildObject(content: Map<string, any>): object {
-    const res = {};
+    const res: { [key: string]: any } = {};
     content.forEach((v, k) => {
       if (v !== undefined && v !== '') {
         res[k] = v;
@@ -60,14 +61,14 @@ export abstract class EntityModel<T extends EntityModel<T>> {
    *
    * @returns The object representation of the Entity.
    */
-  abstract toObject(): Object;
+  abstract toObject(): Object | undefined;
 }
 
 /**
  * Entity with an 'id' field
  */
 export abstract class EntityWithId<T extends EntityWithId<T>> extends EntityModel<T> {
-  id: string;
+  id!: string;
 
   equals(toCompare: T): boolean {
     return super.equals(toCompare) && this.id === toCompare.id;
@@ -79,7 +80,7 @@ export abstract class EntityWithId<T extends EntityWithId<T>> extends EntityMode
  * E.g. an entity that has user-defined keys but the values are always of the same type.
  * In typescript such interfaces are called 'index signatures'.
  */
-interface IndexedEntityModelType<T> {
+export interface IndexedEntityModelType<T> {
   [index: string]: T;
 }
 
@@ -91,7 +92,7 @@ interface IndexedEntityModelType<T> {
 export abstract class IndexedEntityModel<T extends IndexedEntityModel<T, V>, V>
   extends EntityModel<IndexedEntityModel<T, V>> {
 
-  protected constructor(private readonly _elements: IndexedEntityModelType<V>) {
+  protected constructor(private readonly _elements: IndexedEntityModelType<V> | undefined) {
     super();
   }
 
@@ -102,13 +103,15 @@ export abstract class IndexedEntityModel<T extends IndexedEntityModel<T, V>, V>
    * @param mapValue - how to get the value from an objects value.
    * @param mapKey - how to get the key from an objects key.
    */
-  static fromPlainObject<T>(objectToMap: Object,
+  static fromPlainObject<T>(objectToMap: Object | undefined,
                             mapValue: (value: any, key: string) => T,
-                            mapKey: (key: string, value: any) => string = key => key): IndexedEntityModelType<T> {
+                            mapKey: (key: string, value: any) => string = key => key): IndexedEntityModelType<T> | undefined {
     if (objectToMap) {
       const entries = Object.keys(objectToMap)
         .map(k => {
+          // @ts-ignore
           const theKey = mapKey(k, objectToMap[k]);
+          // @ts-ignore
           const theVal = mapValue(objectToMap[k], k);
           return { [theKey]: theVal };
         });
@@ -123,7 +126,7 @@ export abstract class IndexedEntityModel<T extends IndexedEntityModel<T, V>, V>
    * @param objectToMap - the object to map.
    * @param removeType - function that is called to remove the type of the objects values.
    */
-  static toPlainObject<T>(objectToMap: IndexedEntityModelType<T>, removeType: (T) => any) {
+  static toPlainObject<T>(objectToMap: IndexedEntityModelType<T>, removeType: (typedObject: T) => any) {
     const entries = Object.keys(objectToMap)
       .map(k => {
         return { [k]: removeType(objectToMap[k]) };
@@ -136,8 +139,9 @@ export abstract class IndexedEntityModel<T extends IndexedEntityModel<T, V>, V>
    *
    * @returns The object representation of the Entity.
    */
-  toObject(): Object {
+  toObject(): Object | undefined {
     if (this._elements) {
+      // @ts-ignore
       return IndexedEntityModel.toPlainObject(this._elements, element => element.toObject());
     }
     return undefined;

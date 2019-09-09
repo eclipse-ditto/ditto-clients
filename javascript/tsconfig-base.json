@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "declaration": true,
-    "strict": false,
+    "strict": true,
     "forceConsistentCasingInFileNames": true,
     "locale": "en",
     "moduleResolution": "node",

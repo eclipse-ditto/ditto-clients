@@ -46,7 +46,7 @@ export class HttpRequestSender extends RequestSender {
    * @param options - The options provided in the request.
    * @returns The request URL
    */
-  private buildUrl(id: string, path: string, options: RequestOptions): string {
+  private buildUrl(id: string | undefined, path: string | undefined, options: RequestOptions | undefined): string {
     let urlSuffix = id === undefined ? '' : `/${id}`;
     urlSuffix = path === undefined ? urlSuffix : `${urlSuffix}/${path}`;
     if (options !== undefined && options.getOptions().size > 0) {
@@ -69,7 +69,7 @@ export class HttpRequestSender extends RequestSender {
    * @param options - The options to provided in the request.
    * @returns The combined headers
    */
-  private buildHeader(options: RequestOptions): Map<string, string> {
+  private buildHeader(options: RequestOptions | undefined): Map<string, string> {
     const headers: DittoHeaders = new Map();
     if (options) {
       options.getHeaders().forEach((v, k) => headers.set(k, v));

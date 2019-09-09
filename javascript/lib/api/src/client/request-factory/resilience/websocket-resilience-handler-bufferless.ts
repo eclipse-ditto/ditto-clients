@@ -31,7 +31,7 @@ import { DittoProtocolEnvelope, DittoProtocolResponse } from '../../../model/dit
 export class BufferlessResilienceHandler extends AbstractResilienceHandler {
 
   private readonly requests: Map<string, string> = new Map();
-  private webSocket: WebSocketImplementation;
+  private webSocket!: WebSocketImplementation;
 
   public constructor(webSocketBuilder: WebSocketImplementationBuilderHandler,
                      stateHandler: WebSocketStateHandler,

@@ -140,7 +140,7 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
     }
     return this.requestFactory.fetchJsonRequest({
       verb: 'GET',
-      parser: o => Object(o).map(obj => Thing.fromObject(obj)),
+      parser: o => Object(o).map((obj: any) => Thing.fromObject(obj)),
       requestOptions: actualOptions
     });
   }

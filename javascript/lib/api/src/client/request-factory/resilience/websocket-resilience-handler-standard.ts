@@ -33,7 +33,7 @@ export class StandardResilienceHandler extends AbstractResilienceHandler {
 
   private readonly requestBuffer: ResilienceRequestBuffer;
   private readonly messageBuffer: ResilienceMessageBuffer;
-  private webSocket: WebSocketImplementation;
+  private webSocket!: WebSocketImplementation;
 
   public constructor(webSocketBuilder: WebSocketImplementationBuilderHandler,
                      stateHandler: WebSocketStateHandler,

@@ -30,7 +30,7 @@ export interface MockWebSocket extends WebSocketImplementation {
 }
 
 export class DefaultMockWebSocket implements MockWebSocket {
-  private readonly requests: Map<object, object> = new Map();
+  private readonly requests: Map<any, any> = new Map();
   private readonly listener: Map<object, () => void> = new Map();
   private readonly errorResponse: object = {
     status: -1,
@@ -57,7 +57,6 @@ export class DefaultMockWebSocket implements MockWebSocket {
     }
     this.requests.forEach((response, testRequest) => {
       if (isEqual(testRequest, requestObj)) {
-        const result = response;
         response['headers']['correlation-id'] = correlationId;
         this.handler.handleInput(JSON.stringify(response));
       }

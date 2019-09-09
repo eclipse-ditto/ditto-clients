@@ -39,7 +39,7 @@ export interface DittoClient<T extends ThingsHandle, U extends FeaturesHandle> {
 
 export interface DittoClientHandles<T extends RequestSenderFactory> {
   thingsHandle?: (requestSenderBuilder: T, customBuildContext?: CustomBuilderContext) => ThingsHandle;
-  featuresHandle?: (requestSenderBuilder: T, string, customBuildContext?: CustomBuilderContext) => FeaturesHandle;
+  featuresHandle?: (requestSenderBuilder: T, thingId: string, customBuildContext?: CustomBuilderContext) => FeaturesHandle;
 }
 
 export class AbstractDittoClient<T extends RequestSenderFactory, H extends DittoClientHandles<T>> {
@@ -48,10 +48,10 @@ export class AbstractDittoClient<T extends RequestSenderFactory, H extends Ditto
   }
 
   public getFeaturesHandle(thingId: string, customBuildContext?: CustomBuilderContext): FeaturesHandle {
-    return this.handles.featuresHandle(this.builder, thingId, customBuildContext);
+    return this.handles.featuresHandle!(this.builder, thingId, customBuildContext);
   }
 
   public getThingsHandle(customBuildContext?: CustomBuilderContext): ThingsHandle {
-    return this.handles.thingsHandle(this.builder, customBuildContext);
+    return this.handles.thingsHandle!(this.builder, customBuildContext);
   }
 }

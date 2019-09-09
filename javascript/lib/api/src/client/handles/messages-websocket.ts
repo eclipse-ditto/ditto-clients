@@ -506,7 +506,7 @@ export class DefaultWebSocketMessagesHandle implements WebSocketMessagesHandle {
    */
   buildSubscription(options: DirectionSubscribeRequest): string {
     this.checkMessages();
-    const originalPath = options['path'] ? options['path'] : '';
+    const originalPath = options['path'] !== undefined ? options['path'] : '';
     const path = options['direction'] ? `${originalPath}/${options['direction']}` : originalPath;
     options['path'] = path;
     return this.requestFactory.subscribe(options);

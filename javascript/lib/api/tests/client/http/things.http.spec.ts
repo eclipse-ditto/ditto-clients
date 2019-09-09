@@ -145,7 +145,7 @@ describe('Http Things Handle', () => {
     return H.test({
       toTest: () => handleV2.putThing(H.thing),
       testBody: H.thing.toObject(),
-      expected: new PutResponse(H.thing),
+      expected: new PutResponse(H.thing, 201, undefined),
       request: `${baseRequest}`,
       method: 'put',
       status: 201,
@@ -157,7 +157,7 @@ describe('Http Things Handle', () => {
     return H.test({
       toTest: () => handleV2.putPolicyId(H.thing.thingId, 'ID'),
       testBody: 'ID',
-      expected: new PutResponse('ID'),
+      expected: new PutResponse('ID', 201, undefined),
       request: `${baseRequest}/policyId`,
       method: 'put',
       status: 201,
@@ -169,7 +169,7 @@ describe('Http Things Handle', () => {
     return H.test({
       toTest: () => handleV2.putAttributes(H.thing.thingId, H.attributes),
       testBody: H.attributes,
-      expected: new PutResponse(H.attributes),
+      expected: new PutResponse(H.attributes, 201, undefined),
       request: `${baseRequest}/attributes`,
       method: 'put',
       status: 201,
@@ -204,7 +204,7 @@ describe('Http Things Handle', () => {
     return H.test({
       toTest: () => handleV1.putAclEntry(H.thing.thingId, anAclEntry),
       testBody: anAclEntry.toObject(),
-      expected: new PutResponse(anAclEntry),
+      expected: new PutResponse(anAclEntry, 201, undefined),
       request: `${baseRequest}/acl/${authorizationSubject}`,
       method: 'put',
       status: 201,

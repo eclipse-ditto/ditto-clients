@@ -102,9 +102,9 @@ export class WebSocketClientBuilder extends AbstractBuilder<WebSocketBufferStep,
   implements WebSocketBufferStep, WebSocketChannelStep, WebSocketBuildStepLive,
     WebSocketBuildStepTwin {
 
-  private channel: Channel;
+  private channel!: Channel;
   private stateHandler: WebSocketStateHandler;
-  private resilienceFactory: ResilienceHandlerFactoryContextStep;
+  private resilienceFactory!: ResilienceHandlerFactoryContextStep;
   private customHandles: AllDittoWebSocketHandles;
 
   private constructor(private readonly builder: WebSocketImplementationBuilderUrl) {
@@ -163,7 +163,7 @@ export class WebSocketClientBuilder extends AbstractBuilder<WebSocketBufferStep,
     return this;
   }
 
-  withCustomFeaturesHandle(factory: (requestSenderFactory: WebSocketRequestSenderFactory, string,
+  withCustomFeaturesHandle(factory: (requestSenderFactory: WebSocketRequestSenderFactory, thingsId: string,
                                      customBuilderContext?: CustomBuilderContext) => FeaturesHandle): this {
     this.customHandles = Object.assign(this.customHandles, { featuresHandle: factory });
     return this;

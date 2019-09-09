@@ -43,6 +43,7 @@
       true,
       "rxjs/Rx"
     ],
+    "import-name": false,
     "import-spacing": true,
     "indent": [
       true,
@@ -88,7 +89,7 @@
     ],
     "no-implicit-dependencies": true,
     "no-misused-new": true,
-    "no-non-null-assertion": true,
+    "no-non-null-assertion": false,
     "no-shadowed-variable": true,
     "no-string-literal": false,
     "no-string-throw": true,
@@ -97,7 +98,6 @@
     "no-unnecessary-initializer": true,
     "no-unused-expression": true,
     "no-use-before-declare": false,
-    // disabled after discussion in team
     "no-var-keyword": true,
     "object-literal-sort-keys": false,
     "one-line": [

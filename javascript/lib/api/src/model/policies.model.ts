@@ -30,15 +30,16 @@ export class Policy extends EntityWithId<Policy> {
    * @param id - The id of the new Policy.
    * @returns The Policy
    */
-  public static fromObject(o: Object, id: string): Policy {
+  public static fromObject(o: any, id: string): Policy {
     if (o === undefined) {
-      return undefined;
+      return o;
     }
+    // @ts-ignore
     return new Policy(id, Entries.fromObject(o['entries']));
   }
 
   public toObject(): Object {
-    const entriesObj = this.entries ? this.entries.toObject() : undefined;
+    const entriesObj = this.entries !== undefined ? this.entries.toObject() : undefined;
     return EntityModel.buildObject(new Map<string, any>([
       ['entries', entriesObj]
     ]));
@@ -62,7 +63,7 @@ interface EntriesType {
  */
 export class Entries extends IndexedEntityModel<Entries, Entry> {
 
-  public constructor(readonly entries: EntriesType) {
+  public constructor(readonly entries: EntriesType | undefined) {
     super(entries);
   }
 
@@ -72,9 +73,9 @@ export class Entries extends IndexedEntityModel<Entries, Entry> {
    * @param o - The object to parse.
    * @returns The Entries
    */
-  public static fromObject(o: Object): Entries {
+  public static fromObject(o: any): Entries {
     if (o === undefined) {
-      return undefined;
+      return o;
     }
     return new Entries(IndexedEntityModel.fromPlainObject(o, Entry.fromObject));
   }
@@ -99,16 +100,17 @@ export class Entry extends EntityWithId<Entry> {
    * @param label - The label of the new Entry.
    * @returns The Entry
    */
-  public static fromObject(o: Object, label: string): Entry {
+  public static fromObject(o: any, label: string): Entry {
     if (o === undefined) {
-      return undefined;
+      return o;
     }
+    // @ts-ignore
     return new Entry(label, Subjects.fromObject(o['subjects']), Resources.fromObject(o['resources']));
   }
 
   public toObject(): Object {
-    const subjectsObj = this.subjects ? this.subjects.toObject() : undefined;
-    const resourcesObj = this.resources ? this.resources.toObject() : undefined;
+    const subjectsObj = this.subjects !== undefined ? this.subjects.toObject() : undefined;
+    const resourcesObj = this.resources !== undefined ? this.resources.toObject() : undefined;
     return EntityModel.buildObject(new Map<string, any>([
       ['subjects', subjectsObj],
       ['resources', resourcesObj]
@@ -137,7 +139,7 @@ interface SubjectsType {
  */
 export class Subjects extends IndexedEntityModel<Subjects, Subject> {
 
-  public constructor(readonly subjects: SubjectsType) {
+  public constructor(readonly subjects: SubjectsType | undefined) {
     super(subjects);
   }
 
@@ -147,9 +149,9 @@ export class Subjects extends IndexedEntityModel<Subjects, Subject> {
    * @param o - The object to parse.
    * @returns The Subjects
    */
-  public static fromObject(o: Object): Subjects {
+  public static fromObject(o: any): Subjects {
     if (o === undefined) {
-      return undefined;
+      return o;
     }
     return new Subjects(IndexedEntityModel.fromPlainObject(o, Subject.fromObject, key => key));
   }
@@ -164,7 +166,7 @@ interface ResourcesType {
  */
 export class Resources extends IndexedEntityModel<Resources, Resource> {
 
-  public constructor(readonly resources: ResourcesType) {
+  public constructor(readonly resources: ResourcesType | undefined) {
     super(resources);
   }
 
@@ -174,9 +176,9 @@ export class Resources extends IndexedEntityModel<Resources, Resource> {
    * @param o - The object to parse.
    * @returns The Resources
    */
-  public static fromObject(o: Object) {
+  public static fromObject(o: any): Resources {
     if (o === undefined) {
-      return undefined;
+      return o;
     }
     return new Resources(IndexedEntityModel.fromPlainObject(o, Resource.fromObject));
   }
@@ -225,10 +227,11 @@ export class Subject extends EntityWithId<Subject> {
    * @param id - The id of the new Subject.
    * @returns The Subject
    */
-  public static fromObject(o: Object, id: string): Subject {
+  public static fromObject(o: any, id: string): Subject {
     if (o === undefined) {
-      return undefined;
+      return o;
     }
+    // @ts-ignore
     return new Subject(SubjectId.fromString(id), o['type']);
   }
 
@@ -270,10 +273,11 @@ export class Resource extends EntityWithId<Resource> {
    * @param id - The id of the new Resource.
    * @returns The Resource
    */
-  public static fromObject(o: Object, id: string): Resource {
+  public static fromObject(o: any, id: string): Resource {
     if (o === undefined) {
-      return undefined;
+      return o;
     }
+    // @ts-ignore
     return new Resource(id, o['grant'], o['revoke']);
   }
 

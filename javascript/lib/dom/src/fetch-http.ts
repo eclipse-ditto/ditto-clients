@@ -19,7 +19,7 @@ export class FetchRequester implements HttpRequester {
     return fetch(this.prepareRequest(method, url, header, body))
       .then(response => {
         const headers = new Map<string, string>();
-        response.headers.forEach((v, k) => headers[k] = v);
+        response.headers.forEach((v, k) => headers.set(k, v));
         return response.json()
           .then(
             json => ({ headers, status: response.status, body: json }),

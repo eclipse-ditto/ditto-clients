@@ -143,7 +143,7 @@ interface CustomFeaturesHandleStep<R, H extends FeaturesHandle> extends BuildSte
    * Use a custom features handle.
    * @param factory - factory for building the custom features handle.
    */
-  withCustomFeaturesHandle(factory: (requestSenderBuilder: R, string, customBuilderContext?: CustomBuilderContext) => H): this;
+  withCustomFeaturesHandle(factory: (requestSenderBuilder: R, thingId: string, customBuilderContext?: CustomBuilderContext) => H): this;
 }
 
 /**
@@ -211,10 +211,10 @@ interface CustomSearchHandleStep<R, H extends SearchHandle> extends BuildStep {
  */
 abstract class AbstractBuilder<T extends BuildStep, U extends BuildStep> implements ProtocolStep<T, U>, EnvironmentStep<T, U>,
   AuthenticationStep<T, U>, ApiVersionStep<T, U> {
-  protected domain: string;
-  protected apiVersion: ApiVersion;
-  protected authProviders: AuthProvider[];
-  protected tls: boolean;
+  protected domain!: string;
+  protected apiVersion!: ApiVersion;
+  protected authProviders!: AuthProvider[];
+  protected tls!: boolean;
 
 
   withTls(): EnvironmentStep<T, U> {

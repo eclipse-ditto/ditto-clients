@@ -172,13 +172,13 @@ describe('SearchThingsResponse', () => {
 
 describe('PutResponse', () => {
   it('stores a body', () => {
-    const toTest = new PutResponse(thing);
+    const toTest = new PutResponse(thing, 201, new Map());
     expect(toTest.wasCreated()).toBe(true);
     expect(toTest.wasUpdated()).toBe(false);
     expect(toTest.body).toEqual(thing);
   });
   it('handles an empty response', () => {
-    const toTest = new PutResponse();
+    const toTest = new PutResponse(undefined, 201, new Map());
     expect(toTest.wasCreated()).toBe(false);
     expect(toTest.wasUpdated()).toBe(true);
     expect(toTest.body).toBe(undefined);

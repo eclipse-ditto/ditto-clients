@@ -74,7 +74,7 @@ export class WebSocketRequestHandler implements RequestHandler {
     return new Promise<GenericResponse>((resolve, reject) => {
       const correlationId = this.getRequestId();
       this.requests.set(correlationId, { resolve, reject });
-      const headers = header === undefined ? {} : header;
+      const headers: { [key: string]: any } = header === undefined ? {} : header;
       headers['correlation-id'] = correlationId;
       const request = WebSocketRequestHandler.buildRequest(topic, path, value, headers);
       this.resilienceHandler.sendRequest(correlationId, request);
@@ -127,7 +127,7 @@ export class WebSocketRequestHandler implements RequestHandler {
   }
 
   public handleInput(id: string, message: DittoProtocolResponse): void {
-    if (message.headers) {
+    if (message.headers !== null) {
       if (this.requests.has(id)) {
         this.handleResponse(id, message);
       } else {
@@ -141,7 +141,9 @@ export class WebSocketRequestHandler implements RequestHandler {
   public handleError(id: string, cause: object): void {
     const request = this.requests.get(id);
     this.requests.delete(id);
-    request.reject(cause);
+    if (request) {
+      request.reject(cause);
+    }
   }
 
   public handleMessage(message: DittoProtocolResponse): boolean {
@@ -169,7 +171,9 @@ export class WebSocketRequestHandler implements RequestHandler {
       return map;
     }, new Map<string, string>());
     headers.delete('correlation-id');
-    options.resolve({ headers, status: response.status, body: response.value });
+    if (options) {
+      options.resolve({ headers, status: response.status, body: response.value });
+    }
   }
 
   /**
@@ -235,10 +239,12 @@ abstract class Subscription {
    * @param message - The message to send.
    */
   callback(message: DittoProtocolResponse): void {
+    const splittedTopic = message.topic.split('/');
+    const action: string = splittedTopic.length > 0 ? splittedTopic.pop()! : '';
     this._callback({
+      action,
       topic: message.topic,
       path: message.path,
-      action: message.topic.split('/').pop(),
       value: message.value
     });
   }
@@ -250,9 +256,9 @@ abstract class Subscription {
 export class StandardSubscription extends Subscription {
 
   public constructor(callback: (message: ProtocolResponseValue) => any,
-                      private readonly topic: string,
-                      private readonly path: string,
-                      private readonly subResources: boolean) {
+                     private readonly topic: string,
+                     private readonly path: string,
+                     private readonly subResources: boolean) {
     super(callback);
 
   }
@@ -288,10 +294,10 @@ export class StandardSubscription extends Subscription {
 /**
  * A subscription to all messages of a type.
  */
-export class AllSubscription extends Subscription  {
+export class AllSubscription extends Subscription {
 
   public constructor(callback: (message: ProtocolResponseValue) => any,
-                      private readonly type: string) {
+                     private readonly type: string) {
     super(callback);
   }
 

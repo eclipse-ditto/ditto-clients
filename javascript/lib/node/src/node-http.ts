@@ -14,43 +14,56 @@
 import * as https from 'https';
 import { HttpRequester, GenericResponse } from '@eclipse-ditto/ditto-javascript-client-api_0';
 import { ProxyAgent } from './proxy-settings';
+import { IncomingMessage } from 'http';
 
 /**
  * NodeJs implementation of a Http Requester.
  */
 export class NodeRequester implements HttpRequester {
-  private readonly proxyAgent;
+  private readonly proxyAgent: any;
 
   public constructor(agent: ProxyAgent) {
     this.proxyAgent = agent.proxyAgent;
   }
 
+  private static createResponseHandler(resolve: (value?: (PromiseLike<GenericResponse> | GenericResponse)) => void,
+                                       reject: (reason?: any) => void):
+    (response: IncomingMessage) => void {
+    return response => {
+      this.handleResponse(resolve, reject, response);
+    };
+  }
+
+  private static handleResponse(resolve: (value?: (PromiseLike<GenericResponse> | GenericResponse)) => void,
+                                reject: (reason?: any) => void,
+                                response: IncomingMessage): void {
+    let data = '';
+    response.on('data', chunk => {
+      data += chunk;
+    });
+    response.on('end', () => {
+      let body: object;
+      if (data === '') {
+        body = {};
+      } else {
+        body = JSON.parse(data);
+      }
+      const status: number = response.statusCode !== undefined ? response.statusCode : 0;
+      if (status < 200 || status >= 300) {
+        reject(body);
+      }
+      const headersObj = response.headers;
+      const headers = Object.keys(headersObj).reduce((map, name) => {
+        map.set(name, headersObj[name] as string);
+        return map;
+      }, new Map<string, string>());
+      resolve({ status, headers, body });
+    });
+  }
+
   public async doRequest(method: string, url: string, header: Map<string, string>, payload: string): Promise<GenericResponse> {
     return new Promise<GenericResponse>(((resolve, reject) => {
-      const req = https.request(this.buildRequest(method, url, header, payload), res => {
-        let data = '';
-        res.on('data', chunk => {
-          data += chunk;
-        });
-        res.on('end', () => {
-          let body: object;
-          if (data === '') {
-            body = {};
-          } else {
-            body = JSON.parse(data);
-          }
-          const status = res.statusCode;
-          if (status < 200 || status >= 300) {
-            reject(body);
-          }
-          const headersObj = res.headers;
-          const headers = Object.keys(headersObj).reduce((map, name) => {
-            map[name] = headersObj[name];
-            return map;
-          }, new Map<string, string>());
-          resolve({ status, headers, body });
-        });
-      });
+      const req = https.request(this.buildRequest(method, url, header, payload), NodeRequester.createResponseHandler(resolve, reject));
       req.on('error', e => {
         throw new Error(String(e));
       });
@@ -74,10 +87,10 @@ export class NodeRequester implements HttpRequester {
     if (body !== undefined && body !== '') {
       header.set('Content-Length', Buffer.byteLength(body).toString());
     }
-    const headers = new Object();
+    const headers: { [key: string]: any } = {};
     header.forEach((v, k) => headers[k] = v);
     const parsedUrl = new URL(url);
-    const request = {
+    const request: { [key: string]: any } = {
       method,
       headers,
       host: parsedUrl.host,
