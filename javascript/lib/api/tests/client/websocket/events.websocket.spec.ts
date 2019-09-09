@@ -16,6 +16,7 @@ import { EventsHelper as H } from './events.helper';
 
 
 describe('WebSocket Events Handle', () => {
+  jest.setTimeout(5000); // we need to tell jest, that it should also wait on promises ... default is 0 ms
   const action = 'created';
   const topic = `${H.splitNamespace}/${H.splitThingId}/things/live/events/${action}`;
   const handle = H.thingsClient.getEventsHandle();

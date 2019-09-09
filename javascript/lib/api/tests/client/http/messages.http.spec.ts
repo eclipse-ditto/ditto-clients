@@ -24,7 +24,7 @@ describe('Http Messages Handle', () => {
     return H.test({
       toTest: () => handle.claim(H.thing.thingId, message),
       testBody: { content: 'Information' },
-      expected: { status: 200, headers: undefined, body: { content: 'Information' } },
+      expected: { status: 200, headers: undefined as Map<string, string>, body: { content: 'Information' } },
       request: `${baseRequest}/inbox/claim`,
       method: 'post',
       status: 200,

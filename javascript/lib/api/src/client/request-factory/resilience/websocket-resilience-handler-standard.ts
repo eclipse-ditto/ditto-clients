@@ -140,6 +140,8 @@ export class StandardResilienceHandler extends AbstractResilienceHandler {
     if (this.requestBuffer.addOutstanding(id, (reason: object) => this.rejectRequest(id, reason))) {
       if (!this.stateHandler.isBuffering()) {
         this.poll();
+      } else {
+        setTimeout(() => this.poll(), 500);
       }
     } else {
       this.stateHandler.bufferFull();

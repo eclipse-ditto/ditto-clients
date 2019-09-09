@@ -80,14 +80,16 @@ export class DefaultMockWebSocket implements MockWebSocket {
     this.listener.set(request, callback);
   }
 
-  closeWebSocket(time?: number): void {
-    this.handler.handleClose(new Promise((resolve, reject) => {
+  closeWebSocket(time?: number): Promise<WebSocketImplementation> {
+    const onConnected: Promise<WebSocketImplementation> = new Promise((resolve, reject) => {
       if (time) {
         setTimeout(() => resolve(this), time);
       } else {
         reject('Connection was closed');
       }
-    }));
+    });
+    this.handler.handleClose(onConnected);
+    return onConnected;
   }
 }
 

@@ -126,10 +126,10 @@ describe('Count Options', () => {
   it('combines options', () => {
     countOptions.withNamespaces('A', 'B').withRawFilter('C');
     const toTest = countOptions.getOptions();
-    const expectedNamespaces = `namespaces=${encodeURIComponent('A,B')}`;
-    const expectedFilter = 'filter=C';
-    expect(toTest.get('namespaces')).toEqual(encodeURIComponent('A,B'));
-    expect(toTest.get('filter')).toEqual('C');
+    const expectedNamespaces = encodeURIComponent('A,B');
+    const expectedFilter = 'C';
+    expect(toTest.get('namespaces')).toEqual(expectedNamespaces);
+    expect(toTest.get('filter')).toEqual(expectedFilter);
   });
   it('overrides combined options', () => {
     countOptions.withNamespaces('A', 'B').withRawFilter('C');

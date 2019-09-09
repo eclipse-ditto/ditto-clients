@@ -24,6 +24,7 @@ const testWithoutResponse: (method: () => void, request: Request) => Promise<voi
 };
 
 describe('WebSocket Messages Handle', () => {
+  jest.setTimeout(5000); // we need to tell jest, that it should also wait on promises ... default is 0 ms
   const handle = H.thingsClient.getMessagesHandle();
   const type = 'text/plain';
   const message = 'A Message!';

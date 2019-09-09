@@ -58,11 +58,11 @@ describe('HttpClientBuilder', () => {
   it('passes custom handle factories through to the client', () => {
     const dummyCustomContext = { foo: 'bar' };
     const dummySearchHandle: SearchHandle = DefaultSearchHandle.getInstance(requestSenderFactory);
-    const customContextSpy = jasmine.createSpyObj('customContextSpy', ['called']);
+    const called = jest.fn();
     const createCustomSearchHandle: ((requestSenderBuilder: HttpRequestSenderBuilder,
                                       customBuilderContext?: CustomBuilderContext) => SearchHandle) =
       (requestSenderBuilder, customBuilderContext) => {
-        customContextSpy.called(customBuilderContext);
+        called(customBuilderContext);
         return dummySearchHandle;
       };
 
@@ -75,7 +75,7 @@ describe('HttpClientBuilder', () => {
       .build();
 
     expect(dittoHttpClientV2.getSearchHandle(dummyCustomContext)).toEqual(dummySearchHandle);
-    expect(customContextSpy.called).toHaveBeenCalledWith(dummyCustomContext);
+    expect(called).toHaveBeenCalledWith(dummyCustomContext);
   });
 
 });

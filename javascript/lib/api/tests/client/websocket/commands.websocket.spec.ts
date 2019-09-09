@@ -15,7 +15,8 @@ import { ProtocolResponseValue } from '../../../src/client/request-factory/webso
 import { EventsHelper as H } from './events.helper';
 
 
-describe('WebSocket Events Hanlde', () => {
+describe('WebSocket Commands Handle', () => {
+  jest.setTimeout(5000); // we need to tell jest, that it should also wait on promises ... default is 0 ms
   const action = 'create';
   const topic = `${H.splitNamespace}/${H.splitThingId}/things/live/commands/${action}`;
   const handle = H.thingsClient.getCommandsHandle();

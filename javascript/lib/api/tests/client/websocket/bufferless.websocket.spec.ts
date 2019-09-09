@@ -18,8 +18,11 @@ import {
 import { MockWebSocketStates, MockWebSocketStateTracker, WebSocketHelper as H } from './websocket.helper';
 import { DefaultMockWebSocket } from './websocket.mock';
 import { DittoWebSocketLiveClient } from '../../../src/client/ditto-client-websocket';
+import { removeDisabledFailures } from 'tslint';
 
 describe('WebSocket Resilience Handler without buffer', () => {
+  jest.setTimeout(5000); // we need to tell jest, that it should also wait on promises ... default is 0 ms
+
   const topic = `${H.splitNamespace}/${H.splitThingId}/things/live/commands/retrieve`;
   const pressureBody = {
     status: 429,
@@ -32,20 +35,10 @@ describe('WebSocket Resilience Handler without buffer', () => {
   const messageSubject = 'A SUBJECT';
   const message = 'CONTENT';
   const contentType = 'text/plain';
-  const messageRequest = {
-    topic: `${H.splitNamespace}/${H.splitThingId}/things/live/messages/${messageSubject}`,
-    path: `/inbox/messages/${messageSubject}`,
-    headers: Object.assign(H.standardHeaders, { 'content-type': contentType })
-  };
   const pressureResponse = H.buildResponse({
     topic,
     status: 429,
     responseBody: pressureBody
-  });
-  const thingResponse = H.buildResponse({
-    topic,
-    status: 200,
-    responseBody: H.thing.toObject()
   });
   let requester: DefaultMockWebSocket;
   let thingsClient: DittoWebSocketLiveClient;
@@ -68,7 +61,6 @@ describe('WebSocket Resilience Handler without buffer', () => {
   it('rejects messages for backpressure', async () => {
     const handle = thingsClient.getThingsHandle();
     requester.addResponse(thingRequest, pressureResponse);
-    await new Promise(resolve => setTimeout(resolve, 1));
     return handle.getThing(H.thing.thingId)
       .then(() => {
         fail('Request with backpressure was successful');
@@ -79,11 +71,9 @@ describe('WebSocket Resilience Handler without buffer', () => {
       });
   });
 
-  it('rejects messages while reconnecting', async () => {
+  it('rejects messages while reconnecting', async (done) => {
     const handle = thingsClient.getMessagesHandle();
-    await new Promise(resolve => setTimeout(resolve, 1));
     requester.closeWebSocket(1000);
-    await new Promise(resolve => setTimeout(resolve, 1));
     handle.messageToThingWithoutResponse(H.thing.thingId, messageSubject, message, contentType)
       .then(() => {
         fail('Request while reconnecting was successful');
@@ -91,16 +81,21 @@ describe('WebSocket Resilience Handler without buffer', () => {
       .catch(error => {
         expect(error).toEqual(connectionUnavailableError);
       });
+
     await new Promise(resolve => setTimeout(resolve, 1100));
-    await handle.messageToThingWithoutResponse(H.thing.thingId, messageSubject, message, contentType);
-    expect(stateTracker.events).toEqual([MockWebSocketStates.CONNECTED, MockWebSocketStates.RECONNECTING, MockWebSocketStates.CONNECTED]);
+    handle.messageToThingWithoutResponse(H.thing.thingId, messageSubject, message, contentType)
+      .finally(() => {
+        expect(stateTracker.events).toEqual([MockWebSocketStates.CONNECTED, MockWebSocketStates.RECONNECTING, MockWebSocketStates.CONNECTED]);
+        done();
+      });
+
   });
 
   it('disconnects', async () => {
     const handle = thingsClient.getMessagesHandle();
-    await new Promise(resolve => setTimeout(resolve, 1));
-    requester.closeWebSocket();
-    await new Promise(resolve => setTimeout(resolve, 1));
+    await requester.closeWebSocket()
+      .catch(() => {// we expect an exception due to the implementation of websocket.mock.ts
+      });
     return handle.messageToThingWithoutResponse(H.thing.thingId, messageSubject, message, contentType)
       .then(() => {
         fail('Request on closed connection worked');
