@@ -30,6 +30,20 @@ node {
       }
     }
   }
+
+  stage('SonarQube analysis') {
+    withSonarQubeEnv('ECS1 Sonar Installation') {
+      withMaven(
+              maven: 'maven-3.6.0',
+              jdk: 'JDK8-Oracle',
+              mavenLocalRepo: theMvnRepo) {
+
+        sh "mvn --batch-mode --errors sonar:sonar -Dsonar.branch.name=${theBranch}" +
+                " -Drevision=${theVersion}" +
+                " -Dditto.version=${dittoVersion}"
+      }
+    }
+  }
 }
 
 def askForDittoVersionToUse(defaultVersion) {
