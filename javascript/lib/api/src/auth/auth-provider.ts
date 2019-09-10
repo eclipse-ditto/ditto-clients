@@ -116,8 +116,7 @@ class ImmutableURL implements DittoURL {
 
   toString(): string {
     const theParams = this.queryParams.length > 0 ? `?${this.queryParams.join('&')}` : '';
-    const theEncodedParams = encodeURIComponent(theParams);
-    return `${this.protocol}://${this.domain}${this.path}${theEncodedParams}`;
+    return `${this.protocol}://${this.domain}${this.path}${theParams}`;
   }
 
 }
