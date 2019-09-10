@@ -32,7 +32,7 @@ node {
   }
 
   stage('SonarQube analysis') {
-    withSonarQubeEnv($SONAR_QUBE_ENV) {
+    withSonarQubeEnv(${env.SONAR_QUBE_ENV}) {
       withMaven(
               maven: 'maven-3.6.0',
               jdk: 'JDK8-Oracle',
