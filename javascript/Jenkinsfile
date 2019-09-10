@@ -83,8 +83,7 @@ pipeline {
         stage('Test') {
             steps {
                 dir('javascript') {
-                    // TODO: ignoring until chrome is available on the machine or until tests have been migrated to jest
-//                    sh 'npm test'
+                    sh 'npm test'
                     junit allowEmptyResults: true, testResults: '**/target/test-report.xml'
                 }
             }
