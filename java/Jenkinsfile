@@ -38,7 +38,7 @@ node {
               jdk: 'JDK8-Oracle',
               mavenLocalRepo: theMvnRepo) {
 
-        sh "mvn --batch-mode --errors sonar:sonar -Dsonar.branch.name=${theBranch} -Dsonar.projectBaseDir=java" +
+        sh "mvn -f java/pom.xml --batch-mode --errors sonar:sonar -Dsonar.branch.name=${theBranch} " +
                 " -Drevision=${theVersion}" +
                 " -Dditto.version=${dittoVersion}"
       }
