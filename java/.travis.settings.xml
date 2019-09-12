@@ -22,9 +22,14 @@
                 <repository>
                     <id>eclipse-repo</id>
                     <name>Eclipse Repo</name>
-                    <url>https://repo.eclipse.org</url>
+                    <url>https://repo.eclipse.org/content/groups/ditto</url>
+                    <releases>
+                        <enabled>true</enabled>
+                        <updatePolicy>never</updatePolicy>
+                    </releases>
                     <snapshots>
                         <enabled>true</enabled>
+                        <updatePolicy>never</updatePolicy>
                     </snapshots>
                 </repository>
             </repositories>
