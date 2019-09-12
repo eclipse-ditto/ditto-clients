@@ -33,6 +33,7 @@ import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.json.FieldType;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
+import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.signals.events.things.AttributeCreated;
 import org.eclipse.ditto.signals.events.things.AttributeDeleted;
 import org.eclipse.ditto.signals.events.things.AttributeModified;
@@ -89,8 +90,8 @@ public final class ImmutableGlobalEventFactoryTest {
      */
     @Test
     public void assertImmutability() {
-        assertInstancesOf(ImmutableGlobalEventFactory.class, areImmutable(), provided(JsonSchemaVersion.class)
-                .isAlsoImmutable());
+        assertInstancesOf(ImmutableGlobalEventFactory.class, areImmutable(),
+                provided(JsonSchemaVersion.class, ThingId.class).areAlsoImmutable());
     }
 
     /**

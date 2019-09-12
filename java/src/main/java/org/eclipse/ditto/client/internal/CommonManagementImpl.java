@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -54,6 +53,7 @@ import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Features;
 import org.eclipse.ditto.model.things.Thing;
+import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
@@ -184,7 +184,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
     }
 
     @Override
-    public T forId(final String thingId) {
+    public T forId(final ThingId thingId) {
         argumentNotNull(thingId);
         return handlerRegistry.thingHandleForThingId(thingId, () -> createThingHandle(thingId));
     }
@@ -195,7 +195,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
      * @param thingId the thing id
      * @return the thing handle
      */
-    protected abstract T createThingHandle(final String thingId);
+    protected abstract T createThingHandle(final ThingId thingId);
 
     /**
      * Returns the created {@link ThingHandle} for the passed {@code thingId} if one was created.
@@ -203,12 +203,12 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
      * @param thingId the Thing ID to look for in the already created ThingHandles.
      * @return the created thing handle
      */
-    protected Optional<T> getThingHandle(final String thingId) {
+    protected Optional<T> getThingHandle(final ThingId thingId) {
         return handlerRegistry.getThingHandle(thingId);
     }
 
     @Override
-    public F forFeature(final String thingId, final String featureId) {
+    public F forFeature(final ThingId thingId, final String featureId) {
         argumentNotNull(thingId);
         argumentNotNull(featureId);
         return handlerRegistry.featureHandleForFeatureId(thingId, featureId, () ->
@@ -222,7 +222,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
      * @param featureId the feature id
      * @return the feature handle
      */
-    protected abstract F createFeatureHandle(final String thingId, final String featureId);
+    protected abstract F createFeatureHandle(final ThingId thingId, final String featureId);
 
     /**
      * Returns the created {@link FeatureHandle} for the passed {@code thingId} and {@code featureId} if one was
@@ -232,24 +232,27 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
      * @param featureId the Feature ID to look for in the already created FeatureHandles.
      * @return the created feature handle
      */
-    protected Optional<F> getFeatureHandle(final String thingId, final String featureId) {
+    protected Optional<F> getFeatureHandle(final ThingId thingId, final String featureId) {
         return handlerRegistry.getFeatureHandle(thingId, featureId);
     }
 
     @Override
     public CompletableFuture<Thing> create(final Option<?>... options) {
-        // as the backend adds the default namespace, we can here simply use the empty namespace:
-        final String thingId = ":" + UUID.randomUUID().toString();
-        final Thing thing = ThingsModelFactory.newThingBuilder().setId(thingId).build();
+        // as the backend adds the default namespace, we can here simply use the empty namespace.
+        final Thing thing = ThingsModelFactory.newThingBuilder()
+                .setId(ThingId.generateRandom())
+                .build();
         return create(thing, options);
     }
 
     @Override
-    public CompletableFuture<Thing> create(final String thingId, final Option<?>... options) {
+    public CompletableFuture<Thing> create(final ThingId thingId, final Option<?>... options) {
         argumentNotNull(thingId);
         argumentNotEmpty(thingId);
 
-        final Thing thing = ThingsModelFactory.newThingBuilder().setId(thingId).build();
+        final Thing thing = ThingsModelFactory.newThingBuilder()
+                .setId(ThingId.of(thingId))
+                .build();
         return create(thing, options);
     }
 
@@ -264,7 +267,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
     @Override
     public CompletableFuture<Optional<Thing>> put(final Thing thing, final Option<?>... options) {
         argumentNotNull(thing);
-        getThingIdOrThrow(thing);
+        assertThatThingHasId(thing);
 
         return new SendTerminator<Optional<Thing>>(messagingProvider, responseForwarder, channel,
                 outgoingMessageFactory.putThing(thing, options)).applyModify(response -> {
@@ -294,7 +297,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
     @Override
     public CompletableFuture<Void> update(final Thing thing, final Option<?>... options) {
         argumentNotNull(thing);
-        getThingIdOrThrow(thing);
+        assertThatThingHasId(thing);
 
         return new SendTerminator<Void>(messagingProvider, responseForwarder, channel,
                 outgoingMessageFactory.updateThing(thing, options)).applyVoid();
@@ -311,8 +314,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
     @Override
     public CompletableFuture<Thing> create(final Thing thing, final Option<?>... options) {
         argumentNotNull(thing);
-
-        getThingIdOrThrow(thing);
+        assertThatThingHasId(thing);
 
         final ThingCommand command = outgoingMessageFactory.createThing(thing, options);
 
@@ -328,7 +330,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
     }
 
     @Override
-    public CompletableFuture<Void> delete(final String thingId, final Option<?>... options) {
+    public CompletableFuture<Void> delete(final ThingId thingId, final Option<?>... options) {
         argumentNotNull(thingId);
 
         final ThingCommand command = outgoingMessageFactory.deleteThing(thingId, options);
@@ -336,18 +338,18 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
     }
 
     @Override
-    public CompletableFuture<List<Thing>> retrieve(final Iterable<String> thingIds) {
+    public CompletableFuture<List<Thing>> retrieve(final Iterable<ThingId> thingIds) {
         argumentNotNull(thingIds);
 
         return sendRetrieveThingsMessage(outgoingMessageFactory.retrieveThings(thingIds));
     }
 
     @Override
-    public CompletableFuture<List<Thing>> retrieve(final String thingId, final String... thingIds) {
+    public CompletableFuture<List<Thing>> retrieve(final ThingId thingId, final ThingId... thingIds) {
         argumentNotNull(thingId);
         argumentNotNull(thingIds);
 
-        final Collection<String> thingIdList = new ArrayList<>(1 + thingIds.length);
+        final Collection<ThingId> thingIdList = new ArrayList<>(1 + thingIds.length);
         thingIdList.add(thingId);
         Collections.addAll(thingIdList, thingIds);
 
@@ -355,13 +357,13 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
     }
 
     @Override
-    public CompletableFuture<List<Thing>> retrieve(final JsonFieldSelector fieldSelector, final String thingId,
-            final String... thingIds) {
+    public CompletableFuture<List<Thing>> retrieve(final JsonFieldSelector fieldSelector, final ThingId thingId,
+            final ThingId... thingIds) {
 
         argumentNotNull(thingId);
         argumentNotNull(thingIds);
 
-        final Collection<String> thingIdList = new ArrayList<>(1 + thingIds.length);
+        final Collection<ThingId> thingIdList = new ArrayList<>(1 + thingIds.length);
         thingIdList.add(thingId);
         Collections.addAll(thingIdList, thingIds);
 
@@ -370,7 +372,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
 
     @Override
     public CompletableFuture<List<Thing>> retrieve(final JsonFieldSelector fieldSelector,
-            final Iterable<String> thingIds) {
+            final Iterable<ThingId> thingIds) {
 
         argumentNotNull(fieldSelector);
         argumentNotNull(thingIds);
@@ -384,7 +386,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/attributes"),
                 Change.class, handler,
-                (change, value, path, params) -> new ImmutableChange(change.getThingId(), change.getAction(), path,
+                (change, value, path, params) -> new ImmutableChange(change.getEntityId(), change.getAction(), path,
                         value, change.getRevision(), change.getTimestamp().orElse(null))
         );
     }
@@ -398,7 +400,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/attributes{0}", attrPath), Change.class,
                 handler,
-                (change, value, path, params) -> new ImmutableChange(change.getThingId(), change.getAction(), path,
+                (change, value, path, params) -> new ImmutableChange(change.getEntityId(), change.getAction(), path,
                         value, change.getRevision(), change.getTimestamp().orElse(null))
         );
     }
@@ -414,7 +416,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
                             ThingsModelFactory.newFeatureBuilder(value.asObject())
                                     .useId(params.get("{featureId}"))
                                     .build() : null;
-                    return new ImmutableFeatureChange(change.getThingId(), change.getAction(), feature, path,
+                    return new ImmutableFeatureChange(change.getEntityId(), change.getAction(), feature, path,
                             change.getRevision(), change.getTimestamp().orElse(null));
                 });
     }
@@ -430,7 +432,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
                 FeatureChange.class, handler, (change, value, path, params) -> {
                     final Feature feature = value != null ?
                             ThingsModelFactory.newFeatureBuilder(value.asObject()).useId(featureId).build() : null;
-                    return new ImmutableFeatureChange(change.getThingId(), change.getAction(), feature, path,
+                    return new ImmutableFeatureChange(change.getEntityId(), change.getAction(), feature, path,
                             change.getRevision(), change.getTimestamp().orElse(null));
                 });
     }
@@ -442,7 +444,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/features"),
                 FeaturesChange.class, handler, (change, value, path, params) -> {
                     final Features features = value != null ? ThingsModelFactory.newFeatures(value.asObject()) : null;
-                    return new ImmutableFeaturesChange(change.getThingId(), change.getAction(), features, path,
+                    return new ImmutableFeaturesChange(change.getEntityId(), change.getAction(), features, path,
                             change.getRevision(), change.getTimestamp().orElse(null));
                 });
     }
@@ -457,7 +459,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/features/{0}/properties", featureId),
                 Change.class,
                 handler,
-                (change, value, path, params) -> new ImmutableChange(change.getThingId(), change.getAction(), path,
+                (change, value, path, params) -> new ImmutableChange(change.getEntityId(), change.getAction(), path,
                         value, change.getRevision(), change.getTimestamp().orElse(null))
         );
     }
@@ -475,7 +477,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/features/{0}/properties{1}", featureId,
                         propertyPath),
                 Change.class, handler,
-                (change, value, path, params) -> new ImmutableChange(change.getThingId(), change.getAction(), path,
+                (change, value, path, params) -> new ImmutableChange(change.getEntityId(), change.getAction(), path,
                         value, change.getRevision(), change.getTimestamp().orElse(null))
         );
     }
@@ -487,13 +489,13 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'"),
                 ThingChange.class, handler, (change, value, path, params) -> {
                     final Thing thing = null != value ? ThingsModelFactory.newThing(value.asObject()) : null;
-                    return new ImmutableThingChange(change.getThingId(), change.getAction(), thing, path,
+                    return new ImmutableThingChange(change.getEntityId(), change.getAction(), thing, path,
                             change.getRevision(), change.getTimestamp().orElse(null));
                 });
     }
 
-    private static String getThingIdOrThrow(final Thing thing) {
-        return thing.getId().orElseThrow(() -> {
+    private static void assertThatThingHasId(final Thing thing) {
+        thing.getEntityId().orElseThrow(() -> {
             final String msgPattern = "Mandatory field <{0}> is missing!";
             return new IllegalArgumentException(MessageFormat.format(msgPattern, Thing.JsonFields.ID.getPointer()));
         });

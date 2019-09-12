@@ -34,6 +34,7 @@
                 <include>org.atteo.classindex:classindex</include>
                 <include>org.eclipse.ditto:ditto-json</include>
                 <include>org.eclipse.ditto:ditto-model-base</include>
+                <include>org.eclipse.ditto:ditto-model-policies</include>
                 <include>org.eclipse.ditto:ditto-model-things</include>
                 <include>org.eclipse.ditto:ditto-model-messages</include>
                 <include>org.eclipse.ditto:ditto-signals-base</include>

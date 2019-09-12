@@ -17,14 +17,14 @@ import java.util.Optional;
 
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.signals.base.WithThingId;
+import org.eclipse.ditto.signals.base.WithId;
 
 /**
  * Common interface for all Thing related changes.
  *
  * @since 1.0.0
  */
-public interface Change extends WithThingId {
+public interface Change extends WithId {
 
     /**
      * Returns the {@link ChangeAction} which caused this change.

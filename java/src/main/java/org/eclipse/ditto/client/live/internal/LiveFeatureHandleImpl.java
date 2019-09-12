@@ -41,6 +41,7 @@ import org.eclipse.ditto.client.live.messages.internal.ImmutableMessageSender;
 import org.eclipse.ditto.client.management.internal.FeatureHandleImpl;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.Message;
+import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.commands.live.base.LiveCommand;
 import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswer;
@@ -77,7 +78,7 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
     private final Map<Class<? extends LiveCommand>, Function<? extends LiveCommand, LiveCommandAnswerBuilder.BuildStep>>
             liveCommandsFunctions;
 
-    LiveFeatureHandleImpl(final InternalConfiguration configuration, final String thingId, final String featureId) {
+    LiveFeatureHandleImpl(final InternalConfiguration configuration, final ThingId thingId, final String featureId) {
         super(TopicPath.Channel.LIVE, thingId, featureId,
                 configuration.getLiveMessagingProviderOrFail(),
                 configuration.getResponseForwarder(),
@@ -112,7 +113,7 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
             public MessageSender.SetSubject<T> from() {
                 return ImmutableMessageSender.<T>newInstance()
                         .from(this::sendMessage)
-                        .thingId(getThingId())
+                        .thingId(getThingEntityId())
                         .featureId(getFeatureId());
             }
 
@@ -120,7 +121,7 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
             public MessageSender.SetSubject<T> to() {
                 return ImmutableMessageSender.<T>newInstance()
                         .to(this::sendMessage)
-                        .thingId(getThingId())
+                        .thingId(getThingEntityId())
                         .featureId(getFeatureId());
             }
 
@@ -146,9 +147,9 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
 
         final JsonPointerSelector selector = "*".equals(subject) ?
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/{1}/'{direction}'/messages/'{subject}'",
-                        getThingId(), getFeatureId())
+                        getThingEntityId(), getFeatureId())
                 : SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/{1}/'{direction}'/messages/{2}",
-                getThingId(), getFeatureId(), subject);
+                getThingEntityId(), getFeatureId(), subject);
 
         getHandlerRegistry().register(registrationId, selector,
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(configuration, getOutgoingMessageFactory(),
@@ -165,9 +166,9 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
 
         final JsonPointerSelector selector = "*".equals(subject)
                 ? SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/{1}/'{direction}'/messages/'{subject}'",
-                getThingId(), getFeatureId())
+                getThingEntityId(), getFeatureId())
                 : SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/{1}/'{direction}'/messages/{2}",
-                getThingId(), getFeatureId(), subject);
+                getThingEntityId(), getFeatureId(), subject);
 
         getHandlerRegistry().register(registrationId, selector,
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(configuration, getOutgoingMessageFactory(),
@@ -185,7 +186,8 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
         argumentNotNull(eventFunction);
 
         final FeatureEventFactory featureEventFactory =
-                ImmutableFeatureEventFactory.getInstance(clientSessionId, schemaVersion, getThingId(), getFeatureId());
+                ImmutableFeatureEventFactory.getInstance(clientSessionId, schemaVersion, getThingEntityId(),
+                        getFeatureId());
         final Event<?> eventToEmit = eventFunction.apply(featureEventFactory);
         getMessagingProvider().emitEvent(eventToEmit, TopicPath.Channel.LIVE);
     }

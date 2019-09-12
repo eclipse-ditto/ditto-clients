@@ -36,6 +36,7 @@ import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.FeatureDefinition;
+import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
@@ -54,7 +55,7 @@ public abstract class FeatureHandleImpl<T extends ThingHandle, F extends Feature
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureHandleImpl.class);
 
     private final TopicPath.Channel channel;
-    private final String thingId;
+    private final ThingId thingId;
     private final String featureId;
     private final MessagingProvider messagingProvider;
     private final ResponseForwarder responseForwarder;
@@ -62,7 +63,7 @@ public abstract class FeatureHandleImpl<T extends ThingHandle, F extends Feature
     private final HandlerRegistry<T, F> handlerRegistry;
 
     protected FeatureHandleImpl(final TopicPath.Channel channel,
-            final String thingId,
+            final ThingId thingId,
             final String featureId,
             final MessagingProvider messagingProvider,
             final ResponseForwarder responseForwarder,
@@ -115,7 +116,7 @@ public abstract class FeatureHandleImpl<T extends ThingHandle, F extends Feature
     }
 
     @Override
-    public String getThingId() {
+    public ThingId getThingEntityId() {
         return thingId;
     }
 
@@ -240,7 +241,7 @@ public abstract class FeatureHandleImpl<T extends ThingHandle, F extends Feature
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/{1}/properties", thingId, featureId),
                 Change.class, handler, (change, value, path, params) ->
-                        new ImmutableChange(change.getThingId(), change.getAction(), path, value, change.getRevision(),
+                        new ImmutableChange(change.getEntityId(), change.getAction(), path, value, change.getRevision(),
                                 change.getTimestamp().orElse(null))
         );
     }
@@ -253,7 +254,7 @@ public abstract class FeatureHandleImpl<T extends ThingHandle, F extends Feature
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/{1}/properties{2}", thingId, featureId,
                         propertyPath), Change.class, handler,
-                (change, value, path, params) -> new ImmutableChange(change.getThingId(), change.getAction(), path,
+                (change, value, path, params) -> new ImmutableChange(change.getEntityId(), change.getAction(), path,
                         value, change.getRevision(), change.getTimestamp().orElse(null))
         );
     }

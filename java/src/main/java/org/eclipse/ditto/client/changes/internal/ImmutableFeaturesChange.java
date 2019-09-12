@@ -24,10 +24,13 @@ import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.client.changes.FeaturesChange;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.entity.Entity;
+import org.eclipse.ditto.model.base.entity.id.EntityId;
 import org.eclipse.ditto.model.things.Features;
+import org.eclipse.ditto.model.things.ThingId;
 
 /**
- * An immutable implementation of {@code FeaturesChange}.
+ * An immutable implementation of {@link org.eclipse.ditto.client.changes.FeaturesChange}.
  *
  * @since 1.0.0
  */
@@ -38,9 +41,9 @@ public final class ImmutableFeaturesChange implements FeaturesChange {
     private final Features features;
 
     /**
-     * Constructs a new {@code ImmutableThingFeaturesChange} object.
+     * Constructs a new {@code ImmutableFeaturesChange} object.
      *
-     * @param thingId the identifier of the changed Thing.
+     * @param entityId the identifier of the changed Thing.
      * @param changeAction the operation which cause the change.
      * @param features the Features which were object to the change.
      * @param path the JsonPointer of the changed json field.
@@ -48,14 +51,14 @@ public final class ImmutableFeaturesChange implements FeaturesChange {
      * @param timestamp the timestamp of the change.
      * @throws IllegalArgumentException if any argument is {@code null}.
      */
-    public ImmutableFeaturesChange(final String thingId,
+    public ImmutableFeaturesChange(final EntityId entityId,
             final ChangeAction changeAction,
             @Nullable final Features features,
             final JsonPointer path,
             final long revision,
             @Nullable final Instant timestamp) {
 
-        change = new ImmutableChange(thingId, changeAction, path, getJsonValueForFeatures(features), revision,
+        change = new ImmutableChange(entityId, changeAction, path, getJsonValueForFeatures(features), revision,
                 timestamp);
         this.features = features;
     }
@@ -66,8 +69,8 @@ public final class ImmutableFeaturesChange implements FeaturesChange {
     }
 
     @Override
-    public String getThingId() {
-        return change.getThingId();
+    public EntityId getEntityId() {
+        return change.getEntityId();
     }
 
     @Override

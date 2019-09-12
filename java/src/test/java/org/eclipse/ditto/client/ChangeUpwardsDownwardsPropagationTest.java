@@ -43,6 +43,7 @@ import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.FeatureProperties;
 import org.eclipse.ditto.model.things.Permission;
 import org.eclipse.ditto.model.things.Thing;
+import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.signals.events.things.AttributeCreated;
 import org.eclipse.ditto.signals.events.things.AttributesCreated;
@@ -110,11 +111,11 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
     private static final int TIMEOUT_SECONDS = 5;
     private static final CharSequence TEST_USER_SID = "fooTestUser";
 
-    private String thingId1;
+    private ThingId thingId1;
     private Thing thing1;
-    private String thingId2;
+    private ThingId thingId2;
     private Thing thing2withAttributes;
-    private String thingId3;
+    private ThingId thingId3;
 
     @Before
     public void before() {
@@ -155,7 +156,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
                 .registerForThingChanges("testUpwardsRegisterForThingChangeWhenThingIsCreated", thingChange -> {
                     LOG.info("received ThingChange {}", thingChange);
                     Assertions.assertThat(thingChange.getAction()).isEqualTo(ChangeAction.CREATED);
-                    Assertions.assertThat(thingChange.getThingId()).isEqualTo(thingId1);
+                    Assertions.assertThat((CharSequence) thingChange.getEntityId()).isEqualTo(thingId1);
                     Assertions.assertThat(thingChange.isPartial()).isFalse();
                     Assertions.assertThat((CharSequence) thingChange.getPath())
                             .isEqualTo(emptyPointer()); // empty path on ThingChange
@@ -191,7 +192,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
         final Consumer<ThingChange> consumer = thingChange -> {
             LOG.info("received ThingChange {}", thingChange);
             Assertions.assertThat(thingChange.getAction()).isEqualTo(ChangeAction.CREATED);
-            Assertions.assertThat(thingChange.getThingId()).isEqualTo(thingId1);
+            Assertions.assertThat((CharSequence) thingChange.getEntityId()).isEqualTo(thingId1);
             Assertions.assertThat(thingChange.isPartial()).isFalse();
             Assertions.assertThat((CharSequence) thingChange.getPath())
                     .isEqualTo(emptyPointer()); // empty path on ThingChange
@@ -240,7 +241,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
                 .registerForThingChanges("testUpwardsRegisterForThingChangeWhenThingIsDeleted", thingChange -> {
                     LOG.info("received ThingChange {}", thingChange);
                     Assertions.assertThat(thingChange.getAction()).isEqualTo(ChangeAction.DELETED);
-                    Assertions.assertThat(thingChange.getThingId()).isEqualTo(thingId1);
+                    Assertions.assertThat((CharSequence) thingChange.getEntityId()).isEqualTo(thingId1);
                     Assertions.assertThat(thingChange.isPartial()).isFalse();
                     Assertions.assertThat((CharSequence) thingChange.getPath())
                             .isEqualTo(emptyPointer()); // empty path on ThingChange
@@ -279,7 +280,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
                 .registerForThingChanges("testUpwardsRegisterForThingChangeWhenAttributesAreModified", thingChange -> {
                     LOG.info("received ThingChange {}", thingChange);
                     Assertions.assertThat(thingChange.getAction()).isEqualTo(ChangeAction.CREATED);
-                    Assertions.assertThat(thingChange.getThingId()).isEqualTo(thingId1);
+                    Assertions.assertThat((CharSequence) thingChange.getEntityId()).isEqualTo(thingId1);
                     Assertions.assertThat(thingChange.isPartial()).isTrue();
                     Assertions.assertThat((CharSequence) thingChange.getPath())
                             .isEqualTo(newPointer("attributes")); // attributes were changed
@@ -326,7 +327,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
                         thingChange -> {
                             LOG.info("received ThingChange {}", thingChange);
                             Assertions.assertThat(thingChange.getAction()).isEqualTo(ChangeAction.CREATED);
-                            Assertions.assertThat(thingChange.getThingId()).isEqualTo(thingId1);
+                            Assertions.assertThat((CharSequence) thingChange.getEntityId()).isEqualTo(thingId1);
                             Assertions.assertThat(thingChange.isPartial()).isTrue();
                             Assertions.assertThat((CharSequence) thingChange.getPath())
                                     .isEqualTo(newPointer("attributes").append(
@@ -364,7 +365,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
                 .registerForThingChanges("testUpwardsRegisterForThingChangeWhenSingleFeatureIsDeleted", thingChange -> {
                     LOG.info("received ThingChange {}", thingChange);
                     Assertions.assertThat(thingChange.getAction()).isEqualTo(ChangeAction.DELETED);
-                    Assertions.assertThat(thingChange.getThingId()).isEqualTo(thingId1);
+                    Assertions.assertThat((CharSequence) thingChange.getEntityId()).isEqualTo(thingId1);
                     Assertions.assertThat(thingChange.isPartial()).isTrue();
                     Assertions.assertThat((CharSequence) thingChange.getPath())
                             .isEqualTo(newPointer("features/" + FEATURE_ID_1)); // feature was deleted
@@ -404,7 +405,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
         final Consumer<FeaturesChange> featuresChangeConsumer = featuresChange -> {
             LOG.info("received ThingChange {}", featuresChange);
             Assertions.assertThat(featuresChange.getAction()).isEqualTo(ChangeAction.CREATED);
-            Assertions.assertThat(featuresChange.getThingId()).isEqualTo(thingId1);
+            Assertions.assertThat((CharSequence) featuresChange.getEntityId()).isEqualTo(thingId1);
             Assertions.assertThat(featuresChange.isPartial()).isTrue();
             Assertions.assertThat((CharSequence) featuresChange.getPath())
                     .isEqualTo(newPointer(FEATURE_ID_1).append(newPointer("properties"))
@@ -460,7 +461,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
                         FEATURE_ID_2, featureChange -> {
                             LOG.info("received Change {}", featureChange);
                             Assertions.assertThat(featureChange.getAction()).isEqualTo(ChangeAction.UPDATED);
-                            Assertions.assertThat(featureChange.getThingId()).isEqualTo(thingId3);
+                            Assertions.assertThat((CharSequence) featureChange.getEntityId()).isEqualTo(thingId3);
                             Assertions.assertThat(featureChange.isPartial()).isTrue();
                             Assertions.assertThat((CharSequence) featureChange.getPath())
                                     .isEqualTo(newPointer("properties")
@@ -502,7 +503,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
                         attrChange -> {
                             LOG.info("received Change {}", attrChange);
                             Assertions.assertThat(attrChange.getAction()).isEqualTo(ChangeAction.CREATED);
-                            Assertions.assertThat(attrChange.getThingId()).isEqualTo(thingId2);
+                            Assertions.assertThat((CharSequence) attrChange.getEntityId()).isEqualTo(thingId2);
                             Assertions.assertThat(attrChange.isFull()).isTrue();
                             Assertions.assertThat((CharSequence) attrChange.getPath())
                                     .isEqualTo(emptyPointer()); // empty pointer as all attributes were created
@@ -547,7 +548,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
                         attrChange -> {
                             LOG.info("received Change {}", attrChange);
                             Assertions.assertThat(attrChange.getAction()).isEqualTo(ChangeAction.UPDATED);
-                            Assertions.assertThat(attrChange.getThingId()).isEqualTo(thingId2);
+                            Assertions.assertThat((CharSequence) attrChange.getEntityId()).isEqualTo(thingId2);
                             Assertions.assertThat(attrChange.isFull()).isTrue();
                             Assertions.assertThat((CharSequence) attrChange.getPath())
                                     .isEqualTo(emptyPointer()); // attribute "abc" was modified completely
@@ -587,7 +588,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
                         propChange -> {
                             LOG.info("received Change {}", propChange);
                             Assertions.assertThat(propChange.getAction()).isEqualTo(ChangeAction.UPDATED);
-                            Assertions.assertThat(propChange.getThingId()).isEqualTo(thingId3);
+                            Assertions.assertThat((CharSequence) propChange.getEntityId()).isEqualTo(thingId3);
                             Assertions.assertThat(propChange.isFull()).isTrue();
                             Assertions.assertThat((CharSequence) propChange.getPath())
                                     .isEqualTo(emptyPointer()); // attribute "complex/bum" was modified completely

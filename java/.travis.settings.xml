@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (c) 2019 Contributors to the Eclipse Foundation
+  ~
+  ~ See the NOTICE file(s) distributed with this work for additional
+  ~ information regarding copyright ownership.
+  ~
+  ~ This program and the accompanying materials are made available under the
+  ~ terms of the Eclipse Public License 2.0 which is available at
+  ~ http://www.eclipse.org/legal/epl-2.0
+  ~
+  ~ SPDX-License-Identifier: EPL-2.0
+  -->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                      http://maven.apache.org/xsd/settings-1.0.0.xsd">
+    <profiles>
+        <profile>
+            <id>repo.eclipse.org</id>
+            <repositories>
+                <repository>
+                    <id>eclipse-repo</id>
+                    <name>Eclipse Repo</name>
+                    <url>https://repo.eclipse.org/content/groups/ditto</url>
+                    <releases>
+                        <enabled>true</enabled>
+                        <updatePolicy>never</updatePolicy>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                        <updatePolicy>never</updatePolicy>
+                    </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+    <activeProfiles>
+        <activeProfile>repo.eclipse.org</activeProfile>
+    </activeProfiles>
+</settings>

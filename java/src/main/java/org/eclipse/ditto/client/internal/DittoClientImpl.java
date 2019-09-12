@@ -36,6 +36,7 @@ import org.eclipse.ditto.client.twin.internal.TwinImpl;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
+import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.events.things.AclEntryCreated;
@@ -181,12 +182,12 @@ public final class DittoClientImpl implements DittoClient {
             LOGGER.trace("Received Message: '{}'", message);
 
             final String subject = message.getSubject();
-            final String thingId = message.getThingId();
+            final ThingId thingId = message.getThingEntityId();
             final MessageDirection direction = message.getDirection();
 
             // Direction is set to "TO" -> Message is put in the "inbox"
             // Direction is set to "FROM" -> Message is put in the "outbox"
-            final String inboxOutbox = (direction == MessageDirection.TO) ? "inbox" : "outbox";
+            final String inboxOutbox = direction == MessageDirection.TO ? "inbox" : "outbox";
 
             final String key = message.getFeatureId()
                     .map(featureId -> MessageFormat.format("/things/{0}/features/{1}/{2}/messages/{3}", thingId,
@@ -204,20 +205,20 @@ public final class DittoClientImpl implements DittoClient {
          * Thing
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, ThingCreated.TYPE, ThingCreated.class,
-                event -> MessageFormat.format(THING_PATTERN, event.getThingId()),
-                event -> new ImmutableThingChange(event.getThingId(), ChangeAction.CREATED, event.getThing(),
+                event -> MessageFormat.format(THING_PATTERN, event.getThingEntityId()),
+                event -> new ImmutableThingChange(event.getThingEntityId(), ChangeAction.CREATED, event.getThing(),
                         event.getRevision(), event.getTimestamp().orElse(null))
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, ThingModified.TYPE, ThingModified.class,
-                event -> MessageFormat.format(THING_PATTERN, event.getThingId()),
-                event -> new ImmutableThingChange(event.getThingId(), ChangeAction.UPDATED, event.getThing(),
+                event -> MessageFormat.format(THING_PATTERN, event.getThingEntityId()),
+                event -> new ImmutableThingChange(event.getThingEntityId(), ChangeAction.UPDATED, event.getThing(),
                         event.getRevision(), event.getTimestamp().orElse(null))
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, ThingDeleted.TYPE, ThingDeleted.class,
-                event -> MessageFormat.format(THING_PATTERN, event.getThingId()),
-                event -> new ImmutableThingChange(event.getThingId(), ChangeAction.DELETED, null,
+                event -> MessageFormat.format(THING_PATTERN, event.getThingEntityId()),
+                event -> new ImmutableThingChange(event.getThingEntityId(), ChangeAction.DELETED, null,
                         event.getRevision(), event.getTimestamp().orElse(null))
         );
 
@@ -225,35 +226,35 @@ public final class DittoClientImpl implements DittoClient {
          * ACL - v1 only
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AclModified.TYPE, AclModified.class,
-                event -> MessageFormat.format("/things/{0}/acl", event.getThingId()),
-                event -> new ImmutableChange(event.getThingId(), ChangeAction.UPDATED,
+                event -> MessageFormat.format("/things/{0}/acl", event.getThingEntityId()),
+                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.UPDATED,
                         JsonPointer.empty(),
                         event.getAccessControlList().toJson(event.getImplementedSchemaVersion()),
                         event.getRevision(), event.getTimestamp().orElse(null))
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AclEntryCreated.TYPE, AclEntryCreated.class,
-                event -> MessageFormat.format(ACL_PATTERN, event.getThingId(),
+                event -> MessageFormat.format(ACL_PATTERN, event.getThingEntityId(),
                         event.getAclEntry().getAuthorizationSubject().getId()),
-                event -> new ImmutableChange(event.getThingId(), ChangeAction.CREATED,
+                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.CREATED,
                         JsonPointer.empty(),
                         event.getAclEntry().toJson(event.getImplementedSchemaVersion()),
                         event.getRevision(), event.getTimestamp().orElse(null))
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AclEntryModified.TYPE, AclEntryModified.class,
-                event -> MessageFormat.format(ACL_PATTERN, event.getThingId(),
+                event -> MessageFormat.format(ACL_PATTERN, event.getThingEntityId(),
                         event.getAclEntry().getAuthorizationSubject().getId()),
-                event -> new ImmutableChange(event.getThingId(), ChangeAction.UPDATED,
+                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.UPDATED,
                         JsonPointer.empty(),
                         event.getAclEntry().toJson(event.getImplementedSchemaVersion()),
                         event.getRevision(), event.getTimestamp().orElse(null))
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AclEntryDeleted.TYPE, AclEntryDeleted.class,
-                event -> MessageFormat.format(ACL_PATTERN, event.getThingId(),
+                event -> MessageFormat.format(ACL_PATTERN, event.getThingEntityId(),
                         event.getAuthorizationSubject().getId()),
-                event -> new ImmutableChange(event.getThingId(), ChangeAction.DELETED,
+                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.DELETED,
                         JsonPointer.empty(),
                         null,
                         event.getRevision(), event.getTimestamp().orElse(null))
@@ -263,24 +264,24 @@ public final class DittoClientImpl implements DittoClient {
          * Attributes
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributesCreated.TYPE, AttributesCreated.class,
-                event -> MessageFormat.format(ATTRIBUTES_PATTERN, event.getThingId()),
-                event -> new ImmutableChange(event.getThingId(), ChangeAction.CREATED,
+                event -> MessageFormat.format(ATTRIBUTES_PATTERN, event.getThingEntityId()),
+                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.CREATED,
                         JsonPointer.empty(),
                         event.getCreatedAttributes(),
                         event.getRevision(), event.getTimestamp().orElse(null))
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributesModified.TYPE, AttributesModified.class,
-                event -> MessageFormat.format(ATTRIBUTES_PATTERN, event.getThingId()),
-                event -> new ImmutableChange(event.getThingId(), ChangeAction.UPDATED,
+                event -> MessageFormat.format(ATTRIBUTES_PATTERN, event.getThingEntityId()),
+                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.UPDATED,
                         JsonPointer.empty(),
                         event.getModifiedAttributes(),
                         event.getRevision(), event.getTimestamp().orElse(null))
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributesDeleted.TYPE, AttributesDeleted.class,
-                event -> MessageFormat.format(ATTRIBUTES_PATTERN, event.getThingId()),
-                event -> new ImmutableChange(event.getThingId(), ChangeAction.DELETED,
+                event -> MessageFormat.format(ATTRIBUTES_PATTERN, event.getThingEntityId()),
+                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.DELETED,
                         JsonPointer.empty(),
                         null,
                         event.getRevision(), event.getTimestamp().orElse(null))
@@ -290,25 +291,25 @@ public final class DittoClientImpl implements DittoClient {
          * Attribute
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributeCreated.TYPE, AttributeCreated.class,
-                event -> MessageFormat.format(ATTRIBUTE_PATTERN, event.getThingId(),
+                event -> MessageFormat.format(ATTRIBUTE_PATTERN, event.getThingEntityId(),
                         event.getAttributePointer()),
-                event -> new ImmutableChange(event.getThingId(), ChangeAction.CREATED,
+                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.CREATED,
                         event.getAttributePointer(),
                         event.getAttributeValue(),
                         event.getRevision(), event.getTimestamp().orElse(null)));
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributeModified.TYPE, AttributeModified.class,
-                event -> MessageFormat.format(ATTRIBUTE_PATTERN, event.getThingId(),
+                event -> MessageFormat.format(ATTRIBUTE_PATTERN, event.getThingEntityId(),
                         event.getAttributePointer()),
-                event -> new ImmutableChange(event.getThingId(), ChangeAction.UPDATED,
+                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.UPDATED,
                         event.getAttributePointer(),
                         event.getAttributeValue(),
                         event.getRevision(), event.getTimestamp().orElse(null)));
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributeDeleted.TYPE, AttributeDeleted.class,
-                event -> MessageFormat.format(ATTRIBUTE_PATTERN, event.getThingId(),
+                event -> MessageFormat.format(ATTRIBUTE_PATTERN, event.getThingEntityId(),
                         event.getAttributePointer()),
-                event -> new ImmutableChange(event.getThingId(), ChangeAction.DELETED,
+                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.DELETED,
                         event.getAttributePointer(),
                         null,
                         event.getRevision(), event.getTimestamp().orElse(null)));
@@ -317,24 +318,24 @@ public final class DittoClientImpl implements DittoClient {
          * Features
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturesCreated.TYPE, FeaturesCreated.class,
-                event -> MessageFormat.format(FEATURES_PATTERN, event.getThingId()),
-                event -> new ImmutableFeaturesChange(event.getThingId(), ChangeAction.CREATED,
+                event -> MessageFormat.format(FEATURES_PATTERN, event.getThingEntityId()),
+                event -> new ImmutableFeaturesChange(event.getThingEntityId(), ChangeAction.CREATED,
                         event.getFeatures(),
                         JsonPointer.empty(),
                         event.getRevision(), event.getTimestamp().orElse(null))
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturesModified.TYPE, FeaturesModified.class,
-                event -> MessageFormat.format(FEATURES_PATTERN, event.getThingId()),
-                event -> new ImmutableFeaturesChange(event.getThingId(), ChangeAction.UPDATED,
+                event -> MessageFormat.format(FEATURES_PATTERN, event.getThingEntityId()),
+                event -> new ImmutableFeaturesChange(event.getThingEntityId(), ChangeAction.UPDATED,
                         event.getFeatures(),
                         JsonPointer.empty(),
                         event.getRevision(), event.getTimestamp().orElse(null))
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturesDeleted.TYPE, FeaturesDeleted.class,
-                event -> MessageFormat.format(FEATURES_PATTERN, event.getThingId()),
-                event -> new ImmutableFeaturesChange(event.getThingId(), ChangeAction.DELETED,
+                event -> MessageFormat.format(FEATURES_PATTERN, event.getThingEntityId()),
+                event -> new ImmutableFeaturesChange(event.getThingEntityId(), ChangeAction.DELETED,
                         null,
                         JsonPointer.empty(),
                         event.getRevision(), event.getTimestamp().orElse(null))
@@ -344,24 +345,24 @@ public final class DittoClientImpl implements DittoClient {
          * Feature
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureCreated.TYPE, FeatureCreated.class,
-                event -> MessageFormat.format(FEATURE_PATTERN, event.getThingId(), event.getFeatureId()),
-                event -> new ImmutableFeatureChange(event.getThingId(), ChangeAction.CREATED,
+                event -> MessageFormat.format(FEATURE_PATTERN, event.getThingEntityId(), event.getFeatureId()),
+                event -> new ImmutableFeatureChange(event.getThingEntityId(), ChangeAction.CREATED,
                         event.getFeature(),
                         JsonPointer.empty(),
                         event.getRevision(), event.getTimestamp().orElse(null))
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureModified.TYPE, FeatureModified.class,
-                event -> MessageFormat.format(FEATURE_PATTERN, event.getThingId(), event.getFeatureId()),
-                event -> new ImmutableFeatureChange(event.getThingId(), ChangeAction.UPDATED,
+                event -> MessageFormat.format(FEATURE_PATTERN, event.getThingEntityId(), event.getFeatureId()),
+                event -> new ImmutableFeatureChange(event.getThingEntityId(), ChangeAction.UPDATED,
                         event.getFeature(),
                         JsonPointer.empty(),
                         event.getRevision(), event.getTimestamp().orElse(null))
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureDeleted.TYPE, FeatureDeleted.class,
-                event -> MessageFormat.format(FEATURE_PATTERN, event.getThingId(), event.getFeatureId()),
-                event -> new ImmutableFeatureChange(event.getThingId(), ChangeAction.DELETED,
+                event -> MessageFormat.format(FEATURE_PATTERN, event.getThingEntityId(), event.getFeatureId()),
+                event -> new ImmutableFeatureChange(event.getThingEntityId(), ChangeAction.DELETED,
                         null,
                         JsonPointer.empty(),
                         event.getRevision(), event.getTimestamp().orElse(null))
@@ -372,9 +373,9 @@ public final class DittoClientImpl implements DittoClient {
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertiesCreated.TYPE,
                 FeaturePropertiesCreated.class,
-                event -> MessageFormat.format(FEATURE_PROPERTIES_PATTERN, event.getThingId(),
+                event -> MessageFormat.format(FEATURE_PROPERTIES_PATTERN, event.getThingEntityId(),
                         event.getFeatureId()),
-                event -> new ImmutableChange(event.getThingId(), ChangeAction.CREATED,
+                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.CREATED,
                         JsonPointer.empty(),
                         event.getProperties().toJson(event.getImplementedSchemaVersion()),
                         event.getRevision(), event.getTimestamp().orElse(null))
@@ -382,9 +383,9 @@ public final class DittoClientImpl implements DittoClient {
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertiesModified.TYPE,
                 FeaturePropertiesModified.class,
-                event -> MessageFormat.format(FEATURE_PROPERTIES_PATTERN, event.getThingId(),
+                event -> MessageFormat.format(FEATURE_PROPERTIES_PATTERN, event.getThingEntityId(),
                         event.getFeatureId()),
-                event -> new ImmutableChange(event.getThingId(), ChangeAction.UPDATED,
+                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.UPDATED,
                         JsonPointer.empty(),
                         event.getProperties().toJson(event.getImplementedSchemaVersion()),
                         event.getRevision(), event.getTimestamp().orElse(null))
@@ -392,9 +393,9 @@ public final class DittoClientImpl implements DittoClient {
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertiesDeleted.TYPE,
                 FeaturePropertiesDeleted.class,
-                event -> MessageFormat.format(FEATURE_PROPERTIES_PATTERN, event.getThingId(),
+                event -> MessageFormat.format(FEATURE_PROPERTIES_PATTERN, event.getThingEntityId(),
                         event.getFeatureId()),
-                event -> new ImmutableChange(event.getThingId(), ChangeAction.DELETED,
+                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.DELETED,
                         JsonPointer.empty(),
                         null,
                         event.getRevision(), event.getTimestamp().orElse(null))
@@ -405,9 +406,9 @@ public final class DittoClientImpl implements DittoClient {
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertyCreated.TYPE,
                 FeaturePropertyCreated.class,
-                event -> MessageFormat.format(FEATURE_PROPERTY_PATTERN, event.getThingId(),
+                event -> MessageFormat.format(FEATURE_PROPERTY_PATTERN, event.getThingEntityId(),
                         event.getFeatureId(), event.getPropertyPointer()),
-                event -> new ImmutableChange(event.getThingId(), ChangeAction.CREATED,
+                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.CREATED,
                         event.getPropertyPointer(),
                         event.getPropertyValue(),
                         event.getRevision(), event.getTimestamp().orElse(null))
@@ -415,9 +416,9 @@ public final class DittoClientImpl implements DittoClient {
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertyModified.TYPE,
                 FeaturePropertyModified.class,
-                event -> MessageFormat.format(FEATURE_PROPERTY_PATTERN, event.getThingId(),
+                event -> MessageFormat.format(FEATURE_PROPERTY_PATTERN, event.getThingEntityId(),
                         event.getFeatureId(), event.getPropertyPointer()),
-                event -> new ImmutableChange(event.getThingId(), ChangeAction.UPDATED,
+                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.UPDATED,
                         event.getPropertyPointer(),
                         event.getPropertyValue(),
                         event.getRevision(), event.getTimestamp().orElse(null))
@@ -425,9 +426,9 @@ public final class DittoClientImpl implements DittoClient {
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertyDeleted.TYPE,
                 FeaturePropertyDeleted.class,
-                event -> MessageFormat.format(FEATURE_PROPERTY_PATTERN, event.getThingId(),
+                event -> MessageFormat.format(FEATURE_PROPERTY_PATTERN, event.getThingEntityId(),
                         event.getFeatureId(), event.getPropertyPointer()),
-                event -> new ImmutableChange(event.getThingId(), ChangeAction.DELETED,
+                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.DELETED,
                         event.getPropertyPointer(),
                         null,
                         event.getRevision(), event.getTimestamp().orElse(null))
