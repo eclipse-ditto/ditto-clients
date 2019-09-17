@@ -27,6 +27,7 @@ import org.eclipse.ditto.model.things.Attributes;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.FeatureProperties;
 import org.eclipse.ditto.model.things.Features;
+import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.signals.events.things.AttributeCreated;
 import org.eclipse.ditto.signals.events.things.AttributeDeleted;
 import org.eclipse.ditto.signals.events.things.AttributeModified;
@@ -55,10 +56,10 @@ import org.eclipse.ditto.signals.events.things.ThingDeleted;
 @Immutable
 public final class ImmutableThingEventFactory implements ThingEventFactory {
 
-    private final String thingId;
+    private final ThingId thingId;
     private final GlobalEventFactory globalEventFactory;
 
-    private ImmutableThingEventFactory(final GlobalEventFactory globalEventFactory, final String thingId) {
+    private ImmutableThingEventFactory(final GlobalEventFactory globalEventFactory, final ThingId thingId) {
         this.globalEventFactory = globalEventFactory;
         this.thingId = thingId;
     }
@@ -74,7 +75,7 @@ public final class ImmutableThingEventFactory implements ThingEventFactory {
      * @throws IllegalArgumentException if {@code source} or {@code thingId} is empty.
      */
     public static ImmutableThingEventFactory getInstance(final String source, final JsonSchemaVersion schemaVersion,
-            final String thingId) {
+            final ThingId thingId) {
         argumentNotEmpty(thingId, "Thing ID");
         return new ImmutableThingEventFactory(ImmutableGlobalEventFactory.getInstance(source, schemaVersion), thingId);
     }

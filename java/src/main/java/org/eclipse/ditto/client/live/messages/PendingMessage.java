@@ -12,6 +12,8 @@
  */
 package org.eclipse.ditto.client.live.messages;
 
+import org.eclipse.ditto.model.things.ThingId;
+
 /**
  * This interface defines the entrance point to the fluent API to create and send a new {@link
  * org.eclipse.ditto.model.messages.Message}.
@@ -29,7 +31,7 @@ public interface PendingMessage<T> {
      * @return fluent API builder that provides the functionality to <em>optionally</em> set the ID of the Feature from
      * which the Message will be sent, or to leave the Feature ID empty and set the subject of the Message.
      */
-    MessageSender.SetFeatureIdOrSubject<T> from(String thingId);
+    MessageSender.SetFeatureIdOrSubject<T> from(ThingId thingId);
 
     /**
      * Sets the {@link org.eclipse.ditto.model.messages.Message} as being sent <em>TO</em> the specified {@link
@@ -39,6 +41,6 @@ public interface PendingMessage<T> {
      * @return fluent API builder that provides the functionality to <em>optionally</em> set the ID of the Feature to
      * which the Message will be sent, or to leave the Feature ID empty and set the subject of the Message.
      */
-    MessageSender.SetFeatureIdOrSubject<T> to(String thingId);
+    MessageSender.SetFeatureIdOrSubject<T> to(ThingId thingId);
 
 }

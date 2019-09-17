@@ -47,6 +47,7 @@ import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.FeatureDefinition;
 import org.eclipse.ditto.model.things.Features;
 import org.eclipse.ditto.model.things.Thing;
+import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
@@ -115,7 +116,7 @@ public final class OutgoingMessageFactory {
      */
     public ThingCommand putThing(final Thing thing, final Option<?>... options) {
         checkNotNull(thing, "thing");
-        final String thingId = thing.getId().orElseThrow(() -> new IllegalArgumentException("Thing had no ID!"));
+        final ThingId thingId = thing.getEntityId().orElseThrow(() -> new IllegalArgumentException("Thing had no ID!"));
 
         logWarningsForAclPolicyUsage(thing);
 
@@ -133,7 +134,7 @@ public final class OutgoingMessageFactory {
      */
     public ThingCommand updateThing(final Thing thing, final Option<?>... options) {
         checkNotNull(thing, "thing");
-        final String thingId = thing.getId().orElseThrow(() -> new IllegalArgumentException("Thing had no ID!"));
+        final ThingId thingId = thing.getEntityId().orElseThrow(() -> new IllegalArgumentException("Thing had no ID!"));
 
         logWarningsForAclPolicyUsage(thing);
 
@@ -145,7 +146,7 @@ public final class OutgoingMessageFactory {
     }
 
     private void logWarningsForAclPolicyUsage(final Thing thing) {
-        if (configuration.getSchemaVersion() == JsonSchemaVersion.V_1 && thing.getPolicyId().isPresent()) {
+        if (configuration.getSchemaVersion() == JsonSchemaVersion.V_1 && thing.getPolicyEntityId().isPresent()) {
             LOGGER.warn("Creating/modifying a Thing with a defined 'policyId' when client was configured to use " +
                     "Ditto Protocol in 'schemaVersion' 1 (which is ACL based). That will most likely result in " +
                     "unexpected behavior.");
@@ -158,16 +159,16 @@ public final class OutgoingMessageFactory {
     }
 
     public ThingCommand retrieveThing(final CharSequence thingId) {
-        return RetrieveThing.of(thingId, buildDittoHeaders(false));
+        return RetrieveThing.of(ThingId.of(thingId), buildDittoHeaders(false));
     }
 
     public ThingCommand retrieveThing(final CharSequence thingId, final Iterable<JsonPointer> fields) {
-        return RetrieveThing.getBuilder(thingId, buildDittoHeaders(false))
+        return RetrieveThing.getBuilder(ThingId.of(thingId), buildDittoHeaders(false))
                 .withSelectedFields(JsonFactory.newFieldSelector(fields))
                 .build();
     }
 
-    public ThingCommand retrieveThings(final Iterable<String> thingIds) {
+    public ThingCommand retrieveThings(final Iterable<ThingId> thingIds) {
         return RetrieveThings.getBuilder(makeList(thingIds))
                 .dittoHeaders(buildDittoHeaders(false))
                 .build();
@@ -181,18 +182,18 @@ public final class OutgoingMessageFactory {
         return list;
     }
 
-    public ThingCommand retrieveThings(final Iterable<String> thingIds, final Iterable<JsonPointer> fields) {
+    public ThingCommand retrieveThings(final Iterable<ThingId> thingIds, final Iterable<JsonPointer> fields) {
         return RetrieveThings.getBuilder(makeList(thingIds))
                 .selectedFields(JsonFactory.newFieldSelector(fields))
                 .dittoHeaders(buildDittoHeaders(false))
                 .build();
     }
 
-    public ThingCommand deleteThing(final String thingId, final Option<?>... options) {
+    public ThingCommand deleteThing(final ThingId thingId, final Option<?>... options) {
         return DeleteThing.of(thingId, buildDittoHeaders(false, options));
     }
 
-    public ThingCommand setAttribute(final String thingId,
+    public ThingCommand setAttribute(final ThingId thingId,
             final JsonPointer path,
             final JsonValue value,
             final Option<?>... options) {
@@ -200,32 +201,32 @@ public final class OutgoingMessageFactory {
         return ModifyAttribute.of(thingId, path, value, buildDittoHeaders(true, options));
     }
 
-    public ThingCommand setAttributes(final String thingId, final JsonObject attributes, final Option<?>... options) {
+    public ThingCommand setAttributes(final ThingId thingId, final JsonObject attributes, final Option<?>... options) {
         return ModifyAttributes.of(thingId, ThingsModelFactory.newAttributes(attributes),
                 buildDittoHeaders(true, options));
     }
 
-    public ThingCommand deleteAttribute(final String thingId, final JsonPointer path, final Option<?>... options) {
+    public ThingCommand deleteAttribute(final ThingId thingId, final JsonPointer path, final Option<?>... options) {
         return DeleteAttribute.of(thingId, path, buildDittoHeaders(false, options));
     }
 
-    public ThingCommand deleteAttributes(final String thingId, final Option<?>... options) {
+    public ThingCommand deleteAttributes(final ThingId thingId, final Option<?>... options) {
         return DeleteAttributes.of(thingId, buildDittoHeaders(false, options));
     }
 
-    public ThingCommand setFeature(final String thingId, final Feature feature, final Option<?>... options) {
+    public ThingCommand setFeature(final ThingId thingId, final Feature feature, final Option<?>... options) {
         return ModifyFeature.of(thingId, feature, buildDittoHeaders(true, options));
     }
 
-    public ThingCommand setFeatures(final String thingId, final Features features, final Option<?>... options) {
+    public ThingCommand setFeatures(final ThingId thingId, final Features features, final Option<?>... options) {
         return ModifyFeatures.of(thingId, features, buildDittoHeaders(true, options));
     }
 
-    public ThingCommand retrieveFeature(final String thingId, final String featureId, final Option<?>... options) {
+    public ThingCommand retrieveFeature(final ThingId thingId, final String featureId, final Option<?>... options) {
         return RetrieveFeature.of(thingId, featureId, buildDittoHeaders(false, options));
     }
 
-    public ThingCommand retrieveFeature(final String thingId,
+    public ThingCommand retrieveFeature(final ThingId thingId,
             final String featureId,
             final Iterable<JsonPointer> fields,
             final Option<?>... options) {
@@ -234,11 +235,11 @@ public final class OutgoingMessageFactory {
                 buildDittoHeaders(false, options));
     }
 
-    public ThingCommand deleteFeature(final String thingId, final String featureId, final Option<?>... options) {
+    public ThingCommand deleteFeature(final ThingId thingId, final String featureId, final Option<?>... options) {
         return DeleteFeature.of(thingId, featureId, buildDittoHeaders(false, options));
     }
 
-    public ThingCommand deleteFeatures(final String thingId, final Option<?>... options) {
+    public ThingCommand deleteFeatures(final ThingId thingId, final Option<?>... options) {
         return DeleteFeatures.of(thingId, buildDittoHeaders(false, options));
     }
 
@@ -252,7 +253,7 @@ public final class OutgoingMessageFactory {
      * @return the command object.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    public ThingCommand<ModifyFeatureDefinition> setFeatureDefinition(final String thingId,
+    public ThingCommand<ModifyFeatureDefinition> setFeatureDefinition(final ThingId thingId,
             final String featureId,
             final FeatureDefinition featureDefinition,
             final Option<?>... options) {
@@ -269,13 +270,13 @@ public final class OutgoingMessageFactory {
      * @return the command object.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    public ThingCommand<DeleteFeatureDefinition> deleteFeatureDefinition(final String thingId, final String featureId,
+    public ThingCommand<DeleteFeatureDefinition> deleteFeatureDefinition(final ThingId thingId, final String featureId,
             final Option<?>... options) {
 
         return DeleteFeatureDefinition.of(thingId, featureId, buildDittoHeaders(false, options));
     }
 
-    public ThingCommand setFeatureProperty(final String thingId,
+    public ThingCommand setFeatureProperty(final ThingId thingId,
             final String featureId,
             final JsonPointer path,
             final JsonValue value,
@@ -284,7 +285,7 @@ public final class OutgoingMessageFactory {
         return ModifyFeatureProperty.of(thingId, featureId, path, value, buildDittoHeaders(true, options));
     }
 
-    public ThingCommand setFeatureProperties(final String thingId,
+    public ThingCommand setFeatureProperties(final ThingId thingId,
             final String featureId,
             final JsonObject properties,
             final Option<?>... options) {
@@ -293,7 +294,7 @@ public final class OutgoingMessageFactory {
                 buildDittoHeaders(true, options));
     }
 
-    public ThingCommand deleteFeatureProperty(final String thingId,
+    public ThingCommand deleteFeatureProperty(final ThingId thingId,
             final String featureId,
             final JsonPointer path,
             final Option<?>... options) {
@@ -301,7 +302,7 @@ public final class OutgoingMessageFactory {
         return DeleteFeatureProperty.of(thingId, featureId, path, buildDittoHeaders(false, options));
     }
 
-    public ThingCommand deleteFeatureProperties(final String thingId, final String featureId,
+    public ThingCommand deleteFeatureProperties(final ThingId thingId, final String featureId,
             final Option<?>... options) {
 
         return DeleteFeatureProperties.of(thingId, featureId, buildDittoHeaders(false, options));

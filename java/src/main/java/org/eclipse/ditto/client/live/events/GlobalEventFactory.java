@@ -19,6 +19,7 @@ import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.FeatureProperties;
 import org.eclipse.ditto.model.things.Features;
 import org.eclipse.ditto.model.things.Thing;
+import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.signals.events.things.AttributeCreated;
 import org.eclipse.ditto.signals.events.things.AttributeDeleted;
 import org.eclipse.ditto.signals.events.things.AttributeModified;
@@ -66,7 +67,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new ThingDeleted.
      * @throws NullPointerException if {@code thingId} is {@code null}.
      */
-    ThingDeleted thingDeleted(String thingId);
+    ThingDeleted thingDeleted(ThingId thingId);
 
     /**
      * Creates a new {@link ThingModified} event with the required passed arguments.
@@ -86,7 +87,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new AttributeCreated.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    default AttributeCreated attributeCreated(final String thingId, final CharSequence attributePointer,
+    default AttributeCreated attributeCreated(final ThingId thingId, final CharSequence attributePointer,
             final JsonValue attributeValue) {
         return attributeCreated(thingId, JsonPointer.of(attributePointer), attributeValue);
     }
@@ -100,7 +101,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new AttributeCreated.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    AttributeCreated attributeCreated(String thingId, JsonPointer attributePointer, JsonValue attributeValue);
+    AttributeCreated attributeCreated(ThingId thingId, JsonPointer attributePointer, JsonValue attributeValue);
 
     /**
      * Creates a new {@link AttributeDeleted} event with the required passed arguments.
@@ -110,7 +111,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new AttributeDeleted.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    default AttributeDeleted attributeDeleted(final String thingId, final CharSequence attributePointer) {
+    default AttributeDeleted attributeDeleted(final ThingId thingId, final CharSequence attributePointer) {
         return attributeDeleted(thingId, JsonPointer.of(attributePointer));
     }
 
@@ -122,7 +123,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new AttributeDeleted.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    AttributeDeleted attributeDeleted(String thingId, JsonPointer attributePointer);
+    AttributeDeleted attributeDeleted(ThingId thingId, JsonPointer attributePointer);
 
     /**
      * Creates a new {@link AttributeModified} event with the required passed arguments.
@@ -133,7 +134,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new AttributeModified.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    default AttributeModified attributeModified(final String thingId, final CharSequence attributePointer,
+    default AttributeModified attributeModified(final ThingId thingId, final CharSequence attributePointer,
             final JsonValue attributeValue) {
         return attributeModified(thingId, JsonPointer.of(attributePointer), attributeValue);
     }
@@ -147,7 +148,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new AttributeModified.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    AttributeModified attributeModified(String thingId, JsonPointer attributePointer, JsonValue attributeValue);
+    AttributeModified attributeModified(ThingId thingId, JsonPointer attributePointer, JsonValue attributeValue);
 
     /**
      * Creates a new {@link AttributesCreated} event with the required passed arguments.
@@ -157,7 +158,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new AttributesCreated.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    AttributesCreated attributesCreated(String thingId, Attributes attributes);
+    AttributesCreated attributesCreated(ThingId thingId, Attributes attributes);
 
     /**
      * Creates a new {@link AttributesDeleted} event with the required passed arguments.
@@ -166,7 +167,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new AttributesDeleted.
      * @throws NullPointerException if {@code thingId} is {@code null}.
      */
-    AttributesDeleted attributesDeleted(String thingId);
+    AttributesDeleted attributesDeleted(ThingId thingId);
 
     /**
      * Creates a new {@link AttributesModified} event with the required passed arguments.
@@ -176,7 +177,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new AttributesModified.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    AttributesModified attributesModified(String thingId, Attributes attributes);
+    AttributesModified attributesModified(ThingId thingId, Attributes attributes);
 
     /**
      * Creates a new {@link FeatureCreated} event with the required passed arguments.
@@ -186,7 +187,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new FeatureCreated.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    FeatureCreated featureCreated(String thingId, Feature feature);
+    FeatureCreated featureCreated(ThingId thingId, Feature feature);
 
     /**
      * Creates a new {@link FeatureDeleted} event with the required passed arguments.
@@ -196,7 +197,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new FeatureDeleted.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    FeatureDeleted featureDeleted(String thingId, String featureId);
+    FeatureDeleted featureDeleted(ThingId thingId, String featureId);
 
     /**
      * Creates a new {@link FeatureModified} event with the required passed arguments.
@@ -206,7 +207,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new FeatureModified.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    FeatureModified featureModified(String thingId, Feature feature);
+    FeatureModified featureModified(ThingId thingId, Feature feature);
 
     /**
      * Creates a new {@link FeaturesCreated} event with the required passed arguments.
@@ -216,7 +217,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new FeaturesCreated.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    FeaturesCreated featuresCreated(String thingId, Features features);
+    FeaturesCreated featuresCreated(ThingId thingId, Features features);
 
     /**
      * Creates a new {@link FeaturesDeleted} event with the required passed arguments.
@@ -225,7 +226,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new FeaturesDeleted.
      * @throws NullPointerException if {@code thingId} is {@code null}.
      */
-    FeaturesDeleted featuresDeleted(String thingId);
+    FeaturesDeleted featuresDeleted(ThingId thingId);
 
     /**
      * Creates a new {@link FeaturesModified} event with the required passed arguments.
@@ -235,7 +236,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new FeaturesModified.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    FeaturesModified featuresModified(String thingId, Features features);
+    FeaturesModified featuresModified(ThingId thingId, Features features);
 
     /**
      * Creates a new {@link FeaturePropertiesCreated} event with the required passed arguments.
@@ -246,7 +247,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new FeaturePropertiesCreated.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    FeaturePropertiesCreated featurePropertiesCreated(String thingId, String featureId, FeatureProperties properties);
+    FeaturePropertiesCreated featurePropertiesCreated(ThingId thingId, String featureId, FeatureProperties properties);
 
     /**
      * Creates a new {@link FeaturePropertiesDeleted} event with the required passed arguments.
@@ -256,7 +257,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new FeaturePropertiesDeleted.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    FeaturePropertiesDeleted featurePropertiesDeleted(String thingId, String featureId);
+    FeaturePropertiesDeleted featurePropertiesDeleted(ThingId thingId, String featureId);
 
     /**
      * Creates a new {@link FeaturePropertiesModified} event with the required passed arguments.
@@ -267,7 +268,8 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new FeaturePropertiesModified.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    FeaturePropertiesModified featurePropertiesModified(String thingId, String featureId, FeatureProperties properties);
+    FeaturePropertiesModified featurePropertiesModified(ThingId thingId, String featureId,
+            FeatureProperties properties);
 
     /**
      * Creates a new {@link FeaturePropertyCreated} event with the required passed arguments.
@@ -279,7 +281,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new FeaturePropertyCreated.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    default FeaturePropertyCreated featurePropertyCreated(final String thingId, final String featureId,
+    default FeaturePropertyCreated featurePropertyCreated(final ThingId thingId, final String featureId,
             final CharSequence propertyJsonPointer, final JsonValue propertyJsonValue) {
         return featurePropertyCreated(thingId, featureId, JsonPointer.of(propertyJsonPointer),
                 propertyJsonValue);
@@ -295,7 +297,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new FeaturePropertyCreated.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    FeaturePropertyCreated featurePropertyCreated(String thingId, String featureId, JsonPointer propertyJsonPointer,
+    FeaturePropertyCreated featurePropertyCreated(ThingId thingId, String featureId, JsonPointer propertyJsonPointer,
             JsonValue propertyJsonValue);
 
     /**
@@ -307,7 +309,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new FeaturePropertyDeleted.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    default FeaturePropertyDeleted featurePropertyDeleted(final String thingId, final String featureId,
+    default FeaturePropertyDeleted featurePropertyDeleted(final ThingId thingId, final String featureId,
             final CharSequence propertyJsonPointer) {
         return featurePropertyDeleted(thingId, featureId, JsonPointer.of(propertyJsonPointer));
     }
@@ -321,7 +323,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new FeaturePropertyDeleted.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    FeaturePropertyDeleted featurePropertyDeleted(String thingId, String featureId, JsonPointer propertyJsonPointer);
+    FeaturePropertyDeleted featurePropertyDeleted(ThingId thingId, String featureId, JsonPointer propertyJsonPointer);
 
     /**
      * Creates a new {@link FeaturePropertyModified} event with the required passed arguments.
@@ -333,7 +335,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new FeaturePropertyModified.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    default FeaturePropertyModified featurePropertyModified(final String thingId, final String featureId,
+    default FeaturePropertyModified featurePropertyModified(final ThingId thingId, final String featureId,
             final CharSequence propertyJsonPointer, final JsonValue propertyJsonValue) {
         return featurePropertyModified(thingId, featureId, JsonPointer.of(propertyJsonPointer),
                 propertyJsonValue);
@@ -349,7 +351,7 @@ public interface GlobalEventFactory extends EventFactory {
      * @return the new FeaturePropertyModified.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    FeaturePropertyModified featurePropertyModified(String thingId, String featureId, JsonPointer
+    FeaturePropertyModified featurePropertyModified(ThingId thingId, String featureId, JsonPointer
             propertyJsonPointer, JsonValue propertyJsonValue);
 
 }

@@ -31,6 +31,7 @@ import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessageHeadersBuilder;
 import org.eclipse.ditto.model.messages.MessageResponseConsumer;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
+import org.eclipse.ditto.model.things.ThingId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,7 +48,7 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
 
     private final boolean isResponse;
     private MessageDirection messageDirection;
-    private String messageThingId;
+    private ThingId messageThingId;
     private String messageFeatureId;
     private String messageSubject;
     private Duration messageTimeout;
@@ -160,7 +161,7 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
     private class SetThingIdImpl implements SetThingId<T> {
 
         @Override
-        public SetFeatureIdOrSubject<T> thingId(final String thingId) {
+        public SetFeatureIdOrSubject<T> thingId(final ThingId thingId) {
             messageThingId = thingId;
             return new SetFeatureIdOrSubjectImpl();
         }

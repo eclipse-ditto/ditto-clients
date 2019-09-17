@@ -48,9 +48,10 @@ import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.KnownMessageSubjects;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
+import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.model.things.WithThingId;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.WithFeatureId;
-import org.eclipse.ditto.signals.base.WithThingId;
 import org.eclipse.ditto.signals.commands.live.base.LiveCommand;
 import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswer;
 import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswerBuilder;
@@ -87,8 +88,8 @@ import org.slf4j.LoggerFactory;
  * @since 1.0.0
  */
 @ParametersAreNonnullByDefault
-public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFeatureHandle> implements Live,
-        LiveCommandProcessor {
+public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFeatureHandle>
+        implements Live, LiveCommandProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LiveImpl.class);
 
@@ -145,12 +146,12 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
     }
 
     @Override
-    protected LiveThingHandleImpl createThingHandle(final String thingId) {
+    protected LiveThingHandleImpl createThingHandle(final ThingId thingId) {
         return new LiveThingHandleImpl(configuration, thingId);
     }
 
     @Override
-    protected LiveFeatureHandleImpl createFeatureHandle(final String thingId, final String featureId) {
+    protected LiveFeatureHandleImpl createFeatureHandle(final ThingId thingId, final String featureId) {
         return new LiveFeatureHandleImpl(configuration, thingId, featureId);
     }
 
@@ -184,7 +185,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                             boolean handled = false;
 
                             if (liveCommand instanceof WithThingId) {
-                                final String thingId = ((WithThingId) liveCommand).getThingId();
+                                final ThingId thingId = liveCommand.getThingEntityId();
                                 if (liveCommand instanceof WithFeatureId) {
                                     final String featureId = ((WithFeatureId) liveCommand).getFeatureId();
                                     handled = getFeatureHandle(thingId, featureId)
@@ -238,7 +239,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
 
     @Nullable
     private static String calculateMessagePath(final Message<?> message) {
-        final String thingId = message.getThingId();
+        final ThingId thingId = message.getThingEntityId();
         final String subject = message.getSubject();
 
         if (thingId == null || subject == null) {
@@ -255,7 +256,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
         }
         // Direction is set to "TO" -> Message is put in the "inbox"
         // Direction is set to "FROM" -> Message is put in the "outbox"
-        final String inboxOutbox = (direction == MessageDirection.TO) ? "inbox" : "outbox";
+        final String inboxOutbox = direction == MessageDirection.TO ? "inbox" : "outbox";
 
         final String messagePath;
         if (KnownMessageSubjects.CLAIM_SUBJECT.equals(subject)) {
@@ -282,14 +283,14 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
         return new PendingMessage<T>() {
 
             @Override
-            public MessageSender.SetFeatureIdOrSubject<T> from(final String thingId) {
+            public MessageSender.SetFeatureIdOrSubject<T> from(final ThingId thingId) {
                 return ImmutableMessageSender.<T>newInstance()
                         .from(this::sendMessage)
                         .thingId(thingId);
             }
 
             @Override
-            public MessageSender.SetFeatureIdOrSubject<T> to(final String thingId) {
+            public MessageSender.SetFeatureIdOrSubject<T> to(final ThingId thingId) {
                 return ImmutableMessageSender.<T>newInstance()
                         .to(this::sendMessage)
                         .thingId(thingId);

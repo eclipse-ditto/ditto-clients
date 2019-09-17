@@ -21,7 +21,7 @@ import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.exceptions.DuplicateRegistrationIdException;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonPointer;
-import org.eclipse.ditto.signals.base.WithThingId;
+import org.eclipse.ditto.model.things.WithThingId;
 
 /**
  * Provides the necessary functionality for registering handlers which are notified about property changes.

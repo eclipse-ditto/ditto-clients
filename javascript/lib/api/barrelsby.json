@@ -1,0 +1,6 @@
+{
+  "singleQuotes": true,
+  "delete": true,
+  "directory": "./dist",
+  "exclude": "./index.*"
+}

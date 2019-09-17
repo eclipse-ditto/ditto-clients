@@ -33,4 +33,5 @@ public interface FeatureChange extends Change, WithFeatureId {
     default String getFeatureId() {
         return getFeature().getId();
     }
+
 }

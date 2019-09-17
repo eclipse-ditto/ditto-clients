@@ -22,7 +22,7 @@ import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Features;
 import org.eclipse.ditto.model.things.Thing;
-import org.eclipse.ditto.signals.base.WithThingId;
+import org.eclipse.ditto.model.things.WithThingId;
 
 /**
  * A {@code ThingHandle} is the entry point to managing and monitoring a <em>specific</em> {@code Thing}. It can for

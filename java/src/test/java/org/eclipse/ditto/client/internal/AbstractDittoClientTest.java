@@ -15,6 +15,7 @@ package org.eclipse.ditto.client.internal;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -30,6 +31,7 @@ import org.eclipse.ditto.client.internal.bus.BusFactory;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.messaging.mock.MockMessagingProvider;
 import org.eclipse.ditto.client.rule.FailOnExceptionRule;
+import org.eclipse.ditto.model.things.ThingId;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -44,8 +46,6 @@ public abstract class AbstractDittoClientTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDittoClientTest.class);
 
-    protected static final String THING_ID = "org.eclipse.ditto:aThing";
-
     protected static final int TIMEOUT = 100;
     protected static final TimeUnit TIME_UNIT = TimeUnit.MILLISECONDS;
 
@@ -58,15 +58,15 @@ public abstract class AbstractDittoClientTest {
     @Rule
     public TestRule rule = new FailOnExceptionRule(uncaught);
 
-    protected static String newThingId(final String thingId) {
-        return "org.eclipse.ditto.test:" + thingId;
+    protected static ThingId newThingId(final String thingId) {
+        return ThingId.of("org.eclipse.ditto.test:" + thingId);
     }
 
     public static String extractUtf8StringFromBody(final Optional<ByteBuffer> body) {
-        return body
+        return Objects.requireNonNull(body
                 .map(StandardCharsets.UTF_8::decode)
                 .map(CharBuffer::toString)
-                .orElse(null);
+                .orElse(null));
     }
 
     @Before

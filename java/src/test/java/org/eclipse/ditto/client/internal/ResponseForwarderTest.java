@@ -14,6 +14,7 @@ package org.eclipse.ditto.client.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -143,7 +144,7 @@ public final class ResponseForwarderTest {
 
     @Test
     public void handleThingErrorResponse() {
-        final DittoRuntimeException exception = ThingNotAccessibleException.newBuilder("com.example:myThing").build();
+        final DittoRuntimeException exception = ThingNotAccessibleException.newBuilder(THING_ID).build();
         final ThingErrorResponse thingErrorResponse = ThingErrorResponse.of(exception, dittoHeaders);
         underTest.put(CORRELATION_ID, responsePromise);
 

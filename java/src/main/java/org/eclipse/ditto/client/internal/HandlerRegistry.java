@@ -29,6 +29,7 @@ import org.eclipse.ditto.client.internal.bus.PointerWithData;
 import org.eclipse.ditto.client.internal.bus.Registration;
 import org.eclipse.ditto.client.management.FeatureHandle;
 import org.eclipse.ditto.client.management.ThingHandle;
+import org.eclipse.ditto.model.things.ThingId;
 
 /**
  * Manages handlers on an {@link PointerBus}. Allows registration and deregistration of consumers based on a {@code
@@ -42,7 +43,7 @@ public final class HandlerRegistry<T extends ThingHandle, F extends FeatureHandl
 
     private final PointerBus bus;
     private final ConcurrentHashMap<String, Registration<Consumer<PointerWithData>>> registry;
-    private final Map<String, T> thingHandles;
+    private final Map<ThingId, T> thingHandles;
     private final Map<String, F> featureHandles;
 
     /**
@@ -120,7 +121,7 @@ public final class HandlerRegistry<T extends ThingHandle, F extends FeatureHandl
      * @param thingHandleSupplier the Supplier which can create a new ThingHandle
      * @return the looked up or created thing handle
      */
-    public T thingHandleForThingId(final String thingId, final Supplier<T> thingHandleSupplier) {
+    public T thingHandleForThingId(final ThingId thingId, final Supplier<T> thingHandleSupplier) {
         if (!thingHandles.containsKey(thingId)) {
             thingHandles.put(thingId, thingHandleSupplier.get());
         }
@@ -133,7 +134,7 @@ public final class HandlerRegistry<T extends ThingHandle, F extends FeatureHandl
      * @param thingId the Thing ID to look for in the already created ThingHandles
      * @return the looked up thing handle
      */
-    public Optional<T> getThingHandle(final String thingId) {
+    public Optional<T> getThingHandle(final ThingId thingId) {
         return Optional.ofNullable(thingHandles.get(thingId));
     }
 
@@ -147,9 +148,9 @@ public final class HandlerRegistry<T extends ThingHandle, F extends FeatureHandl
      * @param featureHandleSupplier the Supplier which can create a new ThingHandle
      * @return the looked up or created feature handle
      */
-    public F featureHandleForFeatureId(final String thingId, final String featureId,
+    public F featureHandleForFeatureId(final ThingId thingId, final String featureId,
             final Supplier<F> featureHandleSupplier) {
-        final String key = thingId + "&&" + featureId;
+        final String key = getFeatureKey(thingId, featureId);
         if (!featureHandles.containsKey(key)) {
             featureHandles.put(key, featureHandleSupplier.get());
         }
@@ -164,8 +165,13 @@ public final class HandlerRegistry<T extends ThingHandle, F extends FeatureHandl
      * @param featureId the Feature ID to look for in the already created FeatureHandles
      * @return the looked up feature handle
      */
-    protected Optional<F> getFeatureHandle(final String thingId, final String featureId) {
-        final String key = thingId + "&&" + featureId;
+    protected Optional<F> getFeatureHandle(final ThingId thingId, final String featureId) {
+        final String key = getFeatureKey(thingId, featureId);
         return Optional.ofNullable(featureHandles.get(key));
     }
+
+    private static String getFeatureKey(final ThingId thingId, final String featureId) {
+        return thingId + "&&" + featureId;
+    }
+
 }

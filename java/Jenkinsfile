@@ -1,0 +1,59 @@
+#!groovy
+node {
+  // Need to replace the '%2F' used by Jenkins to deal with / in the path (e.g. story/...)
+  String theBranch = "${env.BRANCH_NAME}".replace('%2F', '-').replace('/','-')
+  String theVersion = "0-${theBranch}-SNAPSHOT"
+  String dittoVersion = theVersion
+  String theMvnRepo = "$WORKSPACE/../feature-repository-${theBranch}";
+
+  stage('Checkout') {
+    checkout scm
+  }
+
+  stage('Choose Ditto Version to build against') {
+    dittoVersion = askForDittoVersionToUse(dittoVersion)
+    echo "Selected Ditto version: $dittoVersion"
+  }
+
+  stage('Build') {
+    dir("$WORKSPACE/java") {
+      withMaven(
+              maven: 'maven-3.6.0',
+              jdk: 'JDK8',
+              mavenLocalRepo: theMvnRepo) {
+
+        sh "mvn clean deploy javadoc:jar source:jar" +
+                " -T16 --batch-mode --errors" +
+                " -Pinternal-repos -DcreateJavadoc=true" +
+                " -Drevision=${theVersion}" +
+                " -Dditto.version=${dittoVersion}"
+      }
+    }
+  }
+
+  stage('SonarQube analysis') {
+    withSonarQubeEnv("${env.SONAR_QUBE_ENV}") {
+      withMaven(
+              maven: 'maven-3.6.0',
+              jdk: 'JDK8-Oracle',
+              mavenLocalRepo: theMvnRepo) {
+
+        sh "mvn -f java/pom.xml --batch-mode --errors sonar:sonar -Dsonar.branch.name=${theBranch} " +
+                " -Drevision=${theVersion}" +
+                " -Dditto.version=${dittoVersion}"
+      }
+    }
+  }
+}
+
+def askForDittoVersionToUse(defaultVersion) {
+  try {
+    timeout(time: 1, unit: 'MINUTES') {
+      def branch = input message: 'Which Ditto version to use?',
+              parameters: [string(defaultValue: defaultVersion, description: 'Branch', name: 'DITTO-BRANCH')]
+      return branch
+    }
+  } catch (e) {
+    return defaultVersion
+  }
+}

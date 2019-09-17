@@ -29,6 +29,7 @@ import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.FeatureProperties;
 import org.eclipse.ditto.model.things.Features;
 import org.eclipse.ditto.model.things.Thing;
+import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.signals.events.things.AttributeCreated;
 import org.eclipse.ditto.signals.events.things.AttributeDeleted;
 import org.eclipse.ditto.signals.events.things.AttributeModified;
@@ -89,7 +90,7 @@ public final class ImmutableGlobalEventFactory implements GlobalEventFactory {
     }
 
     @Override
-    public ThingDeleted thingDeleted(final String thingId) {
+    public ThingDeleted thingDeleted(final ThingId thingId) {
         return ThingDeleted.of(thingId, -1, Instant.now(), getDefaultDittoHeaders());
     }
 
@@ -99,104 +100,104 @@ public final class ImmutableGlobalEventFactory implements GlobalEventFactory {
     }
 
     @Override
-    public AttributeCreated attributeCreated(final String thingId, final JsonPointer attributePointer,
+    public AttributeCreated attributeCreated(final ThingId thingId, final JsonPointer attributePointer,
             final JsonValue attributeValue) {
         return AttributeCreated.of(thingId, attributePointer, attributeValue, -1, Instant.now(),
                 getDefaultDittoHeaders());
     }
 
     @Override
-    public AttributeDeleted attributeDeleted(final String thingId, final JsonPointer attributePointer) {
+    public AttributeDeleted attributeDeleted(final ThingId thingId, final JsonPointer attributePointer) {
         return AttributeDeleted.of(thingId, attributePointer, -1, Instant.now(), getDefaultDittoHeaders());
     }
 
     @Override
-    public AttributeModified attributeModified(final String thingId, final JsonPointer attributePointer,
+    public AttributeModified attributeModified(final ThingId thingId, final JsonPointer attributePointer,
             final JsonValue attributeValue) {
         return AttributeModified.of(thingId, attributePointer, attributeValue, -1, Instant.now(),
                 getDefaultDittoHeaders());
     }
 
     @Override
-    public AttributesCreated attributesCreated(final String thingId, final Attributes attributes) {
+    public AttributesCreated attributesCreated(final ThingId thingId, final Attributes attributes) {
         return AttributesCreated.of(thingId, attributes, -1, Instant.now(), getDefaultDittoHeaders());
     }
 
     @Override
-    public AttributesDeleted attributesDeleted(final String thingId) {
+    public AttributesDeleted attributesDeleted(final ThingId thingId) {
         return AttributesDeleted.of(thingId, -1, Instant.now(), getDefaultDittoHeaders());
     }
 
     @Override
-    public AttributesModified attributesModified(final String thingId, final Attributes attributes) {
+    public AttributesModified attributesModified(final ThingId thingId, final Attributes attributes) {
         return AttributesModified.of(thingId, attributes, -1, Instant.now(), getDefaultDittoHeaders());
     }
 
     @Override
-    public FeatureCreated featureCreated(final String thingId, final Feature feature) {
+    public FeatureCreated featureCreated(final ThingId thingId, final Feature feature) {
         return FeatureCreated.of(thingId, feature, -1, Instant.now(), getDefaultDittoHeaders());
     }
 
     @Override
-    public FeatureDeleted featureDeleted(final String thingId, final String featureId) {
+    public FeatureDeleted featureDeleted(final ThingId thingId, final String featureId) {
         return FeatureDeleted.of(thingId, featureId, -1, Instant.now(), getDefaultDittoHeaders());
     }
 
     @Override
-    public FeatureModified featureModified(final String thingId, final Feature feature) {
+    public FeatureModified featureModified(final ThingId thingId, final Feature feature) {
         return FeatureModified.of(thingId, feature, -1, Instant.now(), getDefaultDittoHeaders());
     }
 
     @Override
-    public FeaturesCreated featuresCreated(final String thingId, final Features features) {
+    public FeaturesCreated featuresCreated(final ThingId thingId, final Features features) {
         return FeaturesCreated.of(thingId, features, -1, Instant.now(), getDefaultDittoHeaders());
     }
 
     @Override
-    public FeaturesDeleted featuresDeleted(final String thingId) {
+    public FeaturesDeleted featuresDeleted(final ThingId thingId) {
         return FeaturesDeleted.of(thingId, -1, Instant.now(), getDefaultDittoHeaders());
     }
 
     @Override
-    public FeaturesModified featuresModified(final String thingId, final Features features) {
+    public FeaturesModified featuresModified(final ThingId thingId, final Features features) {
         return FeaturesModified.of(thingId, features, -1, Instant.now(), getDefaultDittoHeaders());
     }
 
     @Override
-    public FeaturePropertiesCreated featurePropertiesCreated(final String thingId, final String featureId,
+    public FeaturePropertiesCreated featurePropertiesCreated(final ThingId thingId, final String featureId,
             final FeatureProperties properties) {
         return FeaturePropertiesCreated.of(thingId, featureId, properties, -1, Instant.now(),
                 getDefaultDittoHeaders());
     }
 
     @Override
-    public FeaturePropertiesDeleted featurePropertiesDeleted(final String thingId, final String featureId) {
+    public FeaturePropertiesDeleted featurePropertiesDeleted(final ThingId thingId, final String featureId) {
         return FeaturePropertiesDeleted.of(thingId, featureId, -1, Instant.now(), getDefaultDittoHeaders());
     }
 
     @Override
-    public FeaturePropertiesModified featurePropertiesModified(final String thingId, final String featureId,
+    public FeaturePropertiesModified featurePropertiesModified(final ThingId thingId, final String featureId,
             final FeatureProperties properties) {
         return FeaturePropertiesModified.of(thingId, featureId, properties, -1, Instant.now(),
                 getDefaultDittoHeaders());
     }
 
     @Override
-    public FeaturePropertyCreated featurePropertyCreated(final String thingId, final String featureId,
+    public FeaturePropertyCreated featurePropertyCreated(final ThingId thingId, final String featureId,
             final JsonPointer propertyJsonPointer, final JsonValue propertyJsonValue) {
         return FeaturePropertyCreated.of(thingId, featureId, propertyJsonPointer, propertyJsonValue, -1,
                 Instant.now(), getDefaultDittoHeaders());
     }
 
     @Override
-    public FeaturePropertyDeleted featurePropertyDeleted(final String thingId, final String featureId,
+    public FeaturePropertyDeleted featurePropertyDeleted(final ThingId thingId, final String featureId,
             final JsonPointer propertyJsonPointer) {
         return FeaturePropertyDeleted.of(thingId, featureId, propertyJsonPointer, -1, Instant.now(),
                 getDefaultDittoHeaders());
     }
 
     @Override
-    public FeaturePropertyModified featurePropertyModified(final String thingId, final String featureId,
+    public FeaturePropertyModified featurePropertyModified(final ThingId thingId, final String featureId,
             final JsonPointer propertyJsonPointer, final JsonValue propertyJsonValue) {
         return FeaturePropertyModified.of(thingId, featureId, propertyJsonPointer, propertyJsonValue, -1,
                 Instant.now(), getDefaultDittoHeaders());

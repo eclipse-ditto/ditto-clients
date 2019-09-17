@@ -12,6 +12,7 @@
  */
 package org.eclipse.ditto.client;
 
+import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
 import java.util.Optional;

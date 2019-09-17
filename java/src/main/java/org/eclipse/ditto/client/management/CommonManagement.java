@@ -26,6 +26,7 @@ import org.eclipse.ditto.client.registration.ThingFeaturePropertiesChangeRegistr
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.model.things.Thing;
+import org.eclipse.ditto.model.things.ThingId;
 
 /**
  * A {@code CommonManagement} provides the basic functionality, which can be used to manage (i.e., create and delete)
@@ -80,7 +81,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @return the ThingHandle for the provided {@code thingId}.
      * @throws IllegalArgumentException if {@code thingId} is {@code null}.
      */
-    T forId(String thingId);
+    T forId(ThingId thingId);
 
     /**
      * Creates a new instance of {@link FeatureHandle} which aggregates all operations of an already existing {@link
@@ -91,7 +92,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @return the FeatureHandle for the provided {@code thingId}, {@code featureId} combination.
      * @throws IllegalArgumentException if {@code thingId} or {@code featureId} is {@code null}.
      */
-    F forFeature(String thingId, String featureId);
+    F forFeature(ThingId thingId, String featureId);
 
     /**
      * Start consuming changes (for {@code twin()} and additionally messages and commands (for {@code live()}.
@@ -142,7 +143,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @throws IllegalArgumentException if {@code thingId} is {@code null} or empty.
      * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
      */
-    CompletableFuture<Thing> create(String thingId, Option<?>... options);
+    CompletableFuture<Thing> create(ThingId thingId, Option<?>... options);
 
     /**
      * Creates the given {@link Thing}.
@@ -249,7 +250,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code thingId} is {@code null}.
      */
-    CompletableFuture<Void> delete(String thingId, Option<?>... options);
+    CompletableFuture<Void> delete(ThingId thingId, Option<?>... options);
 
     /**
      * Gets a list of {@link Thing}s specified by the given identifiers. The result contains only existing and readable
@@ -261,7 +262,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if any argument is {@code null}.
      */
-    CompletableFuture<List<Thing>> retrieve(String thingId, String... thingIds);
+    CompletableFuture<List<Thing>> retrieve(ThingId thingId, ThingId... thingIds);
 
     /**
      * Gets a list of {@link Thing}s specified by the given identifiers. The result contains only existing and readable
@@ -274,7 +275,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if any argument is {@code null}.
      */
-    CompletableFuture<List<Thing>> retrieve(JsonFieldSelector fieldSelector, String thingId, String... thingIds);
+    CompletableFuture<List<Thing>> retrieve(JsonFieldSelector fieldSelector, ThingId thingId, ThingId... thingIds);
 
     /**
      * Gets a list of {@link Thing}s specified by the given identifiers. The result contains only existing and readable
@@ -285,7 +286,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code thingIds} is {@code null}.
      */
-    CompletableFuture<List<Thing>> retrieve(Iterable<String> thingIds);
+    CompletableFuture<List<Thing>> retrieve(Iterable<ThingId> thingIds);
 
     /**
      * Gets a list of {@link Thing}s specified by the given identifiers. The result contains only existing and readable
@@ -297,6 +298,6 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if any argument is {@code null}.
      */
-    CompletableFuture<List<Thing>> retrieve(JsonFieldSelector fieldSelector, Iterable<String> thingIds);
+    CompletableFuture<List<Thing>> retrieve(JsonFieldSelector fieldSelector, Iterable<ThingId> thingIds);
 
 }

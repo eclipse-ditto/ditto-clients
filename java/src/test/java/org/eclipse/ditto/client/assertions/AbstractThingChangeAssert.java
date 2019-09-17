@@ -18,6 +18,7 @@ import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.ChangeAction;
+import org.eclipse.ditto.model.things.ThingId;
 
 /**
  *
@@ -34,8 +35,8 @@ public abstract class AbstractThingChangeAssert<S extends AbstractAssert<S, T>, 
         super(actual, selfType);
     }
 
-    public S hasThingId(final String expectedThingId) {
-        return assertThatEqual(expectedThingId, actual.getThingId(), "Thing identifier");
+    public S hasThingId(final ThingId expectedThingId) {
+        return assertThatEqual(expectedThingId, actual.getEntityId(), "Thing identifier");
     }
 
     public S isAdded() {

@@ -59,6 +59,7 @@ import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.base.json.Jsonifiable;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
+import org.eclipse.ditto.model.policies.PoliciesModelFactory;
 import org.eclipse.ditto.model.things.AccessControlListModelFactory;
 import org.eclipse.ditto.model.things.AttributesModelFactory;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
@@ -217,6 +218,10 @@ public class RunOSGiContainerIntegrationTest {
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(DittoHeaders.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(Jsonifiable.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(DittoRuntimeException.class));
+
+        // ditto-model-policies
+        LOG.info("Ensuring ditto-model-policies is usable from OSGi..");
+        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(PoliciesModelFactory.class));
 
         // ditto-model-things:
         LOG.info("Ensuring ditto-model-things is usable from OSGi..");

@@ -32,6 +32,7 @@ import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessageResponseConsumer;
+import org.eclipse.ditto.model.things.ThingId;
 
 /**
  * Immutable implementation for {@link RepliableMessage}.
@@ -80,8 +81,8 @@ public final class ImmutableRepliableMessage<T, U> implements RepliableMessage<T
     }
 
     @Override
-    public String getThingId() {
-        return message.getThingId();
+    public ThingId getThingEntityId() {
+        return message.getThingEntityId();
     }
 
     @Override
@@ -142,7 +143,7 @@ public final class ImmutableRepliableMessage<T, U> implements RepliableMessage<T
     @Override
     public MessageSender.SetPayloadOrSend<U> reply() {
         return ImmutableMessageSender.<U>response().from(responseConsumer)
-                .thingId(message.getThingId())
+                .thingId(message.getThingEntityId())
                 .featureId(message.getFeatureId().orElse(null))
                 .subject(message.getSubject())
                 .correlationId(message.getCorrelationId().orElseThrow(

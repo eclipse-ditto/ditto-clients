@@ -20,6 +20,7 @@ import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable
 import org.eclipse.ditto.client.TestConstants;
 import org.eclipse.ditto.client.live.events.GlobalEventFactory;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
+import org.eclipse.ditto.model.things.ThingId;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -50,7 +51,7 @@ public final class ImmutableThingEventFactoryTest {
     public void assertImmutability() {
         assertInstancesOf(ImmutableThingEventFactory.class,
                 areImmutable(),
-                provided(GlobalEventFactory.class).isAlsoImmutable());
+                provided(GlobalEventFactory.class, ThingId.class).areAlsoImmutable());
     }
 
     /**

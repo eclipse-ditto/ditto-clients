@@ -32,6 +32,7 @@ import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessageResponseConsumer;
+import org.eclipse.ditto.model.things.ThingId;
 
 /**
  * A specialized Message implementation which delegates all calls to a passed in {@code delegateMessage} except for the
@@ -125,8 +126,8 @@ public final class ImmutableDeserializingMessage<T> implements Message<T> {
     }
 
     @Override
-    public String getThingId() {
-        return delegateMessage.getThingId();
+    public ThingId getThingEntityId() {
+        return delegateMessage.getThingEntityId();
     }
 
     @Override
@@ -206,7 +207,7 @@ public final class ImmutableDeserializingMessage<T> implements Message<T> {
     public String toString() {
         return getClass().getSimpleName() + " [" +
                 "direction=" + getDirection() +
-                ", thingId=" + getThingId() +
+                ", thingId=" + getThingEntityId() +
                 ", featureId=" + getFeatureId().orElse(null) +
                 ", subject=" + getSubject() +
                 ", contentType=" + getContentType().orElse(null) +

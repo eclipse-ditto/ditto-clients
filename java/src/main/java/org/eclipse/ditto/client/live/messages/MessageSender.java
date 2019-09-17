@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.messages.Message;
+import org.eclipse.ditto.model.things.ThingId;
 
 /**
  * Builder for instances of {@link Message} which uses Object Scoping and Method Chaining to provide a convenient usage
@@ -67,7 +68,7 @@ public interface MessageSender<T> {
          * Feature} from/to which the Message will be sent, or to leave the featureId empty and set the subject of the
          * Message.
          */
-        SetFeatureIdOrSubject<T> thingId(String thingId);
+        SetFeatureIdOrSubject<T> thingId(ThingId thingId);
     }
 
     /**

@@ -1,0 +1,20 @@
+{
+  "packages": [
+    "lib/*"
+  ],
+  "command": {
+    "publish": {
+      "ignoreChanges": [
+        "ignored-file",
+        "*.md"
+      ]
+    },
+    "version": {
+      "allowBranch": [
+        "master",
+        "feature/*"
+      ]
+    }
+  },
+  "version": "0.0.1"
+}
