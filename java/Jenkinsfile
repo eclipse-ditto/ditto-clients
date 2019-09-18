@@ -35,7 +35,7 @@ node {
     withSonarQubeEnv("${env.SONAR_QUBE_ENV}") {
       withMaven(
               maven: 'maven-3.6.0',
-              jdk: 'JDK8-Oracle',
+              jdk: 'JDK8',
               mavenLocalRepo: theMvnRepo) {
 
         sh "mvn -f java/pom.xml --batch-mode --errors sonar:sonar -Dsonar.branch.name=${theBranch} " +
