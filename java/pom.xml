@@ -689,11 +689,22 @@
             <artifactId>nv-websocket-client</artifactId>
             <version>${nv-websocket-client.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
+        </dependency>
+
+        <!-- ### Compile - OSGi ### -->
+        <dependency>
+            <groupId>com.eclipsesource.minimal-json</groupId>
+            <artifactId>minimal-json</artifactId>
+            <version>${minimal-json.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.atteo.classindex</groupId>
+            <artifactId>classindex</artifactId>
+            <version>${classindex.version}</version>
         </dependency>
 
         <!-- ### Compile - Ditto artifacts ### -->
@@ -702,7 +713,6 @@
             <artifactId>ditto-json</artifactId>
             <version>${ditto.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-model-base</artifactId>
@@ -718,7 +728,6 @@
             <artifactId>ditto-model-messages</artifactId>
             <version>${ditto.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-signals-base</artifactId>
@@ -744,7 +753,6 @@
             <artifactId>ditto-signals-commands-messages</artifactId>
             <version>${ditto.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-signals-events-base</artifactId>
@@ -853,12 +861,6 @@
             <groupId>org.ops4j.pax.exam</groupId>
             <artifactId>pax-exam-link-mvn</artifactId>
             <version>${pax.exam.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.atteo.classindex</groupId>
-            <artifactId>classindex</artifactId>
-            <version>${classindex.version}</version>
             <scope>test</scope>
         </dependency>
 

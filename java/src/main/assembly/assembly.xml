@@ -29,8 +29,8 @@
             <outputDirectory>${artifactId}-${version}-bundles</outputDirectory>
             <includes>
                 <include>org.slf4j:slf4j-api</include>
-                <include>com.eclipsesource.minimal-json:minimal-json</include>
                 <include>com.neovisionaries:nv-websocket-client</include>
+                <include>com.eclipsesource.minimal-json:minimal-json</include>
                 <include>org.atteo.classindex:classindex</include>
                 <include>org.eclipse.ditto:ditto-json</include>
                 <include>org.eclipse.ditto:ditto-model-base</include>
