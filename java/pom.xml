@@ -685,21 +685,9 @@
     <dependencies>
         <!-- ### Compile ### -->
         <dependency>
-            <groupId>com.eclipsesource.minimal-json</groupId>
-            <artifactId>minimal-json</artifactId>
-            <version>${minimal-json.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.neovisionaries</groupId>
             <artifactId>nv-websocket-client</artifactId>
             <version>${nv-websocket-client.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.atteo.classindex</groupId>
-            <artifactId>classindex</artifactId>
-            <version>${classindex.version}</version>
         </dependency>
 
         <dependency>
@@ -865,6 +853,12 @@
             <groupId>org.ops4j.pax.exam</groupId>
             <artifactId>pax-exam-link-mvn</artifactId>
             <version>${pax.exam.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.atteo.classindex</groupId>
+            <artifactId>classindex</artifactId>
+            <version>${classindex.version}</version>
             <scope>test</scope>
         </dependency>
 
