@@ -23,8 +23,9 @@ import java.util.function.Function;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import org.eclipse.ditto.client.configuration.internal.InternalConfiguration;
+import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
+import org.eclipse.ditto.client.internal.ResponseForwarder;
 import org.eclipse.ditto.client.internal.SendTerminator;
 import org.eclipse.ditto.client.internal.bus.JsonPointerSelector;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
@@ -39,6 +40,7 @@ import org.eclipse.ditto.client.live.messages.PendingMessageWithThingId;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.client.live.messages.internal.ImmutableMessageSender;
 import org.eclipse.ditto.client.management.internal.ThingHandleImpl;
+import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.KnownMessageSubjects;
 import org.eclipse.ditto.model.messages.Message;
@@ -84,39 +86,37 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LiveThingHandleImpl.class);
 
-    private final InternalConfiguration configuration;
-    private final MessageSerializerRegistry serializerRegistry;
-    private final String clientSessionId;
+    private final MessageSerializerRegistry messageSerializerRegistry;
     private final JsonSchemaVersion schemaVersion;
+    private final String sessionId;
     private final Map<Class<? extends LiveCommand>, Function<? extends LiveCommand, LiveCommandAnswerBuilder.BuildStep>>
             liveCommandsFunctions;
 
-    LiveThingHandleImpl(final InternalConfiguration configuration, final ThingId thingId) {
+    LiveThingHandleImpl(final ThingId thingId,
+            final MessagingProvider messagingProvider,
+            final ResponseForwarder responseForwarder,
+            final OutgoingMessageFactory outgoingMessageFactory,
+            final HandlerRegistry<LiveThingHandle, LiveFeatureHandle> handlerRegistry,
+            final MessageSerializerRegistry messageSerializerRegistry,
+            final JsonSchemaVersion schemaVersion,
+            final String sessionId) {
         super(TopicPath.Channel.LIVE, thingId,
-                configuration.getLiveMessagingProviderOrFail(),
-                configuration.getResponseForwarder(),
-                OutgoingMessageFactory.newInstance(configuration.getLiveConfigurationOrFail()),
-                configuration.getLiveHandlerRegistryOrFail());
+                messagingProvider,
+                responseForwarder,
+                outgoingMessageFactory,
+                handlerRegistry);
 
-        this.configuration = configuration;
-        serializerRegistry = configuration
-                .getLiveConfigurationOrFail()
-                .getMessageSerializerConfiguration()
-                .getMessageSerializerRegistry();
-        clientSessionId = configuration
-                .getLiveConfigurationOrFail()
-                .getProviderConfiguration()
-                .getAuthenticationProvider()
-                .getClientSessionId();
-        schemaVersion = configuration
-                .getLiveConfigurationOrFail().getSchemaVersion();
+        this.messageSerializerRegistry = messageSerializerRegistry;
+        this.schemaVersion = schemaVersion;
+        this.sessionId = sessionId;
 
         liveCommandsFunctions = new IdentityHashMap<>();
     }
 
     @Override
     protected LiveFeatureHandleImpl createFeatureHandle(final ThingId thingId, final String featureId) {
-        return new LiveFeatureHandleImpl(configuration, thingId, featureId);
+        return new LiveFeatureHandleImpl(thingId, featureId, getMessagingProvider(), getResponseForwarder(),
+                getOutgoingMessageFactory(), getHandlerRegistry(), messageSerializerRegistry, schemaVersion, sessionId);
     }
 
     /*
@@ -143,7 +143,8 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
             }
 
             private void sendMessage(final Message<T> message) {
-                final Message<?> toBeSentMessage = getOutgoingMessageFactory().sendMessage(serializerRegistry, message);
+                final Message<?> toBeSentMessage =
+                        getOutgoingMessageFactory().sendMessage(messageSerializerRegistry, message);
                 LOGGER.trace("Message about to send: {}", toBeSentMessage);
                 new SendTerminator<>(getMessagingProvider(), getResponseForwarder(), toBeSentMessage).send();
             }
@@ -161,7 +162,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
         argumentNotNull(type, "type");
         argumentNotNull(handler, "handler");
 
-        LiveMessagesUtil.checkSerializerExistForMessageType(serializerRegistry, type, subject);
+        LiveMessagesUtil.checkSerializerExistForMessageType(messageSerializerRegistry, type, subject);
 
         // selector for thing messages:
         final JsonPointerSelector thingSelector = "*".equals(subject)
@@ -179,7 +180,8 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
                         getThingEntityId(), subject);
 
         getHandlerRegistry().register(registrationId, SelectorUtil.or(thingSelector, featureSelector),
-                LiveMessagesUtil.createEventConsumerForRepliableMessage(configuration, getOutgoingMessageFactory(),
+                LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
+                        getResponseForwarder(), getOutgoingMessageFactory(), messageSerializerRegistry,
                         type, handler));
     }
 
@@ -207,7 +209,8 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
                         getThingEntityId(), subject);
 
         getHandlerRegistry().register(registrationId, SelectorUtil.or(thingSelector, featureSelector),
-                LiveMessagesUtil.createEventConsumerForRepliableMessage(configuration, getOutgoingMessageFactory(),
+                LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
+                        getResponseForwarder(), getOutgoingMessageFactory(), messageSerializerRegistry,
                         handler));
     }
 
@@ -219,14 +222,15 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
         argumentNotNull(type, "type");
         argumentNotNull(handler, "handler");
 
-        LiveMessagesUtil.checkSerializerExistForMessageType(serializerRegistry, type);
+        LiveMessagesUtil.checkSerializerExistForMessageType(messageSerializerRegistry, type);
 
         final JsonPointerSelector selector =
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/inbox/messages/{1}", getThingEntityId(),
                         KnownMessageSubjects.CLAIM_SUBJECT);
 
         getHandlerRegistry().register(registrationId, selector,
-                LiveMessagesUtil.createEventConsumerForRepliableMessage(configuration, getOutgoingMessageFactory(),
+                LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
+                        getResponseForwarder(), getOutgoingMessageFactory(), messageSerializerRegistry,
                         type, handler));
     }
 
@@ -241,7 +245,8 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
                         KnownMessageSubjects.CLAIM_SUBJECT);
 
         getHandlerRegistry().register(registrationId, selector,
-                LiveMessagesUtil.createEventConsumerForRepliableMessage(configuration, getOutgoingMessageFactory(),
+                LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
+                        getResponseForwarder(), getOutgoingMessageFactory(), messageSerializerRegistry,
                         handler));
     }
 
@@ -254,7 +259,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
     public void emitEvent(final Function<ThingEventFactory, Event<?>> eventFunction) {
         argumentNotNull(eventFunction);
 
-        final ThingEventFactory thingEventFactory = ImmutableThingEventFactory.getInstance(clientSessionId,
+        final ThingEventFactory thingEventFactory = ImmutableThingEventFactory.getInstance(sessionId,
                 schemaVersion, getThingEntityId());
         final Event<?> eventToEmit = eventFunction.apply(thingEventFactory);
         getMessagingProvider().emitEvent(eventToEmit, TopicPath.Channel.LIVE);

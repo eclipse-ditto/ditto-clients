@@ -17,7 +17,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
-import org.eclipse.ditto.client.configuration.CommonConfiguration;
+import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
+import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
@@ -35,11 +36,29 @@ public interface MessagingProvider {
 
     /**
      * Initializes the Messaging Provider by opening the underlying connections, etc.
-     *
-     * @param configuration {@link CommonConfiguration} providing all possible Ditto Client configurations
-     * @param callbackExecutor the Executor to use for invoking callback operations
      */
-    void initialize(CommonConfiguration configuration, ExecutorService callbackExecutor);
+    void initialize();
+
+    /**
+     * Returns the {@code AuthenticationConfiguration} of this provider.
+     *
+     * @return the configuration.
+     */
+    AuthenticationConfiguration getAuthenticationConfiguration();
+
+    /**
+     * Returns the {@code MessagingConfiguration} of this provider.
+     *
+     * @return the configuration.
+     */
+    MessagingConfiguration getMessagingConfiguration();
+
+    /**
+     * Returns the {@code ExecutorService} of this provider.
+     *
+     * @return the executor service.
+     */
+    ExecutorService getExecutorService();
 
     /**
      * Send Ditto Protocol {@link Adaptable} using the underlying connection.

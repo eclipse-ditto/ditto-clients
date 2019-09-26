@@ -22,8 +22,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.eclipse.ditto.client.configuration.CommonConfiguration;
-import org.eclipse.ditto.client.configuration.ProviderConfiguration;
 import org.eclipse.ditto.client.exceptions.MessageSerializationException;
 import org.eclipse.ditto.client.live.messages.MessageSerializer;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
@@ -80,26 +78,32 @@ import org.slf4j.LoggerFactory;
  */
 public final class OutgoingMessageFactory {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(OutgoingMessageFactory.class);
+
     private static final EntityTagMatchers ASTERISK =
             EntityTagMatchers.fromList(Collections.singletonList(EntityTagMatcher.asterisk()));
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(OutgoingMessageFactory.class);
+    private final JsonSchemaVersion jsonSchemaVersion;
+    private final String sessionId;
 
-    private final CommonConfiguration configuration;
-
-    private OutgoingMessageFactory(final CommonConfiguration configuration) {
-        this.configuration = configuration;
+    private OutgoingMessageFactory(final JsonSchemaVersion jsonSchemaVersion, final String sessionId) {
+        this.jsonSchemaVersion = jsonSchemaVersion;
+        this.sessionId = sessionId;
     }
 
     /**
-     * Creates a new {@code OutgoingMessageFactory} using the passed client configuration.
+     * Creates a new {@code OutgoingMessageFactory}.
      *
-     * @param configuration the live/twin client configuration to use.
-     * @return the new OutgoingMessageFactory instance.
+     * @param jsonSchemaVersion the version in which messages should be created by this factory.
+     * @param sessionId the session id of the client.
+     * @return the factory.
      * @throws NullPointerException if {@code configuration} is {@code null}.
      */
-    public static OutgoingMessageFactory newInstance(final CommonConfiguration configuration) {
-        return new OutgoingMessageFactory(checkNotNull(configuration, "CommonConfiguration"));
+    public static OutgoingMessageFactory newInstance(final JsonSchemaVersion jsonSchemaVersion,
+            final String sessionId) {
+        checkNotNull(jsonSchemaVersion, "jsonSchemaVersion");
+        checkNotNull(sessionId, "sessionId");
+        return new OutgoingMessageFactory(jsonSchemaVersion, sessionId);
     }
 
     public ThingCommand createThing(final Thing thing, final Option<?>... options) {
@@ -146,12 +150,12 @@ public final class OutgoingMessageFactory {
     }
 
     private void logWarningsForAclPolicyUsage(final Thing thing) {
-        if (configuration.getSchemaVersion() == JsonSchemaVersion.V_1 && thing.getPolicyEntityId().isPresent()) {
+        if (jsonSchemaVersion == JsonSchemaVersion.V_1 && thing.getPolicyEntityId().isPresent()) {
             LOGGER.warn("Creating/modifying a Thing with a defined 'policyId' when client was configured to use " +
                     "Ditto Protocol in 'schemaVersion' 1 (which is ACL based). That will most likely result in " +
                     "unexpected behavior.");
         }
-        if (configuration.getSchemaVersion() == JsonSchemaVersion.V_2 && thing.getAccessControlList().isPresent()) {
+        if (jsonSchemaVersion == JsonSchemaVersion.V_2 && thing.getAccessControlList().isPresent()) {
             LOGGER.warn("Creating/modifying a Thing with a defined 'acl' when client was configured to use " +
                     "Ditto Protocol in 'schemaVersion' 2 (which is policy based). That will most likely result in " +
                     "unexpected behavior.");
@@ -381,12 +385,11 @@ public final class OutgoingMessageFactory {
 
     private DittoHeaders buildDittoHeaders(final boolean allowExists, final Option<?>... options) {
         final OptionsEvaluator.Modify modify = OptionsEvaluator.forModifyOptions(options);
-        final OptionsEvaluator.Global global = OptionsEvaluator.forGlobalOptions(options);
 
         final DittoHeadersBuilder headersBuilder = DittoHeaders.newBuilder()
                 .correlationId(UUID.randomUUID().toString())
-                .schemaVersion(configuration.getSchemaVersion())
-                .source(getAuthClientSessionId())
+                .schemaVersion(jsonSchemaVersion)
+                .source(sessionId)
                 .responseRequired(modify.isResponseRequired().orElse(true));
         modify.exists().ifPresent(exists -> {
             if (!allowExists) {
@@ -400,11 +403,6 @@ public final class OutgoingMessageFactory {
         });
 
         return headersBuilder.build();
-    }
-
-    private CharSequence getAuthClientSessionId() {
-        final ProviderConfiguration providerConfiguration = configuration.getProviderConfiguration();
-        return providerConfiguration.getAuthenticationProvider().getClientSessionId();
     }
 
 }

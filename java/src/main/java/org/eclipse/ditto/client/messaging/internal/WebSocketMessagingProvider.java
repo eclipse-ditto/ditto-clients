@@ -10,13 +10,12 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.messaging.websocket.internal;
+package org.eclipse.ditto.client.messaging.internal;
 
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
@@ -44,17 +43,15 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.eclipse.ditto.client.configuration.CommonConfiguration;
-import org.eclipse.ditto.client.configuration.ProxyConfiguration;
-import org.eclipse.ditto.client.exceptions.ClientAuthenticationException;
-import org.eclipse.ditto.client.exceptions.ClientConnectException;
+import org.eclipse.ditto.client.authentication.AuthenticationException;
+import org.eclipse.ditto.client.authentication.AuthenticationProvider;
+import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
+import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.internal.DefaultThreadFactory;
 import org.eclipse.ditto.client.internal.VersionReader;
 import org.eclipse.ditto.client.live.internal.LiveImpl;
-import org.eclipse.ditto.client.messaging.AuthenticationProvider;
+import org.eclipse.ditto.client.messaging.ConnectException;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
-import org.eclipse.ditto.client.messaging.websocket.WsAuthenticationException;
-import org.eclipse.ditto.client.messaging.websocket.WsProviderConfiguration;
 import org.eclipse.ditto.client.twin.internal.TwinImpl;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonMissingFieldException;
@@ -75,6 +72,7 @@ import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessageResponseConsumer;
+import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.DittoProtocolAdapter;
 import org.eclipse.ditto.protocoladapter.HeaderTranslator;
@@ -116,9 +114,9 @@ import com.neovisionaries.ws.client.WebSocketFrame;
  *
  * @since 1.0.0
  */
-final class WsMessagingProvider extends WebSocketAdapter implements MessagingProvider {
+public final class WebSocketMessagingProvider extends WebSocketAdapter implements MessagingProvider {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WsMessagingProvider.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketMessagingProvider.class);
 
     private static final int RECONNECTION_TIMEOUT_SECONDS = 5;
 
@@ -139,14 +137,17 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
      * START-SEND-EVENTS:ACK}
      */
     private static final String PROTOCOL_CMD_ACK_SUFFIX = ":ACK";
-    private static final String WS_PATH = "/ws/";
 
     private static final int MAX_OUTSTANDING_MESSAGE_RESPONSES = 250;
 
-    static final String DITTO_CLIENT_USER_AGENT = "DittoClient/" + VersionReader.determineClientVersion();
+    private static final String DITTO_CLIENT_USER_AGENT = "DittoClient/" + VersionReader.determineClientVersion();
     private static final int CONNECTION_TIMEOUT_MS = 5000;
 
-    private final WsProviderConfiguration<WsMessagingProvider> providerConfiguration;
+    private final MessagingConfiguration messagingConfiguration;
+    private final AuthenticationProvider<WebSocket> authenticationProvider;
+    private final ExecutorService callbackExecutor;
+
+    private final String sessionId;
     private final Map<String, CompletableFuture<Void>> subscriptionsAcks;
     private final Map<String, Consumer<Message<?>>> subscriptions;
     private final ScheduledExecutorService reconnectExecutor;
@@ -157,33 +158,29 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
     private final Map<String, Map<String, String>> registrationConfigs;
     private final Map<String, CompletableFuture<Adaptable>> customAdaptableResponseFutures;
 
-    private JsonSchemaVersion schemaVersion;
     private Consumer<ThingCommandResponse> commandResponseConsumer;
-    private AuthenticationProvider<WebSocket> authenticationProvider;
-    private Map<String, String> additionalAuthenticationHeaders;
-    private URI wsEndpoint;
     private WebSocket webSocket;
     private boolean sendMeTwinEvents = false;
     private boolean sendMeLiveMessages = false;
     private boolean sendMeLiveCommands = false;
     private boolean sendMeLiveEvents = false;
 
-    private ProxyConfiguration proxyConfiguration;
-    private ExecutorService callbackExecutor;
-    private String clientSessionId;
-
     /**
      * Constructs a new {@code WsMessagingProvider}.
      *
-     * @param providerConfiguration the specific configuration to apply.
+     * @param messagingConfiguration the specific configuration to apply.
      */
-    WsMessagingProvider(
-            final WsProviderConfiguration<WsMessagingProvider> providerConfiguration) {
-        this.providerConfiguration = providerConfiguration;
+    private WebSocketMessagingProvider(final MessagingConfiguration messagingConfiguration,
+            final AuthenticationProvider<WebSocket> authenticationProvider,
+            final ExecutorService callbackExecutor) {
+        this.messagingConfiguration = messagingConfiguration;
+        this.authenticationProvider = authenticationProvider;
+        this.callbackExecutor = callbackExecutor;
 
+        sessionId = authenticationProvider.getConfiguration().getSessionId();
         subscriptionsAcks = new ConcurrentHashMap<>();
         subscriptions = new ConcurrentHashMap<>();
-        reconnectExecutor = providerConfiguration.isReconnectionEnabled() ? createScheduledThreadPoolExecutor() : null;
+        reconnectExecutor = messagingConfiguration.isReconnectEnabled() ? createScheduledThreadPoolExecutor() : null;
 
         // by using an empty HeaderTranslator, make sure that all incoming and outgoing headers are just passed through
         protocolAdapter = DittoProtocolAdapter.of(HeaderTranslator.empty());
@@ -197,45 +194,56 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
         return new ScheduledThreadPoolExecutor(1, new DefaultThreadFactory("ditto-client-reconnect"));
     }
 
-    @Override
-    public void initialize(final CommonConfiguration configuration, final ExecutorService callbackExecutor) {
+    /**
+     * Returns a new {@code WebSocketMessagingProvider}.
+     *
+     * @param messagingConfiguration configuration of messaging.
+     * @param authenticationProvider provides authentication.
+     * @param callbackExecutor the executor for messages.
+     * @return the provider.
+     */
+    public static WebSocketMessagingProvider of(final MessagingConfiguration messagingConfiguration,
+            final AuthenticationProvider<WebSocket> authenticationProvider,
+            final ExecutorService callbackExecutor) {
+        checkNotNull(messagingConfiguration, "messagingConfiguration");
+        checkNotNull(authenticationProvider, "authenticationProvider");
+        checkNotNull(callbackExecutor, "callbackExecutor");
 
+        return new WebSocketMessagingProvider(messagingConfiguration, authenticationProvider, callbackExecutor);
+    }
+
+    @Override
+    public AuthenticationConfiguration getAuthenticationConfiguration() {
+        return authenticationProvider.getConfiguration();
+    }
+
+    @Override
+    public MessagingConfiguration getMessagingConfiguration() {
+        return messagingConfiguration;
+    }
+
+    @Override
+    public ExecutorService getExecutorService() {
+        return callbackExecutor;
+    }
+
+    @Override
+    public void initialize() {
         if (webSocket != null && webSocket.isOpen()) {
             // if wsClient was already initialized, skip another initialization
             return;
         }
-        schemaVersion = configuration.getSchemaVersion();
-        wsEndpoint = appendWsPath(providerConfiguration.getEndpointUri(), schemaVersion);
-        this.authenticationProvider =
-                (AuthenticationProvider<WebSocket>) configuration.getProviderConfiguration()
-                        .getAuthenticationProvider();
-        clientSessionId = authenticationProvider.getClientSessionId();
 
-        final Map<String, String> additionalHeaders =
-                configuration.getProviderConfiguration().getAuthenticationConfiguration().getAdditionalHeaders();
-
-        additionalAuthenticationHeaders = new HashMap<>(additionalHeaders);
-        proxyConfiguration = configuration.getProxyConfiguration();
-        this.callbackExecutor = callbackExecutor;
-
-        final WebSocketFactory webSocketFactory = WsClientUtil
-                .createConfiguration(proxyConfiguration, configuration.getTrustStoreConfiguration());
-
-        safeGet(initiateConnection(createWebsocket(webSocketFactory)));
+        safeGet(initiateConnection(createWebsocket()));
     }
 
-    private static URI appendWsPath(final URI baseUri, final JsonSchemaVersion schemaVersion) {
-        final String pathWithoutTrailingSlashes = baseUri.getPath().replaceFirst("/+$", "");
-        final String newPath = pathWithoutTrailingSlashes + WS_PATH + schemaVersion.toString();
-        return baseUri.resolve(newPath);
-    }
-
-    private WebSocket createWebsocket(final WebSocketFactory webSocketFactory) {
+    private WebSocket createWebsocket() {
+        final WebSocketFactory webSocketFactory = WebSocketFactoryFactory.newWebSocketFactory(messagingConfiguration);
         final WebSocket ws;
         try {
-            ws = webSocketFactory.createSocket(wsEndpoint);
+            ws = webSocketFactory.createSocket(messagingConfiguration.getEndpointUri());
         } catch (final IOException e) {
-            throw new ClientConnectException("Failed to create a Socket: " + e.getMessage(), e);
+            throw ConnectException.of(sessionId, e);
         }
         ws.addHeader("User-Agent", DITTO_CLIENT_USER_AGENT);
         ws.setMaxPayloadSize(256 * 1024); // 256 KiB
@@ -246,16 +254,14 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
 
 
     /**
-     * Simple wrapper that catches exceptions of {@code future.get()} and wraps them in a {@link
-     * WsAuthenticationException}.
+     * Wrapper that catches exceptions of {@code future.get()} and wraps them in a {@link AuthenticationException}.
      *
      * @param future the Future to be wrapped.
      * @param <T> the type of the computed result.
      * @return the computed result.
      */
     @SuppressWarnings("squid:S2142")
-    // is handled in `handleInterruptedException` method
-    <T> T safeGet(final Future<T> future) {
+    private <T> T safeGet(final Future<T> future) {
         try {
             return future.get(CONNECTION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
         } catch (final InterruptedException e) {
@@ -268,32 +274,26 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
     }
 
     private <T> T handleInterruptedException(final InterruptedException e) {
-        LOGGER.error("Interrupted", e);
         Thread.currentThread().interrupt();
-        final String msgPattern = "Waiting for response to authentication request for <{0}> was interrupted!";
-        throw new WsAuthenticationException(MessageFormat.format(msgPattern, clientSessionId), e);
+        throw ConnectException.interrupted(sessionId, e);
     }
 
     private <T> T handleTimeoutException(final TimeoutException e) {
-        final String msgPattern = "Waiting for response to authentication request for <{0}> timed out!";
-        throw new WsAuthenticationException(MessageFormat.format(msgPattern, clientSessionId), e);
+        throw ConnectException.timeout(sessionId, e);
     }
 
     private <T> T handleExecutionException(final ExecutionException e) {
         final Throwable cause = e.getCause();
         if (cause instanceof WebSocketException) {
-            LOGGER.error("Got connection exception: {}", cause.getMessage());
+            LOGGER.error("Got exception: {}", cause.getMessage());
 
             if (isAuthenticationException((WebSocketException) cause)) {
-                throw new WsAuthenticationException("The WebSocket has not been created because the upgrade" +
-                        " request lacks valid authentication credentials!", cause);
+                throw AuthenticationException.unauthorized(sessionId, cause);
             } else if (isForbidden((WebSocketException) cause)) {
-                throw new WsAuthenticationException("The WebSocket has not been created because the upgrade" +
-                        " request was FORBIDDEN to be performed!", cause);
+                throw AuthenticationException.forbidden(sessionId, cause);
             }
         }
-        final String msgPattern = "Authentication failed for <{0}>!";
-        throw new WsAuthenticationException(MessageFormat.format(msgPattern, clientSessionId), e);
+        throw AuthenticationException.of(sessionId, e);
     }
 
     private static boolean isAuthenticationException(final WebSocketException exception) {
@@ -325,8 +325,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
 
         checkNotNull(websocket, "web socket");
 
-        final WebSocket ws = authenticationProvider.prepareAuthentication(websocket, additionalAuthenticationHeaders,
-                proxyConfiguration);
+        final WebSocket ws = authenticationProvider.prepareAuthentication(websocket);
         ws.addListener(this);
 
         LOGGER.info("Connecting WebSocket on endpoint <{}>", ws.getURI());
@@ -356,7 +355,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
         message.getCorrelationId().ifPresent(headersBuilder::correlationId);
         final DittoHeaders dittoHeaders = headersBuilder.build();
 
-        final String thingId = message.getThingId();
+        final ThingId thingId = message.getThingEntityId();
         final Optional<HttpStatusCode> statusCodeOptional = message.getStatusCode();
         final Optional<String> featureIdOptional = message.getFeatureId();
         final Adaptable adaptable;
@@ -395,7 +394,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
     private <T> void logUnknownType(final T type, final Throwable throwable) {
         final String typeName = type.getClass().getSimpleName();
         LOGGER.error("Client <{}>: Unknown {} type: <{}> - NOT sending via Ditto WebSocket!",
-                clientSessionId,
+                sessionId,
                 typeName, throwable.getMessage());
     }
 
@@ -469,7 +468,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
                 .removeHeader(DittoHeaderDefinition.AUTHORIZATION_SUBJECTS.getKey())
                 .removeHeader(DittoHeaderDefinition.RESPONSE_REQUIRED.getKey())
                 .removeHeader(DittoHeaderDefinition.SOURCE.getKey())
-                .source(clientSessionId)
+                .source(sessionId)
                 .build();
     }
 
@@ -499,12 +498,12 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
         }
         if (webSocket != null && webSocket.isOpen()) {
             final String stringMessage = ProtocolFactory.wrapAsJsonifiableAdaptable(adaptable).toJsonString();
-            LOGGER.debug("Client <{}>: Sending JSON: {}", clientSessionId,
+            LOGGER.debug("Client <{}>: Sending JSON: {}", sessionId,
                     stringMessage);
             webSocket.sendText(stringMessage);
         } else {
             LOGGER.error("Client <{}>: WebSocket is not connected - going to discard Adaptable '{}'",
-                    clientSessionId, adaptable);
+                    sessionId, adaptable);
         }
     }
 
@@ -518,12 +517,12 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
             final Consumer<Message<?>> handler, final CompletableFuture<Void> receiptFuture) {
         if (subscriptions.containsKey(name)) {
             LOGGER.info("Client <{}>: Handler {} already registered for client",
-                    clientSessionId, name);
+                    sessionId, name);
             receiptFuture.complete(null);
             return false;
         }
 
-        LOGGER.trace("Client <{}>: Registering incoming message handler'", clientSessionId);
+        LOGGER.trace("Client <{}>: Registering incoming message handler'", sessionId);
         subscriptions.put(name, handler);
         registrationConfigs.put(name, registrationConfig);
 
@@ -569,16 +568,17 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
     @Override
     public void close() {
         try {
-            LOGGER.debug("Client <{}>: Closing WebSocket client of endpoint <{}>.", clientSessionId, wsEndpoint);
+            LOGGER.debug("Client <{}>: Closing WebSocket client of endpoint <{}>.", sessionId,
+                    messagingConfiguration.getEndpointUri());
 
             if (null != reconnectExecutor) {
                 reconnectExecutor.shutdownNow();
             }
 
             webSocket.disconnect();
-            LOGGER.debug("Client <{}>: WebSocket destroyed.", clientSessionId);
+            LOGGER.debug("Client <{}>: WebSocket destroyed.", sessionId);
         } catch (final Exception e) {
-            LOGGER.info("Client <{}>: Exception occurred while trying to shutdown http client.", clientSessionId, e);
+            LOGGER.info("Client <{}>: Exception occurred while trying to shutdown http client.", sessionId, e);
         }
     }
 
@@ -587,12 +587,12 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
         this.webSocket = websocket;
 
         callbackExecutor.execute(() -> {
-            LOGGER.info("Client <{}>: WebSocket connection is established", clientSessionId);
+            LOGGER.info("Client <{}>: WebSocket connection is established", sessionId);
 
             if (initiallyConnected.get()) {
                 // we were already connected - so this is a reconnect
                 LOGGER.info("Client <{}>: Subscribing again for messages from backend after reconnection",
-                        clientSessionId);
+                        sessionId);
 
                 // ensures that on re-connection the client subscribes again for the previously subscribed stuff:
                 final CompletableFuture<Void> receiptFuture = new CompletableFuture<>();
@@ -621,7 +621,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
     private void askBackend(final String protocolCmd, final Map<String, String> registrationConfig,
             final CompletableFuture<Void> receiptFuture) {
         LOGGER.info("Client <{}>: Requesting at backend that this client wants to <{}> with params <{}>",
-                clientSessionId, protocolCmd, registrationConfig);
+                sessionId, protocolCmd, registrationConfig);
         if (webSocket != null) {
             final String paramsString = registrationConfig.entrySet()
                     .stream()
@@ -640,7 +640,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
         final CompletableFuture<Void> loggingFuture = new CompletableFuture<>();
         // thenAcceptAsync is very important here! Otherwise the main thread is blocked and no other messages are received:
         loggingFuture.thenAcceptAsync(aVoid -> {
-            LOGGER.debug("Client <{}>: Backend now <{}>.", clientSessionId, protocolCmd);
+            LOGGER.debug("Client <{}>: Backend now <{}>.", sessionId, protocolCmd);
             receiptFuture.complete(aVoid);
         }, callbackExecutor);
         subscriptionsAcks.put(protocolCmd, loggingFuture);
@@ -663,13 +663,13 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
             if (closedByServer) {
                 LOGGER.info(
                         "Client <{}>: WebSocket connection to endpoint <{}> was closed by Server with code <{}> and " +
-                                "reason <{}>.", clientSessionId, wsEndpoint,
+                                "reason <{}>.", sessionId, messagingConfiguration.getEndpointUri(),
                         serverCloseFrame.getCloseCode(),
                         serverCloseFrame.getCloseReason());
                 handleReconnectionIfEnabled();
             } else {
                 LOGGER.info("Client <{}>: WebSocket connection to endpoint <{}> was closed by client",
-                        clientSessionId, wsEndpoint);
+                        sessionId, messagingConfiguration.getEndpointUri());
             }
         });
     }
@@ -685,26 +685,26 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
             } else {
                 errorMsg = "-";
             }
-            LOGGER.error(msgPattern, clientSessionId, errorMsg);
+            LOGGER.error(msgPattern, sessionId, errorMsg);
             handleReconnectionIfEnabled();
         });
     }
 
     private void handleReconnectionIfEnabled() {
 
-        if (providerConfiguration.isReconnectionEnabled()) {
+        if (messagingConfiguration.isReconnectEnabled()) {
             if (initiallyConnected.get() && reconnecting.compareAndSet(false, true)) {
                 // reconnect in a while if client was initially connected and we are not reconnecting already
                 if (null != reconnectExecutor) {
                     LOGGER.info("Client <{}>: Reconnection is enabled. Reconnecting in <{}> seconds ...",
-                            clientSessionId, RECONNECTION_TIMEOUT_SECONDS);
+                            sessionId, RECONNECTION_TIMEOUT_SECONDS);
                     reconnectExecutor.schedule(this::initWebSocketConnectionWithReconnect, RECONNECTION_TIMEOUT_SECONDS,
                             TimeUnit.SECONDS);
                 }
             }
         } else {
             LOGGER.info("Client <{}>: Reconnection is NOT enabled. Closing client ...",
-                    clientSessionId);
+                    sessionId);
             close();
         }
     }
@@ -724,11 +724,11 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
 
     private void waitUntilNextReconnectionAttempt() {
         try {
-            LOGGER.info("Client <{}>: Retrying connection initiation again in <{}> seconds ...", clientSessionId,
+            LOGGER.info("Client <{}>: Retrying connection initiation again in <{}> seconds ...", sessionId,
                     RECONNECTION_TIMEOUT_SECONDS);
             TimeUnit.SECONDS.sleep(RECONNECTION_TIMEOUT_SECONDS);
         } catch (final InterruptedException ie) {
-            LOGGER.error("Client <{}>: Interrupted while waiting for reconnection.", clientSessionId, ie);
+            LOGGER.error("Client <{}>: Interrupted while waiting for reconnection.", sessionId, ie);
             Thread.currentThread().interrupt();
         }
     }
@@ -740,10 +740,10 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
             webSocket.clearHeaders();
             webSocket.clearListeners();
             return safeGet(initiateConnection(webSocket.recreate()));
-        } catch (final ClientAuthenticationException | IOException e) {
+        } catch (final AuthenticationException | IOException e) {
             // log error, but try again (don't end loop)
             final String msgFormat = "Client <{}>: Failed to establish connection ({}): {}";
-            LOGGER.error(msgFormat, clientSessionId, count, e.getMessage());
+            LOGGER.error(msgFormat, sessionId, count, e.getMessage());
             return null;
         }
     }
@@ -754,14 +754,14 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
             final String stringMessage = new String(binary, StandardCharsets.UTF_8);
             LOGGER.debug(
                     "Client <{}>: Received WebSocket byte array message <{}>, as string <{}> - don't know what to do" +
-                            " with it!.", clientSessionId, binary, stringMessage);
+                            " with it!.", sessionId, binary, stringMessage);
         });
     }
 
     @Override
     public void onTextMessage(final WebSocket websocket, final String text) {
         callbackExecutor.execute(() -> {
-            LOGGER.trace("Client <{}>: Received WebSocket string message <{}>", clientSessionId, text);
+            LOGGER.trace("Client <{}>: Received WebSocket string message <{}>", sessionId, text);
             handleIncomingMessage(text);
         });
     }
@@ -821,7 +821,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
             handleLiveMessage(message, correlationId, signal);
         } else {
             final String msgPattern = "Client <{}>: Got Signal on unknown channel <{}>: <{}>";
-            LOGGER.warn(msgPattern, clientSessionId, channel, signal);
+            LOGGER.warn(msgPattern, sessionId, channel, signal);
         }
     }
 
@@ -840,7 +840,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
         } catch (final JsonParseException e) {
             // What the hell was the message?
             final String msgPattern = "Client <{}>: Got unknown non-JSON message on WebSocket: {}";
-            LOGGER.warn(msgPattern, clientSessionId, message, e);
+            LOGGER.warn(msgPattern, sessionId, message, e);
             return null; // renounce on Optional because of object creation impact on performance (probably irrelevant)
         }
     }
@@ -861,7 +861,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
         } catch (final JsonRuntimeException e) {
             // That should not happen; the backend sent a wrong format!
             final String msgPattern = "Client <{}>: Incoming message could not be parsed to JSON due to: <{}>:\n  <{}>";
-            LOGGER.warn(msgPattern, clientSessionId, e.getMessage(), messageJson);
+            LOGGER.warn(msgPattern, sessionId, e.getMessage(), messageJson);
             return null;
         }
     }
@@ -877,7 +877,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
         } catch (final DittoRuntimeException e) {
             // That should not happen; the backend sent a wrong format!
             LOGGER.warn("Client <{}>: Incoming message could not be parsed to Signal due to: <{}>:\n <{}>",
-                    clientSessionId, e.getMessage(), message);
+                    sessionId, e.getMessage(), message);
             return null;
         }
     }
@@ -911,24 +911,24 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
 
     private void handleTwinMessage(final String message, final CharSequence correlationId, final Signal signal) {
         if (signal instanceof ThingCommandResponse) {
-            LOGGER.debug("Client <{}>: Received TWIN Response JSON: {}", clientSessionId, message);
+            LOGGER.debug("Client <{}>: Received TWIN Response JSON: {}", sessionId, message);
             if (signal instanceof ThingErrorResponse) {
                 final DittoRuntimeException cre = ((ErrorResponse) signal).getDittoRuntimeException();
-                LOGGER.warn("Client <{}>: Got TWIN ThingErrorResponse: <{}: {} - {}>", clientSessionId,
+                LOGGER.warn("Client <{}>: Got TWIN ThingErrorResponse: <{}: {} - {}>", sessionId,
                         cre.getClass().getSimpleName(), cre.getMessage(), cre.getDescription().orElse(""));
             }
             commandResponseConsumer.accept((ThingCommandResponse) signal);
         } else if (signal instanceof ThingEvent) {
-            LOGGER.debug("Client <{}>: Received TWIN Event JSON: {}", clientSessionId, message);
+            LOGGER.debug("Client <{}>: Received TWIN Event JSON: {}", sessionId, message);
             handleThingEvent(correlationId, (ThingEvent) signal, TwinImpl.CONSUME_TWIN_EVENTS_HANDLER);
         } else if (signal instanceof DittoRuntimeException) {
             final ThingErrorResponse errorResponse = ThingErrorResponse.of((DittoRuntimeException) signal);
-            LOGGER.debug("Client <{}>: Received TWIN Error JSON: {}", clientSessionId, message);
+            LOGGER.debug("Client <{}>: Received TWIN Error JSON: {}", sessionId, message);
             commandResponseConsumer.accept(errorResponse);
         } else {
             // if we are at this point we must ask: what the hell is that?
             LOGGER.warn("Client <{}>: Got unknown message on WebSocket on TWIN channel: {}",
-                    clientSessionId, message);
+                    sessionId, message);
         }
     }
 
@@ -936,19 +936,19 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
             final Jsonifiable<JsonObject> jsonifiable) {
 
         if (jsonifiable instanceof MessageCommand) {
-            LOGGER.debug("Client <{}>: Received LIVE MessageCommand JSON: {}", clientSessionId,
+            LOGGER.debug("Client <{}>: Received LIVE MessageCommand JSON: {}", sessionId,
                     message);
             handleLiveMessage((MessageCommand) jsonifiable);
         } else if (jsonifiable instanceof MessageCommandResponse) {
-            LOGGER.debug("Client <{}>: Received LIVE MessageCommandResponse JSON: {}", clientSessionId,
+            LOGGER.debug("Client <{}>: Received LIVE MessageCommandResponse JSON: {}", sessionId,
                     message);
             handleLiveMessageResponse((MessageCommandResponse) jsonifiable);
         } else if (jsonifiable instanceof ThingCommand) {
-            LOGGER.debug("Client <{}>: Received LIVE ThingCommand JSON: {}", clientSessionId, message);
+            LOGGER.debug("Client <{}>: Received LIVE ThingCommand JSON: {}", sessionId, message);
             handleLiveCommand(LiveCommandFactory.getInstance().getLiveCommand((Command) jsonifiable));
         } else if (jsonifiable instanceof ThingErrorResponse) {
             final DittoRuntimeException cre = ((ErrorResponse) jsonifiable).getDittoRuntimeException();
-            LOGGER.warn("Client <{}>: Got LIVE ThingErrorResponse: <{}: {} - {}>", clientSessionId,
+            LOGGER.warn("Client <{}>: Got LIVE ThingErrorResponse: <{}: {} - {}>", sessionId,
                     cre.getClass().getSimpleName(), cre.getMessage(), cre.getDescription().orElse(""));
             if (messageCommandResponseConsumers.containsKey(correlationId.toString())) {
                 handleLiveMessageResponse((ThingErrorResponse) jsonifiable);
@@ -956,15 +956,15 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
                 handleLiveCommandResponse((ThingErrorResponse) jsonifiable);
             }
         } else if (jsonifiable instanceof ThingCommandResponse) {
-            LOGGER.debug("Client <{}>: Received LIVE ThingCommandResponse JSON: {}", clientSessionId,
+            LOGGER.debug("Client <{}>: Received LIVE ThingCommandResponse JSON: {}", sessionId,
                     message);
             handleLiveCommandResponse((ThingCommandResponse) jsonifiable);
         } else if (jsonifiable instanceof ThingEvent) {
-            LOGGER.debug("Client <{}>: Received LIVE ThingEvent JSON: {}", clientSessionId, message);
+            LOGGER.debug("Client <{}>: Received LIVE ThingEvent JSON: {}", sessionId, message);
             handleThingEvent(correlationId, (ThingEvent) jsonifiable, LiveImpl.CONSUME_LIVE_EVENTS_HANDLER);
         } else if (jsonifiable instanceof DittoRuntimeException) {
             final ThingErrorResponse errorResponse = ThingErrorResponse.of((DittoRuntimeException) jsonifiable);
-            LOGGER.debug("Client <{}>: Received LIVE Error JSON: {}", clientSessionId, message);
+            LOGGER.debug("Client <{}>: Received LIVE Error JSON: {}", sessionId, message);
             if (messageCommandResponseConsumers.containsKey(correlationId.toString())) {
                 handleLiveMessageResponse(errorResponse);
             } else {
@@ -973,7 +973,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
         } else {
             // if we are at this point we must ask: what the hell is that?
             LOGGER.warn("Client <{}>: Got unknown message on WebSocket on LIVE channel: {}",
-                    clientSessionId, message);
+                    sessionId, message);
         }
     }
 
@@ -981,7 +981,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
             final String subscriptionKey) {
 
         final MessageHeaders messageHeaders =
-                MessageHeaders.newBuilder(MessageDirection.FROM, jsonifiable.getThingId(), jsonifiable.getType())
+                MessageHeaders.newBuilder(MessageDirection.FROM, jsonifiable.getEntityId(), jsonifiable.getType())
                         .correlationId(correlationId)
                         .build();
         final Message<ThingEvent> eventMessage = Message.<ThingEvent>newBuilder(messageHeaders)
@@ -994,7 +994,7 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
             LOGGER.debug("Client <{}>: Dropping incoming event as no subscription for consuming events was" +
                             " registered. Did you call 'client.twin().startConsumption()' or" +
                             " 'client.live().startConsumption()' ?",
-                    clientSessionId);
+                    sessionId);
         }
     }
 
@@ -1007,14 +1007,14 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
         } else {
             LOGGER.warn("Client <{}>: Dropping incoming message as no subscription for consuming messages was" +
                     " registered. Did you call 'client.twin().startConsumption()' or" +
-                    " 'client.live().startConsumption()'?", clientSessionId);
+                    " 'client.live().startConsumption()'?", sessionId);
         }
     }
 
     private void handleLiveMessageResponse(final MessageCommandResponse messageCommandResponse) {
 
         final Message message = messageCommandResponse.getMessage();
-        LOGGER.debug("Client <{}>: Received response message: {}", clientSessionId, message);
+        LOGGER.debug("Client <{}>: Received response message: {}", sessionId, message);
         final String correlationId = messageCommandResponse.getDittoHeaders().getCorrelationId().orElse("");
         Optional.ofNullable(messageCommandResponseConsumers.remove(correlationId))
                 .ifPresent(consumer -> consumer.getResponseConsumer().accept(message, null));
@@ -1034,9 +1034,11 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
         // only accept events with either with:
         // * missing schemaVersion, or
         // * with the same schemaVersion as the client uses
-        if (!commandSchemaVersion.isPresent() || commandSchemaVersion.get().equals(schemaVersion)) {
+        if (!commandSchemaVersion.isPresent() ||
+                commandSchemaVersion.get().equals(messagingConfiguration.getJsonSchemaVersion())) {
             final MessageHeaders messageHeaders =
-                    MessageHeaders.newBuilder(MessageDirection.FROM, liveCommand.getId(), liveCommand.getType())
+                    MessageHeaders.newBuilder(MessageDirection.FROM, liveCommand.getThingEntityId(),
+                            liveCommand.getType())
                             .correlationId(dittoHeaders.getCorrelationId().orElse(null))
                             .build();
             final Message<LiveCommand> liveCommandMessage = Message.<LiveCommand>newBuilder(messageHeaders)
@@ -1050,14 +1052,14 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
                 LOGGER.warn(
                         "Client <{}>: Dropping incoming live command as no subscription for consuming live commands " +
                                 "was registered. Did you call 'client.live().startConsumption()' ?",
-                        clientSessionId);
+                        sessionId);
             }
         } else {
             LOGGER.trace(
                     "Client <{}>: Received live command in other JsonSchemaVersion ({}) than the client uses ({}), not  " +
-                            "delivering it: {}", clientSessionId,
+                            "delivering it: {}", sessionId,
                     commandSchemaVersion.get(),
-                    schemaVersion, liveCommand);
+                    messagingConfiguration.getEndpointUri(), liveCommand);
         }
     }
 
@@ -1070,9 +1072,11 @@ final class WsMessagingProvider extends WebSocketAdapter implements MessagingPro
      */
     private static class LimitedHashMap<K, V> extends LinkedHashMap<K, V> {
 
+        private static final long serialVersionUID = -2771080576933386538L;
+
         private final int maxSize;
 
-        private LimitedHashMap(int maxSize) {
+        private LimitedHashMap(final int maxSize) {
             this.maxSize = maxSize;
         }
 

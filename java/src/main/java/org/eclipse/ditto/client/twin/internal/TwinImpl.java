@@ -17,9 +17,12 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import org.eclipse.ditto.client.configuration.internal.InternalConfiguration;
 import org.eclipse.ditto.client.internal.CommonManagementImpl;
+import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
+import org.eclipse.ditto.client.internal.ResponseForwarder;
+import org.eclipse.ditto.client.internal.bus.PointerBus;
+import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.twin.Twin;
 import org.eclipse.ditto.client.twin.TwinFeatureHandle;
 import org.eclipse.ditto.client.twin.TwinThingHandle;
@@ -39,22 +42,19 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
      */
     public static final String CONSUME_TWIN_EVENTS_HANDLER = "consume-twin-events";
 
-    private final InternalConfiguration configuration;
-
     /**
-     * Creates a new {@link TwinImpl} instance.
-     *
-     * @param configuration the internal configuration
+     * Creates a new {@code TwinImpl} instance.
      */
-    public TwinImpl(final InternalConfiguration configuration) {
+    public TwinImpl(final MessagingProvider messagingProvider,
+            final ResponseForwarder responseForwarder,
+            final OutgoingMessageFactory outgoingMessageFactory,
+            final PointerBus bus) {
         super(TopicPath.Channel.TWIN,
-                configuration.getTwinMessagingProviderOrFail(),
-                configuration.getResponseForwarder(),
-                OutgoingMessageFactory.newInstance(configuration.getTwinConfigurationOrFail()),
-                configuration.getTwinHandlerRegistryOrFail(),
-                configuration.getTwinBusOrFail());
-
-        this.configuration = configuration;
+                messagingProvider,
+                responseForwarder,
+                outgoingMessageFactory,
+                new HandlerRegistry<>(bus),
+                bus);
     }
 
     @Override
@@ -62,8 +62,8 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
 
         return new TwinThingHandleImpl(
                 thingId,
-                configuration.getTwinMessagingProviderOrFail(),
-                configuration.getResponseForwarder(),
+                getMessagingProvider(),
+                getResponseForwarder(),
                 getOutgoingMessageFactory(),
                 getHandlerRegistry());
     }
@@ -74,8 +74,8 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
         return new TwinFeatureHandleImpl(
                 thingId,
                 featureId,
-                configuration.getTwinMessagingProviderOrFail(),
-                configuration.getResponseForwarder(),
+                getMessagingProvider(),
+                getResponseForwarder(),
                 getOutgoingMessageFactory(),
                 getHandlerRegistry());
     }

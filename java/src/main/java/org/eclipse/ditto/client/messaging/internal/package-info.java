@@ -12,8 +12,7 @@
  */
 
 /**
- * Contains the WebSocket based implementation of {@link org.eclipse.ditto.client.messaging.MessagingProvider
- * MessagingProvider} in order to communicate with Eclipse Ditto via WebSockets.
+ * Contains internal implementation of WebSocket messaging via Ditto Protocol.
  */
 @org.eclipse.ditto.utils.jsr305.annotations.AllParametersAndReturnValuesAreNonnullByDefault
-package org.eclipse.ditto.client.messaging.websocket;
+package org.eclipse.ditto.client.messaging.internal;

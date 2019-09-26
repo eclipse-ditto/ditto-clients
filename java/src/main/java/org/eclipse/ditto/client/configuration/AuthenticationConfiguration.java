@@ -13,6 +13,7 @@
 package org.eclipse.ditto.client.configuration;
 
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Interface for configuration provider specifying the necessary information for authenticating a client at Eclipse
@@ -27,7 +28,7 @@ public interface AuthenticationConfiguration {
      *
      * @return the session identifier for this client
      */
-    String getClientSessionId();
+    String getSessionId();
 
     /**
      * Returns additional header fields which should be used during authentication.
@@ -35,4 +36,43 @@ public interface AuthenticationConfiguration {
      * @return additional header fields which should be used during authentication.
      */
     Map<String, String> getAdditionalHeaders();
+
+    /**
+     * Returns the proxy configuration.
+     *
+     * @return the configuration or an empty optional.
+     */
+    Optional<ProxyConfiguration> getProxyConfiguration();
+
+    /**
+     * Builder for {@link org.eclipse.ditto.client.configuration.AuthenticationConfiguration}.
+     */
+    interface Builder {
+
+        /**
+         * Adds an additional header to be used during authentication.
+         *
+         * @param key the key of the additional header.
+         * @param value the header's value.
+         * @return the buildable.
+         */
+        Builder withAdditionalHeader(String key, String value);
+
+        /**
+         * Sets the {@code proxyConfiguration}.
+         *
+         * @param proxyConfiguration the proxy configuration to set.
+         * @return this builder.
+         */
+        Builder proxyConfiguration(ProxyConfiguration proxyConfiguration);
+
+        /**
+         * Build the authentication configuration.
+         *
+         * @return the configuration.
+         */
+        AuthenticationConfiguration build();
+
+    }
+
 }

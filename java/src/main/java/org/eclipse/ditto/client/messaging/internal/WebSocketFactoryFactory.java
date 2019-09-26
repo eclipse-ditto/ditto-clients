@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.messaging.websocket.internal;
+package org.eclipse.ditto.client.messaging.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,12 +22,11 @@ import java.security.SecureRandom;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 
-import javax.annotation.Nullable;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.eclipse.ditto.client.configuration.ProxyConfiguration;
+import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.configuration.TrustStoreConfiguration;
 
 import com.neovisionaries.ws.client.ProxySettings;
@@ -38,9 +37,9 @@ import com.neovisionaries.ws.client.WebSocketFactory;
  *
  * @since 1.0.0
  */
-final class WsClientUtil {
+final class WebSocketFactoryFactory {
 
-    private WsClientUtil() {
+    private WebSocketFactoryFactory() {
         throw new AssertionError();
     }
 
@@ -50,23 +49,25 @@ final class WsClientUtil {
      *
      * @return the created WebSocketFactory configuration.
      */
-    static WebSocketFactory createConfiguration(@Nullable final ProxyConfiguration proxyConfiguration,
-            @Nullable final TrustStoreConfiguration trustStoreConfiguration) {
+    static WebSocketFactory newWebSocketFactory(final MessagingConfiguration configuration) {
 
         final WebSocketFactory webSocketFactory = new WebSocketFactory();
-        if (proxyConfiguration != null && proxyConfiguration.getHost() != null && proxyConfiguration.getPort() > 0) {
-            final ProxySettings proxySettings = webSocketFactory.getProxySettings()
-                    .setHost(proxyConfiguration.getHost())
-                    .setPort(proxyConfiguration.getPort());
-            if (proxyConfiguration.getUsername() != null && proxyConfiguration.getPassword() != null) {
-                proxySettings.setCredentials(proxyConfiguration.getUsername(), proxyConfiguration.getPassword());
-            }
-        }
 
-        if (trustStoreConfiguration != null && trustStoreConfiguration.getLocation() != null) {
-            webSocketFactory.setSSLContext(
-                    sslContext(trustStoreConfiguration, loadTrustStore(trustStoreConfiguration)));
-        }
+        configuration.getProxyConfiguration().ifPresent(proxyConfiguration -> {
+            final ProxySettings proxySettings = webSocketFactory.getProxySettings();
+            proxySettings.setHost(proxyConfiguration.getHost());
+            proxySettings.setPort(proxyConfiguration.getPort());
+
+            if (proxyConfiguration.getUsername().isPresent() && proxyConfiguration.getPassword().isPresent()) {
+                final String username = proxyConfiguration.getUsername().get();
+                final String password = proxyConfiguration.getPassword().get();
+                proxySettings.setCredentials(username, password);
+            }
+        });
+
+        configuration.getTrustStoreConfiguration().ifPresent(trustStoreConfiguration ->
+                webSocketFactory.setSSLContext(
+                        sslContext(trustStoreConfiguration, loadTrustStore(trustStoreConfiguration))));
 
         return webSocketFactory;
     }
@@ -91,11 +92,11 @@ final class WsClientUtil {
     }
 
     private static KeyStore loadTrustStore(final TrustStoreConfiguration configuration) {
-        try (InputStream keyStoreStream = configuration.getLocation().openStream()) {
+        try (final InputStream keyStoreStream = configuration.getLocation().openStream()) {
             final KeyStore keyStore = KeyStore.getInstance("JKS");
             keyStore.load(keyStoreStream, configuration.getPassword().toCharArray());
             return keyStore;
-        } catch (CertificateException | NoSuchAlgorithmException | IOException | KeyStoreException e) {
+        } catch (final CertificateException | NoSuchAlgorithmException | IOException | KeyStoreException e) {
             throw new IllegalStateException("Could not load keystore", e);
         }
     }

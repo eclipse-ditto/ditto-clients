@@ -13,7 +13,6 @@
 package org.eclipse.ditto.client.internal;
 
 import java.text.MessageFormat;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -23,8 +22,7 @@ import org.eclipse.ditto.client.changes.internal.ImmutableChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeatureChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeaturesChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableThingChange;
-import org.eclipse.ditto.client.configuration.CommonConfiguration;
-import org.eclipse.ditto.client.configuration.internal.InternalConfiguration;
+import org.eclipse.ditto.client.internal.bus.BusFactory;
 import org.eclipse.ditto.client.internal.bus.JsonPointerSelectors;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
@@ -34,6 +32,7 @@ import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.twin.Twin;
 import org.eclipse.ditto.client.twin.internal.TwinImpl;
 import org.eclipse.ditto.json.JsonPointer;
+import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.things.ThingId;
@@ -72,9 +71,9 @@ import org.slf4j.LoggerFactory;
  *
  * @since 1.0.0
  */
-public final class DittoClientImpl implements DittoClient {
+public final class DefaultDittoClient implements DittoClient {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DittoClientImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDittoClient.class);
 
     private static final String SELECTOR_INCOMING_MESSAGE = "incoming-message";
 
@@ -87,43 +86,28 @@ public final class DittoClientImpl implements DittoClient {
     private static final String FEATURE_PROPERTIES_PATTERN = THING_PATTERN + "/features/{1}/properties";
     private static final String FEATURE_PROPERTY_PATTERN = THING_PATTERN + "/features/{1}/properties{2}";
 
-    private final InternalConfiguration configuration;
-    private final AtomicReference<Twin> twin = new AtomicReference<>(null);
-    private final AtomicReference<Live> live = new AtomicReference<>(null);
+    private final AtomicReference<TwinImpl> twin = new AtomicReference<>(null);
+    private final AtomicReference<LiveImpl> live = new AtomicReference<>(null);
 
-    @SuppressWarnings("squid:S2629")
-    DittoClientImpl(final InternalConfiguration configuration) {
-        this.configuration = configuration;
-
-        configuration.getTwinBus().ifPresent(bus -> {
-            init(bus, configuration.getTwinConfigurationOrFail(), configuration.getTwinMessagingProviderOrFail());
-            final TwinImpl twinImpl = new TwinImpl(configuration);
-            twin.set(twinImpl);
-        });
-
-        configuration.getLiveBus().ifPresent(bus -> {
-            init(bus, configuration.getLiveConfigurationOrFail(), configuration.getLiveMessagingProviderOrFail());
-            live.set(new LiveImpl(configuration));
-        });
-
-        LOGGER.info("Ditto Client [{}//{}] initialized successfully", VersionReader.determineClientVersion(),
-                VersionReader.determineBuildTimeStamp());
+    private DefaultDittoClient(final TwinImpl twin, final LiveImpl live) {
+        this.twin.set(twin);
+        this.live.set(live);
+        logVersionInformation();
     }
 
     /**
-     * Creates a new {@link DittoClient Ditto Client} instance with Optional {@code Twin} AND {@code Live}
-     * configuration.
+     * Creates a new {@link org.eclipse.ditto.client.DittoClient}.
      *
-     * @param twinConfiguration the Twin CommonConfiguration to use for this client
-     * @param liveConfiguration the Live CommonConfiguration to use for this client
-     * @return the {@link DittoClient Ditto Client} instance with the configured Live configuration
+     * @param twinMessagingProvider the messaging provider to use for the {@code Twin} aspect.
+     * @param liveMessagingProvider the messaging provider to use for the {@code Live} aspect.
+     * @return the client.
      */
-    public static DittoClient newInstance(final Optional<CommonConfiguration> twinConfiguration,
-            final Optional<CommonConfiguration> liveConfiguration) {
-
-        final InternalConfiguration cfg = new InternalConfiguration(twinConfiguration, liveConfiguration);
-
-        return new DittoClientImpl(cfg);
+    public static DittoClient newInstance(final MessagingProvider twinMessagingProvider,
+            final MessagingProvider liveMessagingProvider,
+            final ResponseForwarder responseForwarder) {
+        final TwinImpl twin = configureTwin(twinMessagingProvider, responseForwarder);
+        final LiveImpl live = configureLive(liveMessagingProvider, responseForwarder);
+        return new DefaultDittoClient(twin, live);
     }
 
     @Override
@@ -145,34 +129,61 @@ public final class DittoClientImpl implements DittoClient {
     }
 
     @Override
-    public void destroy() {
-        configuration.getTwinMessagingProvider().ifPresent(MessagingProvider::close);
-        configuration.getLiveMessagingProvider().ifPresent(MessagingProvider::close);
-        configuration.getTwinBus().ifPresent(PointerBus::close);
-        configuration.getLiveBus().ifPresent(PointerBus::close);
-    }
-
-    @Override
     public CompletableFuture<Adaptable> sendDittoProtocol(final Adaptable dittoProtocolAdaptable) {
 
         final TopicPath.Channel channel = dittoProtocolAdaptable.getTopicPath().getChannel();
         switch (channel) {
             case TWIN:
-                return configuration.getTwinMessagingProviderOrFail().sendAdaptable(dittoProtocolAdaptable);
+                return twin.get().getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
             case LIVE:
-                return configuration.getLiveMessagingProviderOrFail().sendAdaptable(dittoProtocolAdaptable);
+                return live.get().getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
             default:
                 throw new IllegalArgumentException("Unknown channel: " + channel);
         }
     }
 
-    private void init(final PointerBus bus, final CommonConfiguration commonConfiguration,
-            final MessagingProvider messagingProvider) {
+    @Override
+    public void destroy() {
+        twin.get().getMessagingProvider().close();
+        twin.get().getBus().close();
+        live.get().getMessagingProvider().close();
+        live.get().getBus().close();
+    }
 
+    private static void logVersionInformation() {
+        final String clientVersion = VersionReader.determineClientVersion();
+        final String buildTimeStamp = VersionReader.determineBuildTimeStamp();
+        LOGGER.info("Ditto Client [{}//{}] initialized successfully", clientVersion, buildTimeStamp);
+    }
+
+    private static TwinImpl configureTwin(final MessagingProvider messagingProvider,
+            final ResponseForwarder responseForwarder) {
+        final String name = TopicPath.Channel.TWIN.getName();
+        final PointerBus bus = BusFactory.createPointerBus(name, messagingProvider.getExecutorService());
+        init(bus, messagingProvider, responseForwarder);
+        final String sessionId = messagingProvider.getAuthenticationConfiguration().getSessionId();
+        final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
+        final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion, sessionId);
+        return new TwinImpl(messagingProvider, responseForwarder, messageFactory, bus);
+    }
+
+    private static LiveImpl configureLive(final MessagingProvider messagingProvider,
+            final ResponseForwarder responseForwarder) {
+        final String name = TopicPath.Channel.LIVE.getName();
+        final PointerBus bus = BusFactory.createPointerBus(name, messagingProvider.getExecutorService());
+        init(bus, messagingProvider, responseForwarder);
+        final String sessionId = messagingProvider.getAuthenticationConfiguration().getSessionId();
+        final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
+        final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion, sessionId);
+        return new LiveImpl(messagingProvider, responseForwarder, messageFactory, bus, schemaVersion, sessionId);
+    }
+
+    private static void init(final PointerBus bus, final MessagingProvider messagingProvider,
+            final ResponseForwarder responseForwarder) {
         registerKeyBasedDistributorForIncomingEvents(bus);
         registerKeyBasedHandlersForIncomingEvents(bus);
-        messagingProvider.registerReplyHandler(configuration.getResponseForwarder()::handle);
-        messagingProvider.initialize(commonConfiguration, bus.getExecutor());
+        messagingProvider.registerReplyHandler(responseForwarder::handle);
+        messagingProvider.initialize();
     }
 
     private static void registerKeyBasedDistributorForIncomingEvents(final PointerBus bus) {

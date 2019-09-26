@@ -13,6 +13,6 @@
 
 /**
  * Provides the entry point for the {@link org.eclipse.ditto.client.DittoClient  Ditto Client}:
- * {@link org.eclipse.ditto.client.DittoClientFactory}.
+ * {@link org.eclipse.ditto.client.DittoClients}.
  */
 package org.eclipse.ditto.client;

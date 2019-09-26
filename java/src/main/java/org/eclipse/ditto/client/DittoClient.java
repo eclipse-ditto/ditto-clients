@@ -51,8 +51,8 @@ public interface DittoClient {
      * Directly sends a Ditto Protocol {@link Adaptable} message to the established Ditto backend connection.
      *
      * @param dittoProtocolAdaptable the adaptable to send
-     * @throws IllegalStateException when no twin/live connection was configured for this client
      * @return a CompletableFuture containing the correlated response to the sent {@code dittoProtocolAdaptable}
+     * @throws IllegalStateException when no twin/live connection was configured for this client
      */
     CompletableFuture<Adaptable> sendDittoProtocol(Adaptable dittoProtocolAdaptable);
 

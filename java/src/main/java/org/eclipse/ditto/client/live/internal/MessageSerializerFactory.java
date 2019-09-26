@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.configuration;
+package org.eclipse.ditto.client.live.internal;
 
 import java.nio.ByteBuffer;
 
@@ -25,11 +25,11 @@ import org.eclipse.ditto.json.JsonValue;
  *
  * @since 1.0.0
  */
-public final class MessageSerializerConfiguration {
+public final class MessageSerializerFactory {
 
     private final MessageSerializerRegistry messageSerializerRegistry;
 
-    private MessageSerializerConfiguration() {
+    private MessageSerializerFactory() {
         messageSerializerRegistry = initializeDefaultSerializerRegistry();
     }
 
@@ -39,8 +39,8 @@ public final class MessageSerializerConfiguration {
      *
      * @return a new SerializerConfiguration instance pre-configured with the default Serializers.
      */
-    public static MessageSerializerConfiguration newInstance() {
-        return new MessageSerializerConfiguration();
+    public static MessageSerializerFactory newInstance() {
+        return new MessageSerializerFactory();
     }
 
     /**

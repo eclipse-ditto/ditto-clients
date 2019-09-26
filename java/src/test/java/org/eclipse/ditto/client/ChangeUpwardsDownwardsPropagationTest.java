@@ -28,7 +28,6 @@ import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.client.changes.FeaturesChange;
 import org.eclipse.ditto.client.changes.ThingChange;
-import org.eclipse.ditto.client.configuration.internal.TestClientConfiguration;
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
@@ -125,7 +124,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
                 .setPermissions(
                         ThingsModelFactory.newAclEntry(newAuthSubject(TEST_USER_SID), Permission.READ,
                                 Permission.WRITE),
-                        ThingsModelFactory.newAclEntry(newAuthSubject(TestClientConfiguration.CLIENT_ID),
+                        ThingsModelFactory.newAclEntry(newAuthSubject(TestConstants.CLIENT_ID),
                                 Permission.READ, Permission.WRITE,
                                 Permission.ADMINISTRATE))
                 .build();
@@ -135,7 +134,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
                 .setPermissions(
                         ThingsModelFactory.newAclEntry(newAuthSubject(TEST_USER_SID), Permission.READ,
                                 Permission.WRITE),
-                        ThingsModelFactory.newAclEntry(newAuthSubject(TestClientConfiguration.CLIENT_ID),
+                        ThingsModelFactory.newAclEntry(newAuthSubject(TestConstants.CLIENT_ID),
                                 Permission.READ, Permission.WRITE,
                                 Permission.ADMINISTRATE))
                 .setAttributes(ATTRIBUTES2)

@@ -42,14 +42,13 @@ import java.util.zip.ZipFile;
 import javax.inject.Inject;
 
 import org.atteo.classindex.ClassIndex;
-import org.eclipse.ditto.client.configuration.CommonConfiguration;
-import org.eclipse.ditto.client.exceptions.ClientConnectException;
+import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.live.LiveThingHandle;
 import org.eclipse.ditto.client.live.messages.MessageSender;
 import org.eclipse.ditto.client.live.messages.MessageSerializer;
+import org.eclipse.ditto.client.messaging.ConnectException;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.messaging.MessagingProviders;
-import org.eclipse.ditto.client.messaging.websocket.WsProviderConfiguration;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.client.twin.TwinThingHandle;
 import org.eclipse.ditto.json.JsonFactory;
@@ -282,17 +281,16 @@ public class RunOSGiContainerIntegrationTest {
         // ditto-client:
         LOG.info("Ensuring ditto-client is usable from OSGi..");
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(DittoClient.class));
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(ClientConnectException.class));
+        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(ConnectException.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(MessageSender.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(TwinThingHandle.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(LiveThingHandle.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(Options.class));
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(DittoClientFactory.class));
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(CommonConfiguration.class));
+        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(DittoClients.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(MessageSerializer.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(MessagingProvider.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(MessagingProviders.class));
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(WsProviderConfiguration.class));
+        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(MessagingConfiguration.class));
     }
 
     private static void checkBundleIsPresentInstalledAndActive(final Bundle bundle) {

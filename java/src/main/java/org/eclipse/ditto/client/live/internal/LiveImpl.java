@@ -26,11 +26,13 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import org.eclipse.ditto.client.configuration.internal.InternalConfiguration;
 import org.eclipse.ditto.client.internal.CommonManagementImpl;
+import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
+import org.eclipse.ditto.client.internal.ResponseForwarder;
 import org.eclipse.ditto.client.internal.SendTerminator;
 import org.eclipse.ditto.client.internal.bus.JsonPointerSelector;
+import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
 import org.eclipse.ditto.client.live.Live;
 import org.eclipse.ditto.client.live.LiveCommandProcessor;
@@ -43,6 +45,7 @@ import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.live.messages.PendingMessage;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.client.live.messages.internal.ImmutableMessageSender;
+import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.KnownMessageSubjects;
@@ -108,51 +111,46 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
      */
     public static final String CONSUME_LIVE_COMMANDS_HANDLER = "consume-live-commands";
 
-    private final InternalConfiguration configuration;
-    private final MessageSerializerRegistry serializerRegistry;
-    private final String clientSessionId;
     private final JsonSchemaVersion schemaVersion;
+    private final String sessionId;
+    private final MessageSerializerRegistry messageSerializerRegistry;
     private final Map<Class<? extends LiveCommand>, Function<? extends LiveCommand, LiveCommandAnswerBuilder.BuildStep>>
             liveCommandsFunctions;
 
     /**
-     * Creates a new {@code LiveImpl} object.
-     *
-     * @param configuration the internal configuration.
-     * @throws NullPointerException if {@code configuration} is {@code null}.
+     * Creates a new {@code LiveImpl} instance.
      */
-    public LiveImpl(final InternalConfiguration configuration) {
+    public LiveImpl(final MessagingProvider messagingProvider,
+            final ResponseForwarder responseForwarder,
+            final OutgoingMessageFactory outgoingMessageFactory,
+            final PointerBus bus,
+            final JsonSchemaVersion schemaVersion,
+            final String sessionId) {
         super(TopicPath.Channel.LIVE,
-                configuration.getLiveMessagingProviderOrFail(),
-                configuration.getResponseForwarder(),
-                OutgoingMessageFactory.newInstance(configuration.getLiveConfigurationOrFail()),
-                configuration.getLiveHandlerRegistryOrFail(),
-                configuration.getLiveBusOrFail());
+                messagingProvider,
+                responseForwarder,
+                outgoingMessageFactory,
+                new HandlerRegistry<>(bus),
+                bus);
 
-        this.configuration = configuration;
-        serializerRegistry = configuration
-                .getLiveConfigurationOrFail()
-                .getMessageSerializerConfiguration()
-                .getMessageSerializerRegistry();
-        clientSessionId = configuration
-                .getLiveConfigurationOrFail()
-                .getProviderConfiguration()
-                .getAuthenticationProvider()
-                .getClientSessionId();
-        schemaVersion = configuration
-                .getLiveConfigurationOrFail().getSchemaVersion();
+        this.schemaVersion = schemaVersion;
+        this.sessionId = sessionId;
 
+        final MessageSerializerFactory messageSerializerFactory = MessageSerializerFactory.newInstance();
+        messageSerializerRegistry = messageSerializerFactory.getMessageSerializerRegistry();
         liveCommandsFunctions = new IdentityHashMap<>();
     }
 
     @Override
     protected LiveThingHandleImpl createThingHandle(final ThingId thingId) {
-        return new LiveThingHandleImpl(configuration, thingId);
+        return new LiveThingHandleImpl(thingId, getMessagingProvider(), getResponseForwarder(),
+                getOutgoingMessageFactory(), getHandlerRegistry(), messageSerializerRegistry, schemaVersion, sessionId);
     }
 
     @Override
     protected LiveFeatureHandleImpl createFeatureHandle(final ThingId thingId, final String featureId) {
-        return new LiveFeatureHandleImpl(configuration, thingId, featureId);
+        return new LiveFeatureHandleImpl(thingId, featureId, getMessagingProvider(), getResponseForwarder(),
+                getOutgoingMessageFactory(), getHandlerRegistry(), messageSerializerRegistry, schemaVersion, sessionId);
     }
 
     @Override
@@ -297,7 +295,8 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
             }
 
             private void sendMessage(final Message<T> message) {
-                final Message<?> toBeSentMessage = getOutgoingMessageFactory().sendMessage(serializerRegistry, message);
+                final Message<?> toBeSentMessage =
+                        getOutgoingMessageFactory().sendMessage(messageSerializerRegistry, message);
                 LOGGER.trace("Message about to send: {}", toBeSentMessage);
                 new SendTerminator<>(getMessagingProvider(), getResponseForwarder(), toBeSentMessage).send();
             }
@@ -315,7 +314,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
         argumentNotNull(type, "type");
         checkHandler(handler);
 
-        LiveMessagesUtil.checkSerializerExistForMessageType(serializerRegistry, type, subject);
+        LiveMessagesUtil.checkSerializerExistForMessageType(messageSerializerRegistry, type, subject);
 
         // selector for thing messages:
         final JsonPointerSelector thingSelector = "*".equals(subject)
@@ -330,7 +329,8 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                 subject);
 
         getHandlerRegistry().register(registrationId, SelectorUtil.or(thingSelector, featureSelector),
-                LiveMessagesUtil.createEventConsumerForRepliableMessage(configuration, getOutgoingMessageFactory(),
+                LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
+                        getResponseForwarder(), getOutgoingMessageFactory(), messageSerializerRegistry,
                         type, handler));
     }
 
@@ -367,8 +367,8 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                 subject);
 
         getHandlerRegistry().register(registrationId, SelectorUtil.or(thingSelector, featureSelector),
-                LiveMessagesUtil.createEventConsumerForRepliableMessage(configuration, getOutgoingMessageFactory(),
-                        handler));
+                LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
+                        getResponseForwarder(), getOutgoingMessageFactory(), messageSerializerRegistry, handler));
     }
 
     @Override
@@ -379,14 +379,15 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
         argumentNotNull(type, "type");
         checkHandler(handler);
 
-        LiveMessagesUtil.checkSerializerExistForMessageType(serializerRegistry, type);
+        LiveMessagesUtil.checkSerializerExistForMessageType(messageSerializerRegistry, type);
 
         final JsonPointerSelector selector =
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/inbox/messages/{0}",
                         KnownMessageSubjects.CLAIM_SUBJECT);
 
         getHandlerRegistry().register(registrationId, selector,
-                LiveMessagesUtil.createEventConsumerForRepliableMessage(configuration, getOutgoingMessageFactory(),
+                LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
+                        getResponseForwarder(), getOutgoingMessageFactory(), messageSerializerRegistry,
                         type, handler));
     }
 
@@ -402,8 +403,8 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                         KnownMessageSubjects.CLAIM_SUBJECT);
 
         getHandlerRegistry().register(registrationId, selector,
-                LiveMessagesUtil.createEventConsumerForRepliableMessage(configuration, getOutgoingMessageFactory(),
-                        handler));
+                LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
+                        getResponseForwarder(), getOutgoingMessageFactory(), messageSerializerRegistry, handler));
     }
 
     /*
@@ -415,7 +416,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
     public void emitEvent(final Function<GlobalEventFactory, Event<?>> eventFunction) {
         argumentNotNull(eventFunction);
 
-        final GlobalEventFactory globalEventFactory = ImmutableGlobalEventFactory.getInstance(clientSessionId,
+        final GlobalEventFactory globalEventFactory = ImmutableGlobalEventFactory.getInstance(sessionId,
                 schemaVersion);
         final Event<?> eventToEmit = eventFunction.apply(globalEventFactory);
         getMessagingProvider().emitEvent(eventToEmit, TopicPath.Channel.LIVE);

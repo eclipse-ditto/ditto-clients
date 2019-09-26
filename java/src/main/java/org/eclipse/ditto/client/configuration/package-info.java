@@ -12,9 +12,7 @@
  */
 
 /**
- * Contains all about configuring the Ditto Client. Creating a new configuration can be started by obtaining a {@link
- * org.eclipse.ditto.client.configuration.CommonConfiguration.ConfigurationBuilder} via {@link
- * org.eclipse.ditto.client.DittoClientFactory#configurationBuilder()}.
+ * Contains all about configuring the Ditto Client.
  */
 @org.eclipse.ditto.utils.jsr305.annotations.AllParametersAndReturnValuesAreNonnullByDefault
 package org.eclipse.ditto.client.configuration;

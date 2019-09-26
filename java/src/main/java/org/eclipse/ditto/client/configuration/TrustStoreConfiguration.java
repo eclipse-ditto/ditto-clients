@@ -16,8 +16,6 @@ import static java.util.Objects.requireNonNull;
 
 import java.net.URL;
 
-import javax.annotation.Nullable;
-
 /**
  * Contains information about the truststore that is used by the client. A truststore contains certificates or
  * certificate chains that are trusted by this client. The referenced truststore must be in JKS format.
@@ -29,7 +27,7 @@ public final class TrustStoreConfiguration {
     private final URL location;
     private final String password;
 
-    private TrustStoreConfiguration(@Nullable final URL location, @Nullable final String password) {
+    private TrustStoreConfiguration(final URL location, final String password) {
         this.location = location;
         this.password = password;
     }
@@ -44,7 +42,6 @@ public final class TrustStoreConfiguration {
     /**
      * @return the URL where the truststore is located
      */
-    @Nullable
     public URL getLocation() {
         return location;
     }
@@ -52,7 +49,6 @@ public final class TrustStoreConfiguration {
     /**
      * @return the password required to read the truststore
      */
-    @Nullable
     public String getPassword() {
         return password;
     }
@@ -70,7 +66,7 @@ public final class TrustStoreConfiguration {
 
         /**
          * @param location an URL where the truststore file can be found
-         * @return a build object that allows setting a truststore pasword
+         * @return this builder.
          */
         PasswordSettable location(URL location);
     }
@@ -82,7 +78,7 @@ public final class TrustStoreConfiguration {
 
         /**
          * @param password the password required to open the truststore
-         * @return a builder object to finish the creation of the TrustStoreConfiguration object
+         * @return this builder.
          */
         TrustStoreConfigurationBuildable password(String password);
     }
@@ -114,13 +110,13 @@ public final class TrustStoreConfiguration {
         }
 
         @Override
-        public PasswordSettable location(URL location) {
+        public PasswordSettable location(final URL location) {
             this.location = requireNonNull(location, "TrustStore location must not be null.");
             return this;
         }
 
         @Override
-        public TrustStoreConfigurationBuildable password(String password) {
+        public TrustStoreConfigurationBuildable password(final String password) {
             this.password = requireNonNull(password, "TrustStore password must not be null.");
             return this;
         }
