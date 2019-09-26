@@ -12,12 +12,15 @@
  */
 package org.eclipse.ditto.client.messaging;
 
+import javax.annotation.concurrent.Immutable;
+
 /**
- * This exception is thrown if an error occurred during connection establishment.
+ * This exception is thrown if an error occurred within messaging.
  *
  * @since 1.0.0
  */
-public class ConnectException extends RuntimeException {
+@Immutable
+public class MessagingException extends RuntimeException {
 
     private static final String DEFAULT_MESSAGE_TEMPLATE = "Connect of session <%s> failed.";
 
@@ -29,20 +32,20 @@ public class ConnectException extends RuntimeException {
 
     private static final long serialVersionUID = 6930767503633213674L;
 
-    private ConnectException(final String message, final Throwable cause) {
+    private MessagingException(final String message, final Throwable cause) {
         super(message, cause);
     }
 
-    public static ConnectException of(final String sessionId, final Throwable cause) {
-        return new ConnectException(String.format(DEFAULT_MESSAGE_TEMPLATE, sessionId), cause);
+    public static MessagingException connectFailed(final String sessionId, final Throwable cause) {
+        return new MessagingException(String.format(DEFAULT_MESSAGE_TEMPLATE, sessionId), cause);
     }
 
-    public static ConnectException interrupted(final String sessionId, final Throwable cause) {
-        return new ConnectException(String.format(INTERRUPTED_MESSAGE_TEMPLATE, sessionId), cause);
+    public static MessagingException connectInterrupted(final String sessionId, final Throwable cause) {
+        return new MessagingException(String.format(INTERRUPTED_MESSAGE_TEMPLATE, sessionId), cause);
     }
 
-    public static ConnectException timeout(final String sessionId, final Throwable cause) {
-        return new ConnectException(String.format(TIMEOUT_MESSAGE_TEMPLATE, sessionId), cause);
+    public static MessagingException connectTimeout(final String sessionId, final Throwable cause) {
+        return new MessagingException(String.format(TIMEOUT_MESSAGE_TEMPLATE, sessionId), cause);
     }
 
 }

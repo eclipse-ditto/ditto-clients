@@ -46,7 +46,7 @@ import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.live.LiveThingHandle;
 import org.eclipse.ditto.client.live.messages.MessageSender;
 import org.eclipse.ditto.client.live.messages.MessageSerializer;
-import org.eclipse.ditto.client.messaging.ConnectException;
+import org.eclipse.ditto.client.messaging.MessagingException;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.messaging.MessagingProviders;
 import org.eclipse.ditto.client.options.Options;
@@ -281,7 +281,7 @@ public class RunOSGiContainerIntegrationTest {
         // ditto-client:
         LOG.info("Ensuring ditto-client is usable from OSGi..");
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(DittoClient.class));
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(ConnectException.class));
+        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(MessagingException.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(MessageSender.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(TwinThingHandle.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(LiveThingHandle.class));

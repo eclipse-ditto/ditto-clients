@@ -43,7 +43,7 @@ public final class DittoClients {
      * @param messagingProvider the messaging provider for this client.
      * @return the client.
      * @throws org.eclipse.ditto.client.authentication.AuthenticationException if authentication failed.
-     * @throws org.eclipse.ditto.client.messaging.ConnectException if a connection to the configured endpoint
+     * @throws org.eclipse.ditto.client.messaging.MessagingException if a connection to the configured endpoint
      * could not be established
      */
     public static DittoClient newInstance(final MessagingProvider messagingProvider) {
@@ -58,7 +58,7 @@ public final class DittoClients {
      * @param liveMessagingProvider the messaging provider for the {@code Live} part of the client.
      * @return the client.
      * @throws org.eclipse.ditto.client.authentication.AuthenticationException if authentication failed.
-     * @throws org.eclipse.ditto.client.messaging.ConnectException if a connection to the configured endpoint
+     * @throws org.eclipse.ditto.client.messaging.MessagingException if a connection to the configured endpoint
      * could not be established
      */
     public static DittoClient newInstance(final MessagingProvider twinMessagingProvider,

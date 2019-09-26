@@ -52,7 +52,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
     }
 
     public static MessagingConfiguration.Builder newBuilder() {
-        return new Builder();
+        return new WebSocketMessagingConfigurationBuilder();
     }
 
     @Override
@@ -80,7 +80,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         return Optional.ofNullable(trustStoreConfiguration);
     }
 
-    private static final class Builder implements MessagingConfiguration.Builder {
+    private static final class WebSocketMessagingConfigurationBuilder implements MessagingConfiguration.Builder {
 
         private static final List<String> ALLOWED_URI_SCHEME = Arrays.asList("wss", "ws");
         private static final String WS_PATH = "/ws/";

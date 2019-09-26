@@ -12,11 +12,14 @@
  */
 package org.eclipse.ditto.client.authentication;
 
+import javax.annotation.concurrent.Immutable;
+
 /**
  * This exception is thrown if an error occurred during authentication process of the Client.
  *
  * @since 1.0.0
  */
+@Immutable
 public class AuthenticationException extends RuntimeException {
 
     private static final String DEFAULT_MESSAGE_TEMPLATE = "Authentication of session <%s> failed.";

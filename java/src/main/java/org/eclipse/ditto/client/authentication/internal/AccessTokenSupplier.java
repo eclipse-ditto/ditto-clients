@@ -26,6 +26,8 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import javax.annotation.concurrent.Immutable;
+
 import org.eclipse.ditto.client.authentication.AuthenticationException;
 import org.eclipse.ditto.client.configuration.internal.ClientCredentialsAuthenticationConfiguration;
 import org.eclipse.ditto.json.JsonFactory;
@@ -39,6 +41,7 @@ import org.slf4j.LoggerFactory;
  *
  * @since 1.0.0
  */
+@Immutable
 final class AccessTokenSupplier implements Supplier<JsonObject> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessTokenSupplier.class);

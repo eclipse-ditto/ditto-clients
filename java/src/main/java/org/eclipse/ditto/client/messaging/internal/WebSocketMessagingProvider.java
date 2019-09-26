@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -50,7 +51,7 @@ import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.internal.DefaultThreadFactory;
 import org.eclipse.ditto.client.internal.VersionReader;
 import org.eclipse.ditto.client.live.internal.LiveImpl;
-import org.eclipse.ditto.client.messaging.ConnectException;
+import org.eclipse.ditto.client.messaging.MessagingException;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.twin.internal.TwinImpl;
 import org.eclipse.ditto.json.JsonFactory;
@@ -243,7 +244,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         try {
             ws = webSocketFactory.createSocket(messagingConfiguration.getEndpointUri());
         } catch (final IOException e) {
-            throw ConnectException.of(sessionId, e);
+            throw MessagingException.connectFailed(sessionId, e);
         }
         ws.addHeader("User-Agent", DITTO_CLIENT_USER_AGENT);
         ws.setMaxPayloadSize(256 * 1024); // 256 KiB
@@ -275,11 +276,11 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     private <T> T handleInterruptedException(final InterruptedException e) {
         Thread.currentThread().interrupt();
-        throw ConnectException.interrupted(sessionId, e);
+        throw MessagingException.connectInterrupted(sessionId, e);
     }
 
     private <T> T handleTimeoutException(final TimeoutException e) {
-        throw ConnectException.timeout(sessionId, e);
+        throw MessagingException.connectTimeout(sessionId, e);
     }
 
     private <T> T handleExecutionException(final ExecutionException e) {
@@ -352,7 +353,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     @Override
     public void send(final Message<?> message, final TopicPath.Channel channel) {
         final DittoHeadersBuilder headersBuilder = DittoHeaders.newBuilder();
-        message.getCorrelationId().ifPresent(headersBuilder::correlationId);
+        final Optional<String> optionalCorrelationId = message.getCorrelationId();
+        optionalCorrelationId.ifPresent(headersBuilder::correlationId);
         final DittoHeaders dittoHeaders = headersBuilder.build();
 
         final ThingId thingId = message.getThingEntityId();
@@ -372,11 +374,10 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                     : SendThingMessage.of(thingId, message, dittoHeaders);
             adaptable = tryToConvertToAdaptable(messageCommand);
 
-            message.getCorrelationId().ifPresent(cId ->
-                    message.getResponseConsumer().ifPresent(responseConsumer ->
-                            messageCommandResponseConsumers.put(cId, responseConsumer)
-                    )
-            );
+            final Optional<MessageResponseConsumer<?>> optionalResponseConsumer = message.getResponseConsumer();
+            if (optionalCorrelationId.isPresent() && optionalResponseConsumer.isPresent()) {
+                messageCommandResponseConsumers.put(optionalCorrelationId.get(), optionalResponseConsumer.get());
+            }
         }
         doSendAdaptable(adaptable);
     }
@@ -693,14 +694,12 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     private void handleReconnectionIfEnabled() {
 
         if (messagingConfiguration.isReconnectEnabled()) {
-            if (initiallyConnected.get() && reconnecting.compareAndSet(false, true)) {
-                // reconnect in a while if client was initially connected and we are not reconnecting already
-                if (null != reconnectExecutor) {
-                    LOGGER.info("Client <{}>: Reconnection is enabled. Reconnecting in <{}> seconds ...",
-                            sessionId, RECONNECTION_TIMEOUT_SECONDS);
-                    reconnectExecutor.schedule(this::initWebSocketConnectionWithReconnect, RECONNECTION_TIMEOUT_SECONDS,
-                            TimeUnit.SECONDS);
-                }
+            // reconnect in a while if client was initially connected and we are not reconnecting already
+            if (initiallyConnected.get() && reconnecting.compareAndSet(false, true) && null != reconnectExecutor) {
+                LOGGER.info("Client <{}>: Reconnection is enabled. Reconnecting in <{}> seconds ...",
+                        sessionId, RECONNECTION_TIMEOUT_SECONDS);
+                reconnectExecutor.schedule(this::initWebSocketConnectionWithReconnect, RECONNECTION_TIMEOUT_SECONDS,
+                        TimeUnit.SECONDS);
             }
         } else {
             LOGGER.info("Client <{}>: Reconnection is NOT enabled. Closing client ...",
@@ -914,8 +913,9 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
             LOGGER.debug("Client <{}>: Received TWIN Response JSON: {}", sessionId, message);
             if (signal instanceof ThingErrorResponse) {
                 final DittoRuntimeException cre = ((ErrorResponse) signal).getDittoRuntimeException();
+                final String description = cre.getDescription().orElse("");
                 LOGGER.warn("Client <{}>: Got TWIN ThingErrorResponse: <{}: {} - {}>", sessionId,
-                        cre.getClass().getSimpleName(), cre.getMessage(), cre.getDescription().orElse(""));
+                        cre.getClass().getSimpleName(), cre.getMessage(), description);
             }
             commandResponseConsumer.accept((ThingCommandResponse) signal);
         } else if (signal instanceof ThingEvent) {
@@ -948,8 +948,9 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
             handleLiveCommand(LiveCommandFactory.getInstance().getLiveCommand((Command) jsonifiable));
         } else if (jsonifiable instanceof ThingErrorResponse) {
             final DittoRuntimeException cre = ((ErrorResponse) jsonifiable).getDittoRuntimeException();
+            final String description = cre.getDescription().orElse("");
             LOGGER.warn("Client <{}>: Got LIVE ThingErrorResponse: <{}: {} - {}>", sessionId,
-                    cre.getClass().getSimpleName(), cre.getMessage(), cre.getDescription().orElse(""));
+                    cre.getClass().getSimpleName(), cre.getMessage(), description);
             if (messageCommandResponseConsumers.containsKey(correlationId.toString())) {
                 handleLiveMessageResponse((ThingErrorResponse) jsonifiable);
             } else {
@@ -1084,6 +1085,35 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         protected boolean removeEldestEntry(final Map.Entry<K, V> eldest) {
             return size() > maxSize;
         }
+
+        @Override
+        public boolean equals(@Nullable final Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            if (!super.equals(o)) {
+                return false;
+            }
+            final LimitedHashMap<?, ?> that = (LimitedHashMap<?, ?>) o;
+            return maxSize == that.maxSize;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(super.hashCode(), maxSize);
+        }
+
+        @Override
+        public String toString() {
+            return getClass().getSimpleName() + " [" +
+                    super.toString() +
+                    ", maxSize=" + maxSize +
+                    "]";
+        }
+
     }
 
 }

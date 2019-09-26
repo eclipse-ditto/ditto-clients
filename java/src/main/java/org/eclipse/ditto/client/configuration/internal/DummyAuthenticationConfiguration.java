@@ -20,6 +20,7 @@ import java.util.Objects;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.NotThreadSafe;
 
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.ProxyConfiguration;
@@ -30,6 +31,7 @@ import org.eclipse.ditto.client.configuration.ProxyConfiguration;
  *
  * @since 1.0.0
  */
+@Immutable
 public final class DummyAuthenticationConfiguration extends AbstractAuthenticationConfiguration {
 
     private final String dummyUsername;
@@ -84,7 +86,7 @@ public final class DummyAuthenticationConfiguration extends AbstractAuthenticati
                 "]";
     }
 
-    @Immutable
+    @NotThreadSafe
     public static class DummyAuthenticationConfigurationBuilder implements AuthenticationConfiguration.Builder {
 
         private String dummyUsername;
