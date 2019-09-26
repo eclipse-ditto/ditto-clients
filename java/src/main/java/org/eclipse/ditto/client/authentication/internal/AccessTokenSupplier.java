@@ -44,7 +44,7 @@ final class AccessTokenSupplier implements Supplier<JsonObject> {
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessTokenSupplier.class);
 
     private static final String UNEXPECTED_HTTP_STATUS_CODE_TEMPLATE =
-            "Unexpected HTTP status code from token endpoint. Expected status code <200> but was: <%d>";
+            "Unexpected HTTP status code from token endpoint. Expected status code <200> but was: <{}>";
     private static final String PARAMETERS_TEMPLATE =
             "grant_type=client_credentials&client_id=%s&client_secret=%s&scope=%s";
 
@@ -110,7 +110,7 @@ final class AccessTokenSupplier implements Supplier<JsonObject> {
             final String response = readResponse(connection);
             return JsonObject.of(response);
         }
-        LOGGER.error(String.format(UNEXPECTED_HTTP_STATUS_CODE_TEMPLATE, statusCode));
+        LOGGER.error(UNEXPECTED_HTTP_STATUS_CODE_TEMPLATE, statusCode);
         throw new IllegalStateException(readError(connection));
     }
 
@@ -134,6 +134,10 @@ final class AccessTokenSupplier implements Supplier<JsonObject> {
     }
 
     static final class JsonFields {
+
+        private JsonFields() {
+            throw new AssertionError();
+        }
 
         static final JsonFieldDefinition<String> JSON_ACCESS_TOKEN =
                 JsonFactory.newStringFieldDefinition("access_token");

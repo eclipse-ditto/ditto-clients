@@ -144,13 +144,13 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
     @Override
     protected LiveThingHandleImpl createThingHandle(final ThingId thingId) {
         return new LiveThingHandleImpl(thingId, getMessagingProvider(), getResponseForwarder(),
-                getOutgoingMessageFactory(), getHandlerRegistry(), messageSerializerRegistry, schemaVersion, sessionId);
+                getOutgoingMessageFactory(), getHandlerRegistry(), messageSerializerRegistry);
     }
 
     @Override
     protected LiveFeatureHandleImpl createFeatureHandle(final ThingId thingId, final String featureId) {
         return new LiveFeatureHandleImpl(thingId, featureId, getMessagingProvider(), getResponseForwarder(),
-                getOutgoingMessageFactory(), getHandlerRegistry(), messageSerializerRegistry, schemaVersion, sessionId);
+                getOutgoingMessageFactory(), getHandlerRegistry(), messageSerializerRegistry);
     }
 
     @Override

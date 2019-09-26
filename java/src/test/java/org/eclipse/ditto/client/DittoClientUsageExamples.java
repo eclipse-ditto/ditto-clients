@@ -607,7 +607,8 @@ public final class DittoClientUsageExamples {
                             .dummyUsername(DITTO_DUMMY_AUTH_USER)
                             .build());
         } else if (DITTO_OAUTH_CLIENT_ID != null) {
-            final ClientCredentialsAuthenticationConfiguration.Builder authenticationConfigurationBuilder =
+            final ClientCredentialsAuthenticationConfiguration.ClientCredentialsAuthenticationConfigurationBuilder
+                    authenticationConfigurationBuilder =
                     ClientCredentialsAuthenticationConfiguration.newBuilder()
                             .clientId(DITTO_OAUTH_CLIENT_ID)
                             .clientSecret(DITTO_OAUTH_CLIENT_SECRET)

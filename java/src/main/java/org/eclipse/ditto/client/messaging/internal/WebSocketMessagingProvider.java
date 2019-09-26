@@ -650,7 +650,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         try {
             return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
         } catch (final UnsupportedEncodingException e) {
-            return URLEncoder.encode(value);
+            throw new IllegalStateException("Missing standard charset UTF 8 for encoding.", e);
         }
     }
 

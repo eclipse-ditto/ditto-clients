@@ -97,9 +97,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
             final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final HandlerRegistry<LiveThingHandle, LiveFeatureHandle> handlerRegistry,
-            final MessageSerializerRegistry messageSerializerRegistry,
-            final JsonSchemaVersion schemaVersion,
-            final String sessionId) {
+            final MessageSerializerRegistry messageSerializerRegistry) {
         super(TopicPath.Channel.LIVE, thingId,
                 messagingProvider,
                 responseForwarder,
@@ -107,8 +105,8 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
                 handlerRegistry);
 
         this.messageSerializerRegistry = messageSerializerRegistry;
-        this.schemaVersion = schemaVersion;
-        this.sessionId = sessionId;
+        this.schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
+        this.sessionId = messagingProvider.getAuthenticationConfiguration().getSessionId();
 
         liveCommandsFunctions = new IdentityHashMap<>();
     }
@@ -116,7 +114,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
     @Override
     protected LiveFeatureHandleImpl createFeatureHandle(final ThingId thingId, final String featureId) {
         return new LiveFeatureHandleImpl(thingId, featureId, getMessagingProvider(), getResponseForwarder(),
-                getOutgoingMessageFactory(), getHandlerRegistry(), messageSerializerRegistry, schemaVersion, sessionId);
+                getOutgoingMessageFactory(), getHandlerRegistry(), messageSerializerRegistry);
     }
 
     /*

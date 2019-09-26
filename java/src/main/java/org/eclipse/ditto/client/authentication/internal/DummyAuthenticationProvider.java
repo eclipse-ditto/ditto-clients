@@ -31,7 +31,7 @@ import com.neovisionaries.ws.client.WebSocket;
  */
 public final class DummyAuthenticationProvider implements AuthenticationProvider<WebSocket> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BasicAuthenticationProvider.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DummyAuthenticationProvider.class);
 
     private static final String X_DITTO_DUMMY_AUTH_HEADER = "x-ditto-dummy-auth";
 

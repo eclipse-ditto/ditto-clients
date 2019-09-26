@@ -46,8 +46,8 @@ public final class BasicAuthenticationConfiguration extends AbstractAuthenticati
     /**
      * @return a new builder to build {@code BasicAuthenticationConfiguration}.
      */
-    public static Builder newBuilder() {
-        return new Builder();
+    public static BasicAuthenticationConfigurationBuilder newBuilder() {
+        return new BasicAuthenticationConfigurationBuilder();
     }
 
     /**
@@ -99,7 +99,7 @@ public final class BasicAuthenticationConfiguration extends AbstractAuthenticati
     }
 
     @Immutable
-    public static class Builder implements AuthenticationConfiguration.Builder {
+    public static class BasicAuthenticationConfigurationBuilder implements AuthenticationConfiguration.Builder {
 
         private String username;
         private String password;
@@ -112,7 +112,7 @@ public final class BasicAuthenticationConfiguration extends AbstractAuthenticati
          * @param username the username to authenticate
          * @return the builder object that allows setting the password
          */
-        public Builder username(final String username) {
+        public BasicAuthenticationConfigurationBuilder username(final String username) {
             this.username = checkNotNull(username, "username");
             return this;
         }
@@ -123,19 +123,19 @@ public final class BasicAuthenticationConfiguration extends AbstractAuthenticati
          * @param password the password to authenticate with
          * @return the buildable.
          */
-        public Builder password(final String password) {
+        public BasicAuthenticationConfigurationBuilder password(final String password) {
             this.password = checkNotNull(password, "password");
             return this;
         }
 
         @Override
-        public Builder withAdditionalHeader(final String key, final String value) {
+        public BasicAuthenticationConfigurationBuilder withAdditionalHeader(final String key, final String value) {
             additionalHeaders.put(checkNotNull(key, "key"), value);
             return this;
         }
 
         @Override
-        public Builder proxyConfiguration(final ProxyConfiguration proxyConfiguration) {
+        public BasicAuthenticationConfigurationBuilder proxyConfiguration(final ProxyConfiguration proxyConfiguration) {
             this.proxyConfiguration = checkNotNull(proxyConfiguration, "proxyConfiguration");
             return this;
         }

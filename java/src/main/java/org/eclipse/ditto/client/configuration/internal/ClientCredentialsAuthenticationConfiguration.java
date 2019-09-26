@@ -54,8 +54,8 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
     /**
      * @return a new builder to build {@code ClientCredentialsAuthenticationConfiguration}.
      */
-    public static Builder newBuilder() {
-        return new Builder();
+    public static ClientCredentialsAuthenticationConfigurationBuilder newBuilder() {
+        return new ClientCredentialsAuthenticationConfigurationBuilder();
     }
 
     /**
@@ -129,7 +129,8 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
     }
 
     @Immutable
-    public static class Builder implements AuthenticationConfiguration.Builder {
+    public static class ClientCredentialsAuthenticationConfigurationBuilder
+            implements AuthenticationConfiguration.Builder {
 
         private String tokenEndpoint;
         private String clientId;
@@ -144,7 +145,7 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
          * @param tokenEndpoint the endpoint.
          * @return this builder.
          */
-        public Builder tokenEndpoint(final String tokenEndpoint) {
+        public ClientCredentialsAuthenticationConfigurationBuilder tokenEndpoint(final String tokenEndpoint) {
             this.tokenEndpoint = tokenEndpoint;
             return this;
         }
@@ -155,7 +156,7 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
          * @param clientId the client id.
          * @return this builder.
          */
-        public Builder clientId(final String clientId) {
+        public ClientCredentialsAuthenticationConfigurationBuilder clientId(final String clientId) {
             this.clientId = clientId;
             return this;
         }
@@ -166,7 +167,7 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
          * @param clientSecret the client secret.
          * @return this builder.
          */
-        public Builder clientSecret(final String clientSecret) {
+        public ClientCredentialsAuthenticationConfigurationBuilder clientSecret(final String clientSecret) {
             this.clientSecret = clientSecret;
             return this;
         }
@@ -177,19 +178,21 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
          * @param scopes the scopes.
          * @return this builder.
          */
-        public Builder scopes(final Collection<String> scopes) {
+        public ClientCredentialsAuthenticationConfigurationBuilder scopes(final Collection<String> scopes) {
             this.scopes = scopes;
             return this;
         }
 
         @Override
-        public Builder withAdditionalHeader(final String key, final String value) {
+        public ClientCredentialsAuthenticationConfigurationBuilder withAdditionalHeader(final String key,
+                final String value) {
             additionalHeaders.put(checkNotNull(key, "key"), value);
             return this;
         }
 
         @Override
-        public Builder proxyConfiguration(final ProxyConfiguration proxyConfiguration) {
+        public ClientCredentialsAuthenticationConfigurationBuilder proxyConfiguration(
+                final ProxyConfiguration proxyConfiguration) {
             this.proxyConfiguration = checkNotNull(proxyConfiguration, "proxyConfiguration");
             return this;
         }

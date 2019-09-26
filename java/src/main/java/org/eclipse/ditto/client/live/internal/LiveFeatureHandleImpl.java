@@ -84,9 +84,7 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
             final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final HandlerRegistry<LiveThingHandle, LiveFeatureHandle> handlerRegistry,
-            final MessageSerializerRegistry messageSerializerRegistry,
-            final JsonSchemaVersion schemaVersion,
-            final String sessionId) {
+            final MessageSerializerRegistry messageSerializerRegistry) {
         super(TopicPath.Channel.LIVE, thingId, featureId,
                 messagingProvider,
                 responseForwarder,
@@ -94,8 +92,8 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
                 handlerRegistry);
 
         this.messageSerializerRegistry = messageSerializerRegistry;
-        this.schemaVersion = schemaVersion;
-        this.sessionId = sessionId;
+        this.schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
+        this.sessionId = messagingProvider.getAuthenticationConfiguration().getSessionId();
 
         liveCommandsFunctions = new IdentityHashMap<>();
     }

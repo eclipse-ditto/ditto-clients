@@ -28,6 +28,10 @@ import com.neovisionaries.ws.client.WebSocket;
  */
 public final class AuthenticationProviders {
 
+    private AuthenticationProviders() {
+        throw new AssertionError();
+    }
+
     /**
      * Creates a new {@code AuthenticationProvider} for basic authentication.
      *

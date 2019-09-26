@@ -43,8 +43,8 @@ public final class DummyAuthenticationConfiguration extends AbstractAuthenticati
     /**
      * @return a new builder to build {@code DummyAuthenticationConfiguration}
      */
-    public static Builder newBuilder() {
-        return new Builder();
+    public static DummyAuthenticationConfigurationBuilder newBuilder() {
+        return new DummyAuthenticationConfigurationBuilder();
     }
 
     /**
@@ -85,7 +85,7 @@ public final class DummyAuthenticationConfiguration extends AbstractAuthenticati
     }
 
     @Immutable
-    public static class Builder implements AuthenticationConfiguration.Builder {
+    public static class DummyAuthenticationConfigurationBuilder implements AuthenticationConfiguration.Builder {
 
         private String dummyUsername;
         private final Map<String, String> additionalHeaders = new HashMap<>();
@@ -96,13 +96,13 @@ public final class DummyAuthenticationConfiguration extends AbstractAuthenticati
          * @param dummyUsername the dummyUsername to authenticate
          * @return the builder object that allows setting the password
          */
-        public Builder dummyUsername(final String dummyUsername) {
+        public DummyAuthenticationConfigurationBuilder dummyUsername(final String dummyUsername) {
             this.dummyUsername = requireNonNull(dummyUsername);
             return this;
         }
 
         @Override
-        public Builder withAdditionalHeader(final String key, final String value) {
+        public DummyAuthenticationConfigurationBuilder withAdditionalHeader(final String key, final String value) {
             additionalHeaders.put(key, value);
             return this;
         }
@@ -114,7 +114,7 @@ public final class DummyAuthenticationConfiguration extends AbstractAuthenticati
          * @return this builder.
          */
         @Override
-        public Builder proxyConfiguration(final ProxyConfiguration proxyConfiguration) {
+        public DummyAuthenticationConfigurationBuilder proxyConfiguration(final ProxyConfiguration proxyConfiguration) {
             return this;
         }
 
