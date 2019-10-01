@@ -16,24 +16,24 @@ import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
 import org.eclipse.ditto.client.authentication.AuthenticationProvider;
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
-import org.eclipse.ditto.client.configuration.internal.BasicAuthenticationConfiguration;
+import org.eclipse.ditto.client.configuration.internal.AccessTokenAuthenticationConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.neovisionaries.ws.client.WebSocket;
 
 /**
- * Implements basic authentication for a {@link com.neovisionaries.ws.client.WebSocket} channel.
+ * Implements client access token authentication for a {@link com.neovisionaries.ws.client.WebSocket} channel.
  *
  * @since 1.0.0
  */
-public final class BasicAuthenticationProvider implements AuthenticationProvider<WebSocket> {
+public final class AccessTokenAuthenticationProvider implements AuthenticationProvider<WebSocket> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BasicAuthenticationProvider.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AccessTokenAuthenticationProvider.class);
 
-    private final BasicAuthenticationConfiguration configuration;
+    private final AccessTokenAuthenticationConfiguration configuration;
 
-    public BasicAuthenticationProvider(final BasicAuthenticationConfiguration configuration) {
+    public AccessTokenAuthenticationProvider(final AccessTokenAuthenticationConfiguration configuration) {
         this.configuration = checkNotNull(configuration, "configuration");
     }
 
@@ -44,10 +44,13 @@ public final class BasicAuthenticationProvider implements AuthenticationProvider
 
     @Override
     public WebSocket prepareAuthentication(final WebSocket channel) {
-        final String username = configuration.getUsername();
         configuration.getAdditionalHeaders().forEach(channel::addHeader);
-        LOGGER.info("Using basic authentication for user <{}>", username);
-        return channel.setUserInfo(username, configuration.getPassword());
+        LOGGER.info("Using access token authentication for client <{}>", configuration.getIdentifier());
+
+        final String accessToken = configuration.getAccessTokenSupplier().get();
+        final String authorizationHeader = String.format("Bearer %s", accessToken);
+
+        return channel.addHeader("Authorization", authorizationHeader);
     }
 
 }

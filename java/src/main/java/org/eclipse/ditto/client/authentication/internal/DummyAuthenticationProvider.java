@@ -50,7 +50,7 @@ public final class DummyAuthenticationProvider implements AuthenticationProvider
     public WebSocket prepareAuthentication(final WebSocket channel) {
         final String dummyUsername = configuration.getDummyUsername();
         configuration.getAdditionalHeaders().forEach(channel::addHeader);
-        LOGGER.warn("Using Ditto Dummy auth with dummy user <{}>, do not use for production!", dummyUsername);
+        LOGGER.warn("Using ditto dummy authentication for user <{}>, do not use for production!", dummyUsername);
         return channel.addHeader(X_DITTO_DUMMY_AUTH_HEADER, dummyUsername);
     }
 

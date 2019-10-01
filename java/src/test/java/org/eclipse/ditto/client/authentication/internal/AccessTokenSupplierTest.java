@@ -18,13 +18,13 @@ import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable
 import org.junit.Test;
 
 /**
- * Unit test for {@link AccessTokenSupplier}.
+ * Unit test for {@link ClientCredentialsAccessTokenSupplier}.
  */
 public final class AccessTokenSupplierTest {
 
     @Test
     public void assertImmutability() {
-        assertInstancesOf(AccessTokenSupplier.class, areImmutable());
+        assertInstancesOf(ClientCredentialsAccessTokenSupplier.class, areImmutable());
     }
 
 }

@@ -30,7 +30,7 @@ import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.ProxyConfiguration;
 
 /**
- * A {@link org.eclipse.ditto.client.configuration.AuthenticationConfiguration} implementing OAuth 2 client credentials
+ * A {@link org.eclipse.ditto.client.configuration.AuthenticationConfiguration} for OAuth 2 client credentials
  * authentication.
  *
  * @since 1.0.0

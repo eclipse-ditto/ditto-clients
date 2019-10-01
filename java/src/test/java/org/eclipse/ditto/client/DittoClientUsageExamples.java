@@ -39,6 +39,7 @@ import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.configuration.ProxyConfiguration;
 import org.eclipse.ditto.client.configuration.TrustStoreConfiguration;
+import org.eclipse.ditto.client.configuration.internal.AccessTokenAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.internal.BasicAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.internal.ClientCredentialsAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.internal.DummyAuthenticationConfiguration;

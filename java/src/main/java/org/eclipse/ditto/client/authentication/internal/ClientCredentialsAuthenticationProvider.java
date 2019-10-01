@@ -14,11 +14,9 @@ package org.eclipse.ditto.client.authentication.internal;
 
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
-import org.eclipse.ditto.client.authentication.AuthenticationException;
 import org.eclipse.ditto.client.authentication.AuthenticationProvider;
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.internal.ClientCredentialsAuthenticationConfiguration;
-import org.eclipse.ditto.json.JsonMissingFieldException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +36,7 @@ public final class ClientCredentialsAuthenticationProvider implements Authentica
 
     public ClientCredentialsAuthenticationProvider(final ClientCredentialsAuthenticationConfiguration configuration) {
         this.configuration = checkNotNull(configuration, "configuration");
-        accessTokenSupplier = AccessTokenSupplier.newInstance(configuration);
+        accessTokenSupplier = ClientCredentialsAccessTokenSupplier.newInstance(configuration);
     }
 
     @Override
@@ -49,14 +47,12 @@ public final class ClientCredentialsAuthenticationProvider implements Authentica
     @Override
     public WebSocket prepareAuthentication(final WebSocket channel) {
         configuration.getAdditionalHeaders().forEach(channel::addHeader);
-        LOGGER.info("Using Client Credentials Auth. Authenticating client <{}>", configuration.getClientId());
+        LOGGER.info("Using client credentials authentication for client <{}>", configuration.getClientId());
 
-        final String accessToken = accessTokenSupplier.get()
-                .getValue(AccessTokenSupplier.JsonFields.JSON_ACCESS_TOKEN)
-                .orElseThrow(() -> AuthenticationException.of(configuration.getSessionId(),
-                        new JsonMissingFieldException(AccessTokenSupplier.JsonFields.JSON_ACCESS_TOKEN)));
+        final String accessToken = accessTokenSupplier.get();
+        final String authorizationHeader = String.format("Bearer %s", accessToken);
 
-        return channel.addHeader("Authorization", String.format("Bearer %s", accessToken));
+        return channel.addHeader("Authorization", authorizationHeader);
     }
 
 }

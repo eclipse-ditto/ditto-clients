@@ -12,9 +12,11 @@
  */
 package org.eclipse.ditto.client.authentication;
 
+import org.eclipse.ditto.client.authentication.internal.AccessTokenAuthenticationProvider;
 import org.eclipse.ditto.client.authentication.internal.BasicAuthenticationProvider;
 import org.eclipse.ditto.client.authentication.internal.ClientCredentialsAuthenticationProvider;
 import org.eclipse.ditto.client.authentication.internal.DummyAuthenticationProvider;
+import org.eclipse.ditto.client.configuration.internal.AccessTokenAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.internal.BasicAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.internal.ClientCredentialsAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.internal.DummyAuthenticationConfiguration;
@@ -30,6 +32,18 @@ public final class AuthenticationProviders {
 
     private AuthenticationProviders() {
         throw new AssertionError();
+    }
+
+    /**
+     * Creates a new {@code AuthenticationProvider} for access token authentication.
+     *
+     * @param configuration the configuration of the provider.
+     * @return the instance.
+     */
+    public static AuthenticationProvider<WebSocket> accessToken(
+            final AccessTokenAuthenticationConfiguration configuration) {
+
+        return new AccessTokenAuthenticationProvider(configuration);
     }
 
     /**
