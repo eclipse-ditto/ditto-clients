@@ -401,9 +401,6 @@
                             <ignoreMissingClasses>false</ignoreMissingClasses>
                             <skipPomModules>true</skipPomModules>
                             <htmlTitle>${project.name} :: Binary Compatibility Report</htmlTitle>
-                            <excludes>
-                                <!--<exclude></exclude>-->
-                            </excludes>
                         </parameter>
                     </configuration>
                     <executions>
@@ -713,6 +710,7 @@
             <artifactId>ditto-json</artifactId>
             <version>${ditto.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-model-base</artifactId>
@@ -720,14 +718,15 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-model-things</artifactId>
+            <artifactId>ditto-model-messages</artifactId>
             <version>${ditto.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-model-messages</artifactId>
+            <artifactId>ditto-model-things</artifactId>
             <version>${ditto.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-signals-base</artifactId>
@@ -763,6 +762,7 @@
             <artifactId>ditto-signals-events-things</artifactId>
             <version>${ditto.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-protocol-adapter</artifactId>
