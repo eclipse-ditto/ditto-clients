@@ -32,9 +32,11 @@ public final class AccessTokenAuthenticationProvider implements AuthenticationPr
     private static final Logger LOGGER = LoggerFactory.getLogger(AccessTokenAuthenticationProvider.class);
 
     private final AccessTokenAuthenticationConfiguration configuration;
+    private final AccessTokenSupplier accessTokenSupplier;
 
     public AccessTokenAuthenticationProvider(final AccessTokenAuthenticationConfiguration configuration) {
         this.configuration = checkNotNull(configuration, "configuration");
+        accessTokenSupplier = configuration.getAccessTokenSupplier();
     }
 
     @Override
@@ -47,7 +49,7 @@ public final class AccessTokenAuthenticationProvider implements AuthenticationPr
         configuration.getAdditionalHeaders().forEach(channel::addHeader);
         LOGGER.info("Using access token authentication for client <{}>", configuration.getIdentifier());
 
-        final String accessToken = configuration.getAccessTokenSupplier().get();
+        final String accessToken = accessTokenSupplier.get();
         final String authorizationHeader = String.format("Bearer %s", accessToken);
 
         return channel.addHeader("Authorization", authorizationHeader);
