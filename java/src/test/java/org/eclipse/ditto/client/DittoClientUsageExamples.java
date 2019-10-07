@@ -99,11 +99,11 @@ public final class DittoClientUsageExamples {
 
         final JsonifiableAdaptable jsonifiableAdaptable = ProtocolFactory.jsonifiableAdaptableFromJson(
                 JsonFactory.readFrom("{\n" +
-                        "  \"topic\": \"com.acme/xdk_53/things/twin/commands/modify\",\n" +
+                        "  \"topic\": \"org.eclipse.ditto/xdk_53/things/twin/commands/modify\",\n" +
                         "  \"headers\": {},\n" +
                         "  \"path\": \"/\",\n" +
                         "  \"value\": {\n" +
-                        "    \"thingId\": \"com.acme:xdk_53\",\n" +
+                        "    \"thingId\": \"org.eclipse.ditto:xdk_53\",\n" +
                         "    \"attributes\": {\n" +
                         "      \"location\": {\n" +
                         "        \"latitude\": 44.673856,\n" +
@@ -163,7 +163,13 @@ public final class DittoClientUsageExamples {
         final int loadTestCount = 10;
         subscribeForLoadTestUpdateChanges(client2, loadTestCount * loadTestThings, false);
         performLoadTestUpdate(client, loadTestCount, loadTestThings, false);
-        performLoadTestRead(client, loadTestCount, false);
+        performLoadTestRead(client, loadTestCount, true);
+        Thread.sleep(1000);
+
+        client.destroy();
+        client2.destroy();
+        System.out.println("\n\nDittoClientUsageExamples successfully completed!");
+        System.exit(0);
     }
 
     private static void useTwinCommandsAndEvents(final DittoClient client, final DittoClient client2)
