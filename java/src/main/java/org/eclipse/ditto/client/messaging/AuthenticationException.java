@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.authentication;
+package org.eclipse.ditto.client.messaging;
 
 import javax.annotation.concurrent.Immutable;
 

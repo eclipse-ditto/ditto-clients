@@ -14,7 +14,6 @@ package org.eclipse.ditto.client.internal;
 
 import static java.util.Arrays.asList;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -55,8 +54,7 @@ public class ClientShutdownTest {
 
         // expect no more active threads
         Assertions.assertThat(activeThreads)
-                .withFailMessage("There are %d threads active: %s", threads.length,
-                        Arrays.toString(threads))
+                .withFailMessage("There are %d threads active: %s", activeThreads.size(), activeThreads)
                 .isEmpty();
     }
 

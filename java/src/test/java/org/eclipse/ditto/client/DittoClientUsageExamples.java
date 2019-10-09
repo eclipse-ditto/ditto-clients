@@ -33,17 +33,16 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import org.eclipse.ditto.client.authentication.AuthenticationProvider;
-import org.eclipse.ditto.client.authentication.AuthenticationProviders;
 import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.configuration.ProxyConfiguration;
 import org.eclipse.ditto.client.configuration.TrustStoreConfiguration;
-import org.eclipse.ditto.client.configuration.internal.AccessTokenAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.internal.BasicAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.internal.ClientCredentialsAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.internal.DummyAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.internal.WebSocketMessagingConfiguration;
+import org.eclipse.ditto.client.messaging.AuthenticationProvider;
+import org.eclipse.ditto.client.messaging.AuthenticationProviders;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.messaging.MessagingProviders;
 import org.eclipse.ditto.client.options.Options;
@@ -65,8 +64,6 @@ import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommandAnsw
 import org.eclipse.ditto.signals.commands.live.modify.ModifyFeaturePropertyLiveCommandAnswerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.neovisionaries.ws.client.WebSocket;
 
 
 /**
@@ -607,7 +604,7 @@ public final class DittoClientUsageExamples {
                     .build());
         }
 
-        final AuthenticationProvider<WebSocket> authenticationProvider;
+        final AuthenticationProvider authenticationProvider;
         if (DITTO_DUMMY_AUTH_USER != null) {
             authenticationProvider =
                     AuthenticationProviders.dummy(DummyAuthenticationConfiguration.newBuilder()

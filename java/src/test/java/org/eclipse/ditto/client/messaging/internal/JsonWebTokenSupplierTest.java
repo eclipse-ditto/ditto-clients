@@ -10,23 +10,21 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.authentication;
+package org.eclipse.ditto.client.messaging.internal;
 
 import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
 import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import org.junit.Test;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-
 /**
- * Unit test for {@link AuthenticationException}.
+ * Unit test for {@link org.eclipse.ditto.client.messaging.internal.ClientCredentialsJsonWebTokenSupplier}.
  */
-public final class AuthenticationExceptionTest {
+public final class JsonWebTokenSupplierTest {
 
     @Test
     public void assertImmutability() {
-        assertInstancesOf(AuthenticationException.class, areImmutable());
+        assertInstancesOf(ClientCredentialsJsonWebTokenSupplier.class, areImmutable());
     }
 
 }

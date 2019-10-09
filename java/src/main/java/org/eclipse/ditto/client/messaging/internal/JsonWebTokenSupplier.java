@@ -10,19 +10,21 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.authentication.internal;
+package org.eclipse.ditto.client.messaging.internal;
 
 import java.util.function.Supplier;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.eclipse.ditto.model.jwt.JsonWebToken;
+
 /**
- * A supplier of OAuth 2 Access Tokens.
+ * A supplier of OAuth 2 Tokens.
  *
  * @since 1.0.0
  */
 @Immutable
-public interface AccessTokenSupplier extends Supplier<String> {
+public interface JsonWebTokenSupplier extends Supplier<JsonWebToken> {
 
     /**
      * Supplies a base64 encoded access token.
@@ -30,6 +32,6 @@ public interface AccessTokenSupplier extends Supplier<String> {
      * @return the token.
      */
     @Override
-    String get();
+    JsonWebToken get();
 
 }

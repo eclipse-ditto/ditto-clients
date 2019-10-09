@@ -44,13 +44,13 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-import org.eclipse.ditto.client.authentication.AuthenticationException;
-import org.eclipse.ditto.client.authentication.AuthenticationProvider;
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.internal.DefaultThreadFactory;
 import org.eclipse.ditto.client.internal.VersionReader;
 import org.eclipse.ditto.client.live.internal.LiveImpl;
+import org.eclipse.ditto.client.messaging.AuthenticationException;
+import org.eclipse.ditto.client.messaging.AuthenticationProvider;
 import org.eclipse.ditto.client.messaging.MessagingException;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.twin.internal.TwinImpl;
@@ -314,19 +314,18 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     /**
-     * Initiates the connection to the web socket by using the provided {@code websocket} and applying the passed {@code
+     * Initiates the connection to the web socket by using the provided {@code ws} and applying the passed {@code
      * webSocketListener} for web socket handling and incoming messages.
      *
-     * @param websocket the WebSocket instance to use for connecting.
+     * @param ws the WebSocket instance to use for connecting.
      * @return a promise for the web socket which should be available after successful establishment of a connection.
      * This promise may be completed exceptionally if the connection upgrade attempt to web socket failed.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    private CompletableFuture<WebSocket> initiateConnection(final WebSocket websocket) {
+    private CompletableFuture<WebSocket> initiateConnection(final WebSocket ws) {
+        checkNotNull(ws, "ws");
 
-        checkNotNull(websocket, "web socket");
-
-        final WebSocket ws = authenticationProvider.prepareAuthentication(websocket);
+        authenticationProvider.prepareAuthentication(ws);
         ws.addListener(this);
 
         LOGGER.info("Connecting WebSocket on endpoint <{}>", ws.getURI());
@@ -576,6 +575,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                 reconnectExecutor.shutdownNow();
             }
 
+            authenticationProvider.destroy();
             webSocket.disconnect();
             LOGGER.debug("Client <{}>: WebSocket destroyed.", sessionId);
         } catch (final Exception e) {

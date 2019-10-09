@@ -22,9 +22,9 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.NotThreadSafe;
 
-import org.eclipse.ditto.client.authentication.internal.AccessTokenSupplier;
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.ProxyConfiguration;
+import org.eclipse.ditto.client.messaging.internal.JsonWebTokenSupplier;
 
 /**
  * A {@link org.eclipse.ditto.client.configuration.AuthenticationConfiguration} for access token authentication.
@@ -35,14 +35,14 @@ import org.eclipse.ditto.client.configuration.ProxyConfiguration;
 public final class AccessTokenAuthenticationConfiguration extends AbstractAuthenticationConfiguration {
 
     private final String identifier;
-    private final AccessTokenSupplier accessTokenSupplier;
+    private final JsonWebTokenSupplier jsonWebTokenSupplier;
 
     private AccessTokenAuthenticationConfiguration(final String identifier,
-            final AccessTokenSupplier accessTokenSupplier,
+            final JsonWebTokenSupplier jsonWebTokenSupplier,
             final Map<String, String> additionalHeaders) {
         super(identifier, additionalHeaders, null);
         this.identifier = identifier;
-        this.accessTokenSupplier = accessTokenSupplier;
+        this.jsonWebTokenSupplier = jsonWebTokenSupplier;
     }
 
     /**
@@ -66,8 +66,8 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
      *
      * @return the supplier.
      */
-    public AccessTokenSupplier getAccessTokenSupplier() {
-        return accessTokenSupplier;
+    public JsonWebTokenSupplier getJsonWebTokenSupplier() {
+        return jsonWebTokenSupplier;
     }
 
     @Override
@@ -83,12 +83,12 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
         }
         final AccessTokenAuthenticationConfiguration that = (AccessTokenAuthenticationConfiguration) o;
         return Objects.equals(identifier, that.identifier) &&
-                Objects.equals(accessTokenSupplier, that.accessTokenSupplier);
+                Objects.equals(jsonWebTokenSupplier, that.jsonWebTokenSupplier);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), identifier, accessTokenSupplier);
+        return Objects.hash(super.hashCode(), identifier, jsonWebTokenSupplier);
     }
 
     @Override
@@ -96,7 +96,7 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
         return getClass().getSimpleName() + " [" +
                 super.toString() +
                 ", identifier=" + identifier +
-                ", accessTokenSupplier=" + accessTokenSupplier +
+                ", accessTokenSupplier=" + jsonWebTokenSupplier +
                 "]";
     }
 
@@ -105,7 +105,7 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
             implements AuthenticationConfiguration.Builder {
 
         private String identifier;
-        private AccessTokenSupplier accessTokenSupplier;
+        private JsonWebTokenSupplier jsonWebTokenSupplier;
         private final Map<String, String> additionalHeaders = new HashMap<>();
 
         /**
@@ -122,12 +122,12 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
         /**
          * Sets the access token supplier to authenticate.
          *
-         * @param accessTokenSupplier the supplier.
+         * @param jsonWebTokenSupplier the supplier.
          * @return this builder.
          */
         public AccessTokenAuthenticationConfigurationBuilder accessTokenSupplier(
-                final AccessTokenSupplier accessTokenSupplier) {
-            this.accessTokenSupplier = accessTokenSupplier;
+                final JsonWebTokenSupplier jsonWebTokenSupplier) {
+            this.jsonWebTokenSupplier = jsonWebTokenSupplier;
             return this;
         }
 
@@ -146,7 +146,7 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
 
         @Override
         public AccessTokenAuthenticationConfiguration build() {
-            return new AccessTokenAuthenticationConfiguration(identifier, accessTokenSupplier, additionalHeaders);
+            return new AccessTokenAuthenticationConfiguration(identifier, jsonWebTokenSupplier, additionalHeaders);
         }
 
     }

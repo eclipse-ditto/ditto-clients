@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.authentication.internal;
+package org.eclipse.ditto.client.messaging.internal;
 
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
@@ -27,12 +27,14 @@ import java.util.Optional;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.eclipse.ditto.client.authentication.AuthenticationException;
 import org.eclipse.ditto.client.configuration.internal.ClientCredentialsAuthenticationConfiguration;
+import org.eclipse.ditto.client.messaging.AuthenticationException;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonFieldDefinition;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonRuntimeException;
+import org.eclipse.ditto.model.jwt.ImmutableJsonWebToken;
+import org.eclipse.ditto.model.jwt.JsonWebToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,9 +44,9 @@ import org.slf4j.LoggerFactory;
  * @since 1.0.0
  */
 @Immutable
-final class ClientCredentialsAccessTokenSupplier implements AccessTokenSupplier {
+final class ClientCredentialsJsonWebTokenSupplier implements JsonWebTokenSupplier {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClientCredentialsAccessTokenSupplier.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClientCredentialsJsonWebTokenSupplier.class);
 
     private static final String UNEXPECTED_HTTP_STATUS_CODE_TEMPLATE =
             "Unexpected HTTP status code from token endpoint. Expected status code <200> but was: <{}>";
@@ -53,18 +55,20 @@ final class ClientCredentialsAccessTokenSupplier implements AccessTokenSupplier 
 
     private final ClientCredentialsAuthenticationConfiguration configuration;
 
-    private ClientCredentialsAccessTokenSupplier(final ClientCredentialsAuthenticationConfiguration configuration) {
+    private ClientCredentialsJsonWebTokenSupplier(final ClientCredentialsAuthenticationConfiguration configuration) {
         this.configuration = configuration;
     }
 
-    static AccessTokenSupplier newInstance(final ClientCredentialsAuthenticationConfiguration configuration) {
-        return new ClientCredentialsAccessTokenSupplier(checkNotNull(configuration, "configuration"));
+    static JsonWebTokenSupplier newInstance(final ClientCredentialsAuthenticationConfiguration configuration) {
+        return new ClientCredentialsJsonWebTokenSupplier(checkNotNull(configuration, "configuration"));
     }
 
     @Override
-    public String get() {
+    public JsonWebToken get() {
         try {
-            return requestToken().getValueOrThrow(JsonFields.JSON_ACCESS_TOKEN);
+            final JsonObject tokenResponse = requestToken();
+            final String accessToken = tokenResponse.getValueOrThrow(JsonFields.JSON_ACCESS_TOKEN);
+            return ImmutableJsonWebToken.fromToken(accessToken);
         } catch (final IOException | JsonRuntimeException e) {
             throw AuthenticationException.of(configuration.getSessionId(), e);
         }

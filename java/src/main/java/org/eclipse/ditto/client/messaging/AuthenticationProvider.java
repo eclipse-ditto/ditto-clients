@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.authentication;
+package org.eclipse.ditto.client.messaging;
 
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 
@@ -36,6 +36,11 @@ public interface AuthenticationProvider<C> {
      * @param channel the channel to perform authentication with.
      * @return the by authentication enhanced channel.
      */
-    C prepareAuthentication(C channel);
+    void prepareAuthentication(C channel);
+
+    /**
+     * Destroys this {@code AuthenticationConfiguration} and frees all resources.
+     */
+    void destroy();
 
 }

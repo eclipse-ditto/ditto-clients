@@ -10,21 +10,24 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.authentication;
+package org.eclipse.ditto.client.messaging;
 
-import org.eclipse.ditto.client.authentication.internal.AccessTokenAuthenticationProvider;
-import org.eclipse.ditto.client.authentication.internal.BasicAuthenticationProvider;
-import org.eclipse.ditto.client.authentication.internal.ClientCredentialsAuthenticationProvider;
-import org.eclipse.ditto.client.authentication.internal.DummyAuthenticationProvider;
+import java.util.UUID;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
 import org.eclipse.ditto.client.configuration.internal.AccessTokenAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.internal.BasicAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.internal.ClientCredentialsAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.internal.DummyAuthenticationConfiguration;
-
-import com.neovisionaries.ws.client.WebSocket;
+import org.eclipse.ditto.client.internal.DefaultThreadFactory;
+import org.eclipse.ditto.client.messaging.internal.AccessTokenAuthenticationProvider;
+import org.eclipse.ditto.client.messaging.internal.BasicAuthenticationProvider;
+import org.eclipse.ditto.client.messaging.internal.ClientCredentialsAuthenticationProvider;
+import org.eclipse.ditto.client.messaging.internal.DummyAuthenticationProvider;
 
 /**
- * Factory for creating {@link org.eclipse.ditto.client.authentication.AuthenticationProvider} instances.
+ * Factory for creating {@link AuthenticationProvider} instances.
  *
  * @since 1.0.0
  */
@@ -40,10 +43,10 @@ public final class AuthenticationProviders {
      * @param configuration the configuration of the provider.
      * @return the instance.
      */
-    public static AuthenticationProvider<WebSocket> accessToken(
-            final AccessTokenAuthenticationConfiguration configuration) {
+    public static AuthenticationProvider accessToken(final AccessTokenAuthenticationConfiguration configuration) {
 
-        return new AccessTokenAuthenticationProvider(configuration);
+        return new AccessTokenAuthenticationProvider(configuration,
+                createDefaultExecutorService(UUID.randomUUID().toString()));
     }
 
     /**
@@ -52,8 +55,7 @@ public final class AuthenticationProviders {
      * @param configuration the configuration of the provider.
      * @return the instance.
      */
-    public static AuthenticationProvider<WebSocket> basic(
-            final BasicAuthenticationConfiguration configuration) {
+    public static AuthenticationProvider basic(final BasicAuthenticationConfiguration configuration) {
 
         return new BasicAuthenticationProvider(configuration);
     }
@@ -64,10 +66,11 @@ public final class AuthenticationProviders {
      * @param configuration the configuration of the provider.
      * @return the instance.
      */
-    public static AuthenticationProvider<WebSocket> clientCredentials(
+    public static AuthenticationProvider clientCredentials(
             final ClientCredentialsAuthenticationConfiguration configuration) {
 
-        return new ClientCredentialsAuthenticationProvider(configuration);
+        return new ClientCredentialsAuthenticationProvider(configuration,
+                createDefaultExecutorService(UUID.randomUUID().toString()));
     }
 
     /**
@@ -76,10 +79,14 @@ public final class AuthenticationProviders {
      * @param configuration the configuration of the provider.
      * @return the instance.
      */
-    public static AuthenticationProvider<WebSocket> dummy(
+    public static AuthenticationProvider dummy(
             final DummyAuthenticationConfiguration configuration) {
 
         return new DummyAuthenticationProvider(configuration);
+    }
+
+    private static ScheduledExecutorService createDefaultExecutorService(final String name) {
+        return Executors.newSingleThreadScheduledExecutor(new DefaultThreadFactory("ditto-client-scheduler-" + name));
     }
 
 }

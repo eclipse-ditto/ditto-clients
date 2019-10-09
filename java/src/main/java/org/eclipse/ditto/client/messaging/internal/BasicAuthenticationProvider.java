@@ -10,15 +10,13 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.authentication.internal;
+package org.eclipse.ditto.client.messaging.internal;
 
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
-import org.eclipse.ditto.client.authentication.AuthenticationProvider;
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.internal.BasicAuthenticationConfiguration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.eclipse.ditto.client.messaging.AuthenticationProvider;
 
 import com.neovisionaries.ws.client.WebSocket;
 
@@ -28,8 +26,6 @@ import com.neovisionaries.ws.client.WebSocket;
  * @since 1.0.0
  */
 public final class BasicAuthenticationProvider implements AuthenticationProvider<WebSocket> {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(BasicAuthenticationProvider.class);
 
     private final BasicAuthenticationConfiguration configuration;
 
@@ -43,11 +39,15 @@ public final class BasicAuthenticationProvider implements AuthenticationProvider
     }
 
     @Override
-    public WebSocket prepareAuthentication(final WebSocket channel) {
+    public void prepareAuthentication(final WebSocket webSocket) {
         final String username = configuration.getUsername();
-        configuration.getAdditionalHeaders().forEach(channel::addHeader);
-        LOGGER.info("Using basic authentication for user <{}>", username);
-        return channel.setUserInfo(username, configuration.getPassword());
+        configuration.getAdditionalHeaders().forEach(webSocket::addHeader);
+        webSocket.setUserInfo(username, configuration.getPassword());
+    }
+
+    @Override
+    public void destroy() {
+        // nothing to destroy here
     }
 
 }
