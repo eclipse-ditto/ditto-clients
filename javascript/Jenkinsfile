@@ -10,38 +10,17 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-#!groovy
 
 /**
  * Requires plugins:
  * 1. NodeJS ( Manage Jenkins - Global Tool Configuration - NodeJS installations - (NodeJS 10.16.3, Install automatically))
  * 2. Git Plugin (Manage Jenkins - Configure System - Git plugin (user.name = Eclipse Ditto committers; user.email = ditto-dev@eclipse.org))
- * 3. SSH Agent
  */
 pipeline {
     agent any
 
     tools {
-        // TODO: verify name
         nodejs "node"
-    }
-
-    parameters {
-        booleanParam(defaultValue: false, description: 'Choose, if on successful build, a release will be built and published', name: 'release')
-
-        choice(choices: ['patch', 'minor', 'major', 'prepatch ', 'preminor', 'premajor'],
-                description: '''Chose what kind of version upgrade is done during the release. The release job will bump the version number
-                            (according to <a href="https://github.com/lerna/lerna/tree/master/commands/version#semver-bump">lerna docs</a>) and publish
-                            the modules with the new release number''', name: 'version')
-
-        password(description: '''An npm authentication token for publishing to the registry. You may
-                                 omit this value if you do not want to publish a release. To create
-                                 a token, go to http://npmjs.com, log in, click on your profile pic,
-                                 choose "Tokens" and create a token that is allowed to read and publish.
-                                 Copy the value and insert it here. Note that npmjs.com shows the token only once,
-                                 so be sure to store it in your local password store. Further information
-                                 on tokens can be found at https://docs.npmjs.com/creating-and-viewing-authentication-tokens''', name: 'NPM_TOKEN')
-
     }
 
     stages {
@@ -49,10 +28,7 @@ pipeline {
             steps {
                 script {
                     checkout([
-                            $class           : 'GitSCM',
-                            branches: [[name: '*/master']],
-                            userRemoteConfigs: [[url: 'ssh://git@github.com:eclipse/ditto-clients.git', credentialsId: '09aacbfc-2408-458e-94b2-2e3fab105b85']],
-                            extensions: [[$class: 'LocalBranch', localBranch: '**']]
+                            $class: 'GitSCM'
                     ])
                 }
             }
@@ -87,28 +63,6 @@ pipeline {
                     junit allowEmptyResults: true, testResults: '**/target/test-report.xml'
                 }
             }
-        }
-
-        stage('Publish release') {
-            steps {
-                dir('javascript') {
-                    script {
-                        if (params.release) {
-                            try {
-                                // TODO: password is shown in the console
-                                sh "npm config set '//registry.npmjs.org/:_authToken' \"${params.NPM_TOKEN}\""
-                                sshagent(['09aacbfc-2408-458e-94b2-2e3fab105b85']) {
-                                    sh "npm run release -- --force-publish=* ${params.version}"
-                                }
-                            } finally {
-                                sh "npm config set '//registry.npmjs.org/:_authToken'"
-                            }
-                        }
-                    }
-
-                }
-            }
-
         }
     }
 }
