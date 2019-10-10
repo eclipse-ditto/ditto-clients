@@ -44,6 +44,11 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
 
     /**
      * Creates a new {@code TwinImpl} instance.
+     *
+     * @param messagingProvider implementation of underlying messaging provider.
+     * @param responseForwarder fast cache of response addresses.
+     * @param outgoingMessageFactory a factory for messages.
+     * @param bus the bus for message routing.
      */
     public TwinImpl(final MessagingProvider messagingProvider,
             final ResponseForwarder responseForwarder,

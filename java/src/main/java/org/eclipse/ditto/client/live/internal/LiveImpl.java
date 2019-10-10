@@ -118,7 +118,14 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
             liveCommandsFunctions;
 
     /**
-     * Creates a new {@code LiveImpl} instance.
+     * Creates a new {@code TwinImpl} instance.
+     *
+     * @param messagingProvider implementation of underlying messaging provider.
+     * @param responseForwarder fast cache of response addresses.
+     * @param outgoingMessageFactory a factory for messages.
+     * @param bus the bus for message routing.
+     * @param schemaVersion the json schema version of the messaging protocol.
+     * @param sessionId the session identifier of this client.
      */
     public LiveImpl(final MessagingProvider messagingProvider,
             final ResponseForwarder responseForwarder,

@@ -34,7 +34,6 @@ public interface AuthenticationProvider<C> {
      * information to it.
      *
      * @param channel the channel to perform authentication with.
-     * @return the by authentication enhanced channel.
      */
     void prepareAuthentication(C channel);
 
