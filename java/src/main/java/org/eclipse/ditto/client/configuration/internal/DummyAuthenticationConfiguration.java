@@ -13,6 +13,7 @@
 package org.eclipse.ditto.client.configuration.internal;
 
 import static java.util.Objects.requireNonNull;
+import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -105,7 +106,7 @@ public final class DummyAuthenticationConfiguration extends AbstractAuthenticati
 
         @Override
         public DummyAuthenticationConfigurationBuilder withAdditionalHeader(final String key, final String value) {
-            additionalHeaders.put(key, value);
+            additionalHeaders.put(checkNotNull(key, "key"), value);
             return this;
         }
 
