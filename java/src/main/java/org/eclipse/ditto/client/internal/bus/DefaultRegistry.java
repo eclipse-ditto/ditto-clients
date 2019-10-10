@@ -32,24 +32,21 @@ final class DefaultRegistry<T> implements Registry<T> {
             ConcurrentHashMap<>();
 
     private final boolean useCache;
-    private final boolean cacheNotFound;
 
     /**
      * Constructs a new DefaultRegistry with JsonPointer caching enabled.
      */
     DefaultRegistry() {
-        this(true, true);
+        this(true);
     }
 
     /**
      * Constructs a new DefaultRegistry withe the passed options.
      *
      * @param useJsonPointerCache whether to use a JsonPointer cache or not.
-     * @param cacheNotFoundJsonPointers whether to cache "not found" JsonPointers or not.
      */
-    private DefaultRegistry(final boolean useJsonPointerCache, final boolean cacheNotFoundJsonPointers) {
+    private DefaultRegistry(final boolean useJsonPointerCache) {
         this.useCache = useJsonPointerCache;
-        this.cacheNotFound = cacheNotFoundJsonPointers;
     }
 
     @Override
@@ -101,7 +98,7 @@ final class DefaultRegistry<T> implements Registry<T> {
             }
         });
 
-        if (useCache && (!regs.isEmpty() || cacheNotFound)) {
+        if (useCache && !regs.isEmpty()) {
             pointerCache.put(pointer, regs);
         }
 
