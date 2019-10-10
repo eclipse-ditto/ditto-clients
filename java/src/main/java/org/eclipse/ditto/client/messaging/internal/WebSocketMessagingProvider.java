@@ -702,8 +702,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                         TimeUnit.SECONDS);
             }
         } else {
-            LOGGER.info("Client <{}>: Reconnection is NOT enabled. Closing client ...",
-                    sessionId);
+            LOGGER.info("Client <{}>: Reconnection is NOT enabled. Closing client ...", sessionId);
             close();
         }
     }
