@@ -15,6 +15,7 @@ package org.eclipse.ditto.client.internal;
 import static java.util.Arrays.asList;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,8 +30,7 @@ import org.junit.Test;
 public class ClientShutdownTest {
 
     private static final List<String> ALLOWED_THREADS = asList("main", "Monitor Ctrl-Break", "BundleWatcher: 1",
-            "surefire-forkedjvm-command-thread", "surefire-forkedjvm-ping-30s", "ping-30s", "Attach API wait loop",
-            "pool-1-thread-1");
+            "surefire-forkedjvm-command-thread", "surefire-forkedjvm-ping-30s", "ping-30s", "Attach API wait loop");
 
     @Test
     public void testNoMoreActiveThreads() throws InterruptedException {
@@ -42,7 +42,7 @@ public class ClientShutdownTest {
         DittoClients.newInstance(messaging).destroy();
 
         // wait some time for executors/threads to shutdown
-        Thread.sleep(2000);
+        TimeUnit.SECONDS.sleep(2L);
 
         final Thread[] threads = new Thread[Thread.activeCount()];
         Thread.enumerate(threads);

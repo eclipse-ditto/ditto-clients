@@ -12,15 +12,10 @@
  */
 package org.eclipse.ditto.client.messaging;
 
-import java.util.UUID;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-
 import org.eclipse.ditto.client.configuration.internal.AccessTokenAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.internal.BasicAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.internal.ClientCredentialsAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.internal.DummyAuthenticationConfiguration;
-import org.eclipse.ditto.client.internal.DefaultThreadFactory;
 import org.eclipse.ditto.client.messaging.internal.AccessTokenAuthenticationProvider;
 import org.eclipse.ditto.client.messaging.internal.BasicAuthenticationProvider;
 import org.eclipse.ditto.client.messaging.internal.ClientCredentialsAuthenticationProvider;
@@ -45,8 +40,7 @@ public final class AuthenticationProviders {
      */
     public static AuthenticationProvider accessToken(final AccessTokenAuthenticationConfiguration configuration) {
 
-        return new AccessTokenAuthenticationProvider(configuration,
-                createDefaultExecutorService(UUID.randomUUID().toString()));
+        return new AccessTokenAuthenticationProvider(configuration);
     }
 
     /**
@@ -69,8 +63,7 @@ public final class AuthenticationProviders {
     public static AuthenticationProvider clientCredentials(
             final ClientCredentialsAuthenticationConfiguration configuration) {
 
-        return new ClientCredentialsAuthenticationProvider(configuration,
-                createDefaultExecutorService(UUID.randomUUID().toString()));
+        return new ClientCredentialsAuthenticationProvider(configuration);
     }
 
     /**
@@ -83,10 +76,6 @@ public final class AuthenticationProviders {
             final DummyAuthenticationConfiguration configuration) {
 
         return new DummyAuthenticationProvider(configuration);
-    }
-
-    private static ScheduledExecutorService createDefaultExecutorService(final String name) {
-        return Executors.newSingleThreadScheduledExecutor(new DefaultThreadFactory("ditto-client-scheduler-" + name));
     }
 
 }

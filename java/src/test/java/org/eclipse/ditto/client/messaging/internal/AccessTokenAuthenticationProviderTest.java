@@ -13,12 +13,12 @@
 package org.eclipse.ditto.client.messaging.internal;
 
 import static org.mockito.ArgumentMatchers.startsWith;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
 import java.time.Instant;
 import java.util.Base64;
-import java.util.concurrent.Executors;
 
 import org.eclipse.ditto.client.configuration.internal.AccessTokenAuthenticationConfiguration;
 import org.eclipse.ditto.model.jwt.ImmutableJsonWebToken;
@@ -45,14 +45,27 @@ public final class AccessTokenAuthenticationProviderTest {
 
         underTest.prepareAuthentication(webSocket);
 
-        verify(webSocket, timeout(12000L)).sendText(startsWith("JWT-TOKEN?jwtToken="));
+        verify(webSocket, timeout(10000L)).sendText(startsWith("JWT-TOKEN?jwtToken="));
+
+        underTest.destroy();
+    }
+
+    @Test
+    public void tokenRefreshIsNotCalledWithNegativeExpiry() {
+        final AccessTokenAuthenticationProvider underTest = getAccessTokenAuthenticationProvider(0L);
+
+        underTest.prepareAuthentication(webSocket);
+
+        verify(webSocket, never()).sendText(startsWith("JWT-TOKEN?jwtToken="));
+
+        underTest.destroy();
     }
 
     private static AccessTokenAuthenticationProvider getAccessTokenAuthenticationProvider(final long exp) {
         return new AccessTokenAuthenticationProvider(AccessTokenAuthenticationConfiguration.newBuilder()
                 .identifier("bumlux")
                 .accessTokenSupplier(() -> getJsonWebToken(exp))
-                .build(), Executors.newSingleThreadScheduledExecutor());
+                .build());
     }
 
     private static JsonWebToken getJsonWebToken(final long exp) {

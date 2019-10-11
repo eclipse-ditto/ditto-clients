@@ -133,6 +133,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     private static final String PROTOCOL_CMD_START_SEND_LIVE_EVENTS = "START-SEND-LIVE-EVENTS";
     private static final String PROTOCOL_CMD_STOP_SEND_LIVE_EVENTS = "STOP-SEND-LIVE-EVENTS";
 
+    private static final String PROTOCOL_CMD_JWT_TOKEN = "JWT-TOKEN";
+
     /**
      * The backend sends the protocol message above suffixed by ":ACK" when the subscription was created. E.g.: {@code
      * START-SEND-EVENTS:ACK}
@@ -789,6 +791,9 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                 return;
             case PROTOCOL_CMD_STOP_SEND_LIVE_EVENTS + PROTOCOL_CMD_ACK_SUFFIX:
                 ackSubscription(PROTOCOL_CMD_STOP_SEND_LIVE_EVENTS);
+                return;
+            case PROTOCOL_CMD_JWT_TOKEN + PROTOCOL_CMD_ACK_SUFFIX:
+                LOGGER.trace("Ack for JWT received.");
                 return;
             default:
                 // no protocol message, treat as JSON below ..

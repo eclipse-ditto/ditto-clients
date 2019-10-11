@@ -14,8 +14,6 @@ package org.eclipse.ditto.client.messaging.internal;
 
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
-import java.util.concurrent.ScheduledExecutorService;
-
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.internal.AccessTokenAuthenticationConfiguration;
 
@@ -28,9 +26,8 @@ public final class AccessTokenAuthenticationProvider extends AbstractTokenAuthen
 
     private final AccessTokenAuthenticationConfiguration configuration;
 
-    public AccessTokenAuthenticationProvider(final AccessTokenAuthenticationConfiguration configuration,
-            final ScheduledExecutorService executorService) {
-        super(configuration.getAdditionalHeaders(), configuration.getJsonWebTokenSupplier(), executorService);
+    public AccessTokenAuthenticationProvider(final AccessTokenAuthenticationConfiguration configuration) {
+        super(configuration.getAdditionalHeaders(), configuration.getJsonWebTokenSupplier());
         this.configuration = checkNotNull(configuration, "configuration");
     }
 

@@ -17,9 +17,14 @@ import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
+import javax.annotation.concurrent.ThreadSafe;
+
+import org.eclipse.ditto.client.internal.DefaultThreadFactory;
 import org.eclipse.ditto.client.messaging.AuthenticationProvider;
 import org.eclipse.ditto.model.jwt.JsonWebToken;
 
@@ -32,57 +37,76 @@ import com.neovisionaries.ws.client.WebSocket;
  */
 abstract class AbstractTokenAuthenticationProvider implements AuthenticationProvider<WebSocket> {
 
-    private static final long TOKEN_GRACE_SECONDS = 5L;
-    private static final String TOKEN_MESSAGE_TEMPLATE = "JWT-TOKEN?jwtToken=%s";
+    private static final String PROTOCOL_CMD_JWT_TOKEN_TEMPLATE = "JWT-TOKEN?jwtToken=%s";
 
     private final Map<String, String> additionalHeaders;
     private final JsonWebTokenSupplier jsonWebTokenSupplier;
-    private final Scheduler scheduler;
+    private final JwtRefreshScheduler jwtRefreshScheduler;
 
     AbstractTokenAuthenticationProvider(final Map<String, String> additionalHeaders,
-            final JsonWebTokenSupplier jsonWebTokenSupplier,
-            final ScheduledExecutorService executorService) {
+            final JsonWebTokenSupplier jsonWebTokenSupplier) {
         this.additionalHeaders = checkNotNull(additionalHeaders, "additionalHeaders");
         this.jsonWebTokenSupplier = checkNotNull(jsonWebTokenSupplier, "accessTokenSupplier");
-        scheduler = new Scheduler(jsonWebTokenSupplier, executorService);
+        jwtRefreshScheduler = JwtRefreshScheduler.of(jsonWebTokenSupplier);
     }
 
     @Override
     public void prepareAuthentication(final WebSocket webSocket) {
-        final JsonWebToken jsonWebToken = jsonWebTokenSupplier.get();
-        final String authorizationHeader = String.format("Bearer %s", jsonWebToken.getToken());
+        final JsonWebToken jwt = jsonWebTokenSupplier.get();
+        final String authorizationHeader = String.format("Bearer %s", jwt.getToken());
         webSocket.addHeader("Authorization", authorizationHeader);
         additionalHeaders.forEach(webSocket::addHeader);
-        scheduler.scheduleTokenRefresh(webSocket, jsonWebToken.getExpirationTime());
+        jwtRefreshScheduler.scheduleRefresh(jwt.getExpirationTime(), newJwt -> sendJwt(webSocket, newJwt));
+    }
+
+    private void sendJwt(final WebSocket webSocket, final JsonWebToken jsonWebToken) {
+        webSocket.sendText(String.format(PROTOCOL_CMD_JWT_TOKEN_TEMPLATE, jsonWebToken.getToken()));
     }
 
     @Override
     public void destroy() {
-        scheduler.destroy();
+        jwtRefreshScheduler.destroy();
     }
 
-    private static final class Scheduler {
+    @ThreadSafe
+    private static final class JwtRefreshScheduler {
+
+        private static final long EXPIRY_GRACE_SECONDS = 5L;
 
         private final JsonWebTokenSupplier jsonWebTokenSupplier;
         private final ScheduledExecutorService executorService;
 
-        private Scheduler(final JsonWebTokenSupplier jsonWebTokenSupplier,
-                final ScheduledExecutorService executorService) {
+        private JwtRefreshScheduler(final JsonWebTokenSupplier jsonWebTokenSupplier) {
             this.jsonWebTokenSupplier = checkNotNull(jsonWebTokenSupplier, "jsonWebTokenSupplier");
-            this.executorService = checkNotNull(executorService, "executorService");
+            executorService = Executors.newSingleThreadScheduledExecutor(new DefaultThreadFactory("scheduler"));
         }
 
-        void scheduleTokenRefresh(final WebSocket webSocket, final Instant expiry) {
-            final Instant expiration = expiry.minusSeconds(TOKEN_GRACE_SECONDS);
-            final Duration delay = Duration.between(Instant.now(), expiration);
-            executorService.schedule(() -> getToken(webSocket), delay.toMillis(), TimeUnit.MILLISECONDS);
+        static JwtRefreshScheduler of(final JsonWebTokenSupplier jsonWebTokenSupplier) {
+            return new JwtRefreshScheduler(jsonWebTokenSupplier);
         }
 
-        private void getToken(final WebSocket webSocket) {
+        /**
+         * Schedules a fresh {@code JsonWebToken} from the configured {@code JsonWebTokenSupplier}. The refresh will
+         * be triggered
+         * {@link org.eclipse.ditto.client.messaging.internal.AbstractTokenAuthenticationProvider.JwtRefreshScheduler#EXPIRY_GRACE_SECONDS}
+         * seconds before the actual expiry to account for network latency.
+         *
+         * @param due the instant when the fresh token is due.
+         * @param consumer provides the fresh token.
+         */
+        void scheduleRefresh(final Instant due, final Consumer<JsonWebToken> consumer) {
+            final Instant expiration = due.minusSeconds(EXPIRY_GRACE_SECONDS);
+            final Instant now = Instant.now();
+            if (now.isBefore(expiration)) {
+                final long delay = Duration.between(now, expiration).toMillis();
+                executorService.schedule(() -> doRefresh(consumer), delay, TimeUnit.MILLISECONDS);
+            }
+        }
+
+        private void doRefresh(final Consumer<JsonWebToken> consumer) {
             final JsonWebToken jsonWebToken = jsonWebTokenSupplier.get();
-            final String tokenMessage = String.format(TOKEN_MESSAGE_TEMPLATE, jsonWebToken.getToken());
-            webSocket.sendText(tokenMessage);
-            scheduleTokenRefresh(webSocket, jsonWebToken.getExpirationTime());
+            consumer.accept(jsonWebToken);
+            scheduleRefresh(jsonWebToken.getExpirationTime(), consumer);
         }
 
         void destroy() {
