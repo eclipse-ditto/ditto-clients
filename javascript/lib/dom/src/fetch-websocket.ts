@@ -19,7 +19,7 @@ import {
   WebSocketImplementation,
   WebSocketImplementationBuilderHandler,
   WebSocketImplementationBuilderUrl
-} from '@eclipse-ditto/ditto-javascript-client-api_0';
+} from '@eclipse-ditto/ditto-javascript-client-api_1.0-pre';
 
 /**
  * Browser implementation of a web socket requester.

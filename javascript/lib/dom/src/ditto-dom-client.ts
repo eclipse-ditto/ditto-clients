@@ -16,7 +16,7 @@ import {
   HttpClientBuilder,
   WebSocketBuilderInitialStep,
   WebSocketClientBuilder
-} from '@eclipse-ditto/ditto-javascript-client-api_0';
+} from '@eclipse-ditto/ditto-javascript-client-api_1.0-pre';
 import { FetchRequester } from './fetch-http';
 import { FetchWebSocketBuilder } from './fetch-websocket';
 
