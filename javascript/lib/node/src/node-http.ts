@@ -12,7 +12,7 @@
  */
 
 import * as https from 'https';
-import { HttpRequester, GenericResponse } from '@eclipse-ditto/ditto-javascript-client-api_0';
+import { HttpRequester, GenericResponse } from '@eclipse-ditto/ditto-javascript-client-api_1.0-pre';
 import { ProxyAgent } from './proxy-settings';
 import { IncomingMessage } from 'http';
 

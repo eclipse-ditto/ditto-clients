@@ -12,7 +12,7 @@
  */
 
 
-import { BasicAuth, DittoURL, ImmutableURL } from '@eclipse-ditto/ditto-javascript-client-api_0';
+import { BasicAuth, DittoURL, ImmutableURL } from '@eclipse-ditto/ditto-javascript-client-api_1.0-pre';
 import { NodeBase64Encoder, NodeHttpBasicAuth, NodeWebSocketBasicAuth } from '../src/node-auth';
 
 const USERNAME = 'ditto';

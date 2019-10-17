@@ -17,7 +17,7 @@ import {
   DittoHeaders,
   DittoURL,
   HttpBasicAuth
-} from '@eclipse-ditto/ditto-javascript-client-api_0';
+} from '@eclipse-ditto/ditto-javascript-client-api_1.0-pre';
 
 /**
  * Dom implementation of a Base64 encoder.

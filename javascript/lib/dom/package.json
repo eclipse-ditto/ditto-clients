@@ -1,7 +1,7 @@
 {
-  "name": "@eclipse-ditto/ditto-javascript-client-dom_0",
-  "version": "0.0.1",
-  "description": "DOM implementation of Eclipse Ditto 0.x JavaScript API to be used in browsers.",
+  "name": "@eclipse-ditto/ditto-javascript-client-dom_1.0-pre",
+  "version": "1.0.0-pre",
+  "description": "DOM implementation of Eclipse Ditto 1.0.x JavaScript API to be used in browsers.",
   "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
   "repository": "https://github.com/eclipse/ditto-clients",
   "license": "SEE LICENSE IN LICENSE",
@@ -13,7 +13,7 @@
     "dist"
   ],
   "dependencies": {
-    "@eclipse-ditto/ditto-javascript-client-api_0": "^0.0.1"
+    "@eclipse-ditto/ditto-javascript-client-api_1.0-pre": "^1.0.0-pre"
   },
   "devDependencies": {
     "@types/jest": "^24.0.18",
