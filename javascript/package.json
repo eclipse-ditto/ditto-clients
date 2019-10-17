@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-ditto/ditto-javascript-client",
-  "version": "1.0.0-pre",
+  "version": "1.0.0-pre2",
   "description": "A library supporting you to work with the APIs of Eclipse Ditto 1.0.x.",
   "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
   "repository": "https://github.com/eclipse/ditto-clients",
