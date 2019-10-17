@@ -28,7 +28,7 @@ export default {
             name: 'EclipseDittoJavascriptClient',
             sourcemap: true,
             globals: {
-                '@eclipse-ditto/ditto-javascript-client-api_0': 'EclipseDittoJavascriptClientApi'
+                '@eclipse-ditto/ditto-javascript-client-api_1.0-pre': 'EclipseDittoJavascriptClientApi'
             }
         }
     ],
