@@ -15,7 +15,7 @@ package org.eclipse.ditto.client.messaging.internal;
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
-import org.eclipse.ditto.client.configuration.internal.DummyAuthenticationConfiguration;
+import org.eclipse.ditto.client.configuration.DummyAuthenticationConfiguration;
 import org.eclipse.ditto.client.messaging.AuthenticationProvider;
 
 import com.neovisionaries.ws.client.WebSocket;

@@ -16,7 +16,7 @@ import java.nio.ByteBuffer;
 
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.live.messages.MessageSerializers;
-import org.eclipse.ditto.client.live.messages.internal.MessageSerializerRegistryImpl;
+import org.eclipse.ditto.client.live.messages.internal.DefaultMessageSerializerRegistry;
 import org.eclipse.ditto.json.JsonValue;
 
 /**
@@ -54,7 +54,7 @@ public final class MessageSerializerFactory {
      * @return a MessageSerializerRegistry with the default Serializers initialized.
      */
     public static MessageSerializerRegistry initializeDefaultSerializerRegistry() {
-        final MessageSerializerRegistryImpl serializerRegistry = new MessageSerializerRegistryImpl();
+        final DefaultMessageSerializerRegistry serializerRegistry = new DefaultMessageSerializerRegistry();
         serializerRegistry.registerMessageSerializer(MessageSerializers.textPlainAsString());
         serializerRegistry.registerMessageSerializer(MessageSerializers.applicationJsonAsJsonValue());
         serializerRegistry.registerMessageSerializer(MessageSerializers.applicationOctetStreamAsByteBuffer());

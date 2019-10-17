@@ -31,16 +31,16 @@ import org.slf4j.LoggerFactory;
  *
  * @since 1.0.0
  */
-public final class MessageSerializerRegistryImpl implements MessageSerializerRegistry {
+public final class DefaultMessageSerializerRegistry implements MessageSerializerRegistry {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MessageSerializerRegistryImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultMessageSerializerRegistry.class);
 
     private final Map<MessageSerializerKey<?>, MessageSerializer<?>> serializers;
 
     /**
      * Constructs a new {@code SerializerRegistryImpl}.
      */
-    public MessageSerializerRegistryImpl() {
+    public DefaultMessageSerializerRegistry() {
         serializers = new ConcurrentHashMap<>();
     }
 

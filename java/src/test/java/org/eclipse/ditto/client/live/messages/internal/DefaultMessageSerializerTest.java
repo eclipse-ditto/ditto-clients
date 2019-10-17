@@ -17,15 +17,15 @@ import org.junit.Test;
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 /**
- * Unit tests for {@link MessageSerializerImpl}.
+ * Unit tests for {@link DefaultMessageSerializer}.
  */
-public class MessageSerializerImplTest {
+public class DefaultMessageSerializerTest {
 
     /**
      *
      */
     @Test
     public void testHashCodeAndEquals() {
-        EqualsVerifier.forClass(MessageSerializerImpl.class).verify();
+        EqualsVerifier.forClass(DefaultMessageSerializer.class).verify();
     }
 }

@@ -15,12 +15,13 @@ package org.eclipse.ditto.client.configuration.internal;
 import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
 import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
+import org.eclipse.ditto.client.configuration.BasicAuthenticationConfiguration;
 import org.junit.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 /**
- * Unit test for {@link BasicAuthenticationConfiguration}.
+ * Unit test for {@link org.eclipse.ditto.client.configuration.BasicAuthenticationConfiguration}.
  */
 public final class BasicAuthenticationConfigurationTest {
 

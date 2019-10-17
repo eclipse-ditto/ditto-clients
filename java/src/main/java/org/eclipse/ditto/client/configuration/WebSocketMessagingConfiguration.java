@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.configuration.internal;
+package org.eclipse.ditto.client.configuration;
 
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkArgument;
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
@@ -23,9 +23,6 @@ import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import org.eclipse.ditto.client.configuration.MessagingConfiguration;
-import org.eclipse.ditto.client.configuration.ProxyConfiguration;
-import org.eclipse.ditto.client.configuration.TrustStoreConfiguration;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 
 /**

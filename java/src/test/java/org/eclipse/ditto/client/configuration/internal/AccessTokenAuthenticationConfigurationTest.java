@@ -16,13 +16,14 @@ import static org.mutabilitydetector.unittesting.AllowedReason.provided;
 import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
 import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
+import org.eclipse.ditto.client.configuration.AccessTokenAuthenticationConfiguration;
 import org.eclipse.ditto.client.messaging.internal.JsonWebTokenSupplier;
 import org.junit.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 /**
- * Unit test for {@link AccessTokenAuthenticationConfiguration}.
+ * Unit test for {@link org.eclipse.ditto.client.configuration.AccessTokenAuthenticationConfiguration}.
  */
 public final class AccessTokenAuthenticationConfigurationTest {
 

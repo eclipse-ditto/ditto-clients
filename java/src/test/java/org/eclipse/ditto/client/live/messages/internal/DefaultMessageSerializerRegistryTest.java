@@ -31,19 +31,19 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Unit tests for {@link MessageSerializerRegistryImpl}
+ * Unit tests for {@link DefaultMessageSerializerRegistry}
  */
 @SuppressWarnings("squid:S3655")
-public final class MessageSerializerRegistryImplTest {
+public final class DefaultMessageSerializerRegistryTest {
 
     private static final String APPLICATION_JSON = "application/json";
     private static final String TEXT_PLAIN = "text/plain";
 
-    private MessageSerializerRegistryImpl sut;
+    private DefaultMessageSerializerRegistry sut;
 
     @Before
     public void setupBefore() {
-        sut = new MessageSerializerRegistryImpl();
+        sut = new DefaultMessageSerializerRegistry();
     }
 
     /**
@@ -54,7 +54,7 @@ public final class MessageSerializerRegistryImplTest {
         final MessageSerializerKey<String> key = ImmutableMessageSerializerKey.of(TEXT_PLAIN, String.class);
         // registering once is ok
         final MessageSerializer<String> messageSerializer =
-                MessageSerializerImpl.of(key, (string, charset) -> ByteBuffer.wrap(string.getBytes(charset)),
+                DefaultMessageSerializer.of(key, (string, charset) -> ByteBuffer.wrap(string.getBytes(charset)),
                         (byteBuffer, charset) -> new String(byteBuffer.array(), charset));
         sut.registerMessageSerializer(messageSerializer);
 
@@ -70,7 +70,7 @@ public final class MessageSerializerRegistryImplTest {
     public void registerMessageSerializerAndUnregisterToNewRegister() {
         final MessageSerializerKey<String> key = ImmutableMessageSerializerKey.of(TEXT_PLAIN, String.class);
         final MessageSerializer<String> messageSerializer =
-                MessageSerializerImpl.of(key, (string, charset) -> ByteBuffer.wrap(string.getBytes(charset)),
+                DefaultMessageSerializer.of(key, (string, charset) -> ByteBuffer.wrap(string.getBytes(charset)),
                         (byteBuffer, charset) -> new String(byteBuffer.array(), charset));
         sut.registerMessageSerializer(messageSerializer);
 
@@ -91,7 +91,7 @@ public final class MessageSerializerRegistryImplTest {
                 sut.containsMessageSerializerFor(key));
 
         final MessageSerializer<String> messageSerializer =
-                MessageSerializerImpl.of(key, (string, charset) -> ByteBuffer.wrap(string.getBytes(charset)),
+                DefaultMessageSerializer.of(key, (string, charset) -> ByteBuffer.wrap(string.getBytes(charset)),
                         (byteBuffer, charset) -> new String(byteBuffer.array(), charset));
         sut.registerMessageSerializer(messageSerializer);
         Assert.assertTrue("Registry should contain serializer for Key '" + key + "' but didn't",
@@ -115,7 +115,7 @@ public final class MessageSerializerRegistryImplTest {
                 (string, charset) -> ByteBuffer.wrap(string.getBytes(StandardCharsets.UTF_8));
         final BiFunction<ByteBuffer, Charset, String> d1 =
                 (byteBuffer, charset) -> new String(byteBuffer.array(), StandardCharsets.UTF_8);
-        sut.registerMessageSerializer(MessageSerializerImpl.of(key1, s1, d1));
+        sut.registerMessageSerializer(DefaultMessageSerializer.of(key1, s1, d1));
 
         final MessageSerializerKey<String>
                 key2 = ImmutableMessageSerializerKey.of(TEXT_PLAIN, String.class, "my.subject.2");
@@ -123,7 +123,7 @@ public final class MessageSerializerRegistryImplTest {
                 (string, charset) -> ByteBuffer.wrap(string.getBytes(StandardCharsets.UTF_8));
         final BiFunction<ByteBuffer, Charset, String> d2 =
                 (byteBuffer, charset) -> new String(byteBuffer.array(), StandardCharsets.UTF_8);
-        sut.registerMessageSerializer(MessageSerializerImpl.of(key2, s2, d2));
+        sut.registerMessageSerializer(DefaultMessageSerializer.of(key2, s2, d2));
 
 
         Assert.assertEquals("Serializer function was not the expected one", s2,
@@ -142,7 +142,7 @@ public final class MessageSerializerRegistryImplTest {
                 (string, charset) -> ByteBuffer.wrap(string.getBytes(StandardCharsets.UTF_8));
         final BiFunction<ByteBuffer, Charset, String> d0 =
                 (byteBuffer, charset) -> new String(byteBuffer.array(), StandardCharsets.UTF_8);
-        sut.registerMessageSerializer(MessageSerializerImpl.of(key0, s0, d0));
+        sut.registerMessageSerializer(DefaultMessageSerializer.of(key0, s0, d0));
 
         final MessageSerializerKey<String>
                 key1 = ImmutableMessageSerializerKey.of(TEXT_PLAIN, String.class, "my.subject.1");
@@ -150,7 +150,7 @@ public final class MessageSerializerRegistryImplTest {
                 (string, charset) -> ByteBuffer.wrap(string.getBytes(StandardCharsets.UTF_8));
         final BiFunction<ByteBuffer, Charset, String> d1 =
                 (byteBuffer, charset) -> new String(byteBuffer.array(), StandardCharsets.UTF_8);
-        sut.registerMessageSerializer(MessageSerializerImpl.of(key1, s1, d1));
+        sut.registerMessageSerializer(DefaultMessageSerializer.of(key1, s1, d1));
 
         final MessageSerializerKey<String>
                 key2 = ImmutableMessageSerializerKey.of(TEXT_PLAIN, String.class, "my.subject.2");
@@ -158,7 +158,7 @@ public final class MessageSerializerRegistryImplTest {
                 (string, charset) -> ByteBuffer.wrap(string.getBytes(StandardCharsets.UTF_8));
         final BiFunction<ByteBuffer, Charset, String> d2 =
                 (byteBuffer, charset) -> new String(byteBuffer.array(), StandardCharsets.UTF_8);
-        sut.registerMessageSerializer(MessageSerializerImpl.of(key2, s2, d2));
+        sut.registerMessageSerializer(DefaultMessageSerializer.of(key2, s2, d2));
 
         final MessageSerializerKey<String> unknownSubjectKey =
                 ImmutableMessageSerializerKey.of(TEXT_PLAIN, String.class,
@@ -195,7 +195,7 @@ public final class MessageSerializerRegistryImplTest {
             final String jsonString = charset.decode(byteBuffer).toString();
             return JsonFactory.readFrom(jsonString);
         };
-        sut.registerMessageSerializer(MessageSerializerImpl.of(key0, s0, d0));
+        sut.registerMessageSerializer(DefaultMessageSerializer.of(key0, s0, d0));
 
         final MessageSerializerKey<JsonValue> unknownSubjectKey =
                 ImmutableMessageSerializerKey.of(APPLICATION_JSON, JsonValue.class,
@@ -262,7 +262,7 @@ public final class MessageSerializerRegistryImplTest {
             final String jsonString = charset.decode(byteBuffer).toString();
             return JsonFactory.readFrom(jsonString);
         };
-        sut.registerMessageSerializer(MessageSerializerImpl.of(key0, s0, d0));
+        sut.registerMessageSerializer(DefaultMessageSerializer.of(key0, s0, d0));
 
         final MessageSerializerKey<String> key1 = ImmutableMessageSerializerKey.of(APPLICATION_JSON, String.class);
         final BiFunction<String, Charset, ByteBuffer> s1 = (jsonValueString, charset) ->
@@ -271,7 +271,7 @@ public final class MessageSerializerRegistryImplTest {
             final String jsonString = charset.decode(byteBuffer).toString();
             return JsonFactory.readFrom(jsonString).toString();
         };
-        sut.registerMessageSerializer(MessageSerializerImpl.of(key1, s1, d1));
+        sut.registerMessageSerializer(DefaultMessageSerializer.of(key1, s1, d1));
 
 
         Assert.assertEquals("Serializer function was not the expected one", s0,
@@ -290,7 +290,7 @@ public final class MessageSerializerRegistryImplTest {
                 (string, charset) -> ByteBuffer.wrap(string.getBytes(charset));
         final BiFunction<ByteBuffer, Charset, String> d2 =
                 (byteBuffer, charset) -> charset.decode(byteBuffer).toString();
-        sut.registerMessageSerializer(MessageSerializerImpl.of(key2, s2, d2));
+        sut.registerMessageSerializer(DefaultMessageSerializer.of(key2, s2, d2));
 
         Assert.assertEquals("Serializer function was not the expected one", s1,
                 sut.findSerializerFor(APPLICATION_JSON, String.class).get().getSerializer());
@@ -302,7 +302,7 @@ public final class MessageSerializerRegistryImplTest {
                 (string, charset) -> ByteBuffer.wrap(string.getBytes(charset));
         final BiFunction<ByteBuffer, Charset, String> d3 =
                 (byteBuffer, charset) -> charset.decode(byteBuffer).toString();
-        sut.registerMessageSerializer(MessageSerializerImpl.of(key3, s3, d3));
+        sut.registerMessageSerializer(DefaultMessageSerializer.of(key3, s3, d3));
 
         Assert.assertFalse("Key for java-type 'String' could be determined but shouldn't as multiple Serializers are "
                 + "registered for it.", sut.findKeyFor(String.class).isPresent());

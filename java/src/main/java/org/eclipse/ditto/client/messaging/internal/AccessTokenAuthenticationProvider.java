@@ -15,7 +15,7 @@ package org.eclipse.ditto.client.messaging.internal;
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
-import org.eclipse.ditto.client.configuration.internal.AccessTokenAuthenticationConfiguration;
+import org.eclipse.ditto.client.configuration.AccessTokenAuthenticationConfiguration;
 
 /**
  * Implements client access token authentication for a {@link com.neovisionaries.ws.client.WebSocket} channel.

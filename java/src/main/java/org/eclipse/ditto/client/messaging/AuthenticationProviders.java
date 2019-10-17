@@ -12,10 +12,10 @@
  */
 package org.eclipse.ditto.client.messaging;
 
-import org.eclipse.ditto.client.configuration.internal.AccessTokenAuthenticationConfiguration;
-import org.eclipse.ditto.client.configuration.internal.BasicAuthenticationConfiguration;
-import org.eclipse.ditto.client.configuration.internal.ClientCredentialsAuthenticationConfiguration;
-import org.eclipse.ditto.client.configuration.internal.DummyAuthenticationConfiguration;
+import org.eclipse.ditto.client.configuration.AccessTokenAuthenticationConfiguration;
+import org.eclipse.ditto.client.configuration.BasicAuthenticationConfiguration;
+import org.eclipse.ditto.client.configuration.ClientCredentialsAuthenticationConfiguration;
+import org.eclipse.ditto.client.configuration.DummyAuthenticationConfiguration;
 import org.eclipse.ditto.client.messaging.internal.AccessTokenAuthenticationProvider;
 import org.eclipse.ditto.client.messaging.internal.BasicAuthenticationProvider;
 import org.eclipse.ditto.client.messaging.internal.ClientCredentialsAuthenticationProvider;

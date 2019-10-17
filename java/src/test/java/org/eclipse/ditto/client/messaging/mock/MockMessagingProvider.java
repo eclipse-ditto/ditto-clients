@@ -26,9 +26,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
+import org.eclipse.ditto.client.configuration.BasicAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
-import org.eclipse.ditto.client.configuration.internal.BasicAuthenticationConfiguration;
-import org.eclipse.ditto.client.configuration.internal.WebSocketMessagingConfiguration;
+import org.eclipse.ditto.client.configuration.WebSocketMessagingConfiguration;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.twin.internal.TwinImpl;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;

@@ -20,7 +20,7 @@ import static org.mockito.Mockito.verify;
 import java.time.Instant;
 import java.util.Base64;
 
-import org.eclipse.ditto.client.configuration.internal.AccessTokenAuthenticationConfiguration;
+import org.eclipse.ditto.client.configuration.AccessTokenAuthenticationConfiguration;
 import org.eclipse.ditto.model.jwt.ImmutableJsonWebToken;
 import org.eclipse.ditto.model.jwt.JsonWebToken;
 import org.junit.Test;

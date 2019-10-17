@@ -28,13 +28,13 @@ import org.eclipse.ditto.client.live.messages.MessageSerializerKey;
  * @param <T> the type of the payload the MessageSerializer handles.
  * @since 1.0.0
  */
-public final class MessageSerializerImpl<T> implements MessageSerializer<T> {
+public final class DefaultMessageSerializer<T> implements MessageSerializer<T> {
 
     private final MessageSerializerKey<T> key;
     private final BiFunction<T, Charset, ByteBuffer> serializer;
     private final BiFunction<ByteBuffer, Charset, T> deserializer;
 
-    private MessageSerializerImpl(final MessageSerializerKey<T> key,
+    private DefaultMessageSerializer(final MessageSerializerKey<T> key,
             final BiFunction<T, Charset, ByteBuffer> serializer,
             final BiFunction<ByteBuffer, Charset, T> deserializer) {
         this.key = argumentNotNull(key, "key");
@@ -58,7 +58,7 @@ public final class MessageSerializerImpl<T> implements MessageSerializer<T> {
     public static <T> MessageSerializer<T> of(final MessageSerializerKey<T> key,
             final BiFunction<T, Charset, ByteBuffer> serializer,
             final BiFunction<ByteBuffer, Charset, T> deserializer) {
-        return new MessageSerializerImpl<>(key, serializer, deserializer);
+        return new DefaultMessageSerializer<>(key, serializer, deserializer);
     }
 
     @Override
@@ -84,7 +84,7 @@ public final class MessageSerializerImpl<T> implements MessageSerializer<T> {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final MessageSerializerImpl<?> that = (MessageSerializerImpl<?>) o;
+        final DefaultMessageSerializer<?> that = (DefaultMessageSerializer<?>) o;
         return Objects.equals(key, that.key) &&
                 Objects.equals(serializer, that.serializer) &&
                 Objects.equals(deserializer, that.deserializer);

@@ -27,7 +27,7 @@ import java.util.Optional;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.eclipse.ditto.client.configuration.internal.ClientCredentialsAuthenticationConfiguration;
+import org.eclipse.ditto.client.configuration.ClientCredentialsAuthenticationConfiguration;
 import org.eclipse.ditto.client.messaging.AuthenticationException;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonFieldDefinition;
