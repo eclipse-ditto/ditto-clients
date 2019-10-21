@@ -14,7 +14,7 @@ package org.eclipse.ditto.client.live.internal;
 
 import java.util.function.Consumer;
 
-import org.eclipse.ditto.client.exceptions.MessageSerializationException;
+import org.eclipse.ditto.client.live.messages.MessageSerializationException;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
 import org.eclipse.ditto.client.internal.ResponseForwarder;
 import org.eclipse.ditto.client.internal.SendTerminator;

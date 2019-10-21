@@ -16,8 +16,6 @@ import java.nio.ByteBuffer;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.DittoClient;
-import org.eclipse.ditto.client.exceptions.DuplicateRegistrationIdException;
-import org.eclipse.ditto.client.exceptions.MessageSerializationException;
 import org.eclipse.ditto.client.registration.HandlerDeregistration;
 
 /**
@@ -52,7 +50,7 @@ public interface MessageRegistration extends HandlerDeregistration {
      * @throws MessageSerializationException if no MessageDeserializer for the given {@code subject} + {@code type} pair
      * is registered. Register a {@code MessageSerializer} by configuring the Client at startup with a customized {@code
      * MessageSerializerConfiguration}.
-     * @throws DuplicateRegistrationIdException if a handler is already registered for the given {@code
+     * @throws org.eclipse.ditto.client.registration.DuplicateRegistrationIdException if a handler is already registered for the given {@code
      * registrationId}.
      */
     <T, U> void registerForMessage(String registrationId, String subject, Class<T> type,
@@ -78,7 +76,7 @@ public interface MessageRegistration extends HandlerDeregistration {
      * received independently from their subjects.
      * @param handler the {@code Consumer} to handle messages with raw payload.
      * @param <U> the type of the Response's payload.
-     * @throws DuplicateRegistrationIdException if a handler is already registered for the given {@code
+     * @throws org.eclipse.ditto.client.registration.DuplicateRegistrationIdException if a handler is already registered for the given {@code
      * registrationId}.
      */
     <U> void registerForMessage(String registrationId, String subject, Consumer<RepliableMessage<?, U>> handler);

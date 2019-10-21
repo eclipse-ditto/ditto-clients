@@ -22,13 +22,13 @@ import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.eclipse.ditto.client.exceptions.DuplicateRegistrationIdException;
 import org.eclipse.ditto.client.internal.bus.JsonPointerSelector;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.internal.bus.PointerWithData;
 import org.eclipse.ditto.client.internal.bus.Registration;
 import org.eclipse.ditto.client.management.FeatureHandle;
 import org.eclipse.ditto.client.management.ThingHandle;
+import org.eclipse.ditto.client.registration.DuplicateRegistrationIdException;
 import org.eclipse.ditto.model.things.ThingId;
 
 /**
@@ -78,7 +78,7 @@ public final class HandlerRegistry<T extends ThingHandle, F extends FeatureHandl
      * @param selector the JsonPointerSelector
      * @param consumer the Consumer
      * @throws IllegalArgumentException if any parameter is {@code null}
-     * @throws DuplicateRegistrationIdException if a consumer is already registered for the given {@code
+     * @throws org.eclipse.ditto.client.registration.DuplicateRegistrationIdException if a consumer is already registered for the given {@code
      * registrationId}
      */
     public void register(final String registrationId, final JsonPointerSelector selector,

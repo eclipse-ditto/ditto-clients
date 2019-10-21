@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.exceptions;
+package org.eclipse.ditto.client.live.messages;
 
 /**
  * Thrown in case a {@link org.eclipse.ditto.model.messages.Message}'s payload could not be serialized/deserialized

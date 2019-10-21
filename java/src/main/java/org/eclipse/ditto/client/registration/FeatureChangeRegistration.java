@@ -17,7 +17,6 @@ import java.util.function.Consumer;
 import org.eclipse.ditto.client.DittoClient;
 import org.eclipse.ditto.client.changes.FeatureChange;
 import org.eclipse.ditto.client.changes.FeaturesChange;
-import org.eclipse.ditto.client.exceptions.DuplicateRegistrationIdException;
 
 /**
  * Provides the functionality for registering handlers for {@link FeatureChange} events.

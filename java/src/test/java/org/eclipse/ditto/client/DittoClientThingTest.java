@@ -20,7 +20,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 
 import org.assertj.core.api.Assertions;
-import org.eclipse.ditto.client.exceptions.DuplicateRegistrationIdException;
+import org.eclipse.ditto.client.registration.DuplicateRegistrationIdException;
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.json.JsonFactory;

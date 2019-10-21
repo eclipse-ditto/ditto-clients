@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.messaging.internal;
+package org.eclipse.ditto.client.messaging;
 
 import java.util.function.Supplier;
 

@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.eclipse.ditto.client.exceptions.MessageSerializationException;
+import org.eclipse.ditto.client.live.messages.MessageSerializationException;
 import org.eclipse.ditto.client.live.messages.MessageSerializer;
 import org.eclipse.ditto.client.live.messages.MessageSerializerKey;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;

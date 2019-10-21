@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.exceptions;
+package org.eclipse.ditto.client.registration;
 
 import static java.util.Objects.requireNonNull;
 

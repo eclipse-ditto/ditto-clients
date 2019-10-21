@@ -28,6 +28,7 @@ import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
 import org.eclipse.ditto.client.live.Live;
 import org.eclipse.ditto.client.live.internal.LiveImpl;
+import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.twin.Twin;
 import org.eclipse.ditto.client.twin.internal.TwinImpl;
@@ -100,13 +101,16 @@ public final class DefaultDittoClient implements DittoClient {
      *
      * @param twinMessagingProvider the messaging provider to use for the {@code Twin} aspect.
      * @param liveMessagingProvider the messaging provider to use for the {@code Live} aspect.
+     * @param responseForwarder forwarder used to optimize response performance.
+     * @param messageSerializerRegistry registry for all serializers of live messages.
      * @return the client.
      */
     public static DittoClient newInstance(final MessagingProvider twinMessagingProvider,
             final MessagingProvider liveMessagingProvider,
-            final ResponseForwarder responseForwarder) {
+            final ResponseForwarder responseForwarder,
+            final MessageSerializerRegistry messageSerializerRegistry) {
         final TwinImpl twin = configureTwin(twinMessagingProvider, responseForwarder);
-        final LiveImpl live = configureLive(liveMessagingProvider, responseForwarder);
+        final LiveImpl live = configureLive(liveMessagingProvider, responseForwarder, messageSerializerRegistry);
         return new DefaultDittoClient(twin, live);
     }
 
@@ -168,14 +172,15 @@ public final class DefaultDittoClient implements DittoClient {
     }
 
     private static LiveImpl configureLive(final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder) {
+            final ResponseForwarder responseForwarder, final MessageSerializerRegistry messageSerializerRegistry) {
         final String name = TopicPath.Channel.LIVE.getName();
         final PointerBus bus = BusFactory.createPointerBus(name, messagingProvider.getExecutorService());
         init(bus, messagingProvider, responseForwarder);
         final String sessionId = messagingProvider.getAuthenticationConfiguration().getSessionId();
         final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
         final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion, sessionId);
-        return new LiveImpl(messagingProvider, responseForwarder, messageFactory, bus, schemaVersion, sessionId);
+        return LiveImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus, schemaVersion,
+                sessionId, messageSerializerRegistry);
     }
 
     private static void init(final PointerBus bus, final MessagingProvider messagingProvider,

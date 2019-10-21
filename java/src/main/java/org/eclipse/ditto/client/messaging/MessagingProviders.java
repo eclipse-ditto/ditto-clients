@@ -22,6 +22,8 @@ import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.internal.DefaultThreadFactory;
 import org.eclipse.ditto.client.messaging.internal.WebSocketMessagingProvider;
 
+import com.neovisionaries.ws.client.WebSocket;
+
 /**
  * Contains static methods for instantiating entry points (Builders) to different {@link MessagingProvider}
  * implementations.
@@ -35,13 +37,13 @@ public final class MessagingProviders {
     }
 
     public static MessagingProvider webSocket(final MessagingConfiguration configuration,
-            final AuthenticationProvider authenticationProvider,
+            final AuthenticationProvider<WebSocket> authenticationProvider,
             final ExecutorService callbackExecutor) {
-        return WebSocketMessagingProvider.of(configuration, authenticationProvider, callbackExecutor);
+        return WebSocketMessagingProvider.newInstance(configuration, authenticationProvider, callbackExecutor);
     }
 
     public static MessagingProvider webSocket(final MessagingConfiguration configuration,
-            final AuthenticationProvider authenticationProvider) {
+            final AuthenticationProvider<WebSocket> authenticationProvider) {
         final ExecutorService defaultExecutorService = createDefaultExecutorService(UUID.randomUUID().toString());
         return webSocket(configuration, authenticationProvider, defaultExecutorService);
     }

@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.eclipse.ditto.client.exceptions.MessageSerializationException;
+import org.eclipse.ditto.client.live.messages.MessageSerializationException;
 import org.eclipse.ditto.client.live.messages.MessageSerializer;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.live.messages.MessageSerializers;

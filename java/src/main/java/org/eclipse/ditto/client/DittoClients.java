@@ -17,6 +17,8 @@ import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.client.internal.DefaultDittoClient;
 import org.eclipse.ditto.client.internal.ResponseForwarder;
+import org.eclipse.ditto.client.live.internal.MessageSerializerFactory;
+import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 
 /**
@@ -65,7 +67,30 @@ public final class DittoClients {
             final MessagingProvider liveMessagingProvider) {
 
         final ResponseForwarder responseForwarder = ResponseForwarder.getInstance();
-        return DefaultDittoClient.newInstance(twinMessagingProvider, liveMessagingProvider, responseForwarder);
+        final MessageSerializerRegistry messageSerializerRegistry =
+                MessageSerializerFactory.newInstance().getMessageSerializerRegistry();
+        return DefaultDittoClient.newInstance(twinMessagingProvider, liveMessagingProvider, responseForwarder,
+                messageSerializerRegistry);
+    }
+
+    /**
+     * Creates a new {@link org.eclipse.ditto.client.DittoClient} with a specific {@code Twin} and {@code Live}
+     * {@link org.eclipse.ditto.client.messaging.MessagingProvider}.
+     *
+     * @param twinMessagingProvider the messaging provider for the {@code Twin} part of the client.
+     * @param liveMessagingProvider the messaging provider for the {@code Live} part of the client.
+     * @param messageSerializerRegistry a registry of {@code MessageSerializer}s for the {@code Live} part of the client.
+     * @return the client.
+     * @throws org.eclipse.ditto.client.messaging.AuthenticationException if authentication failed.
+     * @throws org.eclipse.ditto.client.messaging.MessagingException if a connection to the configured endpoint
+     * could not be established
+     */
+    public static DittoClient newInstance(final MessagingProvider twinMessagingProvider,
+            final MessagingProvider liveMessagingProvider, final MessageSerializerRegistry messageSerializerRegistry) {
+
+        final ResponseForwarder responseForwarder = ResponseForwarder.getInstance();
+        return DefaultDittoClient.newInstance(twinMessagingProvider, liveMessagingProvider, responseForwarder,
+                messageSerializerRegistry);
     }
 
 }

@@ -24,11 +24,11 @@ import static org.mockito.Mockito.when;
 
 import java.util.function.Consumer;
 
-import org.eclipse.ditto.client.exceptions.DuplicateRegistrationIdException;
 import org.eclipse.ditto.client.internal.bus.JsonPointerSelector;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.internal.bus.PointerWithData;
 import org.eclipse.ditto.client.internal.bus.Registration;
+import org.eclipse.ditto.client.registration.DuplicateRegistrationIdException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -22,7 +22,7 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.NotThreadSafe;
 
-import org.eclipse.ditto.client.messaging.internal.JsonWebTokenSupplier;
+import org.eclipse.ditto.client.messaging.JsonWebTokenSupplier;
 
 /**
  * A {@link org.eclipse.ditto.client.configuration.AuthenticationConfiguration} for access token authentication.

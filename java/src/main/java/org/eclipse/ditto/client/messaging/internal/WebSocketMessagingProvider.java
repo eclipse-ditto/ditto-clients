@@ -205,7 +205,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
      * @param callbackExecutor the executor for messages.
      * @return the provider.
      */
-    public static WebSocketMessagingProvider of(final MessagingConfiguration messagingConfiguration,
+    public static WebSocketMessagingProvider newInstance(final MessagingConfiguration messagingConfiguration,
             final AuthenticationProvider<WebSocket> authenticationProvider,
             final ExecutorService callbackExecutor) {
         checkNotNull(messagingConfiguration, "messagingConfiguration");

@@ -18,7 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.function.BiFunction;
 
-import org.eclipse.ditto.client.exceptions.MessageSerializationException;
+import org.eclipse.ditto.client.live.messages.MessageSerializationException;
 import org.eclipse.ditto.client.live.messages.MessageSerializer;
 import org.eclipse.ditto.client.live.messages.MessageSerializerKey;
 import org.eclipse.ditto.client.live.messages.MessageSerializers;

@@ -65,6 +65,8 @@ import org.eclipse.ditto.signals.commands.live.modify.ModifyFeaturePropertyLiveC
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.neovisionaries.ws.client.WebSocket;
+
 
 /**
  * Get the Ditto-Client up and running against different environments with typical use cases + load tests.
@@ -604,7 +606,7 @@ public final class DittoClientUsageExamples {
                     .build());
         }
 
-        final AuthenticationProvider authenticationProvider;
+        final AuthenticationProvider<WebSocket> authenticationProvider;
         if (DITTO_DUMMY_AUTH_USER != null) {
             authenticationProvider =
                     AuthenticationProviders.dummy(DummyAuthenticationConfiguration.newBuilder()

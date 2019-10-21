@@ -132,7 +132,8 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
             final OutgoingMessageFactory outgoingMessageFactory,
             final PointerBus bus,
             final JsonSchemaVersion schemaVersion,
-            final String sessionId) {
+            final String sessionId,
+            final MessageSerializerRegistry messageSerializerRegistry) {
         super(TopicPath.Channel.LIVE,
                 messagingProvider,
                 responseForwarder,
@@ -142,10 +143,19 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
 
         this.schemaVersion = schemaVersion;
         this.sessionId = sessionId;
-
-        final MessageSerializerFactory messageSerializerFactory = MessageSerializerFactory.newInstance();
-        messageSerializerRegistry = messageSerializerFactory.getMessageSerializerRegistry();
+        this.messageSerializerRegistry = messageSerializerRegistry;
         liveCommandsFunctions = new IdentityHashMap<>();
+    }
+
+    public static LiveImpl newInstance(final MessagingProvider messagingProvider,
+            final ResponseForwarder responseForwarder,
+            final OutgoingMessageFactory outgoingMessageFactory,
+            final PointerBus bus,
+            final JsonSchemaVersion schemaVersion,
+            final String sessionId,
+            final MessageSerializerRegistry messageSerializerRegistry) {
+        return new LiveImpl(messagingProvider, responseForwarder, outgoingMessageFactory, bus, schemaVersion,
+                sessionId, messageSerializerRegistry);
     }
 
     @Override

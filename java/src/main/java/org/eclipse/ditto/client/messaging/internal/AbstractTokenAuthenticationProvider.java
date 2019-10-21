@@ -26,6 +26,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 import org.eclipse.ditto.client.internal.DefaultThreadFactory;
 import org.eclipse.ditto.client.messaging.AuthenticationProvider;
+import org.eclipse.ditto.client.messaging.JsonWebTokenSupplier;
 import org.eclipse.ditto.model.jwt.JsonWebToken;
 
 import com.neovisionaries.ws.client.WebSocket;

@@ -17,7 +17,7 @@ import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstance
 import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import org.eclipse.ditto.client.configuration.AccessTokenAuthenticationConfiguration;
-import org.eclipse.ditto.client.messaging.internal.JsonWebTokenSupplier;
+import org.eclipse.ditto.client.messaging.JsonWebTokenSupplier;
 import org.junit.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;

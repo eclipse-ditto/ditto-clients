@@ -21,6 +21,8 @@ import org.eclipse.ditto.client.messaging.internal.BasicAuthenticationProvider;
 import org.eclipse.ditto.client.messaging.internal.ClientCredentialsAuthenticationProvider;
 import org.eclipse.ditto.client.messaging.internal.DummyAuthenticationProvider;
 
+import com.neovisionaries.ws.client.WebSocket;
+
 /**
  * Factory for creating {@link AuthenticationProvider} instances.
  *
@@ -38,7 +40,7 @@ public final class AuthenticationProviders {
      * @param configuration the configuration of the provider.
      * @return the instance.
      */
-    public static AuthenticationProvider accessToken(final AccessTokenAuthenticationConfiguration configuration) {
+    public static AuthenticationProvider<WebSocket> accessToken(final AccessTokenAuthenticationConfiguration configuration) {
 
         return new AccessTokenAuthenticationProvider(configuration);
     }
@@ -49,7 +51,7 @@ public final class AuthenticationProviders {
      * @param configuration the configuration of the provider.
      * @return the instance.
      */
-    public static AuthenticationProvider basic(final BasicAuthenticationConfiguration configuration) {
+    public static AuthenticationProvider<WebSocket> basic(final BasicAuthenticationConfiguration configuration) {
 
         return new BasicAuthenticationProvider(configuration);
     }
@@ -60,7 +62,7 @@ public final class AuthenticationProviders {
      * @param configuration the configuration of the provider.
      * @return the instance.
      */
-    public static AuthenticationProvider clientCredentials(
+    public static AuthenticationProvider<WebSocket> clientCredentials(
             final ClientCredentialsAuthenticationConfiguration configuration) {
 
         return new ClientCredentialsAuthenticationProvider(configuration);
@@ -72,7 +74,7 @@ public final class AuthenticationProviders {
      * @param configuration the configuration of the provider.
      * @return the instance.
      */
-    public static AuthenticationProvider dummy(
+    public static AuthenticationProvider<WebSocket> dummy(
             final DummyAuthenticationConfiguration configuration) {
 
         return new DummyAuthenticationProvider(configuration);
