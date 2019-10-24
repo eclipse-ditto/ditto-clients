@@ -45,10 +45,11 @@ abstract class AbstractTokenAuthenticationProvider implements AuthenticationProv
     private final JwtRefreshScheduler jwtRefreshScheduler;
 
     AbstractTokenAuthenticationProvider(final Map<String, String> additionalHeaders,
-            final JsonWebTokenSupplier jsonWebTokenSupplier) {
+            final JsonWebTokenSupplier jsonWebTokenSupplier,
+            final Duration expiryGracePeriod) {
         this.additionalHeaders = checkNotNull(additionalHeaders, "additionalHeaders");
         this.jsonWebTokenSupplier = checkNotNull(jsonWebTokenSupplier, "accessTokenSupplier");
-        jwtRefreshScheduler = JwtRefreshScheduler.of(jsonWebTokenSupplier);
+        jwtRefreshScheduler = JwtRefreshScheduler.newInstance(jsonWebTokenSupplier, expiryGracePeriod);
     }
 
     @Override
@@ -72,31 +73,38 @@ abstract class AbstractTokenAuthenticationProvider implements AuthenticationProv
     @ThreadSafe
     private static final class JwtRefreshScheduler {
 
-        private static final long EXPIRY_GRACE_SECONDS = 5L;
-
         private final JsonWebTokenSupplier jsonWebTokenSupplier;
+        private final Duration expiryGracePeriod;
         private final ScheduledExecutorService executorService;
 
-        private JwtRefreshScheduler(final JsonWebTokenSupplier jsonWebTokenSupplier) {
-            this.jsonWebTokenSupplier = checkNotNull(jsonWebTokenSupplier, "jsonWebTokenSupplier");
+        private JwtRefreshScheduler(final JsonWebTokenSupplier jsonWebTokenSupplier, final Duration expiryGracePeriod) {
+            this.jsonWebTokenSupplier = jsonWebTokenSupplier;
+            this.expiryGracePeriod = expiryGracePeriod;
             executorService = Executors.newSingleThreadScheduledExecutor(new DefaultThreadFactory("scheduler"));
         }
 
-        static JwtRefreshScheduler of(final JsonWebTokenSupplier jsonWebTokenSupplier) {
-            return new JwtRefreshScheduler(jsonWebTokenSupplier);
+        /**
+         * Creates a new {@code JwtRefreshScheduler}.
+         *
+         * @param jsonWebTokenSupplier a supplier for jwt tokens.
+         * @param expiryGracePeriod the grace period before the actual expiry to account for network latency.
+         * @return the JwtRefreshScheduler.
+         */
+        static JwtRefreshScheduler newInstance(final JsonWebTokenSupplier jsonWebTokenSupplier,
+                final Duration expiryGracePeriod) {
+            checkNotNull(jsonWebTokenSupplier, "jsonWebTokenSupplier");
+            checkNotNull(expiryGracePeriod, "expiryGracePeriod");
+            return new JwtRefreshScheduler(jsonWebTokenSupplier, expiryGracePeriod);
         }
 
         /**
-         * Schedules a fresh {@code JsonWebToken} from the configured {@code JsonWebTokenSupplier}. The refresh will
-         * be triggered
-         * {@link org.eclipse.ditto.client.messaging.internal.AbstractTokenAuthenticationProvider.JwtRefreshScheduler#EXPIRY_GRACE_SECONDS}
-         * seconds before the actual expiry to account for network latency.
+         * Schedules a fresh {@code JsonWebToken} from the configured {@code JsonWebTokenSupplier}.
          *
          * @param due the instant when the fresh token is due.
          * @param consumer provides the fresh token.
          */
         void scheduleRefresh(final Instant due, final Consumer<JsonWebToken> consumer) {
-            final Instant expiration = due.minusSeconds(EXPIRY_GRACE_SECONDS);
+            final Instant expiration = due.minus(expiryGracePeriod);
             final Instant now = Instant.now();
             if (now.isBefore(expiration)) {
                 final long delay = Duration.between(now, expiration).toMillis();

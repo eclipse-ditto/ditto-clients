@@ -27,7 +27,8 @@ public final class ClientCredentialsAuthenticationProvider extends AbstractToken
     private final ClientCredentialsAuthenticationConfiguration configuration;
 
     public ClientCredentialsAuthenticationProvider(final ClientCredentialsAuthenticationConfiguration configuration) {
-        super(configuration.getAdditionalHeaders(), ClientCredentialsJsonWebTokenSupplier.newInstance(configuration));
+        super(configuration.getAdditionalHeaders(), ClientCredentialsJsonWebTokenSupplier.newInstance(configuration),
+                configuration.getExpiryGracePeriod());
         this.configuration = checkNotNull(configuration, "configuration");
     }
 

@@ -14,6 +14,7 @@ package org.eclipse.ditto.client.configuration;
 
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -34,13 +35,16 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
 
     private final String identifier;
     private final JsonWebTokenSupplier jsonWebTokenSupplier;
+    private final Duration expiryGracePeriod;
 
     private AccessTokenAuthenticationConfiguration(final String identifier,
             final JsonWebTokenSupplier jsonWebTokenSupplier,
+            final Duration expiryGracePeriod,
             final Map<String, String> additionalHeaders) {
         super(identifier, additionalHeaders, null);
         this.identifier = identifier;
         this.jsonWebTokenSupplier = jsonWebTokenSupplier;
+        this.expiryGracePeriod = expiryGracePeriod;
     }
 
     /**
@@ -68,6 +72,15 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
         return jsonWebTokenSupplier;
     }
 
+    /**
+     * Returns the expiry grace period.
+     *
+     * @return the period.
+     */
+    public Duration getExpiryGracePeriod() {
+        return expiryGracePeriod;
+    }
+
     @Override
     public boolean equals(@Nullable final Object o) {
         if (this == o) {
@@ -81,12 +94,13 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
         }
         final AccessTokenAuthenticationConfiguration that = (AccessTokenAuthenticationConfiguration) o;
         return Objects.equals(identifier, that.identifier) &&
-                Objects.equals(jsonWebTokenSupplier, that.jsonWebTokenSupplier);
+                Objects.equals(jsonWebTokenSupplier, that.jsonWebTokenSupplier) &&
+                Objects.equals(expiryGracePeriod, that.expiryGracePeriod);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), identifier, jsonWebTokenSupplier);
+        return Objects.hash(super.hashCode(), identifier, jsonWebTokenSupplier, expiryGracePeriod);
     }
 
     @Override
@@ -95,6 +109,7 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
                 super.toString() +
                 ", identifier=" + identifier +
                 ", accessTokenSupplier=" + jsonWebTokenSupplier +
+                ", expiryGracePeriod=" + expiryGracePeriod +
                 "]";
     }
 
@@ -102,9 +117,13 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
     public static class AccessTokenAuthenticationConfigurationBuilder
             implements AuthenticationConfiguration.Builder {
 
+        private static final Duration DEFAULT_EXPIRY_GRACE_PERIOD = Duration.ofSeconds(5);
+
+        private final Map<String, String> additionalHeaders = new HashMap<>();
+
         private String identifier;
         private JsonWebTokenSupplier jsonWebTokenSupplier;
-        private final Map<String, String> additionalHeaders = new HashMap<>();
+        private Duration expiryGracePeriod = DEFAULT_EXPIRY_GRACE_PERIOD;
 
         /**
          * Sets the identifier to authenticate.
@@ -129,6 +148,17 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
             return this;
         }
 
+        /**
+         * Sets the expiry grace period.
+         *
+         * @param expiryGracePeriod the period.
+         * @return this builder.
+         */
+        public AccessTokenAuthenticationConfigurationBuilder expiryGracePeriod(final Duration expiryGracePeriod) {
+            this.expiryGracePeriod = expiryGracePeriod;
+            return this;
+        }
+
         @Override
         public AccessTokenAuthenticationConfigurationBuilder withAdditionalHeader(final String key,
                 final String value) {
@@ -144,7 +174,8 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
 
         @Override
         public AccessTokenAuthenticationConfiguration build() {
-            return new AccessTokenAuthenticationConfiguration(identifier, jsonWebTokenSupplier, additionalHeaders);
+            return new AccessTokenAuthenticationConfiguration(identifier, jsonWebTokenSupplier, expiryGracePeriod,
+                    additionalHeaders);
         }
 
     }

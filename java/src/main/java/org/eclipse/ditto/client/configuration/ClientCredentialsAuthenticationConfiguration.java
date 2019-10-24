@@ -14,6 +14,7 @@ package org.eclipse.ditto.client.configuration;
 
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,15 +40,18 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
     private final String clientId;
     private final String clientSecret;
     private final List<String> scopes;
+    private final Duration expiryGracePeriod;
 
     private ClientCredentialsAuthenticationConfiguration(final String tokenEndpoint, final String clientId,
-            final String clientSecret, final Collection<String> scopes, final Map<String, String> additionalHeaders,
+            final String clientSecret, final Collection<String> scopes, final Duration expiryGracePeriod,
+            final Map<String, String> additionalHeaders,
             @Nullable final ProxyConfiguration proxyConfiguration) {
         super(clientId, additionalHeaders, proxyConfiguration);
         this.tokenEndpoint = checkNotNull(tokenEndpoint, "tokenEndpoint");
         this.clientId = checkNotNull(clientId, "clientId");
         this.clientSecret = checkNotNull(clientSecret, "clientSecret");
         this.scopes = Collections.unmodifiableList(new ArrayList<>(scopes));
+        this.expiryGracePeriod = checkNotNull(expiryGracePeriod, "expiryGracePeriod");
     }
 
     /**
@@ -93,6 +97,15 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
         return scopes;
     }
 
+    /**
+     * Returns the expiry grace period.
+     *
+     * @return the period.
+     */
+    public Duration getExpiryGracePeriod() {
+        return expiryGracePeriod;
+    }
+
     @Override
     public boolean equals(@Nullable final Object o) {
         if (this == o) {
@@ -108,12 +121,13 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
         return Objects.equals(tokenEndpoint, that.tokenEndpoint) &&
                 Objects.equals(clientId, that.clientId) &&
                 Objects.equals(clientSecret, that.clientSecret) &&
-                Objects.equals(scopes, that.scopes);
+                Objects.equals(scopes, that.scopes) &&
+                Objects.equals(expiryGracePeriod, that.expiryGracePeriod);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), tokenEndpoint, clientId, clientSecret, scopes);
+        return Objects.hash(super.hashCode(), tokenEndpoint, clientId, clientSecret, scopes, expiryGracePeriod);
     }
 
     @Override
@@ -124,6 +138,7 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
                 ", clientId=" + clientId +
                 ", clientSecret=" + clientSecret +
                 ", scopes=" + scopes +
+                ", expiryGracePeriod=" + expiryGracePeriod +
                 "]";
     }
 
@@ -131,11 +146,15 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
     public static class ClientCredentialsAuthenticationConfigurationBuilder
             implements AuthenticationConfiguration.Builder {
 
+        private static final Duration DEFAULT_EXPIRY_GRACE_PERIOD = Duration.ofSeconds(5);
+
+        private final Map<String, String> additionalHeaders = new HashMap<>();
+
         private String tokenEndpoint;
         private String clientId;
         private String clientSecret;
         private Collection<String> scopes;
-        private final Map<String, String> additionalHeaders = new HashMap<>();
+        private Duration expiryGracePeriod = DEFAULT_EXPIRY_GRACE_PERIOD;
         private ProxyConfiguration proxyConfiguration;
 
         /**
@@ -182,6 +201,17 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
             return this;
         }
 
+        /**
+         * Sets the expiry grace period.
+         *
+         * @param expiryGracePeriod the period.
+         * @return this builder.
+         */
+        public ClientCredentialsAuthenticationConfigurationBuilder expiryGracePeriod(final Duration expiryGracePeriod) {
+            this.expiryGracePeriod = expiryGracePeriod;
+            return this;
+        }
+
         @Override
         public ClientCredentialsAuthenticationConfigurationBuilder withAdditionalHeader(final String key,
                 final String value) {
@@ -199,7 +229,7 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
         @Override
         public ClientCredentialsAuthenticationConfiguration build() {
             return new ClientCredentialsAuthenticationConfiguration(tokenEndpoint, clientId, clientSecret, scopes,
-                    additionalHeaders, proxyConfiguration);
+                    expiryGracePeriod, additionalHeaders, proxyConfiguration);
         }
 
     }

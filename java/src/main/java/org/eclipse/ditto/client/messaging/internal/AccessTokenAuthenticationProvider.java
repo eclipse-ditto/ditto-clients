@@ -27,7 +27,7 @@ public final class AccessTokenAuthenticationProvider extends AbstractTokenAuthen
     private final AccessTokenAuthenticationConfiguration configuration;
 
     public AccessTokenAuthenticationProvider(final AccessTokenAuthenticationConfiguration configuration) {
-        super(configuration.getAdditionalHeaders(), configuration.getJsonWebTokenSupplier());
+        super(configuration.getAdditionalHeaders(), configuration.getJsonWebTokenSupplier(), configuration.getExpiryGracePeriod());
         this.configuration = checkNotNull(configuration, "configuration");
     }
 
