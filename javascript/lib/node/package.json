@@ -1,17 +1,20 @@
 {
-  "name": "@eclipse-ditto/ditto-javascript-client-node_0",
-  "version": "0.0.1",
-  "description": "Node.js(r) implementation of Eclipse Ditto 0.x JavaScript API.",
+  "name": "@eclipse-ditto/ditto-javascript-client-node_1.0-pre",
+  "version": "1.0.0-pre",
+  "description": "Node.js(r) implementation of Eclipse Ditto 1.0.x JavaScript API.",
   "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
   "repository": "https://github.com/eclipse/ditto-clients",
   "license": "SEE LICENSE IN LICENSE",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "dist"
   ],
   "dependencies": {
-    "@eclipse-ditto/ditto-javascript-client-api_0": "^0.0.1",
+    "@eclipse-ditto/ditto-javascript-client-api_1.0-pre": "^1.0.0-pre",
     "https-proxy-agent": "2.2.2",
     "url": "0.11.0",
     "ws": "7.1.2"

@@ -13,7 +13,7 @@
 
 
 import { DittoDomClient } from '../src/ditto-dom-client';
-import { HttpClientBuilder, WebSocketClientBuilder } from '@eclipse-ditto/ditto-javascript-client-api_0';
+import { HttpClientBuilder, WebSocketClientBuilder } from '@eclipse-ditto/ditto-javascript-client-api_1.0-pre';
 import { FetchRequester } from '../src/fetch-http';
 import { FetchWebSocketBuilder } from '../src/fetch-websocket';
 
