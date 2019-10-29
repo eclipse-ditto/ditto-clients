@@ -117,17 +117,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
     private final Map<Class<? extends LiveCommand>, Function<? extends LiveCommand, LiveCommandAnswerBuilder.BuildStep>>
             liveCommandsFunctions;
 
-    /**
-     * Creates a new {@code TwinImpl} instance.
-     *
-     * @param messagingProvider implementation of underlying messaging provider.
-     * @param responseForwarder fast cache of response addresses.
-     * @param outgoingMessageFactory a factory for messages.
-     * @param bus the bus for message routing.
-     * @param schemaVersion the json schema version of the messaging protocol.
-     * @param sessionId the session identifier of this client.
-     */
-    public LiveImpl(final MessagingProvider messagingProvider,
+    private LiveImpl(final MessagingProvider messagingProvider,
             final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final PointerBus bus,
@@ -147,6 +137,18 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
         liveCommandsFunctions = new IdentityHashMap<>();
     }
 
+    /**
+     * Creates a new {@code LiveImpl} instance.
+     *
+     * @param messagingProvider implementation of underlying messaging provider.
+     * @param responseForwarder fast cache of response addresses.
+     * @param outgoingMessageFactory a factory for messages.
+     * @param bus the bus for message routing.
+     * @param schemaVersion the json schema version of the messaging protocol.
+     * @param sessionId the session identifier of this client.
+     * @param messageSerializerRegistry the registry to serialize and de-serialize messages.
+     * @return the new {@code LiveImpl} instance.
+     */
     public static LiveImpl newInstance(final MessagingProvider messagingProvider,
             final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,

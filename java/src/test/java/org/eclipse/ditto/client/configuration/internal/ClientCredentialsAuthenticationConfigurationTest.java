@@ -27,16 +27,14 @@ public final class ClientCredentialsAuthenticationConfigurationTest {
 
     @Test
     public void testHashCodeAndEquals() {
-        EqualsVerifier.forClass(
-                ClientCredentialsAuthenticationConfiguration.class)
+        EqualsVerifier.forClass(ClientCredentialsAuthenticationConfiguration.class)
                 .usingGetClass()
                 .verify();
     }
 
     @Test
     public void assertImmutability() {
-        assertInstancesOf(
-                ClientCredentialsAuthenticationConfiguration.class,
+        assertInstancesOf(ClientCredentialsAuthenticationConfiguration.class,
                 areImmutable());
     }
 

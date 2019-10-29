@@ -42,15 +42,7 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
      */
     public static final String CONSUME_TWIN_EVENTS_HANDLER = "consume-twin-events";
 
-    /**
-     * Creates a new {@code TwinImpl} instance.
-     *
-     * @param messagingProvider implementation of underlying messaging provider.
-     * @param responseForwarder fast cache of response addresses.
-     * @param outgoingMessageFactory a factory for messages.
-     * @param bus the bus for message routing.
-     */
-    public TwinImpl(final MessagingProvider messagingProvider,
+    private TwinImpl(final MessagingProvider messagingProvider,
             final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final PointerBus bus) {
@@ -60,6 +52,22 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
                 outgoingMessageFactory,
                 new HandlerRegistry<>(bus),
                 bus);
+    }
+
+    /**
+     * Creates a new {@code TwinImpl} instance.
+     *
+     * @param messagingProvider implementation of underlying messaging provider.
+     * @param responseForwarder fast cache of response addresses.
+     * @param outgoingMessageFactory a factory for messages.
+     * @param bus the bus for message routing.
+     * @return the new {@code TwinImpl} instance.
+     */
+    public static TwinImpl newInstance(final MessagingProvider messagingProvider,
+            final ResponseForwarder responseForwarder,
+            final OutgoingMessageFactory outgoingMessageFactory,
+            final PointerBus bus) {
+        return new TwinImpl(messagingProvider, responseForwarder, outgoingMessageFactory, bus);
     }
 
     @Override

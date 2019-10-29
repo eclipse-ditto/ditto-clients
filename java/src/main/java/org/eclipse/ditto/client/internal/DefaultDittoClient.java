@@ -168,7 +168,7 @@ public final class DefaultDittoClient implements DittoClient {
         final String sessionId = messagingProvider.getAuthenticationConfiguration().getSessionId();
         final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
         final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion, sessionId);
-        return new TwinImpl(messagingProvider, responseForwarder, messageFactory, bus);
+        return TwinImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus);
     }
 
     private static LiveImpl configureLive(final MessagingProvider messagingProvider,

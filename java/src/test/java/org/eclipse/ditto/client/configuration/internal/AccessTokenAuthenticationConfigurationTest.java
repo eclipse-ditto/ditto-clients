@@ -29,8 +29,7 @@ public final class AccessTokenAuthenticationConfigurationTest {
 
     @Test
     public void testHashCodeAndEquals() {
-        EqualsVerifier.forClass(
-                AccessTokenAuthenticationConfiguration.class)
+        EqualsVerifier.forClass(AccessTokenAuthenticationConfiguration.class)
                 .usingGetClass()
                 .verify();
     }
