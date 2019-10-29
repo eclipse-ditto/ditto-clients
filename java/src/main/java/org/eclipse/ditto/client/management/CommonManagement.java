@@ -134,8 +134,8 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
     /**
      * Creates an empty {@link Thing} for the given identifier.
      *
-     * @param thingId the identifier of the Thing to be created. The ID is required to be URI-conform according to
-     * <a href="http://www.ietf.org/rfc/rfc2396.txt">RFC-2396</a>.
+     * @param thingId the identifier of the Thing to be created. It must conform to the namespaced
+     * entity ID notation (see Ditto documentation).
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return completable future providing the created Thing object or a specific {@link
@@ -163,8 +163,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      *
      * @param thing a JSON object representation of the Thing to be created. The provided JSON object is required to
      * contain a field named {@code "thingId"} of the basic JSON type String which contains the identifier of the Thing
-     * to be created. The ID must be URI-conform according to
-     * <a href="http://www.ietf.org/rfc/rfc2396.txt">RFC-2396</a>.
+     * to be created. It must conform to the namespaced entity ID notation (see Ditto documentation).
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return completable future providing the created Thing object or a specific {@link
