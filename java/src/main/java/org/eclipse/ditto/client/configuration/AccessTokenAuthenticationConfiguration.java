@@ -73,9 +73,9 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
     }
 
     /**
-     * Returns the expiry grace period.
+     * Returns the grace period which will be subtracted from token expiry to trigger the configured token supplier.
      *
-     * @return the period.
+     * @return the grace period.
      */
     public Duration getExpiryGracePeriod() {
         return expiryGracePeriod;

@@ -39,6 +39,18 @@ To configure your Ditto client instance, use the `org.eclipse.ditto.client.confi
 
 For example:
 
+with Basic authentication:
+
+```java
+AuthenticationProvider authenticationProvider =
+    AuthenticationProviders.basic(BasicAuthenticationConfiguration.newBuilder()
+        .username("ditto")
+        .password("ditto")
+        .build());
+```
+
+or JWT authentication:
+
 ```java
 AuthenticationProvider authenticationProvider =
     AuthenticationProviders.clientCredentials(ClientCredentialsAuthenticationConfiguration.newBuilder()
@@ -47,7 +59,9 @@ AuthenticationProvider authenticationProvider =
         .scopes("offline_access email")
         .tokenEndpoint("https://my-oauth-provider/oauth/token")
         .build());
+```
 
+```java
 MessagingProvider messagingProvider = MessagingProviders.webSocket(WebSocketMessagingConfiguration.newBuilder()
     .endpoint("wss://ditto.eclipse.org")
     .jsonSchemaVersion(JsonSchemaVersion.V_1)
