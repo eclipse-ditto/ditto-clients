@@ -14,16 +14,13 @@ package org.eclipse.ditto.client.internal;
 
 import static java.util.Arrays.asList;
 
-import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.assertj.core.api.Assertions;
-import org.eclipse.ditto.client.configuration.CommonConfiguration;
-import org.eclipse.ditto.client.configuration.CredentialsAuthenticationConfiguration;
-import org.eclipse.ditto.client.configuration.internal.InternalConfiguration;
-import org.eclipse.ditto.client.configuration.internal.TestClientConfiguration;
+import org.eclipse.ditto.client.DittoClients;
 import org.eclipse.ditto.client.messaging.mock.MockMessagingProvider;
 import org.junit.Test;
 
@@ -37,22 +34,15 @@ public class ClientShutdownTest {
 
     @Test
     public void testNoMoreActiveThreads() throws InterruptedException {
-        final CredentialsAuthenticationConfiguration authenticationConfiguration =
-                TestClientConfiguration.getAuthenticationConfiguration();
-
-        final CommonConfiguration configuration =
-                TestClientConfiguration.getDittoClientConfiguration(new MockMessagingProvider(),
-                        authenticationConfiguration);
 
         final MockMessagingProvider messaging = new MockMessagingProvider();
         messaging.onSend(m -> {});
 
         // create client and destroy again
-        final InternalConfiguration cfg = TestClientConfiguration.buildInternalConfiguration(configuration);
-        new DittoClientImpl(cfg).destroy();
+        DittoClients.newInstance(messaging).destroy();
 
         // wait some time for executors/threads to shutdown
-        Thread.sleep(2000);
+        TimeUnit.SECONDS.sleep(2L);
 
         final Thread[] threads = new Thread[Thread.activeCount()];
         Thread.enumerate(threads);
@@ -65,8 +55,7 @@ public class ClientShutdownTest {
 
         // expect no more active threads
         Assertions.assertThat(activeThreads)
-                .withFailMessage("There are %d threads active: %s", threads.length,
-                        Arrays.toString(threads))
+                .withFailMessage("There are %d threads active: %s", activeThreads.size(), activeThreads)
                 .isEmpty();
     }
 

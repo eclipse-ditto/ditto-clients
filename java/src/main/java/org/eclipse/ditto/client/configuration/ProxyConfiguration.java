@@ -14,6 +14,8 @@ package org.eclipse.ditto.client.configuration;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.Optional;
+
 import javax.annotation.Nullable;
 
 /**
@@ -25,10 +27,10 @@ public final class ProxyConfiguration {
 
     private final String host;
     private final int port;
-    private final String username;
-    private final String password;
+    @Nullable private final String username;
+    @Nullable private final String password;
 
-    private ProxyConfiguration(@Nullable final String host, final int port, @Nullable final String username,
+    private ProxyConfiguration(final String host, final int port, @Nullable final String username,
             @Nullable final String password) {
         this.host = host;
         this.port = port;
@@ -46,7 +48,6 @@ public final class ProxyConfiguration {
     /**
      * @return host address of the proxy
      */
-    @Nullable
     public String getHost() {
         return host;
     }
@@ -61,17 +62,15 @@ public final class ProxyConfiguration {
     /**
      * @return username of the proxy.
      */
-    @Nullable
-    public String getUsername() {
-        return username;
+    public Optional<String> getUsername() {
+        return Optional.ofNullable(username);
     }
 
     /**
      * @return password of the proxy
      */
-    @Nullable
-    public String getPassword() {
-        return password;
+    public Optional<String> getPassword() {
+        return Optional.ofNullable(password);
     }
 
     /**

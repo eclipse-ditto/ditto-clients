@@ -29,14 +29,15 @@
             <outputDirectory>${artifactId}-${version}-bundles</outputDirectory>
             <includes>
                 <include>org.slf4j:slf4j-api</include>
-                <include>com.eclipsesource.minimal-json:minimal-json</include>
                 <include>com.neovisionaries:nv-websocket-client</include>
+                <include>com.eclipsesource.minimal-json:minimal-json</include>
                 <include>org.atteo.classindex:classindex</include>
                 <include>org.eclipse.ditto:ditto-json</include>
                 <include>org.eclipse.ditto:ditto-model-base</include>
+                <include>org.eclipse.ditto:ditto-model-jwt</include>
                 <include>org.eclipse.ditto:ditto-model-policies</include>
-                <include>org.eclipse.ditto:ditto-model-things</include>
                 <include>org.eclipse.ditto:ditto-model-messages</include>
+                <include>org.eclipse.ditto:ditto-model-things</include>
                 <include>org.eclipse.ditto:ditto-signals-base</include>
                 <include>org.eclipse.ditto:ditto-signals-commands-base</include>
                 <include>org.eclipse.ditto:ditto-signals-commands-things</include>

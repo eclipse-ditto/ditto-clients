@@ -26,12 +26,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
-import org.eclipse.ditto.client.configuration.CommonConfiguration;
-import org.eclipse.ditto.client.configuration.ProviderConfiguration;
-import org.eclipse.ditto.client.messaging.AuthenticationProvider;
+import org.eclipse.ditto.client.configuration.BasicAuthenticationConfiguration;
+import org.eclipse.ditto.client.configuration.MessagingConfiguration;
+import org.eclipse.ditto.client.configuration.WebSocketMessagingConfiguration;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.twin.internal.TwinImpl;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageBuilder;
 import org.eclipse.ditto.model.messages.MessageDirection;
@@ -57,45 +58,41 @@ import org.slf4j.LoggerFactory;
 public class MockMessagingProvider implements MessagingProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MockMessagingProvider.class);
+
+    private final AuthenticationConfiguration authenticationConfiguration =
+            BasicAuthenticationConfiguration.newBuilder()
+                    .username("hans")
+                    .password("dampf")
+                    .build();
+    private final MessagingConfiguration messagingConfiguration = WebSocketMessagingConfiguration.newBuilder()
+            .endpoint("ws://localhost:8080")
+            .jsonSchemaVersion(JsonSchemaVersion.V_1)
+            .build();
     private final AtomicReference<Consumer<Message<?>>> in = new AtomicReference<>();
     private final ExecutorService executor = Executors.newFixedThreadPool(2, new MockThreadFactory());
     private final BlockingQueue<Message<?>> eventQueue = new LinkedBlockingQueue<>();
+
     private Consumer<Message<?>> out = message -> {
         throw new IllegalStateException("Unhandled out-message: " + message);
     };
 
-    public static class Configuration implements ProviderConfiguration<MockMessagingProvider, Object> {
-
-        private final MockMessagingProvider provider;
-        private final AuthenticationConfiguration authenticationConfiguration;
-        private final AuthenticationProvider<Object> authenticationProvider;
-
-        public Configuration(final MockMessagingProvider provider,
-                final AuthenticationConfiguration authenticationConfiguration,
-                final AuthenticationProvider<Object> authenticationProvider) {
-            this.provider = provider;
-            this.authenticationConfiguration = authenticationConfiguration;
-            this.authenticationProvider = authenticationProvider;
-        }
-
-        @Override
-        public MockMessagingProvider instantiateProvider() {
-            return provider;
-        }
-
-        @Override
-        public AuthenticationConfiguration getAuthenticationConfiguration() {
-            return authenticationConfiguration;
-        }
-
-        @Override
-        public AuthenticationProvider<Object> getAuthenticationProvider() {
-            return authenticationProvider;
-        }
+    @Override
+    public AuthenticationConfiguration getAuthenticationConfiguration() {
+        return authenticationConfiguration;
     }
 
     @Override
-    public void initialize(final CommonConfiguration configuration, final ExecutorService callbackExecutor) {
+    public MessagingConfiguration getMessagingConfiguration() {
+        return messagingConfiguration;
+    }
+
+    @Override
+    public ExecutorService getExecutorService() {
+        return executor;
+    }
+
+    @Override
+    public void initialize() {
         // noop
     }
 
@@ -116,7 +113,7 @@ public class MockMessagingProvider implements MessagingProvider {
         final DittoHeaders dittoHeaders = command.getDittoHeaders();
 
         final MessageHeadersBuilder headersBuilder =
-                MessageHeaders.newBuilder(MessageDirection.FROM, command.getId(), command.getType())
+                MessageHeaders.newBuilder(MessageDirection.FROM, command.getEntityId(), command.getType())
                         .putHeaders(command.getDittoHeaders())
                         .timestamp(OffsetDateTime.now());
 
@@ -195,7 +192,7 @@ public class MockMessagingProvider implements MessagingProvider {
 
         @Override
         public Thread newThread(final Runnable r) {
-            return new Thread(r, "mock-provider-" + (count.incrementAndGet()));
+            return new Thread(r, "mock-provider-" + count.incrementAndGet());
         }
     }
 }

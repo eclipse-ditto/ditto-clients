@@ -40,6 +40,8 @@ public final class TestConstants {
         throw new AssertionError();
     }
 
+    public static final String CLIENT_ID = "theClient";
+
     /**
      * Authorization-related test constants.
      */

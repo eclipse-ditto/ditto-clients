@@ -24,10 +24,8 @@ import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.client.changes.FeaturesChange;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.base.entity.Entity;
 import org.eclipse.ditto.model.base.entity.id.EntityId;
 import org.eclipse.ditto.model.things.Features;
-import org.eclipse.ditto.model.things.ThingId;
 
 /**
  * An immutable implementation of {@link org.eclipse.ditto.client.changes.FeaturesChange}.

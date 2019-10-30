@@ -14,15 +14,16 @@ package org.eclipse.ditto.client.live.internal;
 
 import java.util.function.Consumer;
 
-import org.eclipse.ditto.client.configuration.internal.InternalConfiguration;
-import org.eclipse.ditto.client.exceptions.MessageSerializationException;
+import org.eclipse.ditto.client.live.messages.MessageSerializationException;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
+import org.eclipse.ditto.client.internal.ResponseForwarder;
 import org.eclipse.ditto.client.internal.SendTerminator;
 import org.eclipse.ditto.client.internal.bus.PointerWithData;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.client.live.messages.internal.ImmutableDeserializingMessage;
 import org.eclipse.ditto.client.live.messages.internal.ImmutableRepliableMessage;
+import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageBuilder;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
@@ -57,34 +58,34 @@ final class LiveMessagesUtil {
     }
 
     static <T, U> Consumer<PointerWithData> createEventConsumerForRepliableMessage(
-            final InternalConfiguration configuration, final OutgoingMessageFactory outgoingMessageFactory,
+            final MessagingProvider messagingProvider,
+            final ResponseForwarder responseForwarder,
+            final OutgoingMessageFactory outgoingMessageFactory,
+            final MessageSerializerRegistry messageSerializerRegistry,
             final Class<T> type, final Consumer<RepliableMessage<T, U>> handler) {
-        final MessageSerializerRegistry serializerRegistry = configuration.getLiveConfigurationOrFail()
-                .getMessageSerializerConfiguration()
-                .getMessageSerializerRegistry();
 
         return e ->
         {
             final Message<T> message = LiveMessagesUtil.eventToMessage(e, type, false);
-            final Message<T> deserializedMessage = ImmutableDeserializingMessage.of(message, type, serializerRegistry);
+            final Message<T> deserializedMessage =
+                    ImmutableDeserializingMessage.of(message, type, messageSerializerRegistry);
 
             final RepliableMessage<T, U> repliableMessage = ImmutableRepliableMessage.of(deserializedMessage, msg ->
             {
-                final Message<U> toBeSentMessage = outgoingMessageFactory.sendMessage(serializerRegistry, msg);
+                final Message<U> toBeSentMessage = outgoingMessageFactory.sendMessage(messageSerializerRegistry, msg);
                 LOGGER.trace("Response Message about to send: {}", toBeSentMessage);
-                new SendTerminator<>(configuration.getLiveMessagingProviderOrFail(),
-                        configuration.getResponseForwarder(), toBeSentMessage).send();
+                new SendTerminator<>(messagingProvider, responseForwarder, toBeSentMessage).send();
             });
             handler.accept(repliableMessage);
         };
     }
 
     static <U> Consumer<PointerWithData> createEventConsumerForRepliableMessage(
-            final InternalConfiguration configuration, final OutgoingMessageFactory outgoingMessageFactory,
+            final MessagingProvider messagingProvider,
+            final ResponseForwarder responseForwarder,
+            final OutgoingMessageFactory outgoingMessageFactory,
+            final MessageSerializerRegistry messageSerializerRegistry,
             final Consumer<RepliableMessage<?, U>> handler) {
-        final MessageSerializerRegistry serializerRegistry = configuration.getLiveConfigurationOrFail()
-                .getMessageSerializerConfiguration()
-                .getMessageSerializerRegistry();
 
         return e ->
         {
@@ -92,11 +93,9 @@ final class LiveMessagesUtil {
 
             final RepliableMessage<?, U> repliableMessage = ImmutableRepliableMessage.of(message, msg ->
             {
-                final Message<U> toBeSentMessage = outgoingMessageFactory.sendMessage(serializerRegistry, msg);
+                final Message<U> toBeSentMessage = outgoingMessageFactory.sendMessage(messageSerializerRegistry, msg);
                 LOGGER.trace("Response Message about to send: {}", toBeSentMessage);
-                new SendTerminator<>(configuration.getLiveMessagingProviderOrFail(),
-                        configuration.getResponseForwarder(), toBeSentMessage)
-                        .send();
+                new SendTerminator<>(messagingProvider, responseForwarder, toBeSentMessage).send();
             });
             handler.accept(repliableMessage);
         };

@@ -23,7 +23,7 @@ import java.util.function.BiFunction;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.eclipse.ditto.client.exceptions.MessageSerializationException;
+import org.eclipse.ditto.client.live.messages.MessageSerializationException;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.live.messages.MessageSerializers;
 import org.eclipse.ditto.model.base.auth.AuthorizationContext;

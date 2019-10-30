@@ -13,49 +13,38 @@
 package org.eclipse.ditto.client.configuration;
 
 import static java.util.Objects.requireNonNull;
+import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
+import javax.annotation.concurrent.NotThreadSafe;
 
 /**
- * An implementation for {@link AuthenticationConfiguration} based on "Ditto Dummy authentication" used for local
+ * An implementation for {@link org.eclipse.ditto.client.configuration.AuthenticationConfiguration} based on "Ditto Dummy authentication" used for local
  * development and testing.
  *
  * @since 1.0.0
  */
-public final class DummyAuthenticationConfiguration implements AuthenticationConfiguration {
+@Immutable
+public final class DummyAuthenticationConfiguration extends AbstractAuthenticationConfiguration {
 
-    private final String sessionId;
     private final String dummyUsername;
-    private final Map<String, String> additionalHeaders;
 
     private DummyAuthenticationConfiguration(final String dummyUsername,
             final Map<String, String> additionalHeaders) {
-        sessionId = UUID.randomUUID().toString();
+        super(dummyUsername, additionalHeaders, null);
         this.dummyUsername = dummyUsername;
-        this.additionalHeaders = Collections.unmodifiableMap(new HashMap<>(additionalHeaders));
     }
 
     /**
-     * @return a new builder ready to build a {@code AuthenticationConfiguration}
+     * @return a new builder to build {@code DummyAuthenticationConfiguration}
      */
     public static DummyAuthenticationConfigurationBuilder newBuilder() {
-        return new Builder();
-    }
-
-    @Override
-    public String getClientSessionId() {
-        return dummyUsername + ":" + sessionId;
-    }
-
-    @Override
-    public Map<String, String> getAdditionalHeaders() {
-        return additionalHeaders;
+        return new DummyAuthenticationConfigurationBuilder();
     }
 
     /**
@@ -68,45 +57,38 @@ public final class DummyAuthenticationConfiguration implements AuthenticationCon
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public boolean equals(@Nullable final Object o) {
         if (this == o) {
             return true;
         }
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+        if (!super.equals(o)) {
+            return false;
+        }
         final DummyAuthenticationConfiguration that = (DummyAuthenticationConfiguration) o;
-        return Objects.equals(sessionId, that.sessionId) &&
-                Objects.equals(dummyUsername, that.dummyUsername) &&
-                Objects.equals(additionalHeaders, that.additionalHeaders);
+        return Objects.equals(dummyUsername, that.dummyUsername);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(sessionId, dummyUsername, additionalHeaders);
+        return Objects.hash(super.hashCode(), dummyUsername);
     }
 
-    @SuppressWarnings("squid:S2068")
     @Override
     public String toString() {
         return getClass().getSimpleName() + " [" +
-                "sessionId=" + sessionId +
+                super.toString() +
                 ", dummyUsername=" + dummyUsername +
-                ", additionalHeaders=" + additionalHeaders +
                 "]";
     }
 
-    /**
-     * Builder for dummy based {@link AuthenticationConfiguration}.
-     */
-    public interface DummyAuthenticationConfigurationBuilder extends DummyUsernameSettable {
-        // no-op
-    }
+    @NotThreadSafe
+    public static class DummyAuthenticationConfigurationBuilder implements AuthenticationConfiguration.Builder {
 
-    /**
-     * Allows setting the dummy username.
-     */
-    public interface DummyUsernameSettable {
+        private String dummyUsername;
+        private final Map<String, String> additionalHeaders = new HashMap<>();
 
         /**
          * Sets the dummyUsername to authenticate.
@@ -114,46 +96,25 @@ public final class DummyAuthenticationConfiguration implements AuthenticationCon
          * @param dummyUsername the dummyUsername to authenticate
          * @return the builder object that allows setting the password
          */
-        Buildable dummyUsername(String dummyUsername);
-    }
-
-    /**
-     * Allows building the {@link DummyAuthenticationConfiguration} instance as a final step.
-     */
-    public interface Buildable {
-
-        /**
-         * Adds an additional header to be used during dummy authentication.
-         *
-         * @param key the key of the additional header.
-         * @param value the header's value.
-         * @return the buildable.
-         */
-        Buildable withAdditionalHeader(String key, String value);
-
-        /**
-         * Build the dummy authentication configuration.
-         *
-         * @return the created DummyAuthenticationConfiguration
-         */
-        DummyAuthenticationConfiguration build();
-    }
-
-    @Immutable
-    private static class Builder implements DummyAuthenticationConfigurationBuilder, DummyUsernameSettable, Buildable {
-
-        private String dummyUsername;
-        private final Map<String, String> additionalHeaders = new HashMap<>();
-
-        @Override
-        public Buildable dummyUsername(final String dummyUsername) {
+        public DummyAuthenticationConfigurationBuilder dummyUsername(final String dummyUsername) {
             this.dummyUsername = requireNonNull(dummyUsername);
             return this;
         }
 
         @Override
-        public Buildable withAdditionalHeader(final String key, final String value) {
-            additionalHeaders.put(key, value);
+        public DummyAuthenticationConfigurationBuilder withAdditionalHeader(final String key, final String value) {
+            additionalHeaders.put(checkNotNull(key, "key"), value);
+            return this;
+        }
+
+        /**
+         * Dummy authentication doesn't support proxy configuration. The provided configuration will therefore be
+         * ignored.
+         *
+         * @return this builder.
+         */
+        @Override
+        public DummyAuthenticationConfigurationBuilder proxyConfiguration(final ProxyConfiguration proxyConfiguration) {
             return this;
         }
 

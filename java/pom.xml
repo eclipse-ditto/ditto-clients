@@ -401,9 +401,6 @@
                             <ignoreMissingClasses>false</ignoreMissingClasses>
                             <skipPomModules>true</skipPomModules>
                             <htmlTitle>${project.name} :: Binary Compatibility Report</htmlTitle>
-                            <excludes>
-                                <!--<exclude></exclude>-->
-                            </excludes>
                         </parameter>
                     </configuration>
                     <executions>
@@ -685,27 +682,26 @@
     <dependencies>
         <!-- ### Compile ### -->
         <dependency>
-            <groupId>com.eclipsesource.minimal-json</groupId>
-            <artifactId>minimal-json</artifactId>
-            <version>${minimal-json.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.neovisionaries</groupId>
             <artifactId>nv-websocket-client</artifactId>
             <version>${nv-websocket-client.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.atteo.classindex</groupId>
-            <artifactId>classindex</artifactId>
-            <version>${classindex.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
+        </dependency>
+
+        <!-- ### Compile - OSGi ### -->
+        <dependency>
+            <groupId>com.eclipsesource.minimal-json</groupId>
+            <artifactId>minimal-json</artifactId>
+            <version>${minimal-json.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.atteo.classindex</groupId>
+            <artifactId>classindex</artifactId>
+            <version>${classindex.version}</version>
         </dependency>
 
         <!-- ### Compile - Ditto artifacts ### -->
@@ -722,12 +718,17 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-model-things</artifactId>
+            <artifactId>ditto-model-jwt</artifactId>
             <version>${ditto.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-model-messages</artifactId>
+            <version>${ditto.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.ditto</groupId>
+            <artifactId>ditto-model-things</artifactId>
             <version>${ditto.version}</version>
         </dependency>
 
@@ -756,7 +757,6 @@
             <artifactId>ditto-signals-commands-messages</artifactId>
             <version>${ditto.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-signals-events-base</artifactId>
@@ -767,6 +767,7 @@
             <artifactId>ditto-signals-events-things</artifactId>
             <version>${ditto.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-protocol-adapter</artifactId>

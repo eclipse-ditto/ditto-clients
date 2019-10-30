@@ -18,7 +18,6 @@ import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.DittoClient;
 import org.eclipse.ditto.client.changes.Change;
-import org.eclipse.ditto.client.exceptions.DuplicateRegistrationIdException;
 import org.eclipse.ditto.client.twin.Twin;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonPointer;

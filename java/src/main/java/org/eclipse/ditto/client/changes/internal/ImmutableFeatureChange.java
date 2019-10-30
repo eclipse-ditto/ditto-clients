@@ -26,7 +26,6 @@ import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.entity.id.EntityId;
 import org.eclipse.ditto.model.things.Feature;
-import org.eclipse.ditto.model.things.ThingId;
 
 /**
  * An immutable implementation of {@link org.eclipse.ditto.client.changes.FeatureChange}.
@@ -57,7 +56,8 @@ public final class ImmutableFeatureChange implements FeatureChange {
             final long revision,
             @Nullable final Instant timestamp) {
 
-        change = new ImmutableChange(entityId, changeAction, path, getJsonValueForFeature(feature), revision, timestamp);
+        change =
+                new ImmutableChange(entityId, changeAction, path, getJsonValueForFeature(feature), revision, timestamp);
         this.feature = feature;
     }
 

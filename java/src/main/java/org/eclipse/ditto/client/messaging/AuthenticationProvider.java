@@ -12,14 +12,10 @@
  */
 package org.eclipse.ditto.client.messaging;
 
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import org.eclipse.ditto.client.configuration.ProxyConfiguration;
+import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 
 /**
- * Interface to be used when implementing a authentication provider for a {@link MessagingProvider}.
+ * Interface to be used when implementing a authentication provider for a {@link org.eclipse.ditto.client.messaging.MessagingProvider}.
  *
  * @param <C> the channel type this authentication provider uses for authenticating (e.g. WebSocket)
  * @since 1.0.0
@@ -27,22 +23,23 @@ import org.eclipse.ditto.client.configuration.ProxyConfiguration;
 public interface AuthenticationProvider<C> {
 
     /**
-     * Returns the session identifier for this client - has to be unique for each newly instantiated client.
+     * Returns the {@code AuthenticationConfiguration} of this provider.
      *
-     * @return the session identifier for this client
+     * @return the configuration.
      */
-    String getClientSessionId();
+    AuthenticationConfiguration getConfiguration();
 
     /**
      * Prepares the authentication by e.g. using the passed in {@code channel} in order to attach authentication
      * information to it.
      *
      * @param channel the channel to perform authentication with.
-     * @param additionalAuthenticationHeaders additional headers to use for authenticating.
-     * @param proxyConfiguration the optional ProxyConfiguration which may be required during authentication.
-     * @return the by authentication enhanced channel.
      */
-    C prepareAuthentication(C channel, Map<String, String> additionalAuthenticationHeaders,
-            @Nullable ProxyConfiguration proxyConfiguration);
+    void prepareAuthentication(C channel);
+
+    /**
+     * Destroys this {@code AuthenticationConfiguration} and frees all resources.
+     */
+    void destroy();
 
 }

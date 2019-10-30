@@ -14,8 +14,6 @@ package org.eclipse.ditto.client.live.messages;
 
 import java.util.Optional;
 
-import org.eclipse.ditto.client.exceptions.MessageSerializationException;
-
 /**
  * The MessageSerializerRegistry is responsible for registering and looking up {@link MessageSerializer} for {@code
  * Message} payloads sent via {@link MessageSender} TO/FROM {@code Thing}s or {@code Feature}s.

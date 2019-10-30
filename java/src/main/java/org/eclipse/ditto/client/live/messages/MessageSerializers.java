@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 
 import org.eclipse.ditto.client.live.messages.internal.ImmutableMessageSerializerKey;
-import org.eclipse.ditto.client.live.messages.internal.MessageSerializerImpl;
+import org.eclipse.ditto.client.live.messages.internal.DefaultMessageSerializer;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonValue;
 
@@ -71,7 +71,7 @@ public class MessageSerializers {
     public static <T> MessageSerializer<T> of(final String contentType, final Class<T> javaType, final String subject,
             final BiFunction<T, Charset, ByteBuffer> serializer,
             final BiFunction<ByteBuffer, Charset, T> deserializer) {
-        return MessageSerializerImpl.of(ImmutableMessageSerializerKey.of(contentType, javaType, subject),
+        return DefaultMessageSerializer.of(ImmutableMessageSerializerKey.of(contentType, javaType, subject),
                 serializer, deserializer);
     }
 
