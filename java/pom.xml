@@ -194,7 +194,7 @@
         <minimal-json.version>0.9.5</minimal-json.version>
         <nv-websocket-client.version>2.9</nv-websocket-client.version>
         <classindex.version>3.8</classindex.version>
-        <slf4j.version>1.7.25</slf4j.version>
+        <slf4j.version>1.7.28</slf4j.version>
 
         <!-- ### Provided dependencies versions -->
         <jsr305.version>3.0.1</jsr305.version>
