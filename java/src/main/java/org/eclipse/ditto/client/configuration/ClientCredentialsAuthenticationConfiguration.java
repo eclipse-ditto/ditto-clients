@@ -181,6 +181,8 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
 
         /**
          * Sets the client secret to authenticate.
+         * <p/>
+         * The secret will <strong>never</strong> be sent to a Ditto backend but directly to the configured endpoint.
          *
          * @param clientSecret the client secret.
          * @return this builder.
