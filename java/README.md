@@ -52,12 +52,19 @@ AuthenticationProvider authenticationProvider =
 or JWT authentication:
 
 ```java
+// optionally define a proxy server to use
+ProxyConfiguration proxyConfig = ProxyConfiguration.newBuilder()
+    .proxyHost("localhost")
+    .proxyPort(3128)
+    .build();
+
 AuthenticationProvider authenticationProvider =
     AuthenticationProviders.clientCredentials(ClientCredentialsAuthenticationConfiguration.newBuilder()
         .clientId("my-oauth-client-id")
         .clientSecret("my-oauth-client-secret")
         .scopes("offline_access email")
         .tokenEndpoint("https://my-oauth-provider/oauth/token")
+        .proxyConfiguration(proxyConfig) // optionally configure a proxy server
         .build());
 ```
 
@@ -65,11 +72,8 @@ AuthenticationProvider authenticationProvider =
 MessagingProvider messagingProvider = MessagingProviders.webSocket(WebSocketMessagingConfiguration.newBuilder()
     .endpoint("wss://ditto.eclipse.org")
     .jsonSchemaVersion(JsonSchemaVersion.V_1)
-    // optionally configure a proxy server or a truststore containing the trusted CAs for SSL connection establishment
-    .proxyConfiguration(ProxyConfiguration.newBuilder()
-        .proxyHost("localhost")
-        .proxyPort(3128)
-        .build())
+    .proxyConfiguration(proxyConfig) // optionally configure a proxy server
+    // optionally configure a truststore containing the trusted CAs for SSL connection establishment
     .trustStoreConfiguration(TrustStoreConfiguration.newBuilder()
         .location(TRUSTSTORE_LOCATION)
         .password(TRUSTSTORE_PASSWORD)
