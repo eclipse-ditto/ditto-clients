@@ -23,6 +23,4 @@ jobs:
       with:
         java-version: ${{ matrix.java }}
     - name: Build with Maven
-      env:
-        MAVEN_OPTS: -Dmaven.repo.remote=https://repo.eclipse.org/content/groups/ditto
-      run: mvn package javadoc:jar source:jar --batch-mode --errors --quiet -DcreateJavadoc=true --file java/pom.xml
+      run: mvn package javadoc:jar source:jar --batch-mode --errors --quiet -DcreateJavadoc=true -Dmaven.repo.remote=https://repo.eclipse.org/content/groups/ditto --file java/pom.xml
