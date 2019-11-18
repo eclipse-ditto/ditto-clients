@@ -24,7 +24,6 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: ${{ matrix.java }}
-    - name: cd into /java dir
-      run: cd java
     - name: build with Maven
+      working-directory: java
       run: mvn package javadoc:jar source:jar --batch-mode --errors --quiet -DcreateJavadoc=true --file pom.xml --settings .travis.settings.xml
