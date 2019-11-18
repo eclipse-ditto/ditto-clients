@@ -1,7 +1,9 @@
-name: build
+name: java-build
 
 on:
   push:
+    paths:
+      - 'java/**'
     branches:
       - master
 
@@ -18,9 +20,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Set up JDK ${{ matrix.java }}
+    - name: set up JDK ${{ matrix.java }}
       uses: actions/setup-java@v1
       with:
         java-version: ${{ matrix.java }}
-    - name: Build with Maven
-      run: mvn package javadoc:jar source:jar --batch-mode --errors --quiet -DcreateJavadoc=true --file java/pom.xml --settings java/.travis.settings.xml
+    - name: cd into /java dir
+      run: cd java
+    - name: build with Maven
+      run: mvn package javadoc:jar source:jar --batch-mode --errors --quiet -DcreateJavadoc=true --file pom.xml --settings .travis.settings.xml
