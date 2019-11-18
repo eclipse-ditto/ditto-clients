@@ -2,8 +2,8 @@ name: java-build
 
 on:
   push:
-    paths:
-      - 'java/**'
+    #paths:
+    #  - 'java/**'
     branches:
       - master
 
