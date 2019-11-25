@@ -186,7 +186,7 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
         argumentNotNull(eventFunction);
 
         final FeatureEventFactory featureEventFactory =
-                ImmutableFeatureEventFactory.getInstance(sessionId, schemaVersion, getThingEntityId(),
+                ImmutableFeatureEventFactory.getInstance(schemaVersion, getThingEntityId(),
                         getFeatureId());
         final Event<?> eventToEmit = eventFunction.apply(featureEventFactory);
         getMessagingProvider().emitEvent(eventToEmit, TopicPath.Channel.LIVE);

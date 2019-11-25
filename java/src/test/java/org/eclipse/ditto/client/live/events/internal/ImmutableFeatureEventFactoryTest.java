@@ -41,7 +41,7 @@ public final class ImmutableFeatureEventFactoryTest {
      */
     @Before
     public void setUp() {
-        underTest = ImmutableFeatureEventFactory.getInstance(SOURCE, SCHEMA_VERSION, THING_ID, FLUX_CAPACITOR_ID);
+        underTest = ImmutableFeatureEventFactory.getInstance(SCHEMA_VERSION, THING_ID, FLUX_CAPACITOR_ID);
     }
 
     /**

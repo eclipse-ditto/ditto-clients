@@ -67,17 +67,16 @@ public final class ImmutableThingEventFactory implements ThingEventFactory {
     /**
      * Returns an instance of {@code ImmutableThingEventFactory}.
      *
-     * @param source the source this client instance represents.
      * @param schemaVersion the JSON schema version this client was configured to handle.
      * @param thingId the ID of the Thing to create events for.
      * @return the instance.
      * @throws NullPointerException if any argument is {@code null}.
      * @throws IllegalArgumentException if {@code source} or {@code thingId} is empty.
      */
-    public static ImmutableThingEventFactory getInstance(final String source, final JsonSchemaVersion schemaVersion,
+    public static ImmutableThingEventFactory getInstance(final JsonSchemaVersion schemaVersion,
             final ThingId thingId) {
         argumentNotEmpty(thingId, "Thing ID");
-        return new ImmutableThingEventFactory(ImmutableGlobalEventFactory.getInstance(source, schemaVersion), thingId);
+        return new ImmutableThingEventFactory(ImmutableGlobalEventFactory.getInstance(schemaVersion), thingId);
     }
 
     @Override
@@ -178,11 +177,6 @@ public final class ImmutableThingEventFactory implements ThingEventFactory {
     public FeaturePropertyModified featurePropertyModified(final String featureId,
             final JsonPointer propertyJsonPointer, final JsonValue propertyJsonValue) {
         return globalEventFactory.featurePropertyModified(thingId, featureId, propertyJsonPointer, propertyJsonValue);
-    }
-
-    @Override
-    public String getSource() {
-        return globalEventFactory.getSource();
     }
 
     @Override

@@ -389,7 +389,6 @@ public final class OutgoingMessageFactory {
         final DittoHeadersBuilder headersBuilder = DittoHeaders.newBuilder()
                 .correlationId(UUID.randomUUID().toString())
                 .schemaVersion(jsonSchemaVersion)
-                .source(sessionId)
                 .responseRequired(modify.isResponseRequired().orElse(true));
         modify.exists().ifPresent(exists -> {
             if (!allowExists) {

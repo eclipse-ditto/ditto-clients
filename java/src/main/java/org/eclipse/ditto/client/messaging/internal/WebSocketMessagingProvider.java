@@ -469,8 +469,6 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                 .removeHeader(DittoHeaderDefinition.READ_SUBJECTS.getKey())
                 .removeHeader(DittoHeaderDefinition.AUTHORIZATION_SUBJECTS.getKey())
                 .removeHeader(DittoHeaderDefinition.RESPONSE_REQUIRED.getKey())
-                .removeHeader(DittoHeaderDefinition.SOURCE.getKey())
-                .source(sessionId)
                 .build();
     }
 

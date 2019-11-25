@@ -61,27 +61,23 @@ import org.eclipse.ditto.signals.events.things.ThingModified;
 @SuppressWarnings({"squid:S1610", "OverlyCoupledClass"})
 public final class ImmutableGlobalEventFactory implements GlobalEventFactory {
 
-    private final String source;
     private final JsonSchemaVersion schemaVersion;
 
-    private ImmutableGlobalEventFactory(final String theSource, final JsonSchemaVersion theSchemaVersion) {
-        source = theSource;
+    private ImmutableGlobalEventFactory(final JsonSchemaVersion theSchemaVersion) {
         schemaVersion = theSchemaVersion;
     }
 
     /**
      * Returns an instance of {@code ImmutableGlobalEventFactory}.
      *
-     * @param source the source this client instance represents.
      * @param schemaVersion the JSON schema version this client was configured to handle.
      * @return the instance.
      * @throws NullPointerException if any argument is {@code null}.
      * @throws IllegalArgumentException if {@code source} is empty.
      */
-    public static ImmutableGlobalEventFactory getInstance(final String source, final JsonSchemaVersion schemaVersion) {
-        argumentNotEmpty(source, "source");
+    public static ImmutableGlobalEventFactory getInstance(final JsonSchemaVersion schemaVersion) {
         checkNotNull(schemaVersion, "schema version");
-        return new ImmutableGlobalEventFactory(source, schemaVersion);
+        return new ImmutableGlobalEventFactory(schemaVersion);
     }
 
     @Override
@@ -204,11 +200,6 @@ public final class ImmutableGlobalEventFactory implements GlobalEventFactory {
     }
 
     @Override
-    public String getSource() {
-        return source;
-    }
-
-    @Override
     public JsonSchemaVersion getSchemaVersion() {
         return schemaVersion;
     }
@@ -222,17 +213,17 @@ public final class ImmutableGlobalEventFactory implements GlobalEventFactory {
             return false;
         }
         final ImmutableGlobalEventFactory that = (ImmutableGlobalEventFactory) o;
-        return Objects.equals(source, that.source) && schemaVersion == that.schemaVersion;
+        return schemaVersion == that.schemaVersion;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(source, schemaVersion);
+        return Objects.hash(getClass(), schemaVersion);
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " [" + "source=" + source + ", schemaVersion=" + schemaVersion + "]";
+        return getClass().getSimpleName() + " [" + ", schemaVersion=" + schemaVersion + "]";
     }
 
 }

@@ -257,7 +257,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
     public void emitEvent(final Function<ThingEventFactory, Event<?>> eventFunction) {
         argumentNotNull(eventFunction);
 
-        final ThingEventFactory thingEventFactory = ImmutableThingEventFactory.getInstance(sessionId,
+        final ThingEventFactory thingEventFactory = ImmutableThingEventFactory.getInstance(
                 schemaVersion, getThingEntityId());
         final Event<?> eventToEmit = eventFunction.apply(thingEventFactory);
         getMessagingProvider().emitEvent(eventToEmit, TopicPath.Channel.LIVE);
