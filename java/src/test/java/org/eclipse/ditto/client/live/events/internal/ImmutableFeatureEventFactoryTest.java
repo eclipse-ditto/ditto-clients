@@ -31,7 +31,6 @@ import nl.jqno.equalsverifier.EqualsVerifier;
  */
 public final class ImmutableFeatureEventFactoryTest {
 
-    private static final String SOURCE = "mySource";
     private static final JsonSchemaVersion SCHEMA_VERSION = JsonSchemaVersion.V_1;
 
     private ImmutableFeatureEventFactory underTest = null;
@@ -41,7 +40,7 @@ public final class ImmutableFeatureEventFactoryTest {
      */
     @Before
     public void setUp() {
-        underTest = ImmutableFeatureEventFactory.getInstance(SOURCE, SCHEMA_VERSION, THING_ID, FLUX_CAPACITOR_ID);
+        underTest = ImmutableFeatureEventFactory.getInstance(SCHEMA_VERSION, THING_ID, FLUX_CAPACITOR_ID);
     }
 
     /**

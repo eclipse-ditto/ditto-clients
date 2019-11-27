@@ -36,16 +36,8 @@ public interface EventFactory {
         return DittoHeaders.newBuilder()
                 .correlationId(String.valueOf(UUID.randomUUID()))
                 .schemaVersion(getSchemaVersion())
-                .source(getSource())
                 .build();
     }
-
-    /**
-     * Returns the Source this Client instance represents.
-     *
-     * @return the Source this Client instance represents
-     */
-    String getSource();
 
     /**
      * Returns the JsonSchemaVersion this Client was configured to handle.

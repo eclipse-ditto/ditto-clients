@@ -27,7 +27,6 @@ import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable
 
 import java.text.MessageFormat;
 
-import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
@@ -65,7 +64,6 @@ import nl.jqno.equalsverifier.EqualsVerifier;
  */
 public final class ImmutableGlobalEventFactoryTest {
 
-    private static final String SOURCE = "mySource";
     private static final JsonSchemaVersion SCHEMA_VERSION = JsonSchemaVersion.V_1;
     private static final JsonPointer ATTRIBUTES_POINTER = JsonFactory.newPointer("/attributes");
     private static final JsonPointer ATTRIBUTE_JSON_POINTER = JsonFactory.newPointer("manufacturer/name");
@@ -77,78 +75,38 @@ public final class ImmutableGlobalEventFactoryTest {
 
     private ImmutableGlobalEventFactory underTest = null;
 
-    /**
-     *
-     */
     @Before
     public void setUp() {
-        underTest = ImmutableGlobalEventFactory.getInstance(SOURCE, SCHEMA_VERSION);
+        underTest = ImmutableGlobalEventFactory.getInstance(SCHEMA_VERSION);
     }
 
-    /**
-     *
-     */
     @Test
     public void assertImmutability() {
         assertInstancesOf(ImmutableGlobalEventFactory.class, areImmutable(),
                 provided(JsonSchemaVersion.class, ThingId.class).areAlsoImmutable());
     }
 
-    /**
-     *
-     */
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(ImmutableGlobalEventFactory.class).usingGetClass().verify();
     }
 
-    /**
-     *
-     */
-    @SuppressWarnings("ConstantConditions")
-    @Test
-    public void tryToGetInstanceWithNullSource() {
-        assertThatExceptionOfType(NullPointerException.class)
-                .isThrownBy(() -> ImmutableGlobalEventFactory.getInstance(null, SCHEMA_VERSION))
-                .withMessage(MessageFormat.format("The {0} must not be null!", "source"))
-                .withNoCause();
-    }
-
-    /**
-     *
-     */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetInstanceWithNullJsonSchemaVersion() {
         assertThatExceptionOfType(NullPointerException.class)
-                .isThrownBy(() -> ImmutableGlobalEventFactory.getInstance(SOURCE, null))
+                .isThrownBy(() -> ImmutableGlobalEventFactory.getInstance(null))
                 .withMessage(MessageFormat.format("The {0} must not be null!", "schema version"))
                 .withNoCause();
     }
 
-    /**
-     *
-     */
-    @Test
-    public void getSourceReturnsExpected() {
-        final ImmutableGlobalEventFactory underTest = ImmutableGlobalEventFactory.getInstance(SOURCE, SCHEMA_VERSION);
-
-        Assertions.assertThat(underTest.getSource()).isEqualTo(SOURCE);
-    }
-
-    /**
-     *
-     */
     @Test
     public void getSchemaVersionReturnsExpected() {
-        final ImmutableGlobalEventFactory underTest = ImmutableGlobalEventFactory.getInstance(SOURCE, SCHEMA_VERSION);
+        final ImmutableGlobalEventFactory underTest = ImmutableGlobalEventFactory.getInstance(SCHEMA_VERSION);
 
         assertThat((Object) underTest.getSchemaVersion()).isEqualTo(SCHEMA_VERSION);
     }
 
-    /**
-     *
-     */
     @Test
     public void thingCreatedReturnsExpected() {
         final ThingCreated thingCreated = underTest.thingCreated(THING_V1);
@@ -161,13 +119,9 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(thingCreated.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void thingDeletedReturnsExpected() {
         final ThingDeleted thingDeleted = underTest.thingDeleted(THING_ID);
@@ -180,13 +134,9 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(thingDeleted.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void thingModifiedReturnsExpected() {
         final ThingModified thingModified = underTest.thingModified(THING_V1);
@@ -199,13 +149,9 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(thingModified.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void attributeCreatedReturnsExpected() {
         final AttributeCreated attributeCreated =
@@ -220,8 +166,7 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(attributeCreated.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
     /**
@@ -240,8 +185,7 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(attributeDeleted.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
     /**
@@ -261,8 +205,7 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(attributeModified.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
     /**
@@ -281,8 +224,7 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(attributesCreated.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
     /**
@@ -301,8 +243,7 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(attributesDeleted.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
     /**
@@ -321,8 +262,7 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(attributesModified.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
     /**
@@ -341,8 +281,7 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(featureCreated.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
     /**
@@ -361,8 +300,7 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(featureDeleted.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
     /**
@@ -381,8 +319,7 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(featureModified.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
     /**
@@ -401,8 +338,7 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(featuresCreated.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
     /**
@@ -421,8 +357,7 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(featuresDeleted.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
     /**
@@ -441,8 +376,7 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(featuresModified.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
     /**
@@ -462,8 +396,7 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(featurePropertiesCreated.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
     /**
@@ -483,8 +416,7 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(featurePropertiesDeleted.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
     /**
@@ -504,8 +436,7 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(featurePropertiesModified.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
     /**
@@ -526,8 +457,7 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(featurePropertyCreated.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
     /**
@@ -548,8 +478,7 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(featurePropertyDeleted.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
     /**
@@ -570,19 +499,7 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasRevision(-1);
         assertThat(featurePropertyModified.getDittoHeaders())
                 .hasCorrelationId()
-                .hasSchemaVersion(underTest.getSchemaVersion())
-                .hasSource(underTest.getSource());
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void toStringReturnsExpected() {
-        Assertions.assertThat(underTest.toString())
-                .contains(underTest.getClass().getSimpleName())
-                .contains("source=", SOURCE)
-                .contains("schemaVersion=", SCHEMA_VERSION.toString());
+                .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
 }

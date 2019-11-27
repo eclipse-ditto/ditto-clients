@@ -203,7 +203,7 @@
         <logback.version>1.2.3</logback.version>
         <junit.version>4.12</junit.version>
         <assertj.version>3.11.1</assertj.version>
-        <mutability-detector.version>0.9.6</mutability-detector.version>
+        <mutability-detector.version>0.10.2</mutability-detector.version>
         <equals-verifier.version>3.0.3</equals-verifier.version>
         <mockito.version>2.9.0</mockito.version>
         <jsonassert.version>1.2.3</jsonassert.version>

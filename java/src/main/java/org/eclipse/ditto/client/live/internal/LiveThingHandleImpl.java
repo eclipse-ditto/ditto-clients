@@ -88,7 +88,6 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
 
     private final MessageSerializerRegistry messageSerializerRegistry;
     private final JsonSchemaVersion schemaVersion;
-    private final String sessionId;
     private final Map<Class<? extends LiveCommand>, Function<? extends LiveCommand, LiveCommandAnswerBuilder.BuildStep>>
             liveCommandsFunctions;
 
@@ -106,7 +105,6 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
 
         this.messageSerializerRegistry = messageSerializerRegistry;
         this.schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
-        this.sessionId = messagingProvider.getAuthenticationConfiguration().getSessionId();
 
         liveCommandsFunctions = new IdentityHashMap<>();
     }
@@ -257,7 +255,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
     public void emitEvent(final Function<ThingEventFactory, Event<?>> eventFunction) {
         argumentNotNull(eventFunction);
 
-        final ThingEventFactory thingEventFactory = ImmutableThingEventFactory.getInstance(sessionId,
+        final ThingEventFactory thingEventFactory = ImmutableThingEventFactory.getInstance(
                 schemaVersion, getThingEntityId());
         final Event<?> eventToEmit = eventFunction.apply(thingEventFactory);
         getMessagingProvider().emitEvent(eventToEmit, TopicPath.Channel.LIVE);

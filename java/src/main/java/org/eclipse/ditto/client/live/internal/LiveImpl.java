@@ -232,8 +232,8 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                             }
 
                             if (!handled) {
-                                LOGGER.warn("Incoming live command of type '{}' from source '{}' was not processed.",
-                                        liveCommand.getType(), liveCommand.getDittoHeaders().getSource().orElse("?"));
+                                LOGGER.warn("Incoming live command of type '{}'  was not processed.",
+                                        liveCommand.getType());
                             }
                         })), completableFutureLiveCommands);
         return completableFutureCombined;
@@ -435,7 +435,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
     public void emitEvent(final Function<GlobalEventFactory, Event<?>> eventFunction) {
         argumentNotNull(eventFunction);
 
-        final GlobalEventFactory globalEventFactory = ImmutableGlobalEventFactory.getInstance(sessionId,
+        final GlobalEventFactory globalEventFactory = ImmutableGlobalEventFactory.getInstance(
                 schemaVersion);
         final Event<?> eventToEmit = eventFunction.apply(globalEventFactory);
         getMessagingProvider().emitEvent(eventToEmit, TopicPath.Channel.LIVE);
