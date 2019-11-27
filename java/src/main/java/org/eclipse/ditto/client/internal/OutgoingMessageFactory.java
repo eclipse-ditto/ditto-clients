@@ -84,26 +84,21 @@ public final class OutgoingMessageFactory {
             EntityTagMatchers.fromList(Collections.singletonList(EntityTagMatcher.asterisk()));
 
     private final JsonSchemaVersion jsonSchemaVersion;
-    private final String sessionId;
 
-    private OutgoingMessageFactory(final JsonSchemaVersion jsonSchemaVersion, final String sessionId) {
+    private OutgoingMessageFactory(final JsonSchemaVersion jsonSchemaVersion) {
         this.jsonSchemaVersion = jsonSchemaVersion;
-        this.sessionId = sessionId;
     }
 
     /**
      * Creates a new {@code OutgoingMessageFactory}.
      *
      * @param jsonSchemaVersion the version in which messages should be created by this factory.
-     * @param sessionId the session id of the client.
      * @return the factory.
      * @throws NullPointerException if {@code configuration} is {@code null}.
      */
-    public static OutgoingMessageFactory newInstance(final JsonSchemaVersion jsonSchemaVersion,
-            final String sessionId) {
+    public static OutgoingMessageFactory newInstance(final JsonSchemaVersion jsonSchemaVersion) {
         checkNotNull(jsonSchemaVersion, "jsonSchemaVersion");
-        checkNotNull(sessionId, "sessionId");
-        return new OutgoingMessageFactory(jsonSchemaVersion, sessionId);
+        return new OutgoingMessageFactory(jsonSchemaVersion);
     }
 
     public ThingCommand createThing(final Thing thing, final Option<?>... options) {

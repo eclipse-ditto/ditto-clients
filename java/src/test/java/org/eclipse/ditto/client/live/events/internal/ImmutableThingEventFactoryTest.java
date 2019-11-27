@@ -31,7 +31,6 @@ import nl.jqno.equalsverifier.EqualsVerifier;
  */
 public final class ImmutableThingEventFactoryTest {
 
-    private static final String SOURCE = "mySource";
     private static final JsonSchemaVersion SCHEMA_VERSION = JsonSchemaVersion.V_1;
 
     private ImmutableThingEventFactory underTest = null;

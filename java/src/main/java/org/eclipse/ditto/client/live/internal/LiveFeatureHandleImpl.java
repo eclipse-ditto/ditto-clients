@@ -75,7 +75,6 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
 
     private final MessageSerializerRegistry messageSerializerRegistry;
     private final JsonSchemaVersion schemaVersion;
-    private final String sessionId;
     private final Map<Class<? extends LiveCommand>, Function<? extends LiveCommand, LiveCommandAnswerBuilder.BuildStep>>
             liveCommandsFunctions;
 
@@ -93,7 +92,6 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
 
         this.messageSerializerRegistry = messageSerializerRegistry;
         this.schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
-        this.sessionId = messagingProvider.getAuthenticationConfiguration().getSessionId();
 
         liveCommandsFunctions = new IdentityHashMap<>();
     }

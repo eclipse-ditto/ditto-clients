@@ -27,7 +27,6 @@ import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable
 
 import java.text.MessageFormat;
 
-import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
@@ -65,7 +64,6 @@ import nl.jqno.equalsverifier.EqualsVerifier;
  */
 public final class ImmutableGlobalEventFactoryTest {
 
-    private static final String SOURCE = "mySource";
     private static final JsonSchemaVersion SCHEMA_VERSION = JsonSchemaVersion.V_1;
     private static final JsonPointer ATTRIBUTES_POINTER = JsonFactory.newPointer("/attributes");
     private static final JsonPointer ATTRIBUTE_JSON_POINTER = JsonFactory.newPointer("manufacturer/name");

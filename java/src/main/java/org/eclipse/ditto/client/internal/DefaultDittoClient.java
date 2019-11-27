@@ -165,9 +165,8 @@ public final class DefaultDittoClient implements DittoClient {
         final String name = TopicPath.Channel.TWIN.getName();
         final PointerBus bus = BusFactory.createPointerBus(name, messagingProvider.getExecutorService());
         init(bus, messagingProvider, responseForwarder);
-        final String sessionId = messagingProvider.getAuthenticationConfiguration().getSessionId();
         final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
-        final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion, sessionId);
+        final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion);
         return TwinImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus);
     }
 
@@ -178,7 +177,7 @@ public final class DefaultDittoClient implements DittoClient {
         init(bus, messagingProvider, responseForwarder);
         final String sessionId = messagingProvider.getAuthenticationConfiguration().getSessionId();
         final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
-        final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion, sessionId);
+        final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion);
         return LiveImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus, schemaVersion,
                 sessionId, messageSerializerRegistry);
     }
