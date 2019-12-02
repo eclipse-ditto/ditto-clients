@@ -2,13 +2,17 @@ name: javascript-build
 
 on:
   push:
-    #paths:
-    #  - 'java/**'
+    paths:
+      - 'javascript/**'
+      - '.github/workflows/nodejs.yml'
     branches:
       - master
 
   # Run build for any PR
   pull_request:
+    paths:
+      - 'javascript/**'
+      - '.github/workflows/nodejs.yml'
 
 jobs:
   build:
