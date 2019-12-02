@@ -12,9 +12,13 @@ This repository contains client SDKs in different languages for [Eclipse Ditto](
 
 ## [Java](java/)
 
+[![Build Status](https://github.com/eclipse/ditto-clients/workflows/java-build/badge.svg)](https://github.com/eclipse/ditto-clients/actions?query=workflow%3Ajava-build)
+
 Implemented in Java, targeted for use in Java and all JVM based languages (source and target level is Java 8).
 
 ## [JavaScript](javascript/)
+
+[![Build Status](https://github.com/eclipse/ditto-clients/workflows/javascript-build/badge.svg)](https://github.com/eclipse/ditto-clients/actions?query=workflow%3Ajavascript-build)
 
 Implemented in TypeScript, this SDK contains a JavaScript library for usage of Ditto in both browser and Node.JS 
 based environments.
