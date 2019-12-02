@@ -2,13 +2,17 @@ name: java-build
 
 on:
   push:
-    #paths:
-    #  - 'java/**'
+    paths:
+      - 'java/**'
+      - '.github/workflows/maven.yml'
     branches:
       - master
 
   # Run build for any PR
   pull_request:
+    paths:
+      - 'java/**'
+      - '.github/workflows/maven.yml'
 
 jobs:
   build:
