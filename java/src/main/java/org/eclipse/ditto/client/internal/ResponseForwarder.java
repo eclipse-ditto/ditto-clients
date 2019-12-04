@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 import javax.annotation.concurrent.ThreadSafe;
 
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.commands.base.ErrorResponse;
 import org.eclipse.ditto.signals.commands.things.ThingCommandResponse;
 import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
@@ -42,7 +43,7 @@ public final class ResponseForwarder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResponseForwarder.class);
 
-    private final ConcurrentMap<String, CompletableFuture<ThingCommandResponse>> map;
+    private final ConcurrentMap<String, CompletableFuture<? extends CommandResponse>> map;
 
     private ResponseForwarder() {
         map = new ConcurrentHashMap<>();
@@ -68,13 +69,14 @@ public final class ResponseForwarder {
      * @throws NullPointerException if any argument is {@code null}.
      * @throws IllegalArgumentException if {@code correlationId} is empty.
      */
-    public CompletableFuture<ThingCommandResponse> put(final CharSequence correlationId,
-            final CompletableFuture<ThingCommandResponse> responsePromise) {
+    public CompletableFuture<CommandResponse> put(final CharSequence correlationId,
+            final CompletableFuture<CommandResponse> responsePromise) {
 
         argumentNotEmpty(correlationId, "correlationId");
         checkNotNull(responsePromise, "response promise");
 
-        final CompletableFuture<ThingCommandResponse> previous = map.put(correlationId.toString(), responsePromise);
+        final CompletableFuture<CommandResponse> previous =
+                (CompletableFuture<CommandResponse>) map.put(correlationId.toString(), responsePromise);
 
         if (null != previous && !responsePromise.equals(previous)) {
             final String msgTemplate = "A new response promise was associated with correlation-id <{0}>!";
@@ -92,7 +94,7 @@ public final class ResponseForwarder {
      * @return the <em>completed</em> response promise which is associated to {@code response} or an empty Optional.
      * @throws NullPointerException if {@code response} is {@code null}.
      */
-    public Optional<CompletableFuture<ThingCommandResponse>> handle(final ThingCommandResponse response) {
+    public Optional<CompletableFuture<CommandResponse>> handle(final ThingCommandResponse response) {
         checkNotNull(response, "ThingCommandResponse to be handled");
 
         final DittoHeaders dittoHeaders = response.getDittoHeaders();
@@ -104,7 +106,8 @@ public final class ResponseForwarder {
 
         final String correlationId = correlationIdOptional.get();
         LOGGER.trace("Received response for correlation-id <{}>.", correlationId);
-        final CompletableFuture<ThingCommandResponse> responsePromise = map.remove(correlationId);
+        final CompletableFuture<CommandResponse> responsePromise =
+                (CompletableFuture<CommandResponse>) map.remove(correlationId);
         if (null != responsePromise) {
             tryToCompleteResponsePromise(response, responsePromise);
         } else {
@@ -115,7 +118,7 @@ public final class ResponseForwarder {
     }
 
     private static void tryToCompleteResponsePromise(final ThingCommandResponse response,
-            final CompletableFuture<ThingCommandResponse> responsePromise) {
+            final CompletableFuture<CommandResponse> responsePromise) {
 
         try {
             completeResponsePromise(response, responsePromise);
@@ -124,8 +127,8 @@ public final class ResponseForwarder {
         }
     }
 
-    private static void completeResponsePromise(final ThingCommandResponse response,
-            final CompletableFuture<ThingCommandResponse> responsePromise) {
+    private static void completeResponsePromise(final CommandResponse response,
+            final CompletableFuture<CommandResponse> responsePromise) {
 
         if (response instanceof ThingErrorResponse) {
             responsePromise.completeExceptionally(((ErrorResponse) response).getDittoRuntimeException());
@@ -133,5 +136,4 @@ public final class ResponseForwarder {
             responsePromise.complete(response);
         }
     }
-
 }

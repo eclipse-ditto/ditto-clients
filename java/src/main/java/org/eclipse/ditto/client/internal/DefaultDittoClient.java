@@ -30,6 +30,8 @@ import org.eclipse.ditto.client.live.Live;
 import org.eclipse.ditto.client.live.internal.LiveImpl;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
+import org.eclipse.ditto.client.policies.Policies;
+import org.eclipse.ditto.client.policies.internal.PoliciesImpl;
 import org.eclipse.ditto.client.twin.Twin;
 import org.eclipse.ditto.client.twin.internal.TwinImpl;
 import org.eclipse.ditto.json.JsonPointer;
@@ -89,10 +91,12 @@ public final class DefaultDittoClient implements DittoClient {
 
     private final AtomicReference<TwinImpl> twin = new AtomicReference<>(null);
     private final AtomicReference<LiveImpl> live = new AtomicReference<>(null);
+    private final AtomicReference<PoliciesImpl> policyClient = new AtomicReference<>(null);
 
-    private DefaultDittoClient(final TwinImpl twin, final LiveImpl live) {
+    private DefaultDittoClient(final TwinImpl twin, final LiveImpl live, final PoliciesImpl policyClient) {
         this.twin.set(twin);
         this.live.set(live);
+        this.policyClient.set(policyClient);
         logVersionInformation();
     }
 
@@ -111,7 +115,8 @@ public final class DefaultDittoClient implements DittoClient {
             final MessageSerializerRegistry messageSerializerRegistry) {
         final TwinImpl twin = configureTwin(twinMessagingProvider, responseForwarder);
         final LiveImpl live = configureLive(liveMessagingProvider, responseForwarder, messageSerializerRegistry);
-        return new DefaultDittoClient(twin, live);
+        final PoliciesImpl policy = configurePolicyClient(twinMessagingProvider, responseForwarder);
+        return new DefaultDittoClient(twin, live, policy);
     }
 
     @Override
@@ -133,6 +138,15 @@ public final class DefaultDittoClient implements DittoClient {
     }
 
     @Override
+    public Policies policies() {
+        final Policies result = policyClient.get();
+        if (null == result) {
+            throw new IllegalStateException("Policy client is not configured.");
+        }
+        return result;
+    }
+
+    @Override
     public CompletableFuture<Adaptable> sendDittoProtocol(final Adaptable dittoProtocolAdaptable) {
 
         final TopicPath.Channel channel = dittoProtocolAdaptable.getTopicPath().getChannel();
@@ -141,6 +155,8 @@ public final class DefaultDittoClient implements DittoClient {
                 return twin.get().getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
             case LIVE:
                 return live.get().getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
+            case POLICY:
+                return policyClient.get().getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
             default:
                 throw new IllegalArgumentException("Unknown channel: " + channel);
         }
@@ -152,6 +168,8 @@ public final class DefaultDittoClient implements DittoClient {
         twin.get().getBus().close();
         live.get().getMessagingProvider().close();
         live.get().getBus().close();
+        policyClient.get().getMessagingProvider().close();
+        policyClient.get().getBus().close();
     }
 
     private static void logVersionInformation() {
@@ -180,6 +198,16 @@ public final class DefaultDittoClient implements DittoClient {
         final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion);
         return LiveImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus, schemaVersion,
                 sessionId, messageSerializerRegistry);
+    }
+
+    private static PoliciesImpl configurePolicyClient(final MessagingProvider messagingProvider,
+            final ResponseForwarder responseForwarder) {
+        final String name = TopicPath.Channel.POLICY.getName();
+        final PointerBus bus = BusFactory.createPointerBus(name, messagingProvider.getExecutorService());
+        init(bus, messagingProvider, responseForwarder);
+        final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
+        final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion);
+        return PoliciesImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus);
     }
 
     private static void init(final PointerBus bus, final MessagingProvider messagingProvider,

@@ -25,8 +25,11 @@ import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.commands.base.Command;
+import org.eclipse.ditto.signals.commands.base.CommandResponse;
+import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
+import org.eclipse.ditto.signals.commands.policies.modify.PolicyModifyCommandResponse;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
-import org.eclipse.ditto.signals.commands.things.ThingCommandResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ThingModifyCommandResponse;
 import org.eclipse.ditto.signals.commands.things.query.ThingQueryCommandResponse;
 import org.slf4j.Logger;
@@ -43,7 +46,7 @@ public final class SendTerminator<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SendTerminator.class);
 
-    private final ThingCommand command;
+    private final Command command;
     private final Message<T> message;
     private final MessagingProvider messagingProvider;
     private final ResponseForwarder responseForwarder;
@@ -82,10 +85,26 @@ public final class SendTerminator<T> {
                 checkNotNull(message, "message to be sent"));
     }
 
+    /**
+     * Constructs a new {@code SendTerminator} object.
+     *
+     * @param messagingProvider the messaging provider.
+     * @param responseForwarder the response forwarder.
+     * @param policyCommand the outgoing message.
+     * @throws NullPointerException if any argument is {@code null}.
+     */
+    public SendTerminator(final MessagingProvider messagingProvider, final ResponseForwarder responseForwarder,
+            final PolicyCommand policyCommand) {
+
+        // commands are always sent on "POLICY" channel, to modify Policies.
+        this(messagingProvider, responseForwarder, TopicPath.Channel.POLICY,
+                checkNotNull(policyCommand, "command to be sent"), null);
+    }
+
     private SendTerminator(final MessagingProvider messagingProvider,
             final ResponseForwarder responseForwarder,
             final TopicPath.Channel channel,
-            @Nullable final ThingCommand command,
+            @Nullable final Command command,
             @Nullable final Message<T> message) {
 
         this.messagingProvider = checkNotNull(messagingProvider, "messaging provider");
@@ -114,18 +133,26 @@ public final class SendTerminator<T> {
      * @throws NullPointerException if {@code function} is {@code null}.
      */
     public CompletableFuture<T> applyModify(final Function<ThingModifyCommandResponse, T> function) {
-        final CompletableFuture<ThingCommandResponse> intermediaryResult = createIntermediaryResult(function);
+        final CompletableFuture<CommandResponse> intermediaryResult = createIntermediaryResult(function);
         LOGGER.trace("Sending modify command <{}>.", command);
         messagingProvider.sendCommand(command, channel);
 
         return intermediaryResult.thenApply(tcr -> (ThingModifyCommandResponse) tcr).thenApply(function);
     }
 
-    private CompletableFuture<ThingCommandResponse> createIntermediaryResult(final Function function) {
+    public CompletableFuture<T> applyModifyPolicy(final Function<PolicyModifyCommandResponse, T> function) {
+        final CompletableFuture<CommandResponse> intermediaryResult = createIntermediaryResult(function);
+        LOGGER.trace("Sending modify command <{}>.", command);
+        messagingProvider.sendCommand(command, channel);
+
+        return intermediaryResult.thenApply(pcr -> (PolicyModifyCommandResponse) pcr).thenApply(function);
+    }
+
+    private CompletableFuture<CommandResponse> createIntermediaryResult(final Function function) {
         checkNotNull(command, "command to be sent");
         checkNotNull(function, "Function to be applied");
 
-        final CompletableFuture<ThingCommandResponse> intermediaryResult = new CompletableFuture<>();
+        final CompletableFuture<CommandResponse> intermediaryResult = new CompletableFuture<>();
 
         final DittoHeaders dittoHeaders = command.getDittoHeaders();
         final boolean responseRequired = dittoHeaders.isResponseRequired();
@@ -151,7 +178,7 @@ public final class SendTerminator<T> {
     public CompletableFuture<Void> applyVoid() {
         // The CompletableFuture is used to wait for a response even though the response itself is not regarded in
         // this case.
-        final CompletableFuture<ThingCommandResponse> intermediaryResult = createIntermediaryResult(cr -> null);
+        final CompletableFuture<CommandResponse> intermediaryResult = createIntermediaryResult(cr -> null);
         LOGGER.trace("Sending void command <{}>.", command);
         messagingProvider.sendCommand(command, channel);
 
@@ -168,7 +195,7 @@ public final class SendTerminator<T> {
      * @throws NullPointerException if {@code function} is {@code null}.
      */
     public CompletableFuture<T> applyView(final Function<ThingQueryCommandResponse, T> function) {
-        final CompletableFuture<ThingCommandResponse> result = createIntermediaryResult(function);
+        final CompletableFuture<CommandResponse> result = createIntermediaryResult(function);
         LOGGER.trace("Sending view command <{}>.", command);
         messagingProvider.sendCommand(command, channel);
 

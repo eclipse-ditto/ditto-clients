@@ -41,12 +41,19 @@ import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageBuilder;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
+import org.eclipse.ditto.model.policies.Policy;
+import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.FeatureDefinition;
 import org.eclipse.ditto.model.things.Features;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
+import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
+import org.eclipse.ditto.signals.commands.policies.modify.CreatePolicy;
+import org.eclipse.ditto.signals.commands.policies.modify.DeletePolicy;
+import org.eclipse.ditto.signals.commands.policies.modify.ModifyPolicy;
+import org.eclipse.ditto.signals.commands.policies.query.RetrievePolicy;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteAttribute;
@@ -72,7 +79,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Creates outgoing ThingCommands sent from the client.
+ * Creates outgoing Commands sent from the client.
  *
  * @since 1.0.0
  */
@@ -190,6 +197,53 @@ public final class OutgoingMessageFactory {
 
     public ThingCommand deleteThing(final ThingId thingId, final Option<?>... options) {
         return DeleteThing.of(thingId, buildDittoHeaders(false, options));
+    }
+
+    public PolicyCommand createPolicy(final Policy policy, final Option<?>... options) {
+        return CreatePolicy.of(policy, buildDittoHeaders(false, options));
+    }
+
+    /**
+     * @param policy the policy to be put (which may be created or updated).
+     * @param options options to be applied configuring behaviour of this method.
+     * @return the PolicyCommand
+     * @throws NullPointerException if any argument is {@code null}.
+     */
+    public PolicyCommand putPolicy(final Policy policy, final Option<?>... options) {
+        checkNotNull(policy, "policy");
+        final PolicyId policyId =
+                policy.getEntityId().orElseThrow(() -> new IllegalArgumentException("Policy had no ID!"));
+
+        final DittoHeaders headers = buildDittoHeaders(true, options);
+        return ModifyPolicy.of(policyId, policy, headers);
+    }
+
+    /**
+     * @param policy the policy to be updated.
+     * @param options options to be applied configuring behaviour of this method.
+     * @return the PolicyCommand
+     * @throws NullPointerException if any argument is {@code null}.
+     * @throws IllegalArgumentException if {@code policy} has no identifier.
+     * @throws UnsupportedOperationException if an invalid option has been specified.
+     */
+    public PolicyCommand updatePolicy(final Policy policy, final Option<?>... options) {
+        checkNotNull(policy, "policy");
+        final PolicyId policyId =
+                policy.getEntityId().orElseThrow(() -> new IllegalArgumentException("Policy had no ID!"));
+
+        final DittoHeaders headersWithoutIfMatch = buildDittoHeaders(false, options);
+        final DittoHeaders headers = headersWithoutIfMatch.toBuilder()
+                .ifMatch(ASTERISK)
+                .build();
+        return ModifyPolicy.of(policyId, policy, headers);
+    }
+
+    public PolicyCommand retrievePolicy(final PolicyId policyId) {
+        return RetrievePolicy.of(policyId, buildDittoHeaders(false));
+    }
+
+    public PolicyCommand deletePolicy(final PolicyId policyId, final Option<?>... options) {
+        return DeletePolicy.of(policyId, buildDittoHeaders(false, options));
     }
 
     public ThingCommand setAttribute(final ThingId thingId,
