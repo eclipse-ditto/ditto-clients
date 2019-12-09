@@ -916,7 +916,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
             if (signal instanceof ThingErrorResponse) {
                 final DittoRuntimeException cre = ((ErrorResponse) signal).getDittoRuntimeException();
                 final String description = cre.getDescription().orElse("");
-                LOGGER.warn("Client <{}>: Got TWIN ThingErrorResponse: <{}: {} - {}>", sessionId,
+                LOGGER.debug("Client <{}>: Got TWIN ThingErrorResponse: <{}: {} - {}>", sessionId,
                         cre.getClass().getSimpleName(), cre.getMessage(), description);
             }
             commandResponseConsumer.accept((ThingCommandResponse) signal);
