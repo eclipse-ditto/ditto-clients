@@ -29,6 +29,7 @@ import org.eclipse.ditto.signals.commands.base.Command;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
 import org.eclipse.ditto.signals.commands.policies.modify.PolicyModifyCommandResponse;
+import org.eclipse.ditto.signals.commands.policies.query.PolicyQueryCommandResponse;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
 import org.eclipse.ditto.signals.commands.things.modify.ThingModifyCommandResponse;
 import org.eclipse.ditto.signals.commands.things.query.ThingQueryCommandResponse;
@@ -200,6 +201,23 @@ public final class SendTerminator<T> {
         messagingProvider.sendCommand(command, channel);
 
         return result.thenApply(tcr -> (ThingQueryCommandResponse) tcr).thenApply(function);
+    }
+
+    /**
+     * Applies the {@code command} of this SendTerminator with "view" behavior - expecting a {@code
+     * ThingQueryCommandResponse} as result and returning a Future of the type {@code <T>}.
+     *
+     * @param function the function to apply to extract an instance of type {@code <T>} from the returned
+     * ThingQueryCommandResponse.
+     * @return a CompletableFuture of type {@code <T>}.
+     * @throws NullPointerException if {@code function} is {@code null}.
+     */
+    public CompletableFuture<T> applyViewWithPolicyResponse(final Function<PolicyQueryCommandResponse, T> function) {
+        final CompletableFuture<CommandResponse> result = createIntermediaryResult(function);
+        LOGGER.trace("Sending view command <{}>.", command);
+        messagingProvider.sendCommand(command, channel);
+
+        return result.thenApply(tcr -> (PolicyQueryCommandResponse) tcr).thenApply(function);
     }
 
 }

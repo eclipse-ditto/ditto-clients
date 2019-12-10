@@ -20,6 +20,7 @@ import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.base.auth.AuthorizationContext;
 import org.eclipse.ditto.model.base.auth.AuthorizationModelFactory;
 import org.eclipse.ditto.model.base.auth.AuthorizationSubject;
+import org.eclipse.ditto.model.policies.PoliciesModelFactory;
 import org.eclipse.ditto.model.things.AccessControlList;
 import org.eclipse.ditto.model.things.AclEntry;
 import org.eclipse.ditto.model.things.Attributes;
@@ -233,6 +234,88 @@ public final class TestConstants {
         private Thing() {
             throw new AssertionError();
         }
+    }
+
+    /**
+     * Policy-related test constants.
+     */
+    public static final class Policy {
+
+        /**
+         * Known PolicyId for testing
+         */
+        public static final String POLICY_ID = "policy.namespace:policyName";
+
+        /**
+         * Known Policy in jsonObject.
+         */
+        public static final JsonObject JSON_OBJECT = JsonFactory.readFrom("{\n" +
+                "    \"policyId\": \"policy.namespace:policyName\",\n" +
+                "    \"entries\": {\n" +
+                "      \"owner\": {\n" +
+                "        \"subjects\": {\n" +
+                "          \"iot-permissions:8c36bc60-1234-1234-1234-4ed6ce7ed64c\": {\n" +
+                "            \"type\": \"iot-permissions-userid\"\n" +
+                "          }\n" +
+                "        },\n" +
+                "        \"resources\": {\n" +
+                "          \"thing:/\": {\n" +
+                "            \"grant\": [\"READ\", \"WRITE\"],\n" +
+                "            \"revoke\": []\n" +
+                "          },\n" +
+                "          \"policy:/\": {\n" +
+                "            \"grant\": [\"READ\", \"WRITE\"],\n" +
+                "            \"revoke\": []\n" +
+                "          },\n" +
+                "          \"message:/\": {\n" +
+                "            \"grant\": [\"READ\", \"WRITE\"],\n" +
+                "            \"revoke\": []\n" +
+                "          }\n" +
+                "        }\n" +
+                "      },\n" +
+                "      \"observer\": {\n" +
+                "        \"subjects\": {\n" +
+                "          \"iot-things:eebbb40e-1234-1234-1234-f79a4653946b:observer-client\": {\n" +
+                "            \"type\": \"iot-things-clientid\"\n" +
+                "          },\n" +
+                "          \"iot-permissions:93f24210-1234-1234-1234-620a03644e93\": {\n" +
+                "            \"type\": \"iot-permissions-groupid\"\n" +
+                "          }\n" +
+                "        },\n" +
+                "        \"resources\": {\n" +
+                "          \"thing:/features/featureX\": {\n" +
+                "            \"grant\": [\"READ\"],\n" +
+                "            \"revoke\": []\n" +
+                "          },\n" +
+                "          \"thing:/features/featureY\": {\n" +
+                "            \"grant\": [\"READ\"],\n" +
+                "            \"revoke\": []\n" +
+                "          }\n" +
+                "        }\n" +
+                "      },\n" +
+                "      \"private\": {\n" +
+                "        \"subjects\": {\n" +
+                "          \"iot-permissions:93f24210-1234-1234-1234-620a03644e93\": {\n" +
+                "            \"type\": \"iot-permissions-groupid\"\n" +
+                "          }\n" +
+                "        },\n" +
+                "        \"resources\": {\n" +
+                "          \"thing:/features/featureX/properties/location/city\": {\n" +
+                "            \"grant\": [],\n" +
+                "            \"revoke\": [\"READ\"]\n" +
+                "          }\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }").asObject();
+
+
+        /**
+         * Known Policy created from jsonObject.
+         */
+        public static final org.eclipse.ditto.model.policies.Policy POLICY =
+                PoliciesModelFactory.newPolicy(JSON_OBJECT);
+
     }
 
 }

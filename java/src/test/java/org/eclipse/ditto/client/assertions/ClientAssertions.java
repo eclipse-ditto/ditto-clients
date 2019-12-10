@@ -16,6 +16,7 @@ import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.ThingChange;
 import org.eclipse.ditto.model.messages.Message;
+import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
 
 /**
  * Custom assertions for testing the CR Integration Client.
@@ -32,6 +33,10 @@ public final class ClientAssertions extends Assertions {
 
     public static ThingChangeAssert assertThat(final ThingChange thingChange) {
         return new ThingChangeAssert(thingChange);
+    }
+
+    public static PolicyAssert assertThat(final PolicyCommand policyCommand) {
+        return new PolicyAssert(policyCommand);
     }
 
 }

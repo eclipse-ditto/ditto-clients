@@ -43,6 +43,7 @@ import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.WithFeatureId;
 import org.eclipse.ditto.signals.commands.base.Command;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
+import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
 import org.eclipse.ditto.signals.commands.things.ThingCommandResponse;
 import org.eclipse.ditto.signals.events.base.Event;
@@ -66,7 +67,7 @@ public class MockMessagingProvider implements MessagingProvider {
                     .build();
     private final MessagingConfiguration messagingConfiguration = WebSocketMessagingConfiguration.newBuilder()
             .endpoint("ws://localhost:8080")
-            .jsonSchemaVersion(JsonSchemaVersion.V_1)
+            .jsonSchemaVersion(JsonSchemaVersion.V_2)
             .build();
     private final AtomicReference<Consumer<Message<?>>> in = new AtomicReference<>();
     private final ExecutorService executor = Executors.newFixedThreadPool(2, new MockThreadFactory());
@@ -74,6 +75,9 @@ public class MockMessagingProvider implements MessagingProvider {
 
     private Consumer<Message<?>> out = message -> {
         throw new IllegalStateException("Unhandled out-message: " + message);
+    };
+    private Consumer<PolicyCommand> outgoingPolicyCommand = command -> {
+        throw new IllegalStateException("Unhandled outgoing command: " + command);
     };
 
     @Override
@@ -107,12 +111,25 @@ public class MockMessagingProvider implements MessagingProvider {
         out.accept(message);
     }
 
+    private void sendPolicyCommand(final Command policyCommand, final TopicPath.Channel channel) {
+        outgoingPolicyCommand.accept((PolicyCommand) policyCommand);
+    }
+
     @Override
     public void sendCommand(final Command<?> command, final TopicPath.Channel channel) {
+        //Check if command is a policy command. Else its a thing command
+        if (command instanceof PolicyCommand) {
+            sendPolicyCommand(command, channel);
+        } else {
+            sendThingCommand(command, channel);
+        }
+    }
+
+    private void sendThingCommand(final Command<?> command, final TopicPath.Channel channel) {
         Objects.requireNonNull(out);
         final DittoHeaders dittoHeaders = command.getDittoHeaders();
 
-        final MessageHeadersBuilder headersBuilder =
+        MessageHeadersBuilder headersBuilder =
                 MessageHeaders.newBuilder(MessageDirection.FROM, command.getEntityId(), command.getType())
                         .putHeaders(command.getDittoHeaders())
                         .timestamp(OffsetDateTime.now());
@@ -137,6 +154,11 @@ public class MockMessagingProvider implements MessagingProvider {
     @Override
     public void emitEvent(final Event<?> event, final TopicPath.Channel channel) {
         throw new UnsupportedOperationException("MockMessagingProvider is not able to emitEvent()");
+    }
+
+    public void onCommandSend(final Consumer<PolicyCommand> outgoingCommand) {
+        Objects.requireNonNull(outgoingCommand);
+        this.outgoingPolicyCommand = outgoingCommand;
     }
 
     public void onSend(final Consumer<Message<?>> out) {
