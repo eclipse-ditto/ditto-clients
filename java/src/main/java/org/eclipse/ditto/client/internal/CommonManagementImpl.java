@@ -40,7 +40,9 @@ import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
 import org.eclipse.ditto.client.management.CommonManagement;
 import org.eclipse.ditto.client.management.FeatureHandle;
+import org.eclipse.ditto.client.management.PolicyHandle;
 import org.eclipse.ditto.client.management.ThingHandle;
+import org.eclipse.ditto.client.management.internal.PolicyHandleImpl;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.OptionName;
@@ -50,6 +52,7 @@ import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Features;
 import org.eclipse.ditto.model.things.Thing;
@@ -213,6 +216,15 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
         argumentNotNull(featureId);
         return handlerRegistry.featureHandleForFeatureId(thingId, featureId, () ->
                 createFeatureHandle(thingId, featureId));
+    }
+
+    @Override
+    public PolicyHandle forPolicy(final PolicyId policyId) {
+        return new PolicyHandleImpl(
+                outgoingMessageFactory,
+                policyId,
+                messagingProvider,
+                responseForwarder);
     }
 
     /**

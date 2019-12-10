@@ -32,6 +32,7 @@ import org.eclipse.ditto.client.internal.ResponseForwarder;
 import org.eclipse.ditto.client.internal.SendTerminator;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
 import org.eclipse.ditto.client.management.FeatureHandle;
+import org.eclipse.ditto.client.management.PolicyHandle;
 import org.eclipse.ditto.client.management.ThingHandle;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.options.Option;
@@ -40,6 +41,7 @@ import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Features;
 import org.eclipse.ditto.model.things.Thing;
@@ -131,6 +133,15 @@ public abstract class ThingHandleImpl<T extends ThingHandle, F extends FeatureHa
                 createFeatureHandle(thingId, featureId));
     }
 
+    @Override
+    public PolicyHandle forPolicy(final String policyId) {
+        return new PolicyHandleImpl(
+                outgoingMessageFactory,
+                PolicyId.of(policyId),
+                messagingProvider,
+                responseForwarder);
+    }
+
     /**
      * Creates a {@link FeatureHandle} for the given thing and feature ids.
      *
@@ -196,6 +207,14 @@ public abstract class ThingHandleImpl<T extends ThingHandle, F extends FeatureHa
         argumentNotNull(features);
 
         final ThingCommand command = outgoingMessageFactory.setFeatures(thingId, features, options);
+        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+    }
+
+    @Override
+    public CompletableFuture<Void> setPolicy(final PolicyId policyId, final Option<?>... options) {
+        argumentNotNull(policyId);
+
+        final ThingCommand command = outgoingMessageFactory.setPolicyId(thingId, policyId, options);
         return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
     }
 

@@ -25,6 +25,7 @@ import org.eclipse.ditto.client.registration.ThingChangeRegistration;
 import org.eclipse.ditto.client.registration.ThingFeaturePropertiesChangeRegistration;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
+import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 
@@ -94,6 +95,15 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      */
     F forFeature(ThingId thingId, String featureId);
 
+    /**
+     * Creates a new instance of {@link PolicyHandle} which aggregates all operations of an already existing {@link
+     * org.eclipse.ditto.model.policies.Policy}.
+     *
+     * @param policyId the identifier of the Policy.
+     * @return the PolicyHandle for the provided {@code policyId}.
+     * @throws IllegalArgumentException if {@code policyId} is {@code null}.
+     */
+    PolicyHandle forPolicy(PolicyId policyId);
     /**
      * Start consuming changes (for {@code twin()} and additionally messages and commands (for {@code live()}.
      *

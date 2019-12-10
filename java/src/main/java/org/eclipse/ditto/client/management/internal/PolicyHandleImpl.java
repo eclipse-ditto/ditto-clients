@@ -14,26 +14,52 @@ package org.eclipse.ditto.client.management.internal;
 
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
+import org.eclipse.ditto.client.internal.ResponseForwarder;
+import org.eclipse.ditto.client.internal.SendTerminator;
 import org.eclipse.ditto.client.management.PolicyHandle;
+import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.options.Option;
-import org.eclipse.ditto.json.JsonFieldSelector;
+import org.eclipse.ditto.model.policies.PoliciesModelFactory;
 import org.eclipse.ditto.model.policies.Policy;
+import org.eclipse.ditto.model.policies.PolicyId;
+import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
 
 public class PolicyHandleImpl implements PolicyHandle {
 
+    private OutgoingMessageFactory outgoingMessageFactory;
+    private PolicyId policyId;
+    private MessagingProvider messagingProvider;
+    private ResponseForwarder responseForwarder;
+
+    public PolicyHandleImpl(
+            final OutgoingMessageFactory outgoingMessageFactory,
+            final PolicyId policyId,
+            final MessagingProvider messagingProvider,
+            final ResponseForwarder responseForwarder) {
+        this.outgoingMessageFactory = outgoingMessageFactory;
+        this.policyId = policyId;
+        this.messagingProvider = messagingProvider;
+        this.responseForwarder = responseForwarder;
+    }
+
     @Override
     public CompletableFuture<Void> delete(final Option<?>... options) {
-        return null;
+        final PolicyCommand command = outgoingMessageFactory.deletePolicy(policyId, options);
+        return new SendTerminator<>(messagingProvider, responseForwarder, command).applyVoid();
     }
 
     @Override
     public CompletableFuture<Policy> retrieve() {
-        return null;
-    }
-
-    @Override
-    public CompletableFuture<Policy> retrieve(final JsonFieldSelector fieldSelector) {
-        return null;
+        final PolicyCommand command = outgoingMessageFactory.retrievePolicy(policyId);
+        return new SendTerminator<Policy>(messagingProvider, responseForwarder, command).applyView(pvr ->
+        {
+            if (pvr != null) {
+                return PoliciesModelFactory.newPolicy(pvr.getEntity(pvr.getImplementedSchemaVersion()).asObject());
+            } else {
+                return null;
+            }
+        });
     }
 
 }

@@ -19,6 +19,8 @@ import org.eclipse.ditto.client.registration.FeatureChangeRegistration;
 import org.eclipse.ditto.client.registration.ThingAttributeChangeRegistration;
 import org.eclipse.ditto.client.registration.ThingChangeRegistration;
 import org.eclipse.ditto.json.JsonFieldSelector;
+import org.eclipse.ditto.model.policies.Policy;
+import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Features;
 import org.eclipse.ditto.model.things.Thing;
@@ -69,6 +71,16 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
     F forFeature(String featureId);
 
     /**
+     * Creates a new instance of {@link PolicyHandle} which aggregates all operations of an already existing {@link
+     * Policy} specified by the given identifier.
+     *
+     * @param policyId the identifier of the Feature to create the handle for.
+     * @return the handle for the provided {@code policyId}.
+     * @throws IllegalArgumentException if {@code policyId} is {@code null}.
+     */
+    PolicyHandle forPolicy(String policyId);
+
+    /**
      * Deletes the {@code Thing} object being handled by this {@code ThingHandle}.
      *
      * @param options options to be applied configuring behaviour of this method, see {@link
@@ -94,6 +106,18 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      */
     CompletableFuture<Thing> retrieve(JsonFieldSelector fieldSelector);
+
+    /**
+     * Sets the given {@code Policy} to this Thing. All existing Features are replaced.
+     *
+     * @param policyId the PolicyId of the Policy to be set.
+     * @param options options to be applied configuring behaviour of this method, see {@link
+     * org.eclipse.ditto.client.options.Options}.
+     * @return completable future for handling the result of the operation or a specific {@link
+     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * @throws IllegalArgumentException if {@code features} is {@code null}.
+     */
+    CompletableFuture<Void> setPolicy(PolicyId policyId, Option<?>... options);
 
     /**
      * Sets the given {@code Features} to this Thing. All existing Features are replaced.

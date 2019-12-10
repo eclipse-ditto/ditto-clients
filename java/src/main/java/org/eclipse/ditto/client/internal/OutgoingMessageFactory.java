@@ -275,6 +275,11 @@ public final class OutgoingMessageFactory {
         return ModifyFeatures.of(thingId, features, buildDittoHeaders(true, options));
     }
 
+    public ThingCommand setPolicyId(final ThingId thingId, final PolicyId policyId, final Option<?>... options) {
+        final Thing thing = Thing.newBuilder().setId(thingId).setPolicyId(policyId).build();
+        return ModifyThing.of(thingId, thing, null, null, buildDittoHeaders(true, options));
+    }
+
     public ThingCommand retrieveFeature(final ThingId thingId, final String featureId, final Option<?>... options) {
         return RetrieveFeature.of(thingId, featureId, buildDittoHeaders(false, options));
     }

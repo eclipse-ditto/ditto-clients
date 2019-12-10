@@ -15,7 +15,6 @@ package org.eclipse.ditto.client.management;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.ditto.client.options.Option;
-import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.model.policies.Policy;
 
 /**
@@ -60,13 +59,4 @@ public interface PolicyHandle {
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      */
     CompletableFuture<Policy> retrieve();
-
-    /**
-     * Retrieve the {@code Policy} object being handled by this {@code PolicyHandle}.
-     *
-     * @param fieldSelector a field selector object allowing to select a subset of fields on the Policy to be retrieved.
-     * @return completable future providing the requested {@link org.eclipse.ditto.model.policies.Policy} or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
-     */
-    CompletableFuture<Policy> retrieve(JsonFieldSelector fieldSelector);
 }

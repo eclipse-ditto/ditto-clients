@@ -173,7 +173,8 @@ public class PoliciesImpl implements Policies {
     @Override
     public CompletableFuture<Policy> retrieve(PolicyId policyId) {
         final PolicyCommand command = outgoingMessageFactory.retrievePolicy(policyId);
-        return new SendTerminator<Policy>(messagingProvider, responseForwarder, command).applyView(pvr ->
+        return new SendTerminator<Policy>(messagingProvider, responseForwarder, command).applyViewWithPolicyResponse(
+                pvr ->
         {
             if (pvr != null) {
                 return PoliciesModelFactory.newPolicy(pvr.getEntity(pvr.getImplementedSchemaVersion()).asObject());
