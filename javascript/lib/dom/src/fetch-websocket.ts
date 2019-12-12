@@ -12,14 +12,14 @@
  */
 
 import {
+  authenticateWithUrl,
   AuthProvider,
   DittoURL,
-  authenticateWithUrl,
   ResponseHandler,
   WebSocketImplementation,
   WebSocketImplementationBuilderHandler,
   WebSocketImplementationBuilderUrl
-} from '@eclipse-ditto/ditto-javascript-client-api_1.0-pre';
+} from '@eclipse-ditto/ditto-javascript-client-api_1.0';
 
 /**
  * Browser implementation of a web socket requester.
