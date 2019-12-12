@@ -12,8 +12,8 @@
  */
 
 
+import { DittoURL, ImmutableURL } from '@eclipse-ditto/ditto-javascript-client-api_1.0';
 import { DomBase64Encoder, DomHttpBasicAuth, DomWebSocketBasicAuth } from '../src/dom-auth';
-import { DittoURL, ImmutableURL } from '@eclipse-ditto/ditto-javascript-client-api_1.0-pre';
 
 const USERNAME = 'ditto';
 const PASSWORD = 'foo$bar';
