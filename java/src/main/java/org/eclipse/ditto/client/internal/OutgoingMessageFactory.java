@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
+
 import org.eclipse.ditto.client.live.messages.MessageSerializationException;
 import org.eclipse.ditto.client.live.messages.MessageSerializer;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
@@ -108,37 +110,61 @@ public final class OutgoingMessageFactory {
         return new OutgoingMessageFactory(jsonSchemaVersion);
     }
 
-    public ThingCommand createThing(final Thing thing, final Option<?>... options) {
-        logWarningsForAclPolicyUsage(thing);
-        return CreateThing.of(thing, null, buildDittoHeaders(false, options));
-    }
-
     /**
-     * @param thing the thing to be put (which may be created or updated).
+     * @param thing the thing to be created.
      * @param options options to be applied configuring behaviour of this method.
      * @return the ThingCommand
      * @throws NullPointerException if any argument is {@code null}.
      * @throws IllegalArgumentException if {@code thing} has no identifier.
      */
+    public ThingCommand createThing(final Thing thing, final Option<?>... options) {
+        return createThing(thing, null, options);
+    }
+
+    public ThingCommand createThing(final Thing thing, @Nullable JsonObject initialPolicy, final Option<?>... options) {
+        logWarningsForAclPolicyUsage(thing);
+
+        return CreateThing.of(thing, initialPolicy, buildDittoHeaders(false, options));
+    }
+
+
     public ThingCommand putThing(final Thing thing, final Option<?>... options) {
+        return putThing(thing, null, options);
+    }
+    /**
+     * @param thing the thing to be put (which may be created or updated).
+     * @param initialPolicy the Policy which will be applied.
+     * @param options options to be applied configuring behaviour of this method.
+     * @return the ThingCommand
+     * @throws NullPointerException if any argument is {@code null}.
+     * @throws IllegalArgumentException if {@code thing} has no identifier.
+     */
+    public ThingCommand putThing(final Thing thing, @Nullable final JsonObject initialPolicy,
+            final Option<?>... options) {
         checkNotNull(thing, "thing");
         final ThingId thingId = thing.getEntityId().orElseThrow(() -> new IllegalArgumentException("Thing had no ID!"));
 
         logWarningsForAclPolicyUsage(thing);
 
         final DittoHeaders headers = buildDittoHeaders(true, options);
-        return ModifyThing.of(thingId, thing, null, headers);
+
+        return ModifyThing.of(thingId, thing, initialPolicy, headers);
+    }
+
+    public ThingCommand updateThing(final Thing thing, final Option<?>... options) {
+        return updateThing(thing, null, options);
     }
 
     /**
      * @param thing the thing to be updated.
+     * @param initialPolicy the Policy which will be applied.
      * @param options options to be applied configuring behaviour of this method.
      * @return the ThingCommand
      * @throws NullPointerException if any argument is {@code null}.
      * @throws IllegalArgumentException if {@code thing} has no identifier.
      * @throws UnsupportedOperationException if an invalid option has been specified.
      */
-    public ThingCommand updateThing(final Thing thing, final Option<?>... options) {
+    public ThingCommand updateThing(final Thing thing, @Nullable JsonObject initialPolicy, final Option<?>... options) {
         checkNotNull(thing, "thing");
         final ThingId thingId = thing.getEntityId().orElseThrow(() -> new IllegalArgumentException("Thing had no ID!"));
 
@@ -148,7 +174,8 @@ public final class OutgoingMessageFactory {
         final DittoHeaders headers = headersWithoutIfMatch.toBuilder()
                 .ifMatch(ASTERISK)
                 .build();
-        return ModifyThing.of(thingId, thing, null, headers);
+
+        return ModifyThing.of(thingId, thing, initialPolicy, headers);
     }
 
     private void logWarningsForAclPolicyUsage(final Thing thing) {

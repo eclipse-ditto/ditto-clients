@@ -234,6 +234,43 @@ public final class TestConstants {
         private Thing() {
             throw new AssertionError();
         }
+
+        /**
+         * Known inline Policy JsonObject.
+         */
+        public static final JsonObject INLINE_POLICY_JSON_OBJECT = JsonObject.of(
+                "{\n" +
+                        "  \"_policy\": {\n" +
+                        "    \"entries\": {\n" +
+                        "      \"DEVICE\": {\n" +
+                        "        \"{{ request:subjectId }}\": {\n" +
+                        "          \"type\": \"suite-auth\"\n" +
+                        "        }\n" +
+                        "      },\n" +
+                        "      \"resources\": {\n" +
+                        "        \"thing:/\": {\n" +
+                        "          \"grant\": [\n" +
+                        "            \"READ\",\n" +
+                        "            \"WRITE\"\n" +
+                        "          ],\n" +
+                        "          \"revoke\": []\n" +
+                        "        },\n" +
+                        "        \"message:/\": {\n" +
+                        "          \"grant\": [\n" +
+                        "            \"READ\",\n" +
+                        "            \"WRITE\"\n" +
+                        "          ],\n" +
+                        "          \"revoke\": []\n" +
+                        "        }\n" +
+                        "      }\n" +
+                        "    }\n" +
+                        "  }\n" +
+                        "}");
+
+        public static final JsonObject INLINE_POLICY = INLINE_POLICY_JSON_OBJECT.toBuilder()
+                .set("thingId", THING_ID.toString())
+                .set("policyId", POLICY_ID)
+                .build();
     }
 
     /**
@@ -247,74 +284,49 @@ public final class TestConstants {
         public static final String POLICY_ID = "policy.namespace:policyName";
 
         /**
-         * Known Policy in jsonObject.
+         * Known Policy in JsonObject.
          */
-        public static final JsonObject JSON_OBJECT = JsonFactory.readFrom("{\n" +
-                "    \"policyId\": \"policy.namespace:policyName\",\n" +
-                "    \"entries\": {\n" +
-                "      \"owner\": {\n" +
-                "        \"subjects\": {\n" +
-                "          \"iot-permissions:8c36bc60-1234-1234-1234-4ed6ce7ed64c\": {\n" +
-                "            \"type\": \"iot-permissions-userid\"\n" +
-                "          }\n" +
-                "        },\n" +
-                "        \"resources\": {\n" +
-                "          \"thing:/\": {\n" +
-                "            \"grant\": [\"READ\", \"WRITE\"],\n" +
-                "            \"revoke\": []\n" +
-                "          },\n" +
-                "          \"policy:/\": {\n" +
-                "            \"grant\": [\"READ\", \"WRITE\"],\n" +
-                "            \"revoke\": []\n" +
-                "          },\n" +
-                "          \"message:/\": {\n" +
-                "            \"grant\": [\"READ\", \"WRITE\"],\n" +
-                "            \"revoke\": []\n" +
-                "          }\n" +
+        public static final JsonObject POLICY_JSON_OBJECT = JsonObject.of("{\n" +
+                "  \"entries\": {\n" +
+                "    \"DEVICE\": {\n" +
+                "      \"subjects\": {\n" +
+                "        \"{{ request:subjectId }}\": {\n" +
+                "          \"type\": \"suite-auth\"\n" +
                 "        }\n" +
                 "      },\n" +
-                "      \"observer\": {\n" +
-                "        \"subjects\": {\n" +
-                "          \"iot-things:eebbb40e-1234-1234-1234-f79a4653946b:observer-client\": {\n" +
-                "            \"type\": \"iot-things-clientid\"\n" +
-                "          },\n" +
-                "          \"iot-permissions:93f24210-1234-1234-1234-620a03644e93\": {\n" +
-                "            \"type\": \"iot-permissions-groupid\"\n" +
-                "          }\n" +
+                "      \"resources\": {\n" +
+                "        \"policy:/\": {\n" +
+                "          \"grant\": [\n" +
+                "            \"READ\",\n" +
+                "            \"WRITE\"\n" +
+                "          ],\n" +
+                "          \"revoke\": []\n" +
                 "        },\n" +
-                "        \"resources\": {\n" +
-                "          \"thing:/features/featureX\": {\n" +
-                "            \"grant\": [\"READ\"],\n" +
-                "            \"revoke\": []\n" +
-                "          },\n" +
-                "          \"thing:/features/featureY\": {\n" +
-                "            \"grant\": [\"READ\"],\n" +
-                "            \"revoke\": []\n" +
-                "          }\n" +
-                "        }\n" +
-                "      },\n" +
-                "      \"private\": {\n" +
-                "        \"subjects\": {\n" +
-                "          \"iot-permissions:93f24210-1234-1234-1234-620a03644e93\": {\n" +
-                "            \"type\": \"iot-permissions-groupid\"\n" +
-                "          }\n" +
+                "        \"thing:/\": {\n" +
+                "          \"grant\": [\n" +
+                "            \"READ\",\n" +
+                "            \"WRITE\"\n" +
+                "          ],\n" +
+                "          \"revoke\": []\n" +
                 "        },\n" +
-                "        \"resources\": {\n" +
-                "          \"thing:/features/featureX/properties/location/city\": {\n" +
-                "            \"grant\": [],\n" +
-                "            \"revoke\": [\"READ\"]\n" +
-                "          }\n" +
+                "        \"message:/\": {\n" +
+                "          \"grant\": [\n" +
+                "            \"READ\",\n" +
+                "            \"WRITE\"\n" +
+                "          ],\n" +
+                "          \"revoke\": []\n" +
                 "        }\n" +
                 "      }\n" +
                 "    }\n" +
-                "  }").asObject();
+                "  }\n" +
+                "}");
 
 
         /**
-         * Known Policy created from jsonObject.
+         * Known Policy created from known jsonObject.
          */
         public static final org.eclipse.ditto.model.policies.Policy POLICY =
-                PoliciesModelFactory.newPolicy(JSON_OBJECT);
+                PoliciesModelFactory.newPolicy(POLICY_JSON_OBJECT);
 
     }
 

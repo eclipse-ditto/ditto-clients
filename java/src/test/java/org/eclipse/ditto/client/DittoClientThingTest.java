@@ -13,6 +13,8 @@
 package org.eclipse.ditto.client;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_JSON_OBJECT;
+import static org.eclipse.ditto.client.TestConstants.Thing.INLINE_POLICY;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
@@ -20,9 +22,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 
 import org.assertj.core.api.Assertions;
-import org.eclipse.ditto.client.registration.DuplicateRegistrationIdException;
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
 import org.eclipse.ditto.client.options.Options;
+import org.eclipse.ditto.client.registration.DuplicateRegistrationIdException;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.base.auth.AuthorizationModelFactory;
@@ -316,4 +318,75 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
     }
 
+    @Test
+    public void testCreateThingWithInlinePolicy() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING_ID)
+                    .hasInitialPolicy()
+                    .hasNoConditionalHeaders();
+
+            latch.countDown();
+        });
+
+        client.twin().create(INLINE_POLICY);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testCreateThingWithInitialPolicy() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING_ID)
+                    .hasInitialPolicy()
+                    .hasNoConditionalHeaders();
+
+            latch.countDown();
+        });
+
+        client.twin().create(THING_ID, POLICY_JSON_OBJECT);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testPutThingWithInitialPolicy() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING_ID)
+                    .hasInitialPolicy()
+                    .hasNoConditionalHeaders();
+
+            latch.countDown();
+        });
+
+        client.twin().put(THING, POLICY_JSON_OBJECT);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testUpdateThingWithInitialPolicy() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING_ID)
+                    .hasInitialPolicy()
+                    .hasOnlyIfMatchHeader();
+
+            latch.countDown();
+        });
+
+        client.twin().update(THING, POLICY_JSON_OBJECT);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
 }

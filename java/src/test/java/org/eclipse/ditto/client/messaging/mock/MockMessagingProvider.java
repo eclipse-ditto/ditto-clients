@@ -117,7 +117,7 @@ public class MockMessagingProvider implements MessagingProvider {
 
     @Override
     public void sendCommand(final Command<?> command, final TopicPath.Channel channel) {
-        //Check if command is a policy command. Else its a thing command
+        //Check if command is a PolicyCommand. Else its a ThingCommand
         if (command instanceof PolicyCommand) {
             sendPolicyCommand(command, channel);
         } else {

@@ -13,9 +13,9 @@
 package org.eclipse.ditto.client;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.eclipse.ditto.client.TestConstants.Policy.JSON_OBJECT;
 import static org.eclipse.ditto.client.TestConstants.Policy.POLICY;
 import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_ID;
+import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_JSON_OBJECT;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
 import java.util.concurrent.CountDownLatch;
@@ -67,7 +67,7 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
             latch.countDown();
         });
 
-        client.policies().put(JSON_OBJECT);
+        client.policies().put(POLICY_JSON_OBJECT);
 
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
     }
@@ -84,7 +84,7 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
             latch.countDown();
         });
 
-        client.policies().put(JSON_OBJECT, Options.Modify.exists(false));
+        client.policies().put(POLICY_JSON_OBJECT, Options.Modify.exists(false));
 
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
     }

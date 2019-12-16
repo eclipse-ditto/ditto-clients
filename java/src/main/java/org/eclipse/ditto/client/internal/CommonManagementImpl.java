@@ -28,6 +28,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.FeatureChange;
 import org.eclipse.ditto.client.changes.FeaturesChange;
@@ -74,6 +76,8 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
         CommonManagement<T, F> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonManagementImpl.class);
+
+    private static final String INLINE_POLICY_KEY = "_policy";
 
     private final TopicPath.Channel channel;
     private final MessagingProvider messagingProvider;
@@ -272,17 +276,53 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
     public CompletableFuture<Thing> create(final JsonObject jsonObject, final Option<?>... options) {
         argumentNotNull(jsonObject);
 
+        JsonObject initialPolciy = null;
+        if (jsonObject.getValue(INLINE_POLICY_KEY).isPresent()) {
+            initialPolciy = jsonObject.getValue(INLINE_POLICY_KEY).get().asObject();
+            jsonObject.remove(INLINE_POLICY_KEY);
+        }
+
         final Thing thing = ThingsModelFactory.newThing(jsonObject);
-        return create(thing, options);
+        return create(thing, initialPolciy, options);
+    }
+
+    @Override
+    public CompletableFuture<Thing> create(final ThingId thingId, JsonObject initialPolicy,
+            final Option<?>... options) {
+        argumentNotNull(thingId);
+        argumentNotEmpty(thingId);
+        argumentNotNull(initialPolicy);
+
+        final Thing thing = ThingsModelFactory.newThingBuilder()
+                .setId(ThingId.of(thingId))
+                .build();
+        return create(thing, initialPolicy, options);
+    }
+
+    @Override
+    public CompletableFuture<Thing> create(final JsonObject jsonObject, JsonObject initialPolicy,
+            final Option<?>... options) {
+        argumentNotNull(jsonObject);
+        argumentNotNull(initialPolicy);
+
+        final Thing thing = ThingsModelFactory.newThing(jsonObject);
+
+        return create(thing, initialPolicy, options);
     }
 
     @Override
     public CompletableFuture<Optional<Thing>> put(final Thing thing, final Option<?>... options) {
+        return put(thing, null, options);
+    }
+
+    @Override
+    public CompletableFuture<Optional<Thing>> put(final Thing thing, @Nullable final JsonObject initialPolicy,
+            final Option<?>... options) {
         argumentNotNull(thing);
         assertThatThingHasId(thing);
 
         return new SendTerminator<Optional<Thing>>(messagingProvider, responseForwarder, channel,
-                outgoingMessageFactory.putThing(thing, options)).applyModify(response -> {
+                outgoingMessageFactory.putThing(thing, initialPolicy, options)).applyModify(response -> {
             if (response != null) {
                 final Optional<JsonValue> responseEntityOpt =
                         response.getEntity(response.getImplementedSchemaVersion());
@@ -302,33 +342,75 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
     public CompletableFuture<Optional<Thing>> put(final JsonObject jsonObject, final Option<?>... options) {
         argumentNotNull(jsonObject);
 
+        JsonObject initialPolciy = null;
+        if (jsonObject.getValue(INLINE_POLICY_KEY).isPresent()) {
+            initialPolciy = jsonObject.getValue(INLINE_POLICY_KEY).get().asObject();
+            jsonObject.remove(INLINE_POLICY_KEY);
+        }
+
         final Thing thing = ThingsModelFactory.newThing(jsonObject);
-        return put(thing, options);
+        return put(thing, initialPolciy, options);
+    }
+
+    @Override
+    public CompletableFuture<Optional<Thing>> put(final JsonObject jsonObject, final JsonObject initialPolicy,
+            final Option<?>... options) {
+        argumentNotNull(jsonObject);
+
+        final Thing thing = ThingsModelFactory.newThing(jsonObject);
+        return put(thing, initialPolicy, options);
     }
 
     @Override
     public CompletableFuture<Void> update(final Thing thing, final Option<?>... options) {
+        return update(thing, null, options);
+    }
+
+    @Override
+    public CompletableFuture<Void> update(final Thing thing, @Nullable final JsonObject initialPolicy,
+            final Option<?>... options) {
         argumentNotNull(thing);
         assertThatThingHasId(thing);
 
         return new SendTerminator<Void>(messagingProvider, responseForwarder, channel,
-                outgoingMessageFactory.updateThing(thing, options)).applyVoid();
+                outgoingMessageFactory.updateThing(thing, initialPolicy, options)).applyVoid();
     }
 
     @Override
     public CompletableFuture<Void> update(final JsonObject jsonObject, final Option<?>... options) {
         argumentNotNull(jsonObject);
 
+        JsonObject initialPolciy = null;
+        if (jsonObject.getValue(INLINE_POLICY_KEY).isPresent()) {
+            initialPolciy = jsonObject.getValue(INLINE_POLICY_KEY).get().asObject();
+            jsonObject.remove(INLINE_POLICY_KEY);
+        }
+
         final Thing thing = ThingsModelFactory.newThing(jsonObject);
-        return update(thing, options);
+        return update(thing, initialPolciy, options);
+    }
+
+    @Override
+    public CompletableFuture<Void> update(final JsonObject jsonObject, final JsonObject initialPolicy,
+            final Option<?>... options) {
+        argumentNotNull(jsonObject);
+
+        final Thing thing = ThingsModelFactory.newThing(jsonObject);
+        return update(thing, initialPolicy, options);
     }
 
     @Override
     public CompletableFuture<Thing> create(final Thing thing, final Option<?>... options) {
+        return create(thing, null, options);
+    }
+
+    @Override
+    public CompletableFuture<Thing> create(final Thing thing, @Nullable JsonObject initialPolicy,
+            final Option<?>... options) {
         argumentNotNull(thing);
         assertThatThingHasId(thing);
 
-        final ThingCommand command = outgoingMessageFactory.createThing(thing, options);
+        final ThingCommand command = outgoingMessageFactory.createThing(thing, initialPolicy, options);
 
         return new SendTerminator<Thing>(messagingProvider, responseForwarder, channel, command)
                 .applyModify(response -> {

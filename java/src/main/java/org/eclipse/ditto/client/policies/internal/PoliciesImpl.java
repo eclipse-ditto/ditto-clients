@@ -121,7 +121,8 @@ public class PoliciesImpl implements Policies {
         assertThatPolicyHasId(policy);
 
         return new SendTerminator<Optional<Policy>>(messagingProvider, responseForwarder,
-                outgoingMessageFactory.putPolicy(policy, options)).applyModify(response -> {
+                outgoingMessageFactory.putPolicy(policy, options))
+                .applyModify(response -> {
             if (response != null) {
                 final Optional<JsonValue> responseEntityOpt =
                         response.getEntity(response.getImplementedSchemaVersion());
