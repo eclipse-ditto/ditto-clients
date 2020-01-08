@@ -17,10 +17,14 @@ import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.Vector;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -29,6 +33,7 @@ import org.eclipse.ditto.client.live.messages.MessageSerializer;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.live.messages.MessageSerializers;
 import org.eclipse.ditto.client.options.Option;
+import org.eclipse.ditto.client.options.OptionName;
 import org.eclipse.ditto.client.options.internal.OptionsEvaluator;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonObject;
@@ -94,6 +99,14 @@ public final class OutgoingMessageFactory {
 
     private final JsonSchemaVersion jsonSchemaVersion;
 
+    private static Vector<OptionName.Modify> COLLECTION = new Vector<>();
+
+    static {
+        COLLECTION.add(OptionName.Modify.COPY_POLICY);
+        COLLECTION.add(OptionName.Modify.COPY_POLICY_FROM_THING);
+    }
+
+
     private OutgoingMessageFactory(final JsonSchemaVersion jsonSchemaVersion) {
         this.jsonSchemaVersion = jsonSchemaVersion;
     }
@@ -121,16 +134,56 @@ public final class OutgoingMessageFactory {
         return createThing(thing, null, options);
     }
 
+    /**
+     * @param thing the thing to be created.
+     * @param initialPolicy the Policy which will be applied.
+     * @param options options to be applied configuring behaviour of this method.
+     * @return the ThingCommand
+     * @throws NullPointerException if any argument is {@code null}.
+     * @throws IllegalArgumentException if {@code thing} has no identifier.
+     */
     public ThingCommand createThing(final Thing thing, @Nullable JsonObject initialPolicy, final Option<?>... options) {
         logWarningsForAclPolicyUsage(thing);
 
-        return CreateThing.of(thing, initialPolicy, buildDittoHeaders(false, options));
+        // create the filter condition for options
+        Predicate<Option> byOptionName =
+                option -> option.getName().equals(COLLECTION.get(0)) || option.getName().equals(COLLECTION.get(1));
+
+        final List<Option> collect = Arrays.stream(options).filter(byOptionName).collect(Collectors.toList());
+
+        if (collect.containsAll(COLLECTION)) {
+            throw new IllegalArgumentException(
+                    "It is not allowed to set option \"COPY_POLICY\" and \"COPY_POLICY_FROM_THING\" at the same time");
+        }
+
+        if (collect.isEmpty()) {
+            return CreateThing.of(thing, initialPolicy, buildDittoHeaders(false, options));
+        } else {
+            return createThingWithCopiedPolicy(thing, collect, options);
+        }
     }
 
+    private ThingCommand createThingWithCopiedPolicy(final Thing thing, final List<Option> collect,
+            final Option<?>[] options) {
+
+        final Option policyIdOrThingId = collect.get(0);
+        final String policyExtractedFromOption;
+
+        if (policyIdOrThingId.getName().toString().equals(COLLECTION.get(0).name())) {
+            policyExtractedFromOption = ((PolicyId) policyIdOrThingId.getValue()).toString();
+            return CreateThing.withCopiedPolicy(thing, policyExtractedFromOption, buildDittoHeaders(false, options));
+        } else {
+            policyExtractedFromOption =
+                    "{{ ref:things/" + ((ThingId) policyIdOrThingId.getValue()).toString() + "/policyId }}";
+            return CreateThing.withCopiedPolicy(thing, policyExtractedFromOption, buildDittoHeaders(false, options));
+        }
+
+    }
 
     public ThingCommand putThing(final Thing thing, final Option<?>... options) {
         return putThing(thing, null, options);
     }
+
     /**
      * @param thing the thing to be put (which may be created or updated).
      * @param initialPolicy the Policy which will be applied.
