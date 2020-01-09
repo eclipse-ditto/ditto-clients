@@ -145,39 +145,14 @@ public final class OutgoingMessageFactory {
     public ThingCommand createThing(final Thing thing, @Nullable JsonObject initialPolicy, final Option<?>... options) {
         logWarningsForAclPolicyUsage(thing);
 
-        // create the filter condition for options
-        Predicate<Option> byOptionName =
-                option -> option.getName().equals(COLLECTION.get(0)) || option.getName().equals(COLLECTION.get(1));
-
-        final List<Option> collect = Arrays.stream(options).filter(byOptionName).collect(Collectors.toList());
-
-        if (collect.containsAll(COLLECTION)) {
-            throw new IllegalArgumentException(
-                    "It is not allowed to set option \"COPY_POLICY\" and \"COPY_POLICY_FROM_THING\" at the same time");
-        }
+        final List<Option> collect = fitlerOptions(initialPolicy, options);
 
         if (collect.isEmpty()) {
             return CreateThing.of(thing, initialPolicy, buildDittoHeaders(false, options));
         } else {
-            return createThingWithCopiedPolicy(thing, collect, options);
+            final String extractPolicyFromOption = extractPolicyFromoption(collect);
+            return CreateThing.withCopiedPolicy(thing, extractPolicyFromOption, buildDittoHeaders(false, options));
         }
-    }
-
-    private ThingCommand createThingWithCopiedPolicy(final Thing thing, final List<Option> collect,
-            final Option<?>[] options) {
-
-        final Option policyIdOrThingId = collect.get(0);
-        final String policyExtractedFromOption;
-
-        if (policyIdOrThingId.getName().toString().equals(COLLECTION.get(0).name())) {
-            policyExtractedFromOption = ((PolicyId) policyIdOrThingId.getValue()).toString();
-            return CreateThing.withCopiedPolicy(thing, policyExtractedFromOption, buildDittoHeaders(false, options));
-        } else {
-            policyExtractedFromOption =
-                    "{{ ref:things/" + ((ThingId) policyIdOrThingId.getValue()).toString() + "/policyId }}";
-            return CreateThing.withCopiedPolicy(thing, policyExtractedFromOption, buildDittoHeaders(false, options));
-        }
-
     }
 
     public ThingCommand putThing(final Thing thing, final Option<?>... options) {
@@ -199,9 +174,16 @@ public final class OutgoingMessageFactory {
 
         logWarningsForAclPolicyUsage(thing);
 
+        final List<Option> collect = fitlerOptions(initialPolicy, options);
+
         final DittoHeaders headers = buildDittoHeaders(true, options);
 
-        return ModifyThing.of(thingId, thing, initialPolicy, headers);
+        if (collect.isEmpty()) {
+            return ModifyThing.of(thingId, thing, initialPolicy, headers);
+        } else {
+            final String extractPolicyFromOption = extractPolicyFromoption(collect);
+            return ModifyThing.withCopiedPolicy(thingId, thing, extractPolicyFromOption, headers);
+        }
     }
 
     public ThingCommand updateThing(final Thing thing, final Option<?>... options) {
@@ -228,7 +210,45 @@ public final class OutgoingMessageFactory {
                 .ifMatch(ASTERISK)
                 .build();
 
-        return ModifyThing.of(thingId, thing, initialPolicy, headers);
+        final List<Option> collect = fitlerOptions(initialPolicy, options);
+
+        if (collect.isEmpty()) {
+            return ModifyThing.of(thingId, thing, initialPolicy, headers);
+        } else {
+            final String extractPolicyFromOption = extractPolicyFromoption(collect);
+            return ModifyThing.withCopiedPolicy(thingId, thing, extractPolicyFromOption, headers);
+        }
+    }
+
+    private String extractPolicyFromoption(final List<Option> collect) {
+        final Option policyIdOrThingId = collect.get(0);
+        final String policyExtractedFromOption;
+
+        if (policyIdOrThingId.getName().toString().equals(COLLECTION.get(0).name())) {
+            policyExtractedFromOption = ((PolicyId) policyIdOrThingId.getValue()).toString();
+        } else {
+            policyExtractedFromOption =
+                    "{{ ref:things/" + ((ThingId) policyIdOrThingId.getValue()).toString() + "/policyId }}";
+        }
+        return policyExtractedFromOption;
+    }
+
+    private List<Option> fitlerOptions(@Nullable JsonObject initialPolicy, final Option<?>... options) {
+        // create the filter condition for options
+        Predicate<Option> byOptionName =
+                option -> option.getName().equals(COLLECTION.get(0)) || option.getName().equals(COLLECTION.get(1));
+
+        final List<Option> collect = Arrays.stream(options).filter(byOptionName).collect(Collectors.toList());
+
+        if (collect.size() == COLLECTION.size()) {
+            throw new IllegalArgumentException(
+                    "It is not allowed to set option \"COPY_POLICY\" and \"COPY_POLICY_FROM_THING\" at the same time");
+        }
+        if (!collect.isEmpty() && initialPolicy != null) {
+            throw new IllegalArgumentException(
+                    "It is not allowed to set option \"COPY_POLICY\" or \"COPY_POLICY_FROM_THING\" and a initialPolicy at the same time");
+        }
+        return collect;
     }
 
     private void logWarningsForAclPolicyUsage(final Thing thing) {
