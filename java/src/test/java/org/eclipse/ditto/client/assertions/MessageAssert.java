@@ -67,6 +67,21 @@ public final class MessageAssert extends AbstractAssert<MessageAssert, Message<?
         return this;
     }
 
+    public MessageAssert hasOptionCopyPolicy() {
+        assertThat(((ThingCommand) actual.getPayload().get()).toJson().get(JsonPointer.of("policyIdOrPlaceholder")))
+                .overridingErrorMessage("Thing does not have initial policy which is expected")
+                .isEqualTo(JsonObject.of("{\"policyIdOrPlaceholder\":\"policy.namespace:policyName\"}"));
+        return this;
+    }
+
+    public MessageAssert hasOptionCopyPolicyFromThing() {
+        assertThat(((ThingCommand) actual.getPayload().get()).toJson().get(JsonPointer.of("policyIdOrPlaceholder")))
+                .overridingErrorMessage("Thing does not have initial policy which is expected")
+                .isEqualTo(JsonObject.of(
+                        "{\"policyIdOrPlaceholder\":\"{{ ref:things/example.com:testThing/policyId }}\"}"));
+        return this;
+    }
+
     public MessageAssert hasFeatureId(final String expectedFeatureId) {
         return assertThatEqual(expectedFeatureId, actual.getFeatureId(), "Feature identifier");
     }

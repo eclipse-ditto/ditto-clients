@@ -13,9 +13,11 @@
 package org.eclipse.ditto.client;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_ID;
 import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_JSON_OBJECT;
 import static org.eclipse.ditto.client.TestConstants.Thing.INLINE_POLICY;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
+import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID_COPY_POLICY;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
 import java.util.concurrent.CountDownLatch;
@@ -23,6 +25,7 @@ import java.util.concurrent.Semaphore;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
+import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.client.registration.DuplicateRegistrationIdException;
 import org.eclipse.ditto.json.JsonFactory;
@@ -34,6 +37,7 @@ import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
+import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
@@ -61,6 +65,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
 
     private static final Thing THING = ThingsModelFactory.newThingBuilder()
             .setId(THING_ID)
+            .setPolicyId(POLICY_ID)
             .setAttribute(ATTRIBUTE_KEY_NEW, JsonFactory.newValue(ATTRIBUTE_VALUE))
             .setFeature(FEATURE)
             .build();
@@ -388,5 +393,131 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
         client.twin().update(THING, POLICY_JSON_OBJECT);
 
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testCreateThingWithOptionCopyPolicy() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING_ID_COPY_POLICY)
+                    .hasOptionCopyPolicy()
+                    .hasNoConditionalHeaders();
+
+            latch.countDown();
+        });
+
+        Option copyPolicy = Options.Modify.copyPolicy(PolicyId.of(THING.getPolicyId().get()));
+        client.twin().create(THING_ID_COPY_POLICY, copyPolicy);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testCreateThingWithOptionCopyFromThing() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING_ID_COPY_POLICY)
+                    .hasOptionCopyPolicyFromThing()
+                    .hasNoConditionalHeaders();
+
+            latch.countDown();
+        });
+
+        Option copyPolicy = Options.Modify.copyPolicyFromThing(THING_ID);
+        client.twin().create(THING_ID_COPY_POLICY, copyPolicy);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testCreateThingWithJsonInlineAndOptionInlinePolicy() {
+        Option copyPolicy = Options.Modify.copyPolicy(PolicyId.of(THING.getPolicyId().get()));
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.twin().create(THING_ID_COPY_POLICY, POLICY_JSON_OBJECT, copyPolicy));
+    }
+
+    @Test
+    public void testCreateThingWithAllOptionInlinePolicy() {
+        Option copyPolicyFromThing = Options.Modify.copyPolicyFromThing(THING_ID);
+        Option copyPolicy = Options.Modify.copyPolicy(PolicyId.of(THING.getPolicyId().get()));
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.twin().create(THING_ID_COPY_POLICY, copyPolicy, copyPolicyFromThing));
+    }
+
+    @Test
+    public void testPutThingWithOptionCopyPolicy() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING.getEntityId().get())
+                    .hasOptionCopyPolicy()
+                    .hasNoConditionalHeaders();
+
+            latch.countDown();
+        });
+
+        Option copyPolicy = Options.Modify.copyPolicy(PolicyId.of(THING.getPolicyId().get()));
+        client.twin().put(THING, copyPolicy);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testPutThingWithJsonInlineAndOptionInlinePolicy() {
+        Option copyPolicy = Options.Modify.copyPolicy(PolicyId.of(THING.getPolicyId().get()));
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.twin().put(THING, POLICY_JSON_OBJECT, copyPolicy));
+    }
+
+    @Test
+    public void testPutThingWithAllOptionInlinePolicy() {
+        Option copyPolicyFromThing = Options.Modify.copyPolicyFromThing(THING_ID);
+        Option copyPolicy = Options.Modify.copyPolicy(PolicyId.of(THING.getPolicyId().get()));
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.twin().put(THING, copyPolicy, copyPolicyFromThing));
+    }
+
+    @Test
+    public void testUpdateThingWithOptionCopyPolicy() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING.getEntityId().get())
+                    .hasOptionCopyPolicy();
+
+            latch.countDown();
+        });
+
+        Option copyPolicy = Options.Modify.copyPolicy(PolicyId.of(THING.getPolicyId().get()));
+        client.twin().update(THING, copyPolicy);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testUpdateThingWithJsonInlineAndOptionInlinePolicy() {
+        Option copyPolicy = Options.Modify.copyPolicy(PolicyId.of(THING.getPolicyId().get()));
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.twin().update(THING, POLICY_JSON_OBJECT, copyPolicy));
+    }
+
+    @Test
+    public void testUpdateThingWithAllOptionInlinePolicy() {
+        Option copyPolicyFromThing = Options.Modify.copyPolicyFromThing(THING_ID);
+        Option copyPolicy = Options.Modify.copyPolicy(PolicyId.of(THING.getPolicyId().get()));
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.twin().update(THING, copyPolicy, copyPolicyFromThing));
     }
 }

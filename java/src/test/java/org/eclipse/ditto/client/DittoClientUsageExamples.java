@@ -34,17 +34,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.eclipse.ditto.client.changes.ChangeAction;
-import org.eclipse.ditto.client.configuration.MessagingConfiguration;
-import org.eclipse.ditto.client.configuration.ProxyConfiguration;
-import org.eclipse.ditto.client.configuration.TrustStoreConfiguration;
 import org.eclipse.ditto.client.configuration.BasicAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.ClientCredentialsAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.DummyAuthenticationConfiguration;
+import org.eclipse.ditto.client.configuration.MessagingConfiguration;
+import org.eclipse.ditto.client.configuration.ProxyConfiguration;
+import org.eclipse.ditto.client.configuration.TrustStoreConfiguration;
 import org.eclipse.ditto.client.configuration.WebSocketMessagingConfiguration;
 import org.eclipse.ditto.client.messaging.AuthenticationProvider;
 import org.eclipse.ditto.client.messaging.AuthenticationProviders;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.messaging.MessagingProviders;
+import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonFieldSelector;
@@ -58,8 +59,6 @@ import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingBuilder;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
-import org.eclipse.ditto.protocoladapter.JsonifiableAdaptable;
-import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommandAnswerBuilder;
 import org.eclipse.ditto.signals.commands.live.modify.ModifyFeaturePropertyLiveCommandAnswerBuilder;
 import org.slf4j.Logger;
@@ -96,74 +95,218 @@ public final class DittoClientUsageExamples {
         final DittoClient client = DittoClients.newInstance(createMessagingProvider());
         final DittoClient client2 = DittoClients.newInstance(createMessagingProvider());
 
-        final JsonifiableAdaptable jsonifiableAdaptable = ProtocolFactory.jsonifiableAdaptableFromJson(
-                JsonFactory.readFrom("{\n" +
-                        "  \"topic\": \"org.eclipse.ditto/xdk_53/things/twin/commands/modify\",\n" +
-                        "  \"headers\": {},\n" +
-                        "  \"path\": \"/\",\n" +
-                        "  \"value\": {\n" +
-                        "    \"thingId\": \"org.eclipse.ditto:xdk_53\",\n" +
-                        "    \"attributes\": {\n" +
-                        "      \"location\": {\n" +
-                        "        \"latitude\": 44.673856,\n" +
-                        "        \"longitude\": 8.261719\n" +
-                        "      }\n" +
-                        "    },\n" +
-                        "    \"features\": {\n" +
-                        "      \"accelerometer\": {\n" +
-                        "        \"properties\": {\n" +
-                        "          \"x\": 3.141,\n" +
-                        "          \"y\": 2.718,\n" +
-                        "          \"z\": 1,\n" +
-                        "          \"unit\": \"g\"\n" +
-                        "        }\n" +
-                        "      }\n" +
-                        "    }\n" +
-                        "  }\n" +
-                        "}").asObject());
-        client.sendDittoProtocol(jsonifiableAdaptable).whenComplete((a, t) -> {
-            if (a != null) {
-                LOGGER.info("sendDittoProtocol: Received adaptable as response: {}", a);
-            }
-            if (t != null) {
-                LOGGER.warn("sendDittoProtocol: Received throwable as response", t);
-            }
-        });
+//        // Beispiel von Dominik
+//        final ModifySubject modifySubject = ModifySubject.of("ns:xy", Label.of("lbl"), Subject.newInstance(null), DittoHeaders
+//                .empty());
+//        final Adaptable modifySubjectAdaptable = DittoProtocolAdapter.newInstance().toAdaptable(modifySubject);
 
-        client.twin().startConsumption().get();
-        client2.twin().startConsumption().get();
-        LOGGER.info("Subscribed for Twin events");
+        final ThingId thingId = ThingId.of(NAMESPACE + ":dummy-" + UUID.randomUUID());
+        final ThingId thingIdTest = ThingId.of("org.eclipse.ditto:device");
 
-        client.live().startConsumption().get();
-        client2.live().startConsumption().get();
-        LOGGER.info("Subscribed for Live events/commands/messages");
+        final JsonObject jsonObjectThing = JsonFactory.readFrom("{\n" +
+                "    \"thingId\": \"org.eclipse.ditto:device14\",\n" +
+//                "    \"policyId\": \"org.eclipse.ditto:policy14\",\n" +
+                "    \"attributes\": {\n" +
+                "      \"manufacturer\": \"Robert Bosch GmbH\"\n" +
+                "    }\n" +
+                "  }").asObject();
 
-        System.out.println("\n\nContinuing with TWIN commands/events demo:");
-        useTwinCommandsAndEvents(client, client2);
-        System.out.println("\n\nFinished with TWIN commands/events demo");
+        final JsonObject jsonObjectInlinePolicy = JsonObject.of("{\n" +
+                "  \"_policy\": {\n" +
+                "    \"entries\": {\n" +
+                "      \"DEVICE\": {\n" +
+                "        \"subjects\": {\n" +
+                "          \"integration:b38a7f3f-db46-4892-9a55-171fe53755bd:hub\": {\n" +
+                "            \"type\": \"iot-things-integration\"\n" +
+                "          },\n" +
+                "          \"{{ request:subjectId }}\": {\n" +
+                "            \"type\": \"suite-auth\"\n" +
+                "          }\n" +
+                "        },\n" +
+                "        \"resources\": {\n" +
+                "          \"policy:/\": {\n" +
+                "            \"grant\": [\n" +
+                "              \"READ\",\n" +
+                "              \"WRITE\"\n" +
+                "            ],\n" +
+                "            \"revoke\": []\n" +
+                "          },\n" +
+                "          \"thing:/\": {\n" +
+                "            \"grant\": [\n" +
+                "              \"READ\",\n" +
+                "              \"WRITE\"\n" +
+                "            ],\n" +
+                "            \"revoke\": []\n" +
+                "          },\n" +
+                "          \"message:/\": {\n" +
+                "            \"grant\": [\n" +
+                "              \"READ\",\n" +
+                "              \"WRITE\"\n" +
+                "            ],\n" +
+                "            \"revoke\": []\n" +
+                "          }\n" +
+                "        }\n" +
+                "      },\n" +
+                "      \"DEFAULT\": {\n" +
+                "        \"subjects\": {\n" +
+                "          \"iot-suite:service:iot-things-eu-1:842d17d9-4354-43c4-b702-2bf2a5563e32_things/full-access\": {\n" +
+                "            \"type\": \"suite-auth\"\n" +
+                "          }\n" +
+                "        },\n" +
+                "        \"resources\": {\n" +
+                "          \"policy:/\": {\n" +
+                "            \"grant\": [\n" +
+                "              \"READ\",\n" +
+                "              \"WRITE\"\n" +
+                "            ],\n" +
+                "            \"revoke\": []\n" +
+                "          },\n" +
+                "          \"thing:/\": {\n" +
+                "            \"grant\": [\n" +
+                "              \"READ\",\n" +
+                "              \"WRITE\"\n" +
+                "            ],\n" +
+                "            \"revoke\": []\n" +
+                "          },\n" +
+                "          \"message:/\": {\n" +
+                "            \"grant\": [\n" +
+                "              \"READ\",\n" +
+                "              \"WRITE\"\n" +
+                "            ],\n" +
+                "            \"revoke\": []\n" +
+                "          }\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  },\n" +
+                "    \"thingId\": \"org.eclipse.ditto:device14\",\n" +
+                "  \"attributes\": {\n" +
+                "    \"manufacturer\": \"Robert Bosch GmbH\"\n" +
+                "  }\n" +
+                "}");
 
-        System.out.println("\n\nAbout to continue with LIVE commands/events demo:");
-        promptEnterKey();
+        JsonObject POLICY_JSON_OBJECT = JsonObject.of("{\n" +
+                "  \"entries\": {\n" +
+                "    \"DEVICE\": {\n" +
+                "      \"subjects\": {\n" +
+                "        \"{{ request:subjectId }}\": {\n" +
+                "          \"type\": \"suite-auth\"\n" +
+                "        }\n" +
+                "      },\n" +
+                "      \"resources\": {\n" +
+                "        \"policy:/\": {\n" +
+                "          \"grant\": [\n" +
+                "            \"READ\",\n" +
+                "            \"WRITE\"\n" +
+                "          ],\n" +
+                "          \"revoke\": []\n" +
+                "        },\n" +
+                "        \"thing:/\": {\n" +
+                "          \"grant\": [\n" +
+                "            \"READ\",\n" +
+                "            \"WRITE\"\n" +
+                "          ],\n" +
+                "          \"revoke\": []\n" +
+                "        },\n" +
+                "        \"message:/\": {\n" +
+                "          \"grant\": [\n" +
+                "            \"READ\",\n" +
+                "            \"WRITE\"\n" +
+                "          ],\n" +
+                "          \"revoke\": []\n" +
+                "        }\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}");
 
-        useLiveCommands(client, client2);
-        System.out.println("\n\nFinished with LIVE commands/events demo");
+        JsonObject jsonObjectAdaptableCopy = JsonObject.of("{\n" +
+                "  \"topic\": \"org.eclipse.ditto/device15/things/twin/commands/create\",\n" +
+                "  \"headers\": {},\n" +
+                "  \"path\": \"/\",\n" +
+                "  \"value\": {\n" +
+                "    \"thingId\": \"org.eclipse.ditto:device15\",\n" +
+                "    \"policyId\": \"org.eclipse.ditto:policy15\",\n" +
+                "    \"_copyPolicyFrom\": \"{{ ref:things/org.eclipse.ditto:device13/policyId }}\"\n" +
+                "  }\n" +
+                "}");
 
-        System.out.println("\n\nAbout to continue with LIVE messages demo:");
-        promptEnterKey();
+        JsonObject jsonObjectAdaptable = JsonObject.of("{\n" +
+                "  \"topic\": \"org.eclipse.ditto/device12/things/twin/commands/create\",\n" +
+                "  \"headers\": {},\n" +
+                "  \"path\": \"/\",\n" +
+                "  \"value\": {\n" +
+                "    \"thingId\": \"org.eclipse.ditto:device12\",\n" +
+                "    \"policyId\": \"org.eclipse.ditto:policy12\",\n" +
+                "    \"_copyPolicyFrom\": \"{{ ref:things/org.eclipse.ditto:device11/policyId }}\"\n" +
+                "  }\n" +
+                "}");
 
-        useLiveMessages(client, client2);
-        System.out.println("\n\nFinished with LIVE messages demo");
-        Thread.sleep(500);
+//        client.twin().retrieve(ThingId.of("org.eclipse.ditto:device12")).thenAccept(thing -> {
+//            System.out.println("Thing is availible: " + thing.get(0).getEntityId());
+//        }).get();
+//
+//        client.sendDittoProtocol(ProtocolFactory.jsonifiableAdaptableFromJson(jsonObjectAdaptableCopy));
 
-        System.out.println("\n\nAbout to continue with small load test:");
-        promptEnterKey();
+//        client.twin().create(jsonObjectThing)
+//                .thenAccept(thing -> {
+//                    System.out.println("Thing is created: " + thing);
+//                }).get();
 
-        final int loadTestThings = 100;
-        final int loadTestCount = 10;
-        subscribeForLoadTestUpdateChanges(client2, loadTestCount * loadTestThings, false);
-        performLoadTestUpdate(client, loadTestCount, loadTestThings, false);
-        performLoadTestRead(client, loadTestCount, true);
-        Thread.sleep(1000);
+//        Option option = Options.Modify.copyPolicy(PolicyId.of("org.eclipse.ditto:dummy-184ea06c-7c8e-4eac-a994-7003f0a8b9b3"));
+        Option option = Options.Modify.copyPolicyFromThing(ThingId.of("org.eclipse.ditto:device14"));
+
+        client.twin().create(thingId, POLICY_JSON_OBJECT, option).thenAccept(thing -> {
+            System.out.println("Thing is created: " + thing);
+        }).get();
+
+//        client.twin().create(jsonObjectInlinePolicy).thenAccept(thing -> {
+//            System.out.println("Thing is created: " + thing);
+//        }).get();
+
+//        Policy policy = PoliciesModelFactory.newPolicy(jsonObjectPolicy);
+//        System.out.println(policy.getEntityId());
+//
+//        client.twin().create(jsonObjectThing, policy).thenAccept(thing -> {
+//            System.out.println("Thing is created: " + thing.getEntityId().get());
+//            System.out.println("PolicyID of Thing: " + thing.getPolicyId().get());
+//        }).get();
+
+
+//        client.twin().startConsumption().get();
+//        client2.twin().startConsumption().get();
+//        LOGGER.info("Subscribed for Twin events");
+//
+//        client.live().startConsumption().get();
+//        client2.live().startConsumption().get();
+//        LOGGER.info("Subscribed for Live events/commands/messages");
+//
+//        System.out.println("\n\nContinuing with TWIN commands/events demo:");
+//        useTwinCommandsAndEvents(client, client2);
+//        System.out.println("\n\nFinished with TWIN commands/events demo");
+
+//        System.out.println("\n\nAbout to continue with LIVE commands/events demo:");
+//        promptEnterKey();
+//
+//        useLiveCommands(client, client2);
+//        System.out.println("\n\nFinished with LIVE commands/events demo");
+//
+//        System.out.println("\n\nAbout to continue with LIVE messages demo:");
+//        promptEnterKey();
+//
+//        useLiveMessages(client, client2);
+//        System.out.println("\n\nFinished with LIVE messages demo");
+//        Thread.sleep(500);
+//
+//        System.out.println("\n\nAbout to continue with small load test:");
+//        promptEnterKey();
+
+//        final int loadTestThings = 100;
+//        final int loadTestCount = 10;
+//        subscribeForLoadTestUpdateChanges(client2, loadTestCount * loadTestThings, false);
+//        performLoadTestUpdate(client, loadTestCount, loadTestThings, false);
+//        performLoadTestRead(client, loadTestCount, true);
+//        Thread.sleep(1000);
 
         client.destroy();
         client2.destroy();
@@ -174,6 +317,7 @@ public final class DittoClientUsageExamples {
     private static void useTwinCommandsAndEvents(final DittoClient client, final DittoClient client2)
             throws InterruptedException, ExecutionException {
         final ThingId thingId = ThingId.of(NAMESPACE + ":dummy-" + UUID.randomUUID());
+//        final ThingId thingId2 = ThingId.of(NAMESPACE + ":dummy-" + UUID.randomUUID());
 
         client2.twin().registerForThingChanges("globalThingChangeHandler", change ->
                 LOGGER.info("Received Change on Client 2: {}", change.toString()));
@@ -586,7 +730,8 @@ public final class DittoClientUsageExamples {
     private static MessagingProvider createMessagingProvider() {
         final MessagingConfiguration.Builder builder = WebSocketMessagingConfiguration.newBuilder()
                 .endpoint(DITTO_ENDPOINT_URL)
-                .jsonSchemaVersion(JsonSchemaVersion.V_1);
+//                .jsonSchemaVersion(JsonSchemaVersion.V_1);
+                .jsonSchemaVersion(JsonSchemaVersion.V_2);
 
         final ProxyConfiguration proxyConfiguration;
         if (PROXY_HOST != null && !PROXY_HOST.isEmpty()) {

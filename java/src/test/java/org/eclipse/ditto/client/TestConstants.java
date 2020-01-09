@@ -138,6 +138,11 @@ public final class TestConstants {
         public static final ThingId THING_ID = ThingId.of("example.com:testThing");
 
         /**
+         * A known Thing ID for testing.
+         */
+        public static final ThingId THING_ID_COPY_POLICY = ThingId.of("example.com:testThingForCopyPolicy");
+
+        /**
          * A known Policy ID for testing.
          */
         public static final String POLICY_ID = "example.com:testPolicy";
