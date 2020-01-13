@@ -15,12 +15,14 @@ package org.eclipse.ditto.client.messaging;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.protocoladapter.Adaptable;
+import org.eclipse.ditto.protocoladapter.JsonifiableAdaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.commands.base.Command;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
@@ -123,7 +125,7 @@ public interface MessagingProvider {
      */
     boolean registerMessageHandler(String name,
             Map<String, String> registrationConfig,
-            Consumer<Message<?>> handler,
+            BiConsumer<Message<?>, JsonifiableAdaptable> handler,
             CompletableFuture<Void> receiptFuture);
 
     /**

@@ -18,16 +18,19 @@ import org.eclipse.ditto.json.JsonPointer;
  * Holds a JsonPointer and some arbitrary data of type {@code <T>}.
  *
  * @param <T> the type of the held data
+ * @param <J> the type of the held additional data
  * @since 1.0.0
  */
-public final class PointerWithData<T> {
+public final class PointerWithData<T, J> {
 
     private final JsonPointer pointer;
     private final T data;
+    private final J additionalData;
 
-    private PointerWithData(final JsonPointer pointer, final T data) {
+    private PointerWithData(final JsonPointer pointer, final T data, final J additionalData) {
         this.pointer = pointer;
         this.data = data;
+        this.additionalData = additionalData;
     }
 
     /**
@@ -35,11 +38,13 @@ public final class PointerWithData<T> {
      *
      * @param pointer the JsonPointer.
      * @param data the data.
+     * @param additionalData the additional data.
      * @param <T> the type of the passed in data
+     * @param <J> the type of the passed in additional data
      * @return the newly created PointerWithData.
      */
-    static <T> PointerWithData create(final JsonPointer pointer, final T data) {
-        return new PointerWithData<>(pointer, data);
+    static <T, J> PointerWithData create(final JsonPointer pointer, final T data, final J additionalData) {
+        return new PointerWithData<>(pointer, data, additionalData);
     }
 
     /**
@@ -54,6 +59,13 @@ public final class PointerWithData<T> {
      */
     public T getData() {
         return data;
+    }
+
+    /**
+     * @return the held additional data.
+     */
+    public J getAdditionalData() {
+        return additionalData;
     }
 }
 

@@ -99,7 +99,7 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
 
         // register message handler which handles twin events:
         getMessagingProvider().registerMessageHandler(CONSUME_TWIN_EVENTS_HANDLER, consumptionConfig,
-                m -> getBus().notify(m.getSubject(), m), completableFutureEvents);
+                (m, j) -> getBus().notify(m.getSubject(), m, j), completableFutureEvents);
 
         return completableFutureEvents;
     }

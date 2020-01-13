@@ -25,6 +25,7 @@ import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.client.changes.ThingChange;
 import org.eclipse.ditto.json.JsonFactory;
+import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.entity.id.EntityId;
@@ -52,6 +53,7 @@ public final class ImmutableThingChange implements ThingChange {
      * @param path the JsonPointer of the changed json field.
      * @param revision the revision (change counter) of the change.
      * @param timestamp the timestamp of the change.
+     * @param extra the extra data to be included in the change.
      * @throws NullPointerException if any required argument is {@code null}.
      */
     public ImmutableThingChange(final EntityId entityId,
@@ -59,12 +61,14 @@ public final class ImmutableThingChange implements ThingChange {
             @Nullable final Thing thing,
             final JsonPointer path,
             final long revision,
-            @Nullable final Instant timestamp) {
+            @Nullable final Instant timestamp,
+            @Nullable final JsonObject extra) {
 
         checkNotNull(entityId, "Thing ID");
         checkNotNull(changeAction, "change action");
         this.thing = thing;
-        change = new ImmutableChange(entityId, changeAction, path, getJsonValueForThing(thing), revision, timestamp);
+        change = new ImmutableChange(entityId, changeAction, path, getJsonValueForThing(thing), revision,
+                timestamp, extra);
     }
 
     /**
@@ -79,8 +83,8 @@ public final class ImmutableThingChange implements ThingChange {
      * @throws NullPointerException if any required argument is {@code null}.
      */
     public ImmutableThingChange(final ThingId thingId, final ChangeAction changeAction, @Nullable final Thing thing,
-            final long revision, @Nullable final Instant timestamp) {
-        this(thingId, changeAction, thing, JsonFactory.emptyPointer(), revision, timestamp);
+            final long revision, @Nullable final Instant timestamp, @Nullable final JsonObject extra) {
+        this(thingId, changeAction, thing, JsonFactory.emptyPointer(), revision, timestamp, extra);
     }
 
     @Nullable
@@ -121,6 +125,16 @@ public final class ImmutableThingChange implements ThingChange {
     @Override
     public Optional<Instant> getTimestamp() {
         return change.getTimestamp();
+    }
+
+    @Override
+    public Optional<JsonObject> getExtra() {
+        return change.getExtra();
+    }
+
+    @Override
+    public Change withExtra(@Nullable final JsonObject extra) {
+        return change.withExtra(extra);
     }
 
     @Override

@@ -44,14 +44,14 @@ final class DefaultPointerBus implements PointerBus {
     }
 
     @Override
-    public <T> void notify(final JsonPointer key, final T object) {
+    public <T, J> void notify(final JsonPointer key, final T object, final J additionalObject) {
 
-        @SuppressWarnings("unchecked") final PointerWithData<T> wrap = PointerWithData.create(key, object);
+        @SuppressWarnings("unchecked") final PointerWithData<T, J> wrap = PointerWithData.create(key, object, additionalObject);
         notify(wrap);
     }
 
     @Override
-    public <T> void notify(final PointerWithData<T> pointerWithData) {
+    public <T, J> void notify(final PointerWithData<T, J> pointerWithData) {
 
         consumerRegistry.select(pointerWithData.getPointer())
                 .stream()

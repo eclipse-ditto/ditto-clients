@@ -16,6 +16,7 @@ import static org.mutabilitydetector.unittesting.AllowedReason.provided;
 import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
 import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
+import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.model.things.Feature;
 import org.junit.Test;
 
@@ -32,7 +33,7 @@ public final class ImmutableFeatureChangeTest {
     @Test
     public void assertImmutability() {
         assertInstancesOf(ImmutableFeatureChange.class, areImmutable(),
-                provided(Feature.class, ImmutableChange.class).isAlsoImmutable());
+                provided(Feature.class, ImmutableChange.class, JsonObject.class).isAlsoImmutable());
     }
 
     /**
