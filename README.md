@@ -12,6 +12,7 @@ This repository contains client SDKs in different languages for [Eclipse Ditto](
 ## [Java](java/)
 
 [![Build Status](https://github.com/eclipse/ditto-clients/workflows/java-build/badge.svg)](https://github.com/eclipse/ditto-clients/actions?query=workflow%3Ajava-build)
+[![Maven Central](https://img.shields.io/maven-metadata/v/http/central.maven.org/maven2/org/eclipse/ditto/ditto-client/maven-metadata.xml.svg)](https://search.maven.org/search?q=g:org.eclipse.ditto AND a:ditto-client)
 
 Implemented in Java, targeted for use in Java and all JVM based languages (source and target level is Java 8).
 
