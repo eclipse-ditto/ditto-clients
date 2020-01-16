@@ -34,12 +34,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.eclipse.ditto.client.changes.ChangeAction;
-import org.eclipse.ditto.client.configuration.MessagingConfiguration;
-import org.eclipse.ditto.client.configuration.ProxyConfiguration;
-import org.eclipse.ditto.client.configuration.TrustStoreConfiguration;
 import org.eclipse.ditto.client.configuration.BasicAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.ClientCredentialsAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.DummyAuthenticationConfiguration;
+import org.eclipse.ditto.client.configuration.MessagingConfiguration;
+import org.eclipse.ditto.client.configuration.ProxyConfiguration;
+import org.eclipse.ditto.client.configuration.TrustStoreConfiguration;
 import org.eclipse.ditto.client.configuration.WebSocketMessagingConfiguration;
 import org.eclipse.ditto.client.messaging.AuthenticationProvider;
 import org.eclipse.ditto.client.messaging.AuthenticationProviders;
@@ -130,7 +130,7 @@ public final class DittoClientUsageExamples {
             }
         });
 
-        client.twin().startConsumption().get();
+        client.twin().startConsumption(Options.Consumption.extraFields(JsonFieldSelector.newInstance("attributes"))).get();
         client2.twin().startConsumption().get();
         LOGGER.info("Subscribed for Twin events");
 
@@ -138,37 +138,57 @@ public final class DittoClientUsageExamples {
         client2.live().startConsumption().get();
         LOGGER.info("Subscribed for Live events/commands/messages");
 
-        System.out.println("\n\nContinuing with TWIN commands/events demo:");
-        useTwinCommandsAndEvents(client, client2);
-        System.out.println("\n\nFinished with TWIN commands/events demo");
+        final ThingId foobar = ThingId.inDefaultNamespace("foobar2");
+        client2.twin().create(Thing.newBuilder().setId(foobar)
+                .setAttributes(JsonObject.newBuilder().set("manufacturer", "Bosch.IO").build())
+                .setFeature("a-feature", FeatureProperties.newBuilder().set("a", "v").build()).build())
+                .get();
 
-        System.out.println("\n\nAbout to continue with LIVE commands/events demo:");
+        client.twin().registerForFeatureChanges("FOOFOO", change -> {
+            System.out.println("change: " + change);
+            System.out.println("extra: " + change.getExtra().orElse(null));
+        });
+
+        SECONDS.sleep(2);
+
         promptEnterKey();
-
-        useLiveCommands(client, client2);
-        System.out.println("\n\nFinished with LIVE commands/events demo");
-
-        System.out.println("\n\nAbout to continue with LIVE messages demo:");
+        client2.twin().forFeature(foobar, "a-feature")
+                .putProperty("a", 42).get();
         promptEnterKey();
+        client2.twin().forFeature(foobar, "a-feature")
+                .putProperty("a", false).get();
 
-        useLiveMessages(client, client2);
-        System.out.println("\n\nFinished with LIVE messages demo");
-        Thread.sleep(500);
-
-        System.out.println("\n\nAbout to continue with small load test:");
-        promptEnterKey();
-
-        final int loadTestThings = 100;
-        final int loadTestCount = 10;
-        subscribeForLoadTestUpdateChanges(client2, loadTestCount * loadTestThings, false);
-        performLoadTestUpdate(client, loadTestCount, loadTestThings, false);
-        performLoadTestRead(client, loadTestCount, true);
-        Thread.sleep(1000);
-
-        client.destroy();
-        client2.destroy();
-        System.out.println("\n\nDittoClientUsageExamples successfully completed!");
-        System.exit(0);
+//        System.out.println("\n\nContinuing with TWIN commands/events demo:");
+//        useTwinCommandsAndEvents(client, client2);
+//        System.out.println("\n\nFinished with TWIN commands/events demo");
+//
+//        System.out.println("\n\nAbout to continue with LIVE commands/events demo:");
+//        promptEnterKey();
+//
+//        useLiveCommands(client, client2);
+//        System.out.println("\n\nFinished with LIVE commands/events demo");
+//
+//        System.out.println("\n\nAbout to continue with LIVE messages demo:");
+//        promptEnterKey();
+//
+//        useLiveMessages(client, client2);
+//        System.out.println("\n\nFinished with LIVE messages demo");
+//        Thread.sleep(500);
+//
+//        System.out.println("\n\nAbout to continue with small load test:");
+//        promptEnterKey();
+//
+//        final int loadTestThings = 100;
+//        final int loadTestCount = 10;
+//        subscribeForLoadTestUpdateChanges(client2, loadTestCount * loadTestThings, false);
+//        performLoadTestUpdate(client, loadTestCount, loadTestThings, false);
+//        performLoadTestRead(client, loadTestCount, true);
+//        Thread.sleep(1000);
+//
+//        client.destroy();
+//        client2.destroy();
+//        System.out.println("\n\nDittoClientUsageExamples successfully completed!");
+//        System.exit(0);
     }
 
     private static void useTwinCommandsAndEvents(final DittoClient client, final DittoClient client2)
