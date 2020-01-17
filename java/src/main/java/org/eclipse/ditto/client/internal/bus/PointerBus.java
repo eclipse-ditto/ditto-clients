@@ -42,13 +42,15 @@ public interface PointerBus {
      * Notify this component that an {@code PointerWithData} consisting of the passed {@code key} and {@code object} is
      * ready to be processed.
      *
-     * @param key the key to be matched by {@link JsonPointerSelector Selectors}
-     * @param object the object contained in the PointerWithData
-     * @param additionalObject the additional object contained in the PointerWithData
-     * @param <T> the type of the object
-     * @param <J> the type of the additional object
+     * @param key the key to be matched by {@link JsonPointerSelector Selectors}.
+     * @param object the object contained in the PointerWithData.
+     * @param additionalObject the additional object contained in the PointerWithData.
+     * @param <T> the type of the object.
+     * @param <J> the type of the additional object.
      */
-    <T, J> void notify(JsonPointer key, T object, J additionalObject);
+    default <T, J> void notify(final JsonPointer key, final T object, final J additionalObject) {
+        notify(PointerWithData.create(key, object, additionalObject));
+    }
 
     /**
      * Notify this component that an {@link PointerWithData} is ready to be processed.
