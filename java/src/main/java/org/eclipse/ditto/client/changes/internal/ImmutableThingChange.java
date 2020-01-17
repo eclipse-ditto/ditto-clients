@@ -64,11 +64,13 @@ public final class ImmutableThingChange implements ThingChange {
             @Nullable final Instant timestamp,
             @Nullable final JsonObject extra) {
 
-        checkNotNull(entityId, "Thing ID");
-        checkNotNull(changeAction, "change action");
-        this.thing = thing;
-        change = new ImmutableChange(entityId, changeAction, path, getJsonValueForThing(thing), revision,
-                timestamp, extra);
+        this(new ImmutableChange(checkNotNull(entityId, "Thing ID"), checkNotNull(changeAction, "change action"), path,
+                getJsonValueForThing(thing), revision, timestamp, extra), thing);
+    }
+
+    @Nullable
+    private static JsonValue getJsonValueForThing(@Nullable final Thing thing) {
+        return null != thing ? thing.toJson(thing.getImplementedSchemaVersion()) : null;
     }
 
     /**
@@ -82,14 +84,19 @@ public final class ImmutableThingChange implements ThingChange {
      * @param timestamp the timestamp of the change.
      * @throws NullPointerException if any required argument is {@code null}.
      */
-    public ImmutableThingChange(final ThingId thingId, final ChangeAction changeAction, @Nullable final Thing thing,
-            final long revision, @Nullable final Instant timestamp, @Nullable final JsonObject extra) {
+    public ImmutableThingChange(final ThingId thingId,
+            final ChangeAction changeAction,
+            @Nullable final Thing thing,
+            final long revision,
+            @Nullable final Instant timestamp,
+            @Nullable final JsonObject extra) {
+
         this(thingId, changeAction, thing, JsonFactory.emptyPointer(), revision, timestamp, extra);
     }
 
-    @Nullable
-    private static JsonValue getJsonValueForThing(@Nullable final Thing thing) {
-        return null != thing ? thing.toJson(thing.getImplementedSchemaVersion()) : null;
+    private ImmutableThingChange(final Change delegationTarget, @Nullable final Thing thing) {
+        change = delegationTarget;
+        this.thing = thing;
     }
 
     @Override
@@ -133,8 +140,8 @@ public final class ImmutableThingChange implements ThingChange {
     }
 
     @Override
-    public Change withExtra(@Nullable final JsonObject extra) {
-        return change.withExtra(extra);
+    public ImmutableThingChange withExtra(@Nullable final JsonObject extra) {
+        return new ImmutableThingChange(change.withExtra(extra), thing);
     }
 
     @Override

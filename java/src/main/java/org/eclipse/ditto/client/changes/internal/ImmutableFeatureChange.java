@@ -59,14 +59,18 @@ public final class ImmutableFeatureChange implements FeatureChange {
             @Nullable final Instant timestamp,
             @Nullable final JsonObject extra) {
 
-        change = new ImmutableChange(entityId, changeAction, path, getJsonValueForFeature(feature),
-                revision, timestamp, extra);
-        this.feature = feature;
+        this(new ImmutableChange(entityId, changeAction, path, getJsonValueForFeature(feature), revision, timestamp,
+                extra), feature);
     }
 
     @Nullable
     private static JsonValue getJsonValueForFeature(@Nullable final Feature feature) {
         return null != feature ? feature.toJson(feature.getImplementedSchemaVersion()) : null;
+    }
+
+    private ImmutableFeatureChange(final Change delegationTarget, @Nullable final Feature feature) {
+        change = delegationTarget;
+        this.feature = feature;
     }
 
     @Override
@@ -110,8 +114,8 @@ public final class ImmutableFeatureChange implements FeatureChange {
     }
 
     @Override
-    public Change withExtra(@Nullable final JsonObject extra) {
-        return change.withExtra(extra);
+    public ImmutableFeatureChange withExtra(@Nullable final JsonObject extra) {
+        return new ImmutableFeatureChange(change.withExtra(extra), feature);
     }
 
     @Override

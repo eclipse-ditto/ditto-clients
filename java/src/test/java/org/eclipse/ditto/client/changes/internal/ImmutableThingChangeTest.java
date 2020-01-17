@@ -22,9 +22,9 @@ import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable
 import java.time.Instant;
 import java.util.Optional;
 
+import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.client.changes.ThingChange;
-import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.things.Thing;
 import org.junit.Test;
@@ -75,7 +75,7 @@ public final class ImmutableThingChangeTest {
     public void assertImmutability() {
         assertInstancesOf(ImmutableThingChange.class,
                 areImmutable(),
-                provided(Thing.class, ImmutableChange.class, JsonObject.class).isAlsoImmutable());
+                provided(Thing.class, Change.class).isAlsoImmutable());
     }
 
     @Test
