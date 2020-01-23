@@ -22,6 +22,7 @@ SPDX-License-Identifier: EPL-2.0
 # Copyright holders
 
 * Copyright 2019 Bosch Software Innovations GmbH
+* Copyright 2020 Bosch.IO GmbH
 
 All content is the property of the respective authors or their employers.
 For more information regarding authorship of content, please consult the
