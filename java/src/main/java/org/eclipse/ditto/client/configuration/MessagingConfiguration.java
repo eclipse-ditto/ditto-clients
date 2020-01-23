@@ -28,7 +28,9 @@ public interface MessagingConfiguration {
      * Returns the JSON schema version to use for messaging.
      *
      * @return the schema version.
+     * @deprecated JsonSchemaVersion validation becomes obsolete with deprecation of API 1.
      */
+    @Deprecated
     JsonSchemaVersion getJsonSchemaVersion();
 
     /**

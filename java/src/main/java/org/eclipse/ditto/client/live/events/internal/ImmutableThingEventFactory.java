@@ -180,6 +180,7 @@ public final class ImmutableThingEventFactory implements ThingEventFactory {
     }
 
     @Override
+    @Deprecated
     public JsonSchemaVersion getSchemaVersion() {
         return globalEventFactory.getSchemaVersion();
     }

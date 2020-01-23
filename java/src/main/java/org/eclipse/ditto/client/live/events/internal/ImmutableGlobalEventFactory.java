@@ -200,6 +200,7 @@ public final class ImmutableGlobalEventFactory implements GlobalEventFactory {
     }
 
     @Override
+    @Deprecated
     public JsonSchemaVersion getSchemaVersion() {
         return schemaVersion;
     }

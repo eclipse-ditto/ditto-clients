@@ -88,6 +88,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         private ProxyConfiguration proxyConfiguration;
         private TrustStoreConfiguration trustStoreConfiguration;
 
+        @Deprecated
         @Override
         public MessagingConfiguration.Builder jsonSchemaVersion(final JsonSchemaVersion jsonSchemaVersion) {
             this.jsonSchemaVersion = checkNotNull(jsonSchemaVersion, "jsonSchemaVersion");
