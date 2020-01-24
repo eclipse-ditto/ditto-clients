@@ -130,7 +130,7 @@ public final class DittoClientUsageExamples {
             }
         });
 
-        client.twin().startConsumption(Options.Consumption.extraFields(JsonFieldSelector.newInstance("attributes"))).get();
+        client.twin().startConsumption().get();
         client2.twin().startConsumption().get();
         LOGGER.info("Subscribed for Twin events");
 
@@ -138,57 +138,37 @@ public final class DittoClientUsageExamples {
         client2.live().startConsumption().get();
         LOGGER.info("Subscribed for Live events/commands/messages");
 
-        final ThingId foobar = ThingId.inDefaultNamespace("foobar2");
-        client2.twin().create(Thing.newBuilder().setId(foobar)
-                .setAttributes(JsonObject.newBuilder().set("manufacturer", "Bosch.IO").build())
-                .setFeature("a-feature", FeatureProperties.newBuilder().set("a", "v").build()).build())
-                .get();
+        System.out.println("\n\nContinuing with TWIN commands/events demo:");
+        useTwinCommandsAndEvents(client, client2);
+        System.out.println("\n\nFinished with TWIN commands/events demo");
 
-        client.twin().registerForFeatureChanges("FOOFOO", change -> {
-            System.out.println("change: " + change);
-            System.out.println("extra: " + change.getExtra().orElse(null));
-        });
-
-        SECONDS.sleep(2);
-
+        System.out.println("\n\nAbout to continue with LIVE commands/events demo:");
         promptEnterKey();
-        client2.twin().forFeature(foobar, "a-feature")
-                .putProperty("a", 42).get();
-        promptEnterKey();
-        client2.twin().forFeature(foobar, "a-feature")
-                .putProperty("a", false).get();
 
-//        System.out.println("\n\nContinuing with TWIN commands/events demo:");
-//        useTwinCommandsAndEvents(client, client2);
-//        System.out.println("\n\nFinished with TWIN commands/events demo");
-//
-//        System.out.println("\n\nAbout to continue with LIVE commands/events demo:");
-//        promptEnterKey();
-//
-//        useLiveCommands(client, client2);
-//        System.out.println("\n\nFinished with LIVE commands/events demo");
-//
-//        System.out.println("\n\nAbout to continue with LIVE messages demo:");
-//        promptEnterKey();
-//
-//        useLiveMessages(client, client2);
-//        System.out.println("\n\nFinished with LIVE messages demo");
-//        Thread.sleep(500);
-//
-//        System.out.println("\n\nAbout to continue with small load test:");
-//        promptEnterKey();
-//
-//        final int loadTestThings = 100;
-//        final int loadTestCount = 10;
-//        subscribeForLoadTestUpdateChanges(client2, loadTestCount * loadTestThings, false);
-//        performLoadTestUpdate(client, loadTestCount, loadTestThings, false);
-//        performLoadTestRead(client, loadTestCount, true);
-//        Thread.sleep(1000);
-//
-//        client.destroy();
-//        client2.destroy();
-//        System.out.println("\n\nDittoClientUsageExamples successfully completed!");
-//        System.exit(0);
+        useLiveCommands(client, client2);
+        System.out.println("\n\nFinished with LIVE commands/events demo");
+
+        System.out.println("\n\nAbout to continue with LIVE messages demo:");
+        promptEnterKey();
+
+        useLiveMessages(client, client2);
+        System.out.println("\n\nFinished with LIVE messages demo");
+        Thread.sleep(500);
+
+        System.out.println("\n\nAbout to continue with small load test:");
+        promptEnterKey();
+
+        final int loadTestThings = 100;
+        final int loadTestCount = 10;
+        subscribeForLoadTestUpdateChanges(client2, loadTestCount * loadTestThings, false);
+        performLoadTestUpdate(client, loadTestCount, loadTestThings, false);
+        performLoadTestRead(client, loadTestCount, true);
+        Thread.sleep(1000);
+
+        client.destroy();
+        client2.destroy();
+        System.out.println("\n\nDittoClientUsageExamples successfully completed!");
+        System.exit(0);
     }
 
     private static void useTwinCommandsAndEvents(final DittoClient client, final DittoClient client2)
@@ -626,6 +606,7 @@ public final class DittoClientUsageExamples {
                     .build());
         }
 
+        final AuthenticationProvider authenticationProvider;
         final AuthenticationProvider<WebSocket> authenticationProvider;
         if (DITTO_DUMMY_AUTH_USER != null) {
             authenticationProvider =
