@@ -23,7 +23,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
@@ -73,7 +72,7 @@ public class MockMessagingProvider implements MessagingProvider {
             .endpoint("ws://localhost:8080")
             .jsonSchemaVersion(JsonSchemaVersion.V_1)
             .build();
-    private final AtomicReference<BiConsumer<Message<?>, JsonifiableAdaptable>> in = new AtomicReference<>();
+    private final AtomicReference<Consumer<Message<?>>> in = new AtomicReference<>();
     private final ExecutorService executor = Executors.newFixedThreadPool(2, new MockThreadFactory());
     private final BlockingQueue<Message<?>> eventQueue = new LinkedBlockingQueue<>();
     private final JsonifiableAdaptable dummyAdaptable =
@@ -170,7 +169,7 @@ public class MockMessagingProvider implements MessagingProvider {
 
     @Override
     public boolean registerMessageHandler(final String name, final Map<String, String> registrationConfig,
-            final BiConsumer<Message<?>, JsonifiableAdaptable> handler, final CompletableFuture<Void> future) {
+            final Consumer<Message<?>> handler, final CompletableFuture<Void> future) {
         if (name.equals(TwinImpl.CONSUME_TWIN_EVENTS_HANDLER)) {
             Objects.requireNonNull(handler);
             in.set(handler);
@@ -178,7 +177,7 @@ public class MockMessagingProvider implements MessagingProvider {
             {
                 try {
                     while (in.get() != null) {
-                        in.get().accept(eventQueue.take(), dummyAdaptable);
+                        in.get().accept(eventQueue.take());
                         LOGGER.debug("Took one message from eventQueue, waiting for next..");
                     }
                 } catch (final InterruptedException e) {

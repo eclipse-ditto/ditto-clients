@@ -14,11 +14,11 @@ package org.eclipse.ditto.client.live.internal;
 
 import java.util.function.Consumer;
 
-import org.eclipse.ditto.client.live.messages.MessageSerializationException;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
 import org.eclipse.ditto.client.internal.ResponseForwarder;
 import org.eclipse.ditto.client.internal.SendTerminator;
 import org.eclipse.ditto.client.internal.bus.PointerWithData;
+import org.eclipse.ditto.client.live.messages.MessageSerializationException;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.client.live.messages.internal.ImmutableDeserializingMessage;
@@ -114,6 +114,7 @@ final class LiveMessagesUtil {
         if (copyRawPayloadToPayload && !incomingMessage.getPayload().isPresent()) {
             messageBuilder.payload(type.cast(incomingMessage.getRawPayload().orElse(null)));
         }
+        incomingMessage.getExtra().ifPresent(messageBuilder::extra);
 
         return messageBuilder.build();
     }

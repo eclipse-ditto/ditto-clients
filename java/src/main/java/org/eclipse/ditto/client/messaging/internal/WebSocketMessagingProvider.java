@@ -39,7 +39,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -152,7 +151,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     private final String sessionId;
     private final Map<String, CompletableFuture<Void>> subscriptionsAcks;
-    private final Map<String, BiConsumer<Message<?>, JsonifiableAdaptable>> subscriptions;
+    private final Map<String, Consumer<Message<?>>> subscriptions;
     private final ScheduledExecutorService reconnectExecutor;
     private final DittoProtocolAdapter protocolAdapter;
     private final AtomicBoolean reconnecting = new AtomicBoolean(false);
@@ -514,7 +513,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     @Override
     public boolean registerMessageHandler(final String name, final Map<String, String> registrationConfig,
-            final BiConsumer<Message<?>, JsonifiableAdaptable> handler, final CompletableFuture<Void> receiptFuture) {
+            final Consumer<Message<?>> handler, final CompletableFuture<Void> receiptFuture) {
         if (subscriptions.containsKey(name)) {
             LOGGER.info("Client <{}>: Handler {} already registered for client",
                     sessionId, name);
@@ -945,7 +944,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         if (signal instanceof MessageCommand) {
             LOGGER.debug("Client <{}>: Received LIVE MessageCommand JSON: {}", sessionId,
                     message);
-            handleLiveMessage((MessageCommand) signal, jsonifiableAdaptable);
+            handleLiveMessage((MessageCommand) signal);
         } else if (signal instanceof MessageCommandResponse) {
             LOGGER.debug("Client <{}>: Received LIVE MessageCommandResponse JSON: {}", sessionId,
                     message);
@@ -986,10 +985,11 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                         .build();
         final Message<ThingEvent> eventMessage = Message.<ThingEvent>newBuilder(messageHeaders)
                 .payload(jsonifiable)
+                .extra(jsonifiableAdaptable.getPayload().getExtra().orElse(null))
                 .build();
-        final BiConsumer<Message<?>, JsonifiableAdaptable> eventConsumer = subscriptions.get(subscriptionKey);
+        final Consumer<Message<?>> eventConsumer = subscriptions.get(subscriptionKey);
         if (eventConsumer != null) {
-            eventConsumer.accept(eventMessage, jsonifiableAdaptable);
+            eventConsumer.accept(eventMessage);
         } else {
             LOGGER.debug("Client <{}>: Dropping incoming event as no subscription for consuming events was" +
                             " registered. Did you call 'client.twin().startConsumption()' or" +
@@ -998,14 +998,12 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         }
     }
 
-    private void handleLiveMessage(final MessageCommand messageCommand,
-            final JsonifiableAdaptable jsonifiableAdaptable) {
+    private void handleLiveMessage(final MessageCommand messageCommand) {
 
         final Message message = messageCommand.getMessage();
-        final BiConsumer<Message<?>, JsonifiableAdaptable> messageConsumer = subscriptions.get(
-                LiveImpl.CONSUME_LIVE_MESSAGES_HANDLER);
+        final Consumer<Message<?>> messageConsumer = subscriptions.get(LiveImpl.CONSUME_LIVE_MESSAGES_HANDLER);
         if (messageConsumer != null) {
-            messageConsumer.accept(message, jsonifiableAdaptable);
+            messageConsumer.accept(message);
         } else {
             LOGGER.warn("Client <{}>: Dropping incoming message as no subscription for consuming messages was" +
                     " registered. Did you call 'client.twin().startConsumption()' or" +
@@ -1047,12 +1045,12 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                             .build();
             final Message<LiveCommand> liveCommandMessage = Message.<LiveCommand>newBuilder(messageHeaders)
                     .payload(liveCommand)
+                    .extra(jsonifiableAdaptable.getPayload().getExtra().orElse(null))
                     .build();
 
-            final BiConsumer<Message<?>, JsonifiableAdaptable> liveCommandConsumer = subscriptions.get(
-                    LiveImpl.CONSUME_LIVE_COMMANDS_HANDLER);
+            final Consumer<Message<?>> liveCommandConsumer = subscriptions.get(LiveImpl.CONSUME_LIVE_COMMANDS_HANDLER);
             if (liveCommandConsumer != null) {
-                liveCommandConsumer.accept(liveCommandMessage, jsonifiableAdaptable);
+                liveCommandConsumer.accept(liveCommandMessage);
             } else {
                 LOGGER.warn(
                         "Client <{}>: Dropping incoming live command as no subscription for consuming live commands " +

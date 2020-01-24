@@ -31,11 +31,10 @@ public interface PointerBus {
      *
      * @param key the key to be matched by {@link JsonPointerSelector Selectors}
      * @param object the object contained in the PointerWithData
-     * @param additionalObject the additional object contained in the PointerWithData
      * @param <T> the type of the object
      */
-    default <T, J> void notify(final CharSequence key, final T object, final J additionalObject) {
-        notify(JsonPointer.of(key), object, additionalObject);
+    default <T> void notify(final CharSequence key, final T object) {
+        notify(JsonPointer.of(key), object);
     }
 
     /**
@@ -44,12 +43,10 @@ public interface PointerBus {
      *
      * @param key the key to be matched by {@link JsonPointerSelector Selectors}.
      * @param object the object contained in the PointerWithData.
-     * @param additionalObject the additional object contained in the PointerWithData.
      * @param <T> the type of the object.
-     * @param <J> the type of the additional object.
      */
-    default <T, J> void notify(final JsonPointer key, final T object, final J additionalObject) {
-        notify(PointerWithData.create(key, object, additionalObject));
+    default <T> void notify(final JsonPointer key, final T object) {
+        notify(PointerWithData.create(key, object));
     }
 
     /**
@@ -57,9 +54,8 @@ public interface PointerBus {
      *
      * @param pointerWithData the {@code PointerWithData} to notify about
      * @param <T> the type of the object of the PointerWithData
-     * @param <J> the type of the additional object of the PointerWithData
      */
-    <T, J> void notify(PointerWithData<T, J> pointerWithData);
+    <T> void notify(PointerWithData<T> pointerWithData);
 
     /**
      * Register a {@link Consumer} to be triggered when a notification matches the given {@link JsonPointerSelector}.

@@ -42,7 +42,7 @@ final class DefaultPointerBus implements PointerBus {
     }
 
     @Override
-    public <T, J> void notify(final PointerWithData<T, J> pointerWithData) {
+    public <T> void notify(final PointerWithData<T> pointerWithData) {
         consumerRegistry.select(pointerWithData.getPointer())
                 .stream()
                 .filter(reg -> Objects.nonNull(reg.getRegisteredObject()))

@@ -25,6 +25,7 @@ import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.client.live.messages.MessageSender;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
+import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.model.base.auth.AuthorizationContext;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
@@ -98,6 +99,11 @@ public final class ImmutableRepliableMessage<T, U> implements RepliableMessage<T
     @Override
     public Optional<ByteBuffer> getRawPayload() {
         return message.getRawPayload();
+    }
+
+    @Override
+    public Optional<JsonObject> getExtra() {
+        return message.getExtra();
     }
 
     @Override

@@ -183,20 +183,20 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
 
         // register message handler which handles live events:
         getMessagingProvider().registerMessageHandler(CONSUME_LIVE_EVENTS_HANDLER, consumptionConfig,
-                (m, j) -> getBus().notify(m.getSubject(), m, j), completableFutureEvents);
+                m -> getBus().notify(m.getSubject(), m), completableFutureEvents);
 
         // register message handler which handles incoming messages:
         getMessagingProvider().registerMessageHandler(CONSUME_LIVE_MESSAGES_HANDLER, consumptionConfig,
-                (m, j) -> {
+                m -> {
                     final String messagePath = calculateMessagePath(m);
                     if (messagePath != null) {
-                        getBus().notify(JsonFactory.newPointer(messagePath), m, j);
+                        getBus().notify(JsonFactory.newPointer(messagePath), m);
                     }
                 },
                 completableFutureMessages);
 
         // register message handler which handles live commands:
-        getMessagingProvider().registerMessageHandler(CONSUME_LIVE_COMMANDS_HANDLER, consumptionConfig, (m, j) ->
+        getMessagingProvider().registerMessageHandler(CONSUME_LIVE_COMMANDS_HANDLER, consumptionConfig, m ->
                 getBus().getExecutor().execute(() -> m.getPayload()
                         .map(p -> (LiveCommand) p).ifPresent(liveCommand -> {
                             boolean handled = false;
