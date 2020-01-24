@@ -606,7 +606,6 @@ public final class DittoClientUsageExamples {
                     .build());
         }
 
-        final AuthenticationProvider authenticationProvider;
         final AuthenticationProvider<WebSocket> authenticationProvider;
         if (DITTO_DUMMY_AUTH_USER != null) {
             authenticationProvider =
