@@ -235,7 +235,7 @@
         <!-- in other words: never do that here! exclude the 'breakages' locally in the japicmp maven plugin if you intentionally break something -->
         <binary-compatibility-check.version>1.0.0</binary-compatibility-check.version>
         <!-- skip until first release: -->
-        <binary-compatibility-check.skip>true</binary-compatibility-check.skip>
+        <binary-compatibility-check.skip>false</binary-compatibility-check.skip>
 
         <ditto.thirdPartyLicences.excludedGroups>
             (org\.eclipse\.ditto.*)
@@ -381,7 +381,7 @@
                 <plugin>
                     <groupId>com.github.siom79.japicmp</groupId>
                     <artifactId>japicmp-maven-plugin</artifactId>
-                    <version>0.11.0</version>
+                    <version>0.14.3</version>
                     <configuration>
                         <oldVersion>
                             <dependency>
@@ -400,16 +400,43 @@
                             <onlyModified>true</onlyModified>
                             <accessModifier>public</accessModifier>
                             <breakBuildOnModifications>false</breakBuildOnModifications>
-                            <breakBuildOnBinaryIncompatibleModifications>true
-                            </breakBuildOnBinaryIncompatibleModifications>
-                            <onlyBinaryIncompatible>false</onlyBinaryIncompatible>
+                            <breakBuildOnBinaryIncompatibleModifications>true</breakBuildOnBinaryIncompatibleModifications>
+                            <onlyBinaryIncompatible>true</onlyBinaryIncompatible>
                             <includeSynthetic>false</includeSynthetic>
                             <ignoreMissingClasses>false</ignoreMissingClasses>
                             <skipPomModules>true</skipPomModules>
                             <htmlTitle>${project.name} :: Binary Compatibility Report</htmlTitle>
+                            <overrideCompatibilityChangeParameters>
+                                <!-- Consider new method added to interface as binary-compatible and not
+                                     source-compatible. Require only binary compatibility for semantic versioning,
+                                     due to ubiquitous usage of interfaces for information hiding in model packages.
+                                 -->
+                                <overrideCompatibilityChangeParameter>
+                                    <compatibilityChange>METHOD_NEW_DEFAULT</compatibilityChange>
+                                    <binaryCompatible>true</binaryCompatible>
+                                    <sourceCompatible>true</sourceCompatible>
+                                </overrideCompatibilityChangeParameter>
+                                <overrideCompatibilityChangeParameter>
+                                    <compatibilityChange>METHOD_ABSTRACT_NOW_DEFAULT</compatibilityChange>
+                                    <binaryCompatible>true</binaryCompatible>
+                                    <sourceCompatible>true</sourceCompatible>
+                                </overrideCompatibilityChangeParameter>
+                                <overrideCompatibilityChangeParameter>
+                                    <compatibilityChange>METHOD_ADDED_TO_INTERFACE</compatibilityChange>
+                                    <binaryCompatible>true</binaryCompatible>
+                                    <sourceCompatible>false</sourceCompatible>
+                                </overrideCompatibilityChangeParameter>
+                            </overrideCompatibilityChangeParameters>
                             <excludes>
                                 <!-- Don't add excludes here before checking with the whole Ditto team -->
-                                <!--<exclude></exclude>-->
+                                <exclude>org.eclipse.ditto.client.changes.internal</exclude>
+                                <exclude>org.eclipse.ditto.client.internal</exclude>
+                                <exclude>org.eclipse.ditto.client.live.internal</exclude>
+                                <exclude>org.eclipse.ditto.client.live.messages.internal</exclude>
+                                <exclude>org.eclipse.ditto.client.management.internal</exclude>
+                                <exclude>org.eclipse.ditto.client.messaging.internal</exclude>
+                                <exclude>org.eclipse.ditto.client.options.internal</exclude>
+                                <exclude>org.eclipse.ditto.client.twin.internal</exclude>
                             </excludes>
                         </parameter>
                     </configuration>
