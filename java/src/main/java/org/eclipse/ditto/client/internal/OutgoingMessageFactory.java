@@ -150,7 +150,7 @@ public final class OutgoingMessageFactory {
         if (collect.isEmpty()) {
             return CreateThing.of(thing, initialPolicy, buildDittoHeaders(false, options));
         } else {
-            final String extractPolicyFromOption = extractPolicyFromoption(collect);
+            final String extractPolicyFromOption = extractPolicyFromOption(collect);
             return CreateThing.withCopiedPolicy(thing, extractPolicyFromOption, buildDittoHeaders(false, options));
         }
     }
@@ -181,7 +181,7 @@ public final class OutgoingMessageFactory {
         if (collect.isEmpty()) {
             return ModifyThing.of(thingId, thing, initialPolicy, headers);
         } else {
-            final String extractPolicyFromOption = extractPolicyFromoption(collect);
+            final String extractPolicyFromOption = extractPolicyFromOption(collect);
             return ModifyThing.withCopiedPolicy(thingId, thing, extractPolicyFromOption, headers);
         }
     }
@@ -210,17 +210,10 @@ public final class OutgoingMessageFactory {
                 .ifMatch(ASTERISK)
                 .build();
 
-        final List<Option> collect = fitlerOptions(initialPolicy, options);
-
-        if (collect.isEmpty()) {
-            return ModifyThing.of(thingId, thing, initialPolicy, headers);
-        } else {
-            final String extractPolicyFromOption = extractPolicyFromoption(collect);
-            return ModifyThing.withCopiedPolicy(thingId, thing, extractPolicyFromOption, headers);
-        }
+        return ModifyThing.of(thingId, thing, initialPolicy, headers);
     }
 
-    private String extractPolicyFromoption(final List<Option> collect) {
+    private String extractPolicyFromOption(final List<Option> collect) {
         final Option policyIdOrThingId = collect.get(0);
         final String policyExtractedFromOption;
 
