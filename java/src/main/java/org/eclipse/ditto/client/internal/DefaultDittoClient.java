@@ -220,21 +220,21 @@ public final class DefaultDittoClient implements DittoClient {
          * Thing
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, ThingCreated.TYPE, ThingCreated.class,
-                event -> MessageFormat.format(THING_PATTERN, event.getThingEntityId()),
-                event -> new ImmutableThingChange(event.getThingEntityId(), ChangeAction.CREATED, event.getThing(),
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                e -> MessageFormat.format(THING_PATTERN, e.getThingEntityId()),
+                (e, extra) -> new ImmutableThingChange(e.getThingEntityId(), ChangeAction.CREATED, e.getThing(),
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, ThingModified.TYPE, ThingModified.class,
-                event -> MessageFormat.format(THING_PATTERN, event.getThingEntityId()),
-                event -> new ImmutableThingChange(event.getThingEntityId(), ChangeAction.UPDATED, event.getThing(),
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                e -> MessageFormat.format(THING_PATTERN, e.getThingEntityId()),
+                (e, extra) -> new ImmutableThingChange(e.getThingEntityId(), ChangeAction.UPDATED, e.getThing(),
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, ThingDeleted.TYPE, ThingDeleted.class,
-                event -> MessageFormat.format(THING_PATTERN, event.getThingEntityId()),
-                event -> new ImmutableThingChange(event.getThingEntityId(), ChangeAction.DELETED, null,
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                e -> MessageFormat.format(THING_PATTERN, e.getThingEntityId()),
+                (e, extra) -> new ImmutableThingChange(e.getThingEntityId(), ChangeAction.DELETED, null,
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         /*
@@ -242,146 +242,146 @@ public final class DefaultDittoClient implements DittoClient {
          * @deprecated as part of deprecated API 1
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AclModified.TYPE, AclModified.class,
-                event -> MessageFormat.format("/things/{0}/acl", event.getThingEntityId()),
-                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.UPDATED,
+                e -> MessageFormat.format("/things/{0}/acl", e.getThingEntityId()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.UPDATED,
                         JsonPointer.empty(),
-                        event.getAccessControlList().toJson(event.getImplementedSchemaVersion()),
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                        e.getAccessControlList().toJson(e.getImplementedSchemaVersion()),
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AclEntryCreated.TYPE, AclEntryCreated.class,
-                event -> MessageFormat.format(ACL_PATTERN, event.getThingEntityId(),
-                        event.getAclEntry().getAuthorizationSubject().getId()),
-                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.CREATED,
+                e -> MessageFormat.format(ACL_PATTERN, e.getThingEntityId(),
+                        e.getAclEntry().getAuthorizationSubject().getId()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.CREATED,
                         JsonPointer.empty(),
-                        event.getAclEntry().toJson(event.getImplementedSchemaVersion()),
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                        e.getAclEntry().toJson(e.getImplementedSchemaVersion()),
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AclEntryModified.TYPE, AclEntryModified.class,
-                event -> MessageFormat.format(ACL_PATTERN, event.getThingEntityId(),
-                        event.getAclEntry().getAuthorizationSubject().getId()),
-                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.UPDATED,
+                e -> MessageFormat.format(ACL_PATTERN, e.getThingEntityId(),
+                        e.getAclEntry().getAuthorizationSubject().getId()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.UPDATED,
                         JsonPointer.empty(),
-                        event.getAclEntry().toJson(event.getImplementedSchemaVersion()),
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                        e.getAclEntry().toJson(e.getImplementedSchemaVersion()),
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AclEntryDeleted.TYPE, AclEntryDeleted.class,
-                event -> MessageFormat.format(ACL_PATTERN, event.getThingEntityId(),
-                        event.getAuthorizationSubject().getId()),
-                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.DELETED,
+                e -> MessageFormat.format(ACL_PATTERN, e.getThingEntityId(),
+                        e.getAuthorizationSubject().getId()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.DELETED,
                         JsonPointer.empty(),
                         null,
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         /*
          * Attributes
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributesCreated.TYPE, AttributesCreated.class,
-                event -> MessageFormat.format(ATTRIBUTES_PATTERN, event.getThingEntityId()),
-                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.CREATED,
+                e -> MessageFormat.format(ATTRIBUTES_PATTERN, e.getThingEntityId()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.CREATED,
                         JsonPointer.empty(),
-                        event.getCreatedAttributes(),
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                        e.getCreatedAttributes(),
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributesModified.TYPE, AttributesModified.class,
-                event -> MessageFormat.format(ATTRIBUTES_PATTERN, event.getThingEntityId()),
-                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.UPDATED,
+                e -> MessageFormat.format(ATTRIBUTES_PATTERN, e.getThingEntityId()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.UPDATED,
                         JsonPointer.empty(),
-                        event.getModifiedAttributes(),
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                        e.getModifiedAttributes(),
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributesDeleted.TYPE, AttributesDeleted.class,
-                event -> MessageFormat.format(ATTRIBUTES_PATTERN, event.getThingEntityId()),
-                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.DELETED,
+                e -> MessageFormat.format(ATTRIBUTES_PATTERN, e.getThingEntityId()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.DELETED,
                         JsonPointer.empty(),
                         null,
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         /*
          * Attribute
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributeCreated.TYPE, AttributeCreated.class,
-                event -> MessageFormat.format(ATTRIBUTE_PATTERN, event.getThingEntityId(),
-                        event.getAttributePointer()),
-                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.CREATED,
-                        event.getAttributePointer(),
-                        event.getAttributeValue(),
-                        event.getRevision(), event.getTimestamp().orElse(null)));
+                e -> MessageFormat.format(ATTRIBUTE_PATTERN, e.getThingEntityId(),
+                        e.getAttributePointer()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.CREATED,
+                        e.getAttributePointer(),
+                        e.getAttributeValue(),
+                        e.getRevision(), e.getTimestamp().orElse(null), extra));
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributeModified.TYPE, AttributeModified.class,
-                event -> MessageFormat.format(ATTRIBUTE_PATTERN, event.getThingEntityId(),
-                        event.getAttributePointer()),
-                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.UPDATED,
-                        event.getAttributePointer(),
-                        event.getAttributeValue(),
-                        event.getRevision(), event.getTimestamp().orElse(null)));
+                e -> MessageFormat.format(ATTRIBUTE_PATTERN, e.getThingEntityId(),
+                        e.getAttributePointer()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.UPDATED,
+                        e.getAttributePointer(),
+                        e.getAttributeValue(),
+                        e.getRevision(), e.getTimestamp().orElse(null), extra));
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributeDeleted.TYPE, AttributeDeleted.class,
-                event -> MessageFormat.format(ATTRIBUTE_PATTERN, event.getThingEntityId(),
-                        event.getAttributePointer()),
-                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.DELETED,
-                        event.getAttributePointer(),
+                e -> MessageFormat.format(ATTRIBUTE_PATTERN, e.getThingEntityId(),
+                        e.getAttributePointer()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.DELETED,
+                        e.getAttributePointer(),
                         null,
-                        event.getRevision(), event.getTimestamp().orElse(null)));
+                        e.getRevision(), e.getTimestamp().orElse(null), extra));
 
         /*
          * Features
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturesCreated.TYPE, FeaturesCreated.class,
-                event -> MessageFormat.format(FEATURES_PATTERN, event.getThingEntityId()),
-                event -> new ImmutableFeaturesChange(event.getThingEntityId(), ChangeAction.CREATED,
-                        event.getFeatures(),
+                e -> MessageFormat.format(FEATURES_PATTERN, e.getThingEntityId()),
+                (e, extra) -> new ImmutableFeaturesChange(e.getThingEntityId(), ChangeAction.CREATED,
+                        e.getFeatures(),
                         JsonPointer.empty(),
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturesModified.TYPE, FeaturesModified.class,
-                event -> MessageFormat.format(FEATURES_PATTERN, event.getThingEntityId()),
-                event -> new ImmutableFeaturesChange(event.getThingEntityId(), ChangeAction.UPDATED,
-                        event.getFeatures(),
+                e -> MessageFormat.format(FEATURES_PATTERN, e.getThingEntityId()),
+                (e, extra) -> new ImmutableFeaturesChange(e.getThingEntityId(), ChangeAction.UPDATED,
+                        e.getFeatures(),
                         JsonPointer.empty(),
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturesDeleted.TYPE, FeaturesDeleted.class,
-                event -> MessageFormat.format(FEATURES_PATTERN, event.getThingEntityId()),
-                event -> new ImmutableFeaturesChange(event.getThingEntityId(), ChangeAction.DELETED,
+                e -> MessageFormat.format(FEATURES_PATTERN, e.getThingEntityId()),
+                (e, extra) -> new ImmutableFeaturesChange(e.getThingEntityId(), ChangeAction.DELETED,
                         null,
                         JsonPointer.empty(),
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         /*
          * Feature
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureCreated.TYPE, FeatureCreated.class,
-                event -> MessageFormat.format(FEATURE_PATTERN, event.getThingEntityId(), event.getFeatureId()),
-                event -> new ImmutableFeatureChange(event.getThingEntityId(), ChangeAction.CREATED,
-                        event.getFeature(),
+                e -> MessageFormat.format(FEATURE_PATTERN, e.getThingEntityId(), e.getFeatureId()),
+                (e, extra) -> new ImmutableFeatureChange(e.getThingEntityId(), ChangeAction.CREATED,
+                        e.getFeature(),
                         JsonPointer.empty(),
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureModified.TYPE, FeatureModified.class,
-                event -> MessageFormat.format(FEATURE_PATTERN, event.getThingEntityId(), event.getFeatureId()),
-                event -> new ImmutableFeatureChange(event.getThingEntityId(), ChangeAction.UPDATED,
-                        event.getFeature(),
+                e -> MessageFormat.format(FEATURE_PATTERN, e.getThingEntityId(), e.getFeatureId()),
+                (e, extra) -> new ImmutableFeatureChange(e.getThingEntityId(), ChangeAction.UPDATED,
+                        e.getFeature(),
                         JsonPointer.empty(),
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureDeleted.TYPE, FeatureDeleted.class,
-                event -> MessageFormat.format(FEATURE_PATTERN, event.getThingEntityId(), event.getFeatureId()),
-                event -> new ImmutableFeatureChange(event.getThingEntityId(), ChangeAction.DELETED,
+                e -> MessageFormat.format(FEATURE_PATTERN, e.getThingEntityId(), e.getFeatureId()),
+                (e, extra) -> new ImmutableFeatureChange(e.getThingEntityId(), ChangeAction.DELETED,
                         null,
                         JsonPointer.empty(),
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         /*
@@ -389,32 +389,32 @@ public final class DefaultDittoClient implements DittoClient {
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertiesCreated.TYPE,
                 FeaturePropertiesCreated.class,
-                event -> MessageFormat.format(FEATURE_PROPERTIES_PATTERN, event.getThingEntityId(),
-                        event.getFeatureId()),
-                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.CREATED,
+                e -> MessageFormat.format(FEATURE_PROPERTIES_PATTERN, e.getThingEntityId(),
+                        e.getFeatureId()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.CREATED,
                         JsonPointer.empty(),
-                        event.getProperties().toJson(event.getImplementedSchemaVersion()),
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                        e.getProperties().toJson(e.getImplementedSchemaVersion()),
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertiesModified.TYPE,
                 FeaturePropertiesModified.class,
-                event -> MessageFormat.format(FEATURE_PROPERTIES_PATTERN, event.getThingEntityId(),
-                        event.getFeatureId()),
-                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.UPDATED,
+                e -> MessageFormat.format(FEATURE_PROPERTIES_PATTERN, e.getThingEntityId(),
+                        e.getFeatureId()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.UPDATED,
                         JsonPointer.empty(),
-                        event.getProperties().toJson(event.getImplementedSchemaVersion()),
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                        e.getProperties().toJson(e.getImplementedSchemaVersion()),
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertiesDeleted.TYPE,
                 FeaturePropertiesDeleted.class,
-                event -> MessageFormat.format(FEATURE_PROPERTIES_PATTERN, event.getThingEntityId(),
-                        event.getFeatureId()),
-                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.DELETED,
+                e -> MessageFormat.format(FEATURE_PROPERTIES_PATTERN, e.getThingEntityId(),
+                        e.getFeatureId()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.DELETED,
                         JsonPointer.empty(),
                         null,
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         /*
@@ -422,32 +422,32 @@ public final class DefaultDittoClient implements DittoClient {
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertyCreated.TYPE,
                 FeaturePropertyCreated.class,
-                event -> MessageFormat.format(FEATURE_PROPERTY_PATTERN, event.getThingEntityId(),
-                        event.getFeatureId(), event.getPropertyPointer()),
-                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.CREATED,
-                        event.getPropertyPointer(),
-                        event.getPropertyValue(),
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                e -> MessageFormat.format(FEATURE_PROPERTY_PATTERN, e.getThingEntityId(),
+                        e.getFeatureId(), e.getPropertyPointer()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.CREATED,
+                        e.getPropertyPointer(),
+                        e.getPropertyValue(),
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertyModified.TYPE,
                 FeaturePropertyModified.class,
-                event -> MessageFormat.format(FEATURE_PROPERTY_PATTERN, event.getThingEntityId(),
-                        event.getFeatureId(), event.getPropertyPointer()),
-                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.UPDATED,
-                        event.getPropertyPointer(),
-                        event.getPropertyValue(),
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                e -> MessageFormat.format(FEATURE_PROPERTY_PATTERN, e.getThingEntityId(),
+                        e.getFeatureId(), e.getPropertyPointer()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.UPDATED,
+                        e.getPropertyPointer(),
+                        e.getPropertyValue(),
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertyDeleted.TYPE,
                 FeaturePropertyDeleted.class,
-                event -> MessageFormat.format(FEATURE_PROPERTY_PATTERN, event.getThingEntityId(),
-                        event.getFeatureId(), event.getPropertyPointer()),
-                event -> new ImmutableChange(event.getThingEntityId(), ChangeAction.DELETED,
-                        event.getPropertyPointer(),
+                e -> MessageFormat.format(FEATURE_PROPERTY_PATTERN, e.getThingEntityId(),
+                        e.getFeatureId(), e.getPropertyPointer()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.DELETED,
+                        e.getPropertyPointer(),
                         null,
-                        event.getRevision(), event.getTimestamp().orElse(null))
+                        e.getRevision(), e.getTimestamp().orElse(null), extra)
         );
     }
 

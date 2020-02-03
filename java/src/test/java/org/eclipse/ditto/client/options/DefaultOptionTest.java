@@ -96,8 +96,7 @@ public final class DefaultOptionTest {
         final Class<String> stringClass = String.class;
         final Option<Integer> underTest = DefaultOption.newInstance(DEFAULT_OPTION_NAME, value);
 
-        assertThatExceptionOfType(ClassCastException.class).isThrownBy(() -> underTest.getValueAs(stringClass))
-                .withMessage(String.format("Cannot cast java.lang.Integer to %s", stringClass.getName()));
+        assertThatExceptionOfType(ClassCastException.class).isThrownBy(() -> underTest.getValueAs(stringClass));
     }
 
     /**

@@ -74,10 +74,10 @@
         <developer>
             <id>geglocker</id>
             <name>Gerald Glocker</name>
-            <email>gerald.glocker@bosch-si.com</email>
+            <email>gerald.glocker@bosch.io</email>
             <url>https://github.com/geglock</url>
-            <organization>Bosch Software Innovations GmbH</organization>
-            <organizationUrl>http://www.bosch-si.com</organizationUrl>
+            <organization>Bosch.IO GmbH</organization>
+            <organizationUrl>https://www.bosch.io</organizationUrl>
             <roles>
                 <role>Lead</role>
                 <role>Committer</role>
@@ -86,10 +86,10 @@
         <developer>
             <id>tjaeckle</id>
             <name>Thomas Jaeckle</name>
-            <email>thomas.jaeckle@bosch-si.com</email>
+            <email>thomas.jaeckle@bosch.io</email>
             <url>https://github.com/thjaeckle</url>
-            <organization>Bosch Software Innovations GmbH</organization>
-            <organizationUrl>http://www.bosch-si.com</organizationUrl>
+            <organization>Bosch.IO GmbH</organization>
+            <organizationUrl>https://www.bosch.io</organizationUrl>
             <roles>
                 <role>Lead</role>
                 <role>Committer</role>
@@ -99,10 +99,10 @@
         <developer>
             <id>yucai</id>
             <name>Yufei Cai</name>
-            <email>yufei.cai@bosch-si.com</email>
+            <email>yufei.cai@bosch.io</email>
             <url>https://github.com/yufei-cai</url>
-            <organization>Bosch Software Innovations GmbH</organization>
-            <organizationUrl>http://www.bosch-si.com</organizationUrl>
+            <organization>Bosch.IO GmbH</organization>
+            <organizationUrl>https://www.bosch.io</organizationUrl>
             <roles>
                 <role>Committer</role>
             </roles>
@@ -110,10 +110,10 @@
         <developer>
             <id>dfesenmeyer</id>
             <name>Daniel Fesenmeyer</name>
-            <email>daniel.fesenmeyer@bosch-si.com</email>
+            <email>daniel.fesenmeyer@bosch.io</email>
             <url>https://github.com/danielFesenmeyer</url>
-            <organization>Bosch Software Innovations GmbH</organization>
-            <organizationUrl>http://www.bosch-si.com</organizationUrl>
+            <organization>Bosch.IO GmbH</organization>
+            <organizationUrl>https://www.bosch.io</organizationUrl>
             <roles>
                 <role>Committer</role>
             </roles>
@@ -121,10 +121,10 @@
         <developer>
             <id>dguggemos</id>
             <name>Dominik Guggemos</name>
-            <email>dominik.guggemos@bosch-si.com</email>
+            <email>dominik.guggemos@bosch.io</email>
             <url>https://github.com/dguggemos</url>
-            <organization>Bosch Software Innovations GmbH</organization>
-            <organizationUrl>http://www.bosch-si.com</organizationUrl>
+            <organization>Bosch.IO GmbH</organization>
+            <organizationUrl>https://www.bosch.io</organizationUrl>
             <roles>
                 <role>Committer</role>
             </roles>
@@ -132,10 +132,10 @@
         <developer>
             <id>jfickel</id>
             <name>Juergen Fickel</name>
-            <email>juergen.fickel@bosch-si.com</email>
+            <email>juergen.fickel@bosch.io</email>
             <url>https://github.com/jufickel-b</url>
-            <organization>Bosch Software Innovations GmbH</organization>
-            <organizationUrl>http://www.bosch-si.com</organizationUrl>
+            <organization>Bosch.IO GmbH</organization>
+            <organizationUrl>https://www.bosch.io</organizationUrl>
             <roles>
                 <role>Committer</role>
             </roles>
@@ -143,10 +143,10 @@
         <developer>
             <id>jkraeher</id>
             <name>Johannes Schneider</name>
-            <email>johannes.schneider@bosch-si.com</email>
+            <email>johannes.schneider@bosch.io</email>
             <url>https://github.com/jokraehe</url>
-            <organization>Bosch Software Innovations GmbH</organization>
-            <organizationUrl>http://www.bosch-si.com</organizationUrl>
+            <organization>Bosch.IO GmbH</organization>
+            <organizationUrl>https://www.bosch.io</organizationUrl>
             <roles>
                 <role>Committer</role>
             </roles>
@@ -154,10 +154,10 @@
         <developer>
             <id>ffendt</id>
             <name>Florian Fendt</name>
-            <email>florian.fendt@bosch-si.com</email>
+            <email>florian.fendt@bosch.io</email>
             <url>https://github.com/ffendt</url>
-            <organization>Bosch Software Innovations GmbH</organization>
-            <organizationUrl>http://www.bosch-si.com</organizationUrl>
+            <organization>Bosch.IO GmbH</organization>
+            <organizationUrl>https://www.bosch.io</organizationUrl>
             <roles>
                 <role>Committer</role>
             </roles>
@@ -165,10 +165,10 @@
         <developer>
             <id>smaute</id>
             <name>Stefan Maute</name>
-            <email>stefan.maute@bosch-si.com</email>
+            <email>stefan.maute@bosch.io</email>
             <url>https://github.com/stmaute</url>
-            <organization>Bosch Software Innovations GmbH</organization>
-            <organizationUrl>http://www.bosch-si.com</organizationUrl>
+            <organization>Bosch.IO GmbH</organization>
+            <organizationUrl>https://www.bosch.io</organizationUrl>
             <roles>
                 <role>Committer</role>
             </roles>
@@ -176,10 +176,10 @@
         <developer>
             <id>yklem</id>
             <name>Yannic Klem</name>
-            <email>yannic.klem@bosch-si.com</email>
+            <email>yannic.klem@bosch.io</email>
             <url>https://github.com/Yannic92</url>
-            <organization>Bosch Software Innovations GmbH</organization>
-            <organizationUrl>http://www.bosch-si.com</organizationUrl>
+            <organization>Bosch.IO GmbH</organization>
+            <organizationUrl>https://www.bosch.io</organizationUrl>
             <roles>
                 <role>Committer</role>
             </roles>
@@ -202,15 +202,15 @@
         <!-- ### Testing dependencies versions -->
         <logback.version>1.2.3</logback.version>
         <junit.version>4.12</junit.version>
-        <assertj.version>3.11.1</assertj.version>
+        <assertj.version>3.12.0</assertj.version>
         <mutability-detector.version>0.10.2</mutability-detector.version>
         <equals-verifier.version>3.0.3</equals-verifier.version>
-        <mockito.version>2.9.0</mockito.version>
+        <mockito.version>3.1.0</mockito.version>
         <jsonassert.version>1.2.3</jsonassert.version>
 
         <json-unit.version>1.28.1</json-unit.version>
-        <pax.exam.version>4.8.0</pax.exam.version>
-        <felix.version>5.4.0</felix.version>
+        <pax.exam.version>4.13.0</pax.exam.version>
+        <felix.version>6.0.3</felix.version>
 
 
         <javac.source>1.8</javac.source>
@@ -235,7 +235,7 @@
         <!-- in other words: never do that here! exclude the 'breakages' locally in the japicmp maven plugin if you intentionally break something -->
         <binary-compatibility-check.version>1.0.0</binary-compatibility-check.version>
         <!-- skip until first release: -->
-        <binary-compatibility-check.skip>true</binary-compatibility-check.skip>
+        <binary-compatibility-check.skip>false</binary-compatibility-check.skip>
 
         <ditto.thirdPartyLicences.excludedGroups>
             (org\.eclipse\.ditto.*)
@@ -381,7 +381,7 @@
                 <plugin>
                     <groupId>com.github.siom79.japicmp</groupId>
                     <artifactId>japicmp-maven-plugin</artifactId>
-                    <version>0.11.0</version>
+                    <version>0.14.3</version>
                     <configuration>
                         <oldVersion>
                             <dependency>
@@ -400,16 +400,43 @@
                             <onlyModified>true</onlyModified>
                             <accessModifier>public</accessModifier>
                             <breakBuildOnModifications>false</breakBuildOnModifications>
-                            <breakBuildOnBinaryIncompatibleModifications>true
-                            </breakBuildOnBinaryIncompatibleModifications>
-                            <onlyBinaryIncompatible>false</onlyBinaryIncompatible>
+                            <breakBuildOnBinaryIncompatibleModifications>true</breakBuildOnBinaryIncompatibleModifications>
+                            <onlyBinaryIncompatible>true</onlyBinaryIncompatible>
                             <includeSynthetic>false</includeSynthetic>
                             <ignoreMissingClasses>false</ignoreMissingClasses>
                             <skipPomModules>true</skipPomModules>
                             <htmlTitle>${project.name} :: Binary Compatibility Report</htmlTitle>
+                            <overrideCompatibilityChangeParameters>
+                                <!-- Consider new method added to interface as binary-compatible and not
+                                     source-compatible. Require only binary compatibility for semantic versioning,
+                                     due to ubiquitous usage of interfaces for information hiding in model packages.
+                                 -->
+                                <overrideCompatibilityChangeParameter>
+                                    <compatibilityChange>METHOD_NEW_DEFAULT</compatibilityChange>
+                                    <binaryCompatible>true</binaryCompatible>
+                                    <sourceCompatible>true</sourceCompatible>
+                                </overrideCompatibilityChangeParameter>
+                                <overrideCompatibilityChangeParameter>
+                                    <compatibilityChange>METHOD_ABSTRACT_NOW_DEFAULT</compatibilityChange>
+                                    <binaryCompatible>true</binaryCompatible>
+                                    <sourceCompatible>true</sourceCompatible>
+                                </overrideCompatibilityChangeParameter>
+                                <overrideCompatibilityChangeParameter>
+                                    <compatibilityChange>METHOD_ADDED_TO_INTERFACE</compatibilityChange>
+                                    <binaryCompatible>true</binaryCompatible>
+                                    <sourceCompatible>false</sourceCompatible>
+                                </overrideCompatibilityChangeParameter>
+                            </overrideCompatibilityChangeParameters>
                             <excludes>
                                 <!-- Don't add excludes here before checking with the whole Ditto team -->
-                                <!--<exclude></exclude>-->
+                                <exclude>org.eclipse.ditto.client.changes.internal</exclude>
+                                <exclude>org.eclipse.ditto.client.internal</exclude>
+                                <exclude>org.eclipse.ditto.client.live.internal</exclude>
+                                <exclude>org.eclipse.ditto.client.live.messages.internal</exclude>
+                                <exclude>org.eclipse.ditto.client.management.internal</exclude>
+                                <exclude>org.eclipse.ditto.client.messaging.internal</exclude>
+                                <exclude>org.eclipse.ditto.client.options.internal</exclude>
+                                <exclude>org.eclipse.ditto.client.twin.internal</exclude>
                             </excludes>
                         </parameter>
                     </configuration>
@@ -612,6 +639,9 @@
                 <inherited>false</inherited>
                 <configuration>
                     <header>../legal/headers/license-header.txt</header>
+                    <validHeaders>
+                        <header>../legal/headers/license-header-2019.txt</header>
+                    </validHeaders>
                     <aggregate>true</aggregate>
                     <quiet>false</quiet>
                     <failIfMissing>true</failIfMissing>
@@ -822,7 +852,7 @@
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-utils-jsr305</artifactId>
-            <version>${ditto.version}</version>
+            <version>1.0.0</version>
             <scope>provided</scope>
         </dependency>
 

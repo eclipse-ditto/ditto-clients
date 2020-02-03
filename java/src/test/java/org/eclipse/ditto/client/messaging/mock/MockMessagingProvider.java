@@ -38,7 +38,11 @@ import org.eclipse.ditto.model.messages.MessageBuilder;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessageHeadersBuilder;
+import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.Adaptable;
+import org.eclipse.ditto.protocoladapter.JsonifiableAdaptable;
+import org.eclipse.ditto.protocoladapter.Payload;
+import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.WithFeatureId;
 import org.eclipse.ditto.signals.commands.base.Command;
@@ -71,6 +75,15 @@ public class MockMessagingProvider implements MessagingProvider {
     private final AtomicReference<Consumer<Message<?>>> in = new AtomicReference<>();
     private final ExecutorService executor = Executors.newFixedThreadPool(2, new MockThreadFactory());
     private final BlockingQueue<Message<?>> eventQueue = new LinkedBlockingQueue<>();
+    private final JsonifiableAdaptable dummyAdaptable =
+            ProtocolFactory.wrapAsJsonifiableAdaptable(Adaptable.newBuilder(TopicPath.newBuilder(ThingId.dummy())
+                    .twin()
+                    .commands()
+                    .modify()
+                    .build())
+                    .withHeaders(DittoHeaders.empty())
+                    .withPayload(Payload.newBuilder().build())
+                    .build());
 
     private Consumer<Message<?>> out = message -> {
         throw new IllegalStateException("Unhandled out-message: " + message);
