@@ -16,6 +16,7 @@ import static org.mutabilitydetector.unittesting.AllowedReason.provided;
 import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
 import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
+import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.entity.id.EntityId;
@@ -34,7 +35,7 @@ public final class ImmutableChangeTest {
     @Test
     public void assertImmutability() {
         assertInstancesOf(ImmutableChange.class, areImmutable(),
-                provided(JsonValue.class, JsonPointer.class, EntityId.class).isAlsoImmutable());
+                provided(JsonValue.class, JsonPointer.class, EntityId.class, JsonObject.class).isAlsoImmutable());
     }
 
     /**

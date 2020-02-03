@@ -16,6 +16,7 @@ import static org.mutabilitydetector.unittesting.AllowedReason.provided;
 import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
 import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
+import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.model.things.Feature;
 import org.junit.Test;
 
@@ -26,18 +27,13 @@ import nl.jqno.equalsverifier.EqualsVerifier;
  */
 public final class ImmutableFeatureChangeTest {
 
-    /**
-     *
-     */
     @Test
     public void assertImmutability() {
-        assertInstancesOf(ImmutableFeatureChange.class, areImmutable(),
-                provided(Feature.class, ImmutableChange.class).isAlsoImmutable());
+        assertInstancesOf(ImmutableFeatureChange.class,
+                areImmutable(),
+                provided(Feature.class, Change.class).isAlsoImmutable());
     }
 
-    /**
-     *
-     */
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(ImmutableFeatureChange.class).verify();

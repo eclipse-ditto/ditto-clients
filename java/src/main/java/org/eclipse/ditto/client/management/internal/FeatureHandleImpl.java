@@ -242,7 +242,7 @@ public abstract class FeatureHandleImpl<T extends ThingHandle, F extends Feature
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/{1}/properties", thingId, featureId),
                 Change.class, handler, (change, value, path, params) ->
                         new ImmutableChange(change.getEntityId(), change.getAction(), path, value, change.getRevision(),
-                                change.getTimestamp().orElse(null))
+                                change.getTimestamp().orElse(null), change.getExtra().orElse(null))
         );
     }
 
@@ -255,7 +255,7 @@ public abstract class FeatureHandleImpl<T extends ThingHandle, F extends Feature
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/{1}/properties{2}", thingId, featureId,
                         propertyPath), Change.class, handler,
                 (change, value, path, params) -> new ImmutableChange(change.getEntityId(), change.getAction(), path,
-                        value, change.getRevision(), change.getTimestamp().orElse(null))
+                        value, change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null))
         );
     }
 

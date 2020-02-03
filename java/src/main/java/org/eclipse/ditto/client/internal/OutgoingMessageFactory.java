@@ -347,6 +347,7 @@ public final class OutgoingMessageFactory {
                         builder = MessagesModelFactory.newMessageBuilder(messageHeaders);
                     }
                     message.getPayload().ifPresent(builder::payload);
+                    message.getExtra().ifPresent(builder::extra);
 
                     // if a content-type was explicitly set
                     final Optional<MessageSerializer<T>> contentTypeSerializer = msgContentType

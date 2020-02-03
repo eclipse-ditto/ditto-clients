@@ -17,6 +17,7 @@ import java.util.Optional;
 import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.client.options.Option;
+import org.eclipse.ditto.json.JsonFieldSelector;
 
 /**
  * This class provides convenient access to the values of known options out of an array of user provided options.
@@ -160,6 +161,15 @@ public final class OptionsEvaluator {
          */
         public Optional<CharSequence> getFilter() {
             return getValue(new FilterOptionVisitor());
+        }
+
+        /**
+         * Returns the extra fields for events to be delivered to this client.
+         *
+         * @return the extra fields for events to be delivered to this client.
+         */
+        public Optional<JsonFieldSelector> getExtraFields() {
+            return getValue(new ExtraFieldsOptionVisitor());
         }
     }
 

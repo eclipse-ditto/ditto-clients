@@ -38,7 +38,7 @@ public final class PointerWithData<T> {
      * @param <T> the type of the passed in data
      * @return the newly created PointerWithData.
      */
-    static <T> PointerWithData create(final JsonPointer pointer, final T data) {
+    static <T> PointerWithData<T> create(final JsonPointer pointer, final T data) {
         return new PointerWithData<>(pointer, data);
     }
 
@@ -55,5 +55,6 @@ public final class PointerWithData<T> {
     public T getData() {
         return data;
     }
+
 }
 

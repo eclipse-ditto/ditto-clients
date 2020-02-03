@@ -74,6 +74,11 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
     String CONSUMPTION_PARAM_FILTER = "filter";
 
     /**
+     * Parameter used for adding extra fields when subscribing for messages/events at the backend.
+     */
+    String CONSUMPTION_PARAM_EXTRA_FIELDS = "extraFields";
+
+    /**
      * Creates a new instance of {@link ThingHandle} which aggregates all operations of an already existing {@link
      * Thing} specified by the given identifier.
      *
