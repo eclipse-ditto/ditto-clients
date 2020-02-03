@@ -486,38 +486,4 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
                 .isThrownBy(() -> client.twin().put(THING, copyPolicy, copyPolicyFromThing));
     }
 
-    @Test
-    public void testUpdateThingWithOptionCopyPolicy() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING.getEntityId().get())
-                    .hasOptionCopyPolicy();
-
-            latch.countDown();
-        });
-
-        Option copyPolicy = Options.Modify.copyPolicy(PolicyId.of(THING.getPolicyId().get()));
-        client.twin().update(THING, copyPolicy);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
-    }
-
-    @Test
-    public void testUpdateThingWithJsonInlineAndOptionInlinePolicy() {
-        Option copyPolicy = Options.Modify.copyPolicy(PolicyId.of(THING.getPolicyId().get()));
-
-        assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> client.twin().update(THING, POLICY_JSON_OBJECT, copyPolicy));
-    }
-
-    @Test
-    public void testUpdateThingWithAllOptionInlinePolicy() {
-        Option copyPolicyFromThing = Options.Modify.copyPolicyFromThing(THING_ID);
-        Option copyPolicy = Options.Modify.copyPolicy(PolicyId.of(THING.getPolicyId().get()));
-
-        assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> client.twin().update(THING, copyPolicy, copyPolicyFromThing));
-    }
 }

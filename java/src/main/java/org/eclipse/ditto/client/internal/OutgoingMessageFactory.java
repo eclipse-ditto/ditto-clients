@@ -147,11 +147,13 @@ public final class OutgoingMessageFactory {
 
         final List<Option> collect = fitlerOptions(initialPolicy, options);
 
+        final DittoHeaders dittoHeaders = buildDittoHeaders(false, options);
+
         if (collect.isEmpty()) {
-            return CreateThing.of(thing, initialPolicy, buildDittoHeaders(false, options));
+            return CreateThing.of(thing, initialPolicy, dittoHeaders);
         } else {
             final String extractPolicyFromOption = extractPolicyFromOption(collect);
-            return CreateThing.withCopiedPolicy(thing, extractPolicyFromOption, buildDittoHeaders(false, options));
+            return CreateThing.withCopiedPolicy(thing, extractPolicyFromOption, dittoHeaders);
         }
     }
 
