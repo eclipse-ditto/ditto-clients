@@ -19,7 +19,7 @@ import {
   WebSocketImplementation,
   WebSocketImplementationBuilderHandler,
   WebSocketImplementationBuilderUrl
-} from '@eclipse-ditto/ditto-javascript-client-api_1.0-pre';
+} from '@eclipse-ditto/ditto-javascript-client-api_1.0';
 import { ClientOptions } from 'ws';
 import { ProxyAgent } from './proxy-settings';
 import WebSocket = require('ws');

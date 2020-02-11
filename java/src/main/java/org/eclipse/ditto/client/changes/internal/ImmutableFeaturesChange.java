@@ -22,6 +22,7 @@ import javax.annotation.concurrent.Immutable;
 import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.client.changes.FeaturesChange;
+import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.entity.id.EntityId;
@@ -47,6 +48,7 @@ public final class ImmutableFeaturesChange implements FeaturesChange {
      * @param path the JsonPointer of the changed json field.
      * @param revision the revision (change counter) of the change.
      * @param timestamp the timestamp of the change.
+     * @param extra the extra data to be included in the change.
      * @throws IllegalArgumentException if any argument is {@code null}.
      */
     public ImmutableFeaturesChange(final EntityId entityId,
@@ -54,16 +56,21 @@ public final class ImmutableFeaturesChange implements FeaturesChange {
             @Nullable final Features features,
             final JsonPointer path,
             final long revision,
-            @Nullable final Instant timestamp) {
+            @Nullable final Instant timestamp,
+            @Nullable final JsonObject extra) {
 
-        change = new ImmutableChange(entityId, changeAction, path, getJsonValueForFeatures(features), revision,
-                timestamp);
-        this.features = features;
+        this(new ImmutableChange(entityId, changeAction, path, getJsonValueForFeatures(features), revision, timestamp,
+                extra), features);
     }
 
     @Nullable
     private static JsonValue getJsonValueForFeatures(@Nullable final Features features) {
         return null != features ? features.toJson(features.getImplementedSchemaVersion()) : null;
+    }
+
+    private ImmutableFeaturesChange(final Change delegationTarget, @Nullable final Features features) {
+        change = delegationTarget;
+        this.features = features;
     }
 
     @Override
@@ -99,6 +106,16 @@ public final class ImmutableFeaturesChange implements FeaturesChange {
     @Override
     public Optional<Instant> getTimestamp() {
         return change.getTimestamp();
+    }
+
+    @Override
+    public Optional<JsonObject> getExtra() {
+        return change.getExtra();
+    }
+
+    @Override
+    public Change withExtra(@Nullable final JsonObject extra) {
+        return new ImmutableFeaturesChange(change.withExtra(extra), features);
     }
 
     @Override

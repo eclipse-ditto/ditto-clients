@@ -2,13 +2,17 @@ name: java-build
 
 on:
   push:
-    #paths:
-    #  - 'java/**'
+    paths:
+      - 'java/**'
+      - '.github/workflows/maven.yml'
     branches:
       - master
 
   # Run build for any PR
   pull_request:
+    paths:
+      - 'java/**'
+      - '.github/workflows/maven.yml'
 
 jobs:
   build:
@@ -26,4 +30,4 @@ jobs:
         java-version: ${{ matrix.java }}
     - name: build with Maven
       working-directory: java
-      run: mvn package javadoc:jar source:jar --batch-mode --errors --quiet -DcreateJavadoc=true --file pom.xml --settings .travis.settings.xml
+      run: mvn package javadoc:jar source:jar --batch-mode --errors --quiet -DcreateJavadoc=true --file pom.xml --settings .maven.settings.xml

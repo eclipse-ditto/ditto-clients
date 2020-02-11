@@ -23,6 +23,7 @@ import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.ChangeAction;
+import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.entity.id.EntityId;
@@ -42,6 +43,7 @@ public final class ImmutableChange implements Change {
     @Nullable private final JsonValue value;
     private final long revision;
     @Nullable private final Instant timestamp;
+    @Nullable private final JsonObject extra;
 
     /**
      * Constructs a new {@code ImmutableChange} object.
@@ -52,13 +54,15 @@ public final class ImmutableChange implements Change {
      * @param value the value of the changed json field.
      * @param revision the revision (change counter) of the change.
      * @param timestamp the timestamp of the change.
+     * @param extra the extra data to be included in the change.
      */
     public ImmutableChange(final EntityId entityId,
             final ChangeAction changeAction,
             final JsonPointer path,
             @Nullable final JsonValue value,
             final long revision,
-            @Nullable final Instant timestamp) {
+            @Nullable final Instant timestamp,
+            @Nullable final JsonObject extra) {
 
         this.entityId = argumentNotNull(entityId, "entityId");
         this.action = argumentNotNull(changeAction, "changeAction");
@@ -66,6 +70,7 @@ public final class ImmutableChange implements Change {
         this.value = value;
         this.revision = revision;
         this.timestamp = timestamp;
+        this.extra = extra;
     }
 
     @Override
@@ -99,6 +104,16 @@ public final class ImmutableChange implements Change {
     }
 
     @Override
+    public Optional<JsonObject> getExtra() {
+        return Optional.ofNullable(extra);
+    }
+
+    @Override
+    public Change withExtra(@Nullable final JsonObject extra) {
+        return new ImmutableChange(entityId, action, path, value, revision, timestamp, extra);
+    }
+
+    @Override
     public boolean equals(final Object o) {
         if (this == o) {
             return true;
@@ -112,12 +127,13 @@ public final class ImmutableChange implements Change {
                 Objects.equals(path, that.path) &&
                 Objects.equals(value, that.value) &&
                 revision == that.revision &&
-                Objects.equals(timestamp, that.timestamp);
+                Objects.equals(timestamp, that.timestamp)&&
+                Objects.equals(extra, that.extra);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(entityId, action, path, value, revision, timestamp);
+        return Objects.hash(entityId, action, path, value, revision, timestamp, extra);
     }
 
     @Override
@@ -129,6 +145,7 @@ public final class ImmutableChange implements Change {
                 ", value=" + value +
                 ", revision=" + revision +
                 ", timestamp=" + timestamp +
+                ", extra=" + extra +
                 "]";
     }
 

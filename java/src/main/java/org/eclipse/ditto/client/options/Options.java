@@ -17,6 +17,7 @@ import java.util.Arrays;
 import org.eclipse.ditto.client.management.CommonManagement;
 import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.json.JsonFieldSelector;
 
 /**
  * This utility class allows to create {@link Option}s with custom values the Ditto Client is aware of.
@@ -157,6 +158,22 @@ public final class Options {
          */
         public static Option<CharSequence> filter(final CharSequence rqlExpression) {
             return DefaultOption.newInstance(OptionName.Consumption.FILTER, rqlExpression);
+        }
+
+        /**
+         * Creates an option for specifying extra fields to send for events to be delivered to this client.
+         * <p>
+         * This option is only applied for twin and live events.
+         * </p>
+         * <p>
+         * If this Option is not specified, no extra fields will be sent back from the backend.
+         * </p>
+         *
+         * @param jsonFieldSelector the JsonFieldSelector to apply for selecting extra fields.
+         * @return the new option.
+         */
+        public static Option<JsonFieldSelector> extraFields(final JsonFieldSelector jsonFieldSelector) {
+            return DefaultOption.newInstance(OptionName.Consumption.EXTRA_FIELDS, jsonFieldSelector);
         }
     }
 

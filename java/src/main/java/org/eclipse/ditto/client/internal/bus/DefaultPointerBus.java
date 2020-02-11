@@ -17,8 +17,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import org.eclipse.ditto.json.JsonPointer;
-
 /**
  * Default implementation of {@link PointerBus}.
  *
@@ -44,15 +42,7 @@ final class DefaultPointerBus implements PointerBus {
     }
 
     @Override
-    public <T> void notify(final JsonPointer key, final T object) {
-
-        @SuppressWarnings("unchecked") final PointerWithData<T> wrap = PointerWithData.create(key, object);
-        notify(wrap);
-    }
-
-    @Override
     public <T> void notify(final PointerWithData<T> pointerWithData) {
-
         consumerRegistry.select(pointerWithData.getPointer())
                 .stream()
                 .filter(reg -> Objects.nonNull(reg.getRegisteredObject()))
@@ -62,6 +52,7 @@ final class DefaultPointerBus implements PointerBus {
     @Override
     public Registration<Consumer<PointerWithData>> on(final JsonPointerSelector selector,
             final Consumer<PointerWithData> consumer) {
+
         return consumerRegistry.register(selector, consumer);
     }
 

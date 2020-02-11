@@ -84,7 +84,11 @@ public interface OptionName extends Predicate<Object> {
          * Name of the option for defining which RQL expression / filter should match in the backend for events to be
          * delivered to this client.
          */
-        FILTER
+        FILTER,
+        /**
+         * Name of the option for selecting extra fields for events to be delivered to this client.
+         */
+        EXTRA_FIELDS
     }
 
 }

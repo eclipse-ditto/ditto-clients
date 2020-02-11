@@ -114,6 +114,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
         final Optional<Option<?>> unknownOptionIncluded = Arrays.stream(consumptionOptions)
                 .filter(option -> !option.getName().equals(OptionName.Consumption.NAMESPACES))
                 .filter(option -> !option.getName().equals(OptionName.Consumption.FILTER))
+                .filter(option -> !option.getName().equals(OptionName.Consumption.EXTRA_FIELDS))
                 .findFirst();
         if (unknownOptionIncluded.isPresent()) {
             final Option<?> unknownOption = unknownOptionIncluded.get();
@@ -128,6 +129,8 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
                 subscriptionConfig.put(CONSUMPTION_PARAM_NAMESPACES, String.join(",", namespaces)));
         options.getFilter().ifPresent(filter ->
                 subscriptionConfig.put(CONSUMPTION_PARAM_FILTER, filter.toString()));
+        options.getExtraFields().ifPresent(extraFields ->
+                subscriptionConfig.put(CONSUMPTION_PARAM_EXTRA_FIELDS, extraFields.toString()));
 
         return doStartConsumption(subscriptionConfig);
     }
@@ -481,7 +484,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/attributes"),
                 Change.class, handler,
                 (change, value, path, params) -> new ImmutableChange(change.getEntityId(), change.getAction(), path,
-                        value, change.getRevision(), change.getTimestamp().orElse(null))
+                        value, change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null))
         );
     }
 
@@ -495,7 +498,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/attributes{0}", attrPath), Change.class,
                 handler,
                 (change, value, path, params) -> new ImmutableChange(change.getEntityId(), change.getAction(), path,
-                        value, change.getRevision(), change.getTimestamp().orElse(null))
+                        value, change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null))
         );
     }
 
@@ -511,7 +514,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
                                     .useId(params.get("{featureId}"))
                                     .build() : null;
                     return new ImmutableFeatureChange(change.getEntityId(), change.getAction(), feature, path,
-                            change.getRevision(), change.getTimestamp().orElse(null));
+                            change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null));
                 });
     }
 
@@ -527,7 +530,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
                     final Feature feature = value != null ?
                             ThingsModelFactory.newFeatureBuilder(value.asObject()).useId(featureId).build() : null;
                     return new ImmutableFeatureChange(change.getEntityId(), change.getAction(), feature, path,
-                            change.getRevision(), change.getTimestamp().orElse(null));
+                            change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null));
                 });
     }
 
@@ -539,7 +542,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
                 FeaturesChange.class, handler, (change, value, path, params) -> {
                     final Features features = value != null ? ThingsModelFactory.newFeatures(value.asObject()) : null;
                     return new ImmutableFeaturesChange(change.getEntityId(), change.getAction(), features, path,
-                            change.getRevision(), change.getTimestamp().orElse(null));
+                            change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null));
                 });
     }
 
@@ -554,7 +557,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
                 Change.class,
                 handler,
                 (change, value, path, params) -> new ImmutableChange(change.getEntityId(), change.getAction(), path,
-                        value, change.getRevision(), change.getTimestamp().orElse(null))
+                        value, change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null))
         );
     }
 
@@ -572,7 +575,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
                         propertyPath),
                 Change.class, handler,
                 (change, value, path, params) -> new ImmutableChange(change.getEntityId(), change.getAction(), path,
-                        value, change.getRevision(), change.getTimestamp().orElse(null))
+                        value, change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null))
         );
     }
 
@@ -584,7 +587,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
                 ThingChange.class, handler, (change, value, path, params) -> {
                     final Thing thing = null != value ? ThingsModelFactory.newThing(value.asObject()) : null;
                     return new ImmutableThingChange(change.getEntityId(), change.getAction(), thing, path,
-                            change.getRevision(), change.getTimestamp().orElse(null));
+                            change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null));
                 });
     }
 

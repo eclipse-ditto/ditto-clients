@@ -15,6 +15,9 @@ package org.eclipse.ditto.client.changes;
 import java.time.Instant;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
+import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.signals.base.WithId;
@@ -81,5 +84,23 @@ public interface Change extends WithId {
      * @return the timestamp of the change.
      */
     Optional<Instant> getTimestamp();
+
+    /**
+     * Returns the extra information which enriches the actual value of this change.
+     *
+     * @since 1.1.0
+     * @return the extra data or an empty Optional.
+     */
+    Optional<JsonObject> getExtra();
+
+    /**
+     * Sets the given extra information which enriches the actual value of the change.
+     * Previously set extra is replaced.
+     *
+     * @since 1.1.0
+     * @param extra the extra data information or {@code null}.
+     * @return a new instance of this change with the added {@code extra} data.
+     */
+    Change withExtra(@Nullable JsonObject extra);
 
 }

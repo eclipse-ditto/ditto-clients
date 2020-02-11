@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -111,27 +112,28 @@ public final class SelectorUtil {
             final String thingEventTypeString,
             final Class<T> eventClass,
             final Function<T, String> addressBuilderFunction,
-            final Function<T, Change> changeBuilderFunction) {
+            final BiFunction<T, JsonObject, Change> changeBuilderFunction) {
 
         logger.trace("Adding bus handler for address '{}'", thingEventTypeString);
 
         in.on(JsonPointerSelectors.jsonPointer(thingEventTypeString), e -> {
+            final Message<?> message = (Message<?>) e.getData();
             final T event =
-                    ((Message<?>) e.getData()).getPayload()
+                    message.getPayload()
                             .filter(p -> eventClass.isAssignableFrom(p.getClass()))
                             .map(eventClass::cast)
                             .orElseThrow(() -> new IllegalStateException(
                                     "Could not map received event '" + thingEventTypeString +
                                             "' which should be of type '" + eventClass +
                                             "'. The actual class of the event is: " +
-                                            ((Message<?>) e.getData()).getPayload()
+                                            message.getPayload()
                                                     .orElseThrow(() ->
                                                             new IllegalStateException(
                                                                     "Payload of event was not present"))
                                                     .getClass()));
 
             final String address = addressBuilderFunction.apply(event);
-            final Change change = changeBuilderFunction.apply(event);
+            final Change change = changeBuilderFunction.apply(event, message.getExtra().orElse(null));
 
             final List<JsonPointer> jsonPointers = change.getValue()
                     .filter(JsonValue::isObject)

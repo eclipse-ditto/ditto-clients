@@ -16,7 +16,7 @@ import {
   HttpClientBuilder,
   WebSocketBuilderInitialStep,
   WebSocketClientBuilder
-} from '@eclipse-ditto/ditto-javascript-client-api_1.0-pre';
+} from '@eclipse-ditto/ditto-javascript-client-api_1.0';
 import { NodeRequester } from './node-http';
 import { NodeWebSocketBuilder } from './node-websocket';
 import { ProxyAgent, ProxyOptions } from './proxy-settings';

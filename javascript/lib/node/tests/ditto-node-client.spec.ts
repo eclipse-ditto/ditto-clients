@@ -11,11 +11,11 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { HttpClientBuilder, WebSocketClientBuilder } from '@eclipse-ditto/ditto-javascript-client-api_1.0';
 import { DittoNodeClient } from '../src/ditto-node-client';
-import { HttpClientBuilder, WebSocketClientBuilder } from '@eclipse-ditto/ditto-javascript-client-api_1.0-pre';
 import { NodeRequester } from '../src/node-http';
-import { ProxyAgent, ProxyOptions } from '../src/proxy-settings';
 import { NodeWebSocketBuilder } from '../src/node-websocket';
+import { ProxyAgent, ProxyOptions } from '../src/proxy-settings';
 
 // tslint:disable-next-line:no-hardcoded-credentials
 const proxyOptions = { url: 'http://localhost:3128', username: 'ditto', password: 'foobar' } as ProxyOptions;

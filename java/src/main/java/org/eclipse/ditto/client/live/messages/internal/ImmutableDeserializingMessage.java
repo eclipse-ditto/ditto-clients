@@ -26,6 +26,7 @@ import javax.annotation.concurrent.Immutable;
 import org.eclipse.ditto.client.live.messages.MessageSerializationException;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.live.messages.MessageSerializers;
+import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.model.base.auth.AuthorizationContext;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.messages.Message;
@@ -148,6 +149,11 @@ public final class ImmutableDeserializingMessage<T> implements Message<T> {
     @Override
     public Optional<ByteBuffer> getRawPayload() {
         return delegateMessage.getRawPayload();
+    }
+
+    @Override
+    public Optional<JsonObject> getExtra() {
+        return delegateMessage.getExtra();
     }
 
     @Override

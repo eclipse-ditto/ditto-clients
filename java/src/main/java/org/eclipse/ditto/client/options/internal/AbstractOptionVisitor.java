@@ -36,7 +36,7 @@ import org.eclipse.ditto.client.options.OptionName;
 abstract class AbstractOptionVisitor<T> implements OptionVisitor<T> {
 
     private final OptionName expectedOptionName;
-    private volatile T value;
+    private T value;
 
     /**
      * Constructs a new {@code AbstractOptionVisitor} object.
