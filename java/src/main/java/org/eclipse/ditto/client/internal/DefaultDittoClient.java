@@ -149,14 +149,24 @@ public final class DefaultDittoClient implements DittoClient {
     @Override
     public CompletableFuture<Adaptable> sendDittoProtocol(final Adaptable dittoProtocolAdaptable) {
 
+        TopicPath.Group group = dittoProtocolAdaptable.getTopicPath().getGroup();
+        switch (group) {
+            case THINGS:
+                return getTopicPathChannelForThingsGroup(dittoProtocolAdaptable);
+            case POLICIES:
+                return policyClient.get().getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
+            default:
+                throw new IllegalArgumentException("Unknown group: " + group);
+        }
+    }
+
+    private CompletableFuture<Adaptable> getTopicPathChannelForThingsGroup(final Adaptable dittoProtocolAdaptable) {
         final TopicPath.Channel channel = dittoProtocolAdaptable.getTopicPath().getChannel();
         switch (channel) {
             case TWIN:
                 return twin.get().getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
             case LIVE:
                 return live.get().getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
-            case POLICY:
-                return policyClient.get().getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
             default:
                 throw new IllegalArgumentException("Unknown channel: " + channel);
         }
@@ -202,7 +212,7 @@ public final class DefaultDittoClient implements DittoClient {
 
     private static PoliciesImpl configurePolicyClient(final MessagingProvider messagingProvider,
             final ResponseForwarder responseForwarder) {
-        final String name = TopicPath.Channel.POLICY.getName();
+        final String name = TopicPath.Group.POLICIES.getName();
         final PointerBus bus = BusFactory.createPointerBus(name, messagingProvider.getExecutorService());
         init(bus, messagingProvider, responseForwarder);
         final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();

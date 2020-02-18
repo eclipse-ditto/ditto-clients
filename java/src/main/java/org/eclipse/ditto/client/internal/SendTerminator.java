@@ -97,10 +97,11 @@ public final class SendTerminator<T> {
     public SendTerminator(final MessagingProvider messagingProvider, final ResponseForwarder responseForwarder,
             final PolicyCommand policyCommand) {
 
-        // commands are always sent on "POLICY" channel, to modify Policies.
-        this(messagingProvider, responseForwarder, TopicPath.Channel.POLICY,
+        // commands are always sent on "NONE" channel, to modify Policies.
+        this(messagingProvider, responseForwarder, TopicPath.Channel.NONE,
                 checkNotNull(policyCommand, "command to be sent"), null);
     }
+
 
     private SendTerminator(final MessagingProvider messagingProvider,
             final ResponseForwarder responseForwarder,
