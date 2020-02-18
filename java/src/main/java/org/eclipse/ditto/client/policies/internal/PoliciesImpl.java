@@ -122,7 +122,7 @@ public class PoliciesImpl implements Policies {
 
         return new SendTerminator<Optional<Policy>>(messagingProvider, responseForwarder,
                 outgoingMessageFactory.putPolicy(policy, options))
-                .applyModify(response -> {
+                .applyModifyPolicy(response -> {
             if (response != null) {
                 final Optional<JsonValue> responseEntityOpt =
                         response.getEntity(response.getImplementedSchemaVersion());
