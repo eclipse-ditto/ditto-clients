@@ -292,38 +292,39 @@ public final class TestConstants {
          * Known Policy in JsonObject.
          */
         public static final JsonObject POLICY_JSON_OBJECT = JsonObject.of("{\n" +
-                "  \"entries\": {\n" +
-                "    \"DEVICE\": {\n" +
-                "      \"subjects\": {\n" +
-                "        \"{{ request:subjectId }}\": {\n" +
-                "          \"type\": \"suite-auth\"\n" +
+                "    \"policyId\": \"policy.namespace:policyName\",\n" +
+                "    \"entries\": {\n" +
+                "        \"maker\": {\n" +
+                "            \"subjects\": {\n" +
+                "                \"{{ request:subjectId }}\": {\n" +
+                "                    \"type\": \"suite-auth\"\n" +
+                "                }\n" +
+                "            },\n" +
+                "            \"resources\": {\n" +
+                "                \"policy:/\": {\n" +
+                "                    \"grant\": [\n" +
+                "                        \"READ\",\n" +
+                "                        \"WRITE\"\n" +
+                "                    ],\n" +
+                "                    \"revoke\": []\n" +
+                "                },\n" +
+                "                \"thing:/\": {\n" +
+                "                    \"grant\": [\n" +
+                "                        \"READ\",\n" +
+                "                        \"WRITE\"\n" +
+                "                    ],\n" +
+                "                    \"revoke\": []\n" +
+                "                },\n" +
+                "                \"message:/\": {\n" +
+                "                    \"grant\": [\n" +
+                "                        \"READ\",\n" +
+                "                        \"WRITE\"\n" +
+                "                    ],\n" +
+                "                    \"revoke\": []\n" +
+                "                }\n" +
+                "            }\n" +
                 "        }\n" +
-                "      },\n" +
-                "      \"resources\": {\n" +
-                "        \"policy:/\": {\n" +
-                "          \"grant\": [\n" +
-                "            \"READ\",\n" +
-                "            \"WRITE\"\n" +
-                "          ],\n" +
-                "          \"revoke\": []\n" +
-                "        },\n" +
-                "        \"thing:/\": {\n" +
-                "          \"grant\": [\n" +
-                "            \"READ\",\n" +
-                "            \"WRITE\"\n" +
-                "          ],\n" +
-                "          \"revoke\": []\n" +
-                "        },\n" +
-                "        \"message:/\": {\n" +
-                "          \"grant\": [\n" +
-                "            \"READ\",\n" +
-                "            \"WRITE\"\n" +
-                "          ],\n" +
-                "          \"revoke\": []\n" +
-                "        }\n" +
-                "      }\n" +
                 "    }\n" +
-                "  }\n" +
                 "}");
 
 
