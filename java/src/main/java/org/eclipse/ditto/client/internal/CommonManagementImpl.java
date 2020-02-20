@@ -62,6 +62,7 @@ import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
+import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,8 +77,6 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
         CommonManagement<T, F> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonManagementImpl.class);
-
-    private static final String INLINE_POLICY_KEY = "_policy";
 
     private final TopicPath.Channel channel;
     private final MessagingProvider messagingProvider;
@@ -279,14 +278,10 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
     public CompletableFuture<Thing> create(final JsonObject jsonObject, final Option<?>... options) {
         argumentNotNull(jsonObject);
 
-        JsonObject initialPolciy = null;
-        if (jsonObject.getValue(INLINE_POLICY_KEY).isPresent()) {
-            initialPolciy = jsonObject.getValue(INLINE_POLICY_KEY).get().asObject();
-            jsonObject.remove(INLINE_POLICY_KEY);
-        }
+        final Optional<JsonObject> initialPolicy = getInlinePolicyFromThingJson(jsonObject);
 
         final Thing thing = ThingsModelFactory.newThing(jsonObject);
-        return create(thing, initialPolciy, options);
+        return create(thing, initialPolicy.orElse(null), options);
     }
 
     @Override
@@ -345,14 +340,10 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
     public CompletableFuture<Optional<Thing>> put(final JsonObject jsonObject, final Option<?>... options) {
         argumentNotNull(jsonObject);
 
-        JsonObject initialPolciy = null;
-        if (jsonObject.getValue(INLINE_POLICY_KEY).isPresent()) {
-            initialPolciy = jsonObject.getValue(INLINE_POLICY_KEY).get().asObject();
-            jsonObject.remove(INLINE_POLICY_KEY);
-        }
+        final Optional<JsonObject> initialPolicy = getInlinePolicyFromThingJson(jsonObject);
 
         final Thing thing = ThingsModelFactory.newThing(jsonObject);
-        return put(thing, initialPolciy, options);
+        return put(thing, initialPolicy.orElse(null), options);
     }
 
     @Override
@@ -568,6 +559,12 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
                     return new ImmutableThingChange(change.getEntityId(), change.getAction(), thing, path,
                             change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null));
                 });
+    }
+
+    private static Optional<JsonObject> getInlinePolicyFromThingJson(final JsonObject jsonObject) {
+        return jsonObject.getValue(CreateThing.JSON_INLINE_POLICY.getPointer())
+                .filter(JsonValue::isObject)
+                .map(JsonValue::asObject);
     }
 
     private static void assertThatThingHasId(final Thing thing) {

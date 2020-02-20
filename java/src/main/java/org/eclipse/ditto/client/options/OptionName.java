@@ -61,11 +61,11 @@ public interface OptionName extends Predicate<Object> {
          */
         EXISTS,
         /**
-         * Name of the option for defining whether the policy should be copied when creating an thing.
+         * Name of the option for defining whether the policy should be copied from another policy when creating a thing.
          */
         COPY_POLICY,
         /**
-         * Name of the option for defining whether the policy should be copied from another thing when creating an thing.
+         * Name of the option for defining whether the policy should be copied from another thing when creating a thing.
          */
         COPY_POLICY_FROM_THING
     }

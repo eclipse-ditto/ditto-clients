@@ -17,14 +17,12 @@ import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.Vector;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -99,14 +97,6 @@ public final class OutgoingMessageFactory {
 
     private final JsonSchemaVersion jsonSchemaVersion;
 
-    private static Vector<OptionName.Modify> COLLECTION = new Vector<>();
-
-    static {
-        COLLECTION.add(OptionName.Modify.COPY_POLICY);
-        COLLECTION.add(OptionName.Modify.COPY_POLICY_FROM_THING);
-    }
-
-
     private OutgoingMessageFactory(final JsonSchemaVersion jsonSchemaVersion) {
         this.jsonSchemaVersion = jsonSchemaVersion;
     }
@@ -136,26 +126,35 @@ public final class OutgoingMessageFactory {
 
     /**
      * @param thing the thing to be created.
-     * @param initialPolicy the Policy which will be applied.
+     * @param initialPolicy a custom policy to use for the Thing instead of the default Policy.
      * @param options options to be applied configuring behaviour of this method.
      * @return the ThingCommand
      * @throws NullPointerException if any argument is {@code null}.
      * @throws IllegalArgumentException if {@code thing} has no identifier.
      */
-    public ThingCommand createThing(final Thing thing, @Nullable JsonObject initialPolicy, final Option<?>... options) {
+    public ThingCommand createThing(final Thing thing, @Nullable JsonObject initialPolicy,
+            final Option<?>... options) {
         logWarningsForAclPolicyUsage(thing);
 
-        final List<Option> collect = fitlerOptions(initialPolicy, options);
+        validateOptions(initialPolicy, options);
 
         final DittoHeaders dittoHeaders = buildDittoHeaders(false, options);
 
-        if (collect.isEmpty()) {
-            return CreateThing.of(thing, initialPolicy, dittoHeaders);
-        } else {
-            final String extractPolicyFromOption = extractPolicyFromOption(collect);
-            return CreateThing.withCopiedPolicy(thing, extractPolicyFromOption, dittoHeaders);
-        }
+        final Optional<String> optionalPolicyIdOrPlaceHolder = getPolicyIdOrPlaceholder(options);
+
+        return optionalPolicyIdOrPlaceHolder
+                .map(policyIdOrPlaceHolder -> CreateThing.withCopiedPolicy(thing, policyIdOrPlaceHolder, dittoHeaders))
+                .orElseGet(() -> CreateThing.of(thing, initialPolicy, dittoHeaders));
+
     }
+
+    /**
+     * @param thing the thing to be put (which may be created or updated).
+     * @param options options to be applied configuring behaviour of this method.
+     * @return the ThingCommand
+     * @throws NullPointerException if any argument is {@code null}.
+     * @throws IllegalArgumentException if {@code thing} has no identifier.
+     */
 
     public ThingCommand putThing(final Thing thing, final Option<?>... options) {
         return putThing(thing, null, options);
@@ -163,7 +162,8 @@ public final class OutgoingMessageFactory {
 
     /**
      * @param thing the thing to be put (which may be created or updated).
-     * @param initialPolicy the Policy which will be applied.
+     * @param initialPolicy a custom policy to use for the Thing instead of the default Policy. This will only apply if
+     * the Thing does not already exist.
      * @param options options to be applied configuring behaviour of this method.
      * @return the ThingCommand
      * @throws NullPointerException if any argument is {@code null}.
@@ -176,20 +176,16 @@ public final class OutgoingMessageFactory {
 
         logWarningsForAclPolicyUsage(thing);
 
-        final List<Option> collect = fitlerOptions(initialPolicy, options);
+        validateOptions(initialPolicy, options);
 
-        final DittoHeaders headers = buildDittoHeaders(true, options);
+        final DittoHeaders dittoHeaders = buildDittoHeaders(false, options);
 
-        if (collect.isEmpty()) {
-            return ModifyThing.of(thingId, thing, initialPolicy, headers);
-        } else {
-            final String extractPolicyFromOption = extractPolicyFromOption(collect);
-            return ModifyThing.withCopiedPolicy(thingId, thing, extractPolicyFromOption, headers);
-        }
-    }
+        final Optional<String> optionalPolicyIdOrPlaceHolder = getPolicyIdOrPlaceholder(options);
 
-    public ThingCommand updateThing(final Thing thing, final Option<?>... options) {
-        return updateThing(thing, null, options);
+        return optionalPolicyIdOrPlaceHolder
+                .map(policyIdOrPlaceHolder -> ModifyThing.withCopiedPolicy(thingId, thing, policyIdOrPlaceHolder,
+                        dittoHeaders))
+                .orElseGet(() -> ModifyThing.of(thingId, thing, initialPolicy, dittoHeaders));
     }
 
     /**
@@ -212,37 +208,6 @@ public final class OutgoingMessageFactory {
                 .build();
 
         return ModifyThing.of(thingId, thing, null, headers);
-    }
-
-    private String extractPolicyFromOption(final List<Option> collect) {
-        final Option policyIdOrThingId = collect.get(0);
-        final String policyExtractedFromOption;
-
-        if (policyIdOrThingId.getName().toString().equals(COLLECTION.get(0).name())) {
-            policyExtractedFromOption = ((PolicyId) policyIdOrThingId.getValue()).toString();
-        } else {
-            policyExtractedFromOption =
-                    "{{ ref:things/" + ((ThingId) policyIdOrThingId.getValue()).toString() + "/policyId }}";
-        }
-        return policyExtractedFromOption;
-    }
-
-    private List<Option> fitlerOptions(@Nullable JsonObject initialPolicy, final Option<?>... options) {
-        // create the filter condition for options
-        Predicate<Option> byOptionName =
-                option -> option.getName().equals(COLLECTION.get(0)) || option.getName().equals(COLLECTION.get(1));
-
-        final List<Option> collect = Arrays.stream(options).filter(byOptionName).collect(Collectors.toList());
-
-        if (collect.size() == COLLECTION.size()) {
-            throw new IllegalArgumentException(
-                    "It is not allowed to set option \"COPY_POLICY\" and \"COPY_POLICY_FROM_THING\" at the same time");
-        }
-        if (!collect.isEmpty() && initialPolicy != null) {
-            throw new IllegalArgumentException(
-                    "It is not allowed to set option \"COPY_POLICY\" or \"COPY_POLICY_FROM_THING\" and a initialPolicy at the same time");
-        }
-        return collect;
     }
 
     private void logWarningsForAclPolicyUsage(final Thing thing) {
@@ -543,7 +508,7 @@ public final class OutgoingMessageFactory {
             if (!allowExists) {
                 throw new IllegalArgumentException("Option \"exists\" is not allowed for this operation.");
             }
-            if (exists) {
+            if (Boolean.TRUE.equals(exists)) {
                 headersBuilder.ifMatch(ASTERISK);
             } else {
                 headersBuilder.ifNoneMatch(ASTERISK);
@@ -551,6 +516,54 @@ public final class OutgoingMessageFactory {
         });
 
         return headersBuilder.build();
+    }
+
+    /**
+     * Validates the options together with the initial policy and throws an exception if something isn't valid.
+     *
+     * @param initialPolicy The initial policy.
+     * @param options The options to validate.
+     * @throws IllegalArgumentException when the options aren't valid.
+     */
+    private void validateOptions(@Nullable final JsonObject initialPolicy, final Option<?>... options) {
+        final boolean isCopyPolicy = containsOption(OptionName.Modify.COPY_POLICY, options);
+        final boolean isCopyPolicyFromThing = containsOption(OptionName.Modify.COPY_POLICY_FROM_THING, options);
+
+        if (isCopyPolicy && isCopyPolicyFromThing) {
+            throw new IllegalArgumentException(
+                    "It is not allowed to set option \"COPY_POLICY\" and \"COPY_POLICY_FROM_THING\" at the same time");
+        } else if (null != initialPolicy && (isCopyPolicy || isCopyPolicyFromThing)) {
+            throw new IllegalArgumentException(
+                    "It is not allowed to set option \"COPY_POLICY\" or \"COPY_POLICY_FROM_THING\" and a initialPolicy at the same time");
+        }
+    }
+
+    private Optional<String> getPolicyIdOrPlaceholder(final Option<?>... options) {
+        final Optional<String> copyPolicy = getOption(OptionName.Modify.COPY_POLICY, options)
+                .map(Option::getValue)
+                .map(Object::toString);
+
+        return ifPresentOrElse(copyPolicy, () ->
+                getOption(OptionName.Modify.COPY_POLICY_FROM_THING, options)
+                        .map(Option::getValue)
+                        .map(Object::toString)
+                        .map(thingId -> "{{ ref:things/" + thingId + "/policyId }}")
+        );
+    }
+
+    private static <T> Optional<T> ifPresentOrElse(final Optional<T> optional, final Supplier<Optional<T>> otherwise) {
+        if (optional.isPresent()) {
+            return optional;
+        }
+        return otherwise.get();
+    }
+
+    private boolean containsOption(final OptionName optionName, final Option<?>... options) {
+        return Stream.of(options).map(Option::getName).anyMatch(optionName::equals);
+    }
+
+    private Optional<Option<?>> getOption(final OptionName optionName, final Option<?>... options) {
+        return Stream.of(options).filter(option -> option.getName().equals(optionName)).findFirst();
     }
 
 }
