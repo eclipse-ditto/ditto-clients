@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -31,7 +30,6 @@ import org.eclipse.ditto.client.live.messages.MessageSerializer;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.live.messages.MessageSerializers;
 import org.eclipse.ditto.client.options.Option;
-import org.eclipse.ditto.client.options.OptionName;
 import org.eclipse.ditto.client.options.internal.OptionsEvaluator;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonObject;
@@ -54,7 +52,6 @@ import org.eclipse.ditto.model.things.Features;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
-import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
 import org.eclipse.ditto.signals.commands.policies.modify.CreatePolicy;
 import org.eclipse.ditto.signals.commands.policies.modify.DeletePolicy;
 import org.eclipse.ditto.signals.commands.policies.modify.ModifyPolicy;
@@ -504,8 +501,9 @@ public final class OutgoingMessageFactory {
      * @throws IllegalArgumentException when the options aren't valid.
      */
     private void validateOptions(@Nullable final JsonObject initialPolicy, final Option<?>... options) {
-        final boolean isCopyPolicy = containsOption(OptionName.Modify.COPY_POLICY, options);
-        final boolean isCopyPolicyFromThing = containsOption(OptionName.Modify.COPY_POLICY_FROM_THING, options);
+        final OptionsEvaluator.Modify optionsEvaluator = OptionsEvaluator.forModifyOptions(options);
+        final boolean isCopyPolicy = optionsEvaluator.copyPolicy().isPresent();
+        final boolean isCopyPolicyFromThing = optionsEvaluator.copyPolicyFromThingId().isPresent();
 
         if (isCopyPolicy && isCopyPolicyFromThing) {
             throw new IllegalArgumentException(
@@ -517,16 +515,13 @@ public final class OutgoingMessageFactory {
     }
 
     private Optional<String> getPolicyIdOrPlaceholder(final Option<?>... options) {
-        final Optional<String> copyPolicy = getOption(OptionName.Modify.COPY_POLICY, options)
-                .map(Option::getValue)
-                .map(Object::toString);
+        final OptionsEvaluator.Modify optionsEvaluator = OptionsEvaluator.forModifyOptions(options);
+        final Optional<String> copyPolicy = optionsEvaluator.copyPolicy().map(PolicyId::toString);
 
-        return ifPresentOrElse(copyPolicy, () ->
-                getOption(OptionName.Modify.COPY_POLICY_FROM_THING, options)
-                        .map(Option::getValue)
-                        .map(Object::toString)
-                        .map(thingId -> "{{ ref:things/" + thingId + "/policyId }}")
-        );
+        return ifPresentOrElse(copyPolicy,
+                () -> optionsEvaluator.copyPolicyFromThingId()
+                        .map(ThingId::toString)
+                        .map(thingId -> "{{ ref:things/" + thingId + "/policyId }}"));
     }
 
     private static <T> Optional<T> ifPresentOrElse(final Optional<T> optional, final Supplier<Optional<T>> otherwise) {
@@ -534,14 +529,6 @@ public final class OutgoingMessageFactory {
             return optional;
         }
         return otherwise.get();
-    }
-
-    private boolean containsOption(final OptionName optionName, final Option<?>... options) {
-        return Stream.of(options).map(Option::getName).anyMatch(optionName::equals);
-    }
-
-    private Optional<Option<?>> getOption(final OptionName optionName, final Option<?>... options) {
-        return Stream.of(options).filter(option -> option.getName().equals(optionName)).findFirst();
     }
 
 }
