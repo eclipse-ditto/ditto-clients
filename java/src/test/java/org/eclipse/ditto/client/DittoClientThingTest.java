@@ -378,19 +378,19 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
     }
 
     @Test
-    public void testUpdateThingWithInitialPolicy() throws InterruptedException {
+    public void testPutThingWithInitialPolicy() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
         messaging.onSend(m -> {
             assertThat(m)
                     .hasThingId(THING_ID)
                     .hasInitialPolicy()
-                    .hasOnlyIfMatchHeader();
+                    .hasNoConditionalHeaders();
 
             latch.countDown();
         });
 
-        client.twin().update(THING, POLICY_JSON_OBJECT);
+        client.twin().put(THING, POLICY_JSON_OBJECT);
 
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
     }

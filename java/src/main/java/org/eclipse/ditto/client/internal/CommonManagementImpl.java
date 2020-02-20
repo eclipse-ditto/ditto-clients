@@ -366,40 +366,19 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
 
     @Override
     public CompletableFuture<Void> update(final Thing thing, final Option<?>... options) {
-        return update(thing, null, options);
-    }
-
-    @Override
-    public CompletableFuture<Void> update(final Thing thing, @Nullable final JsonObject initialPolicy,
-            final Option<?>... options) {
         argumentNotNull(thing);
         assertThatThingHasId(thing);
 
         return new SendTerminator<Void>(messagingProvider, responseForwarder, channel,
-                outgoingMessageFactory.updateThing(thing, initialPolicy, options)).applyVoid();
+                outgoingMessageFactory.updateThing(thing, options)).applyVoid();
     }
 
     @Override
     public CompletableFuture<Void> update(final JsonObject jsonObject, final Option<?>... options) {
         argumentNotNull(jsonObject);
 
-        JsonObject initialPolciy = null;
-        if (jsonObject.getValue(INLINE_POLICY_KEY).isPresent()) {
-            initialPolciy = jsonObject.getValue(INLINE_POLICY_KEY).get().asObject();
-            jsonObject.remove(INLINE_POLICY_KEY);
-        }
-
         final Thing thing = ThingsModelFactory.newThing(jsonObject);
-        return update(thing, initialPolciy, options);
-    }
-
-    @Override
-    public CompletableFuture<Void> update(final JsonObject jsonObject, final JsonObject initialPolicy,
-            final Option<?>... options) {
-        argumentNotNull(jsonObject);
-
-        final Thing thing = ThingsModelFactory.newThing(jsonObject);
-        return update(thing, initialPolicy, options);
+        return update(thing, options);
     }
 
     @Override
