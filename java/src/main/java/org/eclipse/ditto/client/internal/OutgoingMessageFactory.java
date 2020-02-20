@@ -155,7 +155,7 @@ public final class OutgoingMessageFactory {
 
         validateOptions(initialPolicy, options);
 
-        final DittoHeaders dittoHeaders = buildDittoHeaders(false, options);
+        final DittoHeaders dittoHeaders = buildDittoHeaders(true, options);
 
         final Optional<String> optionalPolicyIdOrPlaceHolder = getPolicyIdOrPlaceholder(options);
 
