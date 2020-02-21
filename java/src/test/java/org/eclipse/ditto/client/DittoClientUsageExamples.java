@@ -586,7 +586,7 @@ public final class DittoClientUsageExamples {
     private static MessagingProvider createMessagingProvider() {
         final MessagingConfiguration.Builder builder = WebSocketMessagingConfiguration.newBuilder()
                 .endpoint(DITTO_ENDPOINT_URL)
-                .jsonSchemaVersion(JsonSchemaVersion.V_1);
+                .jsonSchemaVersion(JsonSchemaVersion.V_2);
 
         final ProxyConfiguration proxyConfiguration;
         if (PROXY_HOST != null && !PROXY_HOST.isEmpty()) {

@@ -239,6 +239,7 @@ public final class DefaultDittoClient implements DittoClient {
 
         /*
          * ACL - v1 only
+         * @deprecated as part of deprecated API 1
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AclModified.TYPE, AclModified.class,
                 e -> MessageFormat.format("/things/{0}/acl", e.getThingEntityId()),
