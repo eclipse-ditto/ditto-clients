@@ -56,7 +56,6 @@ import org.eclipse.ditto.signals.commands.policies.modify.CreatePolicy;
 import org.eclipse.ditto.signals.commands.policies.modify.DeletePolicy;
 import org.eclipse.ditto.signals.commands.policies.modify.ModifyPolicy;
 import org.eclipse.ditto.signals.commands.policies.query.RetrievePolicy;
-import org.eclipse.ditto.signals.commands.things.ThingCommand;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteAttribute;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributes;
@@ -344,7 +343,7 @@ public final class OutgoingMessageFactory {
      * @return the command object.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    public ThingCommand<ModifyFeatureDefinition> setFeatureDefinition(final ThingId thingId,
+    public ModifyFeatureDefinition setFeatureDefinition(final ThingId thingId,
             final String featureId,
             final FeatureDefinition featureDefinition,
             final Option<?>... options) {
@@ -361,7 +360,7 @@ public final class OutgoingMessageFactory {
      * @return the command object.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    public ThingCommand<DeleteFeatureDefinition> deleteFeatureDefinition(final ThingId thingId, final String featureId,
+    public DeleteFeatureDefinition deleteFeatureDefinition(final ThingId thingId, final String featureId,
             final Option<?>... options) {
 
         return DeleteFeatureDefinition.of(thingId, featureId, buildDittoHeaders(false, options));

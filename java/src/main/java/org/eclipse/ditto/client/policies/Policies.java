@@ -40,7 +40,7 @@ import org.eclipse.ditto.model.policies.PolicyId;
  * ).get(1, TimeUnit.SECONDS); // this will block the current thread!
  * </pre>
  *
- * @since 1.0.0
+ * @since 1.1.0
  */
 public interface Policies {
 

@@ -23,14 +23,20 @@ import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.model.policies.PoliciesModelFactory;
 import org.eclipse.ditto.model.policies.Policy;
 import org.eclipse.ditto.model.policies.PolicyId;
-import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
+import org.eclipse.ditto.signals.commands.policies.modify.DeletePolicy;
+import org.eclipse.ditto.signals.commands.policies.query.RetrievePolicy;
 
-public class PolicyHandleImpl implements PolicyHandle {
+/**
+ * Default implementation of {@link PolicyHandle}.
+ *
+ * @since 1.1.0
+ */
+public final class PolicyHandleImpl implements PolicyHandle {
 
-    private OutgoingMessageFactory outgoingMessageFactory;
-    private PolicyId policyId;
-    private MessagingProvider messagingProvider;
-    private ResponseForwarder responseForwarder;
+    private final OutgoingMessageFactory outgoingMessageFactory;
+    private final PolicyId policyId;
+    private final MessagingProvider messagingProvider;
+    private final ResponseForwarder responseForwarder;
 
     public PolicyHandleImpl(
             final OutgoingMessageFactory outgoingMessageFactory,
@@ -45,13 +51,13 @@ public class PolicyHandleImpl implements PolicyHandle {
 
     @Override
     public CompletableFuture<Void> delete(final Option<?>... options) {
-        final PolicyCommand command = outgoingMessageFactory.deletePolicy(policyId, options);
+        final DeletePolicy command = outgoingMessageFactory.deletePolicy(policyId, options);
         return new SendTerminator<>(messagingProvider, responseForwarder, command).applyVoid();
     }
 
     @Override
     public CompletableFuture<Policy> retrieve() {
-        final PolicyCommand command = outgoingMessageFactory.retrievePolicy(policyId);
+        final RetrievePolicy command = outgoingMessageFactory.retrievePolicy(policyId);
         return new SendTerminator<Policy>(messagingProvider, responseForwarder, command).applyView(pvr ->
         {
             if (pvr != null) {

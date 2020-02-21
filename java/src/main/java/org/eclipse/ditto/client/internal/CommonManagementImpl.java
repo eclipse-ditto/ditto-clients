@@ -61,8 +61,9 @@ import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
-import org.eclipse.ditto.signals.commands.things.ThingCommand;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
+import org.eclipse.ditto.signals.commands.things.query.RetrieveThings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,7 +74,7 @@ import org.slf4j.LoggerFactory;
  * @param <F> the type of {@link FeatureHandle} for handling {@code Feature}s
  * @since 1.0.0
  */
-public abstract class CommonManagementImpl<T extends ThingHandle, F extends FeatureHandle> implements
+public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends FeatureHandle> implements
         CommonManagement<T, F> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonManagementImpl.class);
@@ -383,7 +384,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
         argumentNotNull(thing);
         assertThatThingHasId(thing);
 
-        final ThingCommand command = outgoingMessageFactory.createThing(thing, initialPolicy, options);
+        final CreateThing command = outgoingMessageFactory.createThing(thing, initialPolicy, options);
 
         return new SendTerminator<Thing>(messagingProvider, responseForwarder, channel, command)
                 .applyModify(response -> {
@@ -400,7 +401,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
     public CompletableFuture<Void> delete(final ThingId thingId, final Option<?>... options) {
         argumentNotNull(thingId);
 
-        final ThingCommand command = outgoingMessageFactory.deleteThing(thingId, options);
+        final DeleteThing command = outgoingMessageFactory.deleteThing(thingId, options);
         return new SendTerminator<Void>(messagingProvider, responseForwarder, channel, command).applyVoid();
     }
 
@@ -574,7 +575,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
         });
     }
 
-    private CompletableFuture<List<Thing>> sendRetrieveThingsMessage(final ThingCommand command) {
+    private CompletableFuture<List<Thing>> sendRetrieveThingsMessage(final RetrieveThings command) {
         return new SendTerminator<List<Thing>>(messagingProvider, responseForwarder, channel, command)
                 .applyView(tvr -> {
                     if (tvr != null) {
