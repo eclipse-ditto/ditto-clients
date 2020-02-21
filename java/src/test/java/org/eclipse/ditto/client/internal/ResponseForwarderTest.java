@@ -14,6 +14,7 @@ package org.eclipse.ditto.client.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.eclipse.ditto.client.TestConstants.Thing.POLICY_ID;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 
 import java.util.Optional;
@@ -21,8 +22,10 @@ import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
-import org.eclipse.ditto.signals.commands.things.ThingCommandResponse;
+import org.eclipse.ditto.signals.commands.policies.PolicyErrorResponse;
+import org.eclipse.ditto.signals.commands.policies.exceptions.PolicyNotAccessibleException;
 import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
 import org.eclipse.ditto.signals.commands.things.exceptions.ThingNotAccessibleException;
 import org.junit.Before;
@@ -44,7 +47,7 @@ public final class ResponseForwarderTest {
     private static DittoHeaders dittoHeaders;
 
     @Mock
-    private ThingCommandResponse commandResponse;
+    private CommandResponse commandResponse;
 
     private CompletableFuture<CommandResponse> responsePromise;
     private ResponseForwarder underTest;
@@ -150,6 +153,20 @@ public final class ResponseForwarderTest {
         underTest.put(CORRELATION_ID, responsePromise);
 
         final Optional<CompletableFuture<CommandResponse>> handledPromise = underTest.handle(thingErrorResponse);
+
+        assertThat(handledPromise).contains(responsePromise);
+        assertThat(handledPromise.get())
+                .hasFailedWithThrowableThat()
+                .isEqualTo(exception);
+    }
+
+    @Test
+    public void handlePolicyErrorResponse() {
+        final DittoRuntimeException exception = PolicyNotAccessibleException.newBuilder(PolicyId.of(POLICY_ID)).build();
+        final PolicyErrorResponse policyErrorResponse = PolicyErrorResponse.of(exception, dittoHeaders);
+        underTest.put(CORRELATION_ID, responsePromise);
+
+        final Optional<CompletableFuture<CommandResponse>> handledPromise = underTest.handle(policyErrorResponse);
 
         assertThat(handledPromise).contains(responsePromise);
         assertThat(handledPromise.get())

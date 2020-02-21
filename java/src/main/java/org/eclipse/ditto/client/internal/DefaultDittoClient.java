@@ -212,7 +212,7 @@ public final class DefaultDittoClient implements DittoClient {
 
     private static PoliciesImpl configurePolicyClient(final MessagingProvider messagingProvider,
             final ResponseForwarder responseForwarder) {
-        final String name = TopicPath.Group.POLICIES.getName();
+        final String name = TopicPath.Channel.NONE.getName();
         final PointerBus bus = BusFactory.createPointerBus(name, messagingProvider.getExecutorService());
         init(bus, messagingProvider, responseForwarder);
         final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();

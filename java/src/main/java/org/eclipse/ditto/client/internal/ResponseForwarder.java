@@ -26,8 +26,6 @@ import javax.annotation.concurrent.ThreadSafe;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.commands.base.ErrorResponse;
-import org.eclipse.ditto.signals.commands.things.ThingCommandResponse;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -94,7 +92,7 @@ public final class ResponseForwarder {
      * @return the <em>completed</em> response promise which is associated to {@code response} or an empty Optional.
      * @throws NullPointerException if {@code response} is {@code null}.
      */
-    public Optional<CompletableFuture<CommandResponse>> handle(final ThingCommandResponse response) {
+    public Optional<CompletableFuture<CommandResponse>> handle(final CommandResponse response) {
         checkNotNull(response, "ThingCommandResponse to be handled");
 
         final DittoHeaders dittoHeaders = response.getDittoHeaders();
@@ -117,7 +115,7 @@ public final class ResponseForwarder {
         return Optional.ofNullable(responsePromise);
     }
 
-    private static void tryToCompleteResponsePromise(final ThingCommandResponse response,
+    private static void tryToCompleteResponsePromise(final CommandResponse response,
             final CompletableFuture<CommandResponse> responsePromise) {
 
         try {
@@ -130,7 +128,7 @@ public final class ResponseForwarder {
     private static void completeResponsePromise(final CommandResponse response,
             final CompletableFuture<CommandResponse> responsePromise) {
 
-        if (response instanceof ThingErrorResponse) {
+        if (response instanceof ErrorResponse) {
             responsePromise.completeExceptionally(((ErrorResponse) response).getDittoRuntimeException());
         } else {
             responsePromise.complete(response);

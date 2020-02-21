@@ -92,6 +92,8 @@ import org.eclipse.ditto.signals.commands.messages.SendFeatureMessage;
 import org.eclipse.ditto.signals.commands.messages.SendFeatureMessageResponse;
 import org.eclipse.ditto.signals.commands.messages.SendThingMessage;
 import org.eclipse.ditto.signals.commands.messages.SendThingMessageResponse;
+import org.eclipse.ditto.signals.commands.policies.PolicyCommandResponse;
+import org.eclipse.ditto.signals.commands.policies.PolicyErrorResponse;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
 import org.eclipse.ditto.signals.commands.things.ThingCommandResponse;
 import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
@@ -160,7 +162,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     private final Map<String, Map<String, String>> registrationConfigs;
     private final Map<String, CompletableFuture<Adaptable>> customAdaptableResponseFutures;
 
-    private Consumer<ThingCommandResponse> commandResponseConsumer;
+    private Consumer<CommandResponse> commandResponseConsumer;
     private WebSocket webSocket;
     private boolean sendMeTwinEvents = false;
     private boolean sendMeLiveMessages = false;
@@ -507,7 +509,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     @Override
-    public void registerReplyHandler(final Consumer<ThingCommandResponse> commandResponseHandler) {
+    public void registerReplyHandler(final Consumer<CommandResponse> commandResponseHandler) {
         commandResponseConsumer = commandResponseHandler;
     }
 
@@ -815,6 +817,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
             handleTwinMessage(message, correlationId, jsonifiableAdaptable);
         } else if (TopicPath.Channel.LIVE == channel) {
             handleLiveMessage(message, correlationId, jsonifiableAdaptable);
+        } else if (TopicPath.Channel.NONE == channel) {
+            handleNoneChannelMessage(message, jsonifiableAdaptable);
         } else {
             final String msgPattern = "Client <{}>: Got Jsonifiable on unknown channel <{}>: <{}>";
             LOGGER.warn(msgPattern, sessionId, channel, jsonifiableAdaptable);
@@ -921,7 +925,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                 LOGGER.debug("Client <{}>: Got TWIN ThingErrorResponse: <{}: {} - {}>", sessionId,
                         cre.getClass().getSimpleName(), cre.getMessage(), description);
             }
-            commandResponseConsumer.accept((ThingCommandResponse) signal);
+            commandResponseConsumer.accept((CommandResponse) signal);
         } else if (signal instanceof ThingEvent) {
             LOGGER.debug("Client <{}>: Received TWIN Event JSON: {}", sessionId, message);
             handleThingEvent(correlationId, (ThingEvent) signal, TwinImpl.CONSUME_TWIN_EVENTS_HANDLER,
@@ -972,6 +976,31 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         } else {
             // if we are at this point we must ask: what the hell is that?
             LOGGER.warn("Client <{}>: Got unknown message on WebSocket on LIVE channel: {}",
+                    sessionId, message);
+        }
+    }
+
+
+    private void handleNoneChannelMessage(final String message,
+            final JsonifiableAdaptable jsonifiableAdaptable) {
+
+        final Signal<?> signal = tryToAdaptToSignal(jsonifiableAdaptable, message);
+        if (null == signal) {
+            return;
+        }
+
+        if (signal instanceof PolicyCommandResponse) {
+            LOGGER.debug("Client <{}>: Received PolicyCommandResponse JSON: {}", sessionId, message);
+            if (signal instanceof PolicyErrorResponse) {
+                final DittoRuntimeException cre = ((ErrorResponse) signal).getDittoRuntimeException();
+                final String description = cre.getDescription().orElse("");
+                LOGGER.debug("Client <{}>: Got PolicyErrorResponse: <{}: {} - {}>", sessionId,
+                        cre.getClass().getSimpleName(), cre.getMessage(), description);
+            }
+            commandResponseConsumer.accept((CommandResponse) signal);
+        } else {
+            // if we are at this point we must ask: what the hell is that?
+            LOGGER.warn("Client <{}>: Got unknown message on WebSocket on NONE channel: {}",
                     sessionId, message);
         }
     }
@@ -1067,7 +1096,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     private void handleLiveCommandResponse(final CommandResponse commandResponse) {
-        commandResponseConsumer.accept((ThingCommandResponse) commandResponse);
+        commandResponseConsumer.accept(commandResponse);
     }
 
     /**

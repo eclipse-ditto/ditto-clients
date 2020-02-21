@@ -49,7 +49,6 @@ import org.eclipse.ditto.signals.commands.base.Command;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
-import org.eclipse.ditto.signals.commands.things.ThingCommandResponse;
 import org.eclipse.ditto.signals.events.base.Event;
 import org.eclipse.ditto.signals.events.things.ThingEvent;
 import org.eclipse.ditto.utils.jsr305.annotations.AllParametersAndReturnValuesAreNonnullByDefault;
@@ -185,7 +184,7 @@ public class MockMessagingProvider implements MessagingProvider {
     }
 
     @Override
-    public void registerReplyHandler(final Consumer<ThingCommandResponse> commandResponseConsumer) {
+    public void registerReplyHandler(final Consumer<CommandResponse> commandResponseConsumer) {
         // noop
     }
 
