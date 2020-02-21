@@ -56,13 +56,13 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
 
         messaging.onPolicyCommand(c -> {
             assertThat(c)
-                    .hasPolicyId(POLICY_ID)
+                    .hasPolicyId(POLICY.getEntityId().get())
                     .hasType("policies.commands:createPolicy");
 
             latch.countDown();
         });
 
-        client.policies().create(POLICY_ID);
+        client.policies().create(POLICY);
 
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
     }
@@ -71,7 +71,7 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
     public void createPolicyFailsWithExistsOption() {
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> client.policies()
-                        .create(POLICY_ID, Options.Modify.exists(false))
+                        .create(POLICY, Options.Modify.exists(false))
                         .get(TIMEOUT, TIME_UNIT));
     }
 
@@ -179,23 +179,6 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
         });
 
         client.policies().retrieve(POLICY_ID);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
-    }
-
-    @Test
-    public void testRetrievePolicyFromTwinChannel() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onPolicyCommand(c -> {
-            assertThat(c)
-                    .hasPolicyId(POLICY_ID)
-                    .hasType("policies.commands:retrievePolicy");
-
-            latch.countDown();
-        });
-
-        client.twin().forPolicy(POLICY_ID).retrieve();
 
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
     }

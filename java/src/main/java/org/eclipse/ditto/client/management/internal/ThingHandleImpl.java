@@ -32,7 +32,6 @@ import org.eclipse.ditto.client.internal.ResponseForwarder;
 import org.eclipse.ditto.client.internal.SendTerminator;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
 import org.eclipse.ditto.client.management.FeatureHandle;
-import org.eclipse.ditto.client.management.PolicyHandle;
 import org.eclipse.ditto.client.management.ThingHandle;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.options.Option;
@@ -141,15 +140,6 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
         argumentNotNull(featureId);
         return handlerRegistry.featureHandleForFeatureId(thingId, featureId, () ->
                 createFeatureHandle(thingId, featureId));
-    }
-
-    @Override
-    public PolicyHandle forPolicy(final String policyId) {
-        return new PolicyHandleImpl(
-                outgoingMessageFactory,
-                PolicyId.of(policyId),
-                messagingProvider,
-                responseForwarder);
     }
 
     /**

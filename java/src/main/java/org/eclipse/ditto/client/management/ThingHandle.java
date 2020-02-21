@@ -19,7 +19,6 @@ import org.eclipse.ditto.client.registration.FeatureChangeRegistration;
 import org.eclipse.ditto.client.registration.ThingAttributeChangeRegistration;
 import org.eclipse.ditto.client.registration.ThingChangeRegistration;
 import org.eclipse.ditto.json.JsonFieldSelector;
-import org.eclipse.ditto.model.policies.Policy;
 import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Features;
@@ -69,16 +68,6 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @throws IllegalArgumentException if {@code featureId} is {@code null}.
      */
     F forFeature(String featureId);
-
-    /**
-     * Creates a new instance of {@link PolicyHandle} which aggregates all operations of an already existing {@link
-     * Policy} specified by the given identifier.
-     *
-     * @param policyId the identifier of the Feature to create the handle for.
-     * @return the handle for the provided {@code policyId}.
-     * @throws IllegalArgumentException if {@code policyId} is {@code null}.
-     */
-    PolicyHandle forPolicy(String policyId);
 
     /**
      * Deletes the {@code Thing} object being handled by this {@code ThingHandle}.

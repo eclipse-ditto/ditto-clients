@@ -15,7 +15,6 @@ package org.eclipse.ditto.client.policies;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import org.eclipse.ditto.client.management.PolicyHandle;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.model.policies.Policy;
@@ -43,30 +42,6 @@ import org.eclipse.ditto.model.policies.PolicyId;
  * @since 1.1.0
  */
 public interface Policies {
-
-    /**
-     * Creates a new instance of {@link PolicyHandle} which aggregates all operations of an already existing {@link
-     * org.eclipse.ditto.model.policies.Policy} specified by the given identifier.
-     *
-     * @param policyId the identifier of the Thing to create the handle for.
-     * @return the PolicyHandle for the provided {@code policyId}.
-     * @throws IllegalArgumentException if {@code policyId} is {@code null}.
-     */
-    PolicyHandle forId(PolicyId policyId);
-
-    /**
-     * Creates an empty {@link org.eclipse.ditto.model.policies.Policy} for the given identifier.
-     *
-     * @param policyId the identifier of the Policy to be created. It must conform to the namespaced
-     * entity ID notation (see Ditto documentation).
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return completable future providing the created Policy object or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code policyId} is {@code null} or empty.
-     * @throws org.eclipse.ditto.model.policies.PolicyIdInvalidException if the {@code policyId} was invalid.
-     */
-    CompletableFuture<Policy> create(PolicyId policyId, Option<?>... options);
 
     /**
      * Creates the given {@link org.eclipse.ditto.model.policies.Policy}.

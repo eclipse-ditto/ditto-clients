@@ -12,7 +12,6 @@
  */
 package org.eclipse.ditto.client.policies.internal;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotEmpty;
 import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
 
 import java.text.MessageFormat;
@@ -23,7 +22,6 @@ import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
 import org.eclipse.ditto.client.internal.ResponseForwarder;
 import org.eclipse.ditto.client.internal.SendTerminator;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
-import org.eclipse.ditto.client.management.PolicyHandle;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.policies.Policies;
@@ -74,21 +72,6 @@ public final class PoliciesImpl implements Policies {
             final OutgoingMessageFactory outgoingMessageFactory,
             final PointerBus bus) {
         return new PoliciesImpl(messagingProvider, responseForwarder, outgoingMessageFactory, bus);
-    }
-
-    @Override
-    public PolicyHandle forId(final PolicyId policyId) {
-        return null;
-    }
-
-    @Override
-    public CompletableFuture<Policy> create(final PolicyId policyId, final Option<?>... options) {
-        argumentNotNull(policyId);
-        argumentNotEmpty(policyId);
-
-        final Policy policy = PoliciesModelFactory.newPolicyBuilder(policyId).build();
-
-        return create(policy, options);
     }
 
     @Override
