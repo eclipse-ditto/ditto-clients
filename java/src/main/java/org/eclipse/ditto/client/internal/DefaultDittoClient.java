@@ -215,9 +215,20 @@ public final class DefaultDittoClient implements DittoClient {
         final String name = TopicPath.Group.POLICIES.getName();
         final PointerBus bus = BusFactory.createPointerBus(name, messagingProvider.getExecutorService());
         init(bus, messagingProvider, responseForwarder);
-        final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
-        final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion);
+        final OutgoingMessageFactory messageFactory = getOutgoingMessageFactoryForPolicies(messagingProvider);
         return PoliciesImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus);
+    }
+
+    private static OutgoingMessageFactory getOutgoingMessageFactoryForPolicies(final MessagingProvider messagingProvider) {
+        final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
+        if (JsonSchemaVersion.V_1.equals(schemaVersion)) {
+            LOGGER.warn("The MessagingProvider was configured with JsonSchemaVersion V_1 which is invalid for policy" +
+                    " commands. Therefore defaulting to V_2 for all policy commands." +
+                    " Please consider upgrading to JsonSchemaVersion V_2 as V_1 is deprecated and will be removed" +
+                    " in an upcoming release.");
+            return OutgoingMessageFactory.newInstance(JsonSchemaVersion.V_2);
+        }
+        return OutgoingMessageFactory.newInstance(schemaVersion);
     }
 
     private static void init(final PointerBus bus, final MessagingProvider messagingProvider,
