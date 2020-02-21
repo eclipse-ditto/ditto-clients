@@ -79,7 +79,7 @@ public final class DefaultDittoClient implements DittoClient {
     private static final String SELECTOR_INCOMING_MESSAGE = "incoming-message";
 
     private static final String THING_PATTERN = "/things/{0}";
-    @Deprecated private static final String ACL_PATTERN = THING_PATTERN + "/acl/{1}";
+    private static final String ACL_PATTERN = THING_PATTERN + "/acl/{1}";
     private static final String ATTRIBUTES_PATTERN = THING_PATTERN + "/attributes";
     private static final String ATTRIBUTE_PATTERN = THING_PATTERN + "/attributes{1}";
     private static final String FEATURES_PATTERN = THING_PATTERN + "/features";
