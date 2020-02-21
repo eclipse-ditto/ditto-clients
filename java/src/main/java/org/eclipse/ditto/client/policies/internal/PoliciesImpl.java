@@ -33,19 +33,21 @@ import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.policies.PoliciesModelFactory;
 import org.eclipse.ditto.model.policies.Policy;
 import org.eclipse.ditto.model.policies.PolicyId;
-import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
+import org.eclipse.ditto.signals.commands.policies.modify.CreatePolicy;
+import org.eclipse.ditto.signals.commands.policies.modify.DeletePolicy;
+import org.eclipse.ditto.signals.commands.policies.query.RetrievePolicy;
 
 /**
  * Default implementation for {@link Policies}.
  *
- * @since 1.0.0
+ * @since 1.1.0
  */
-public class PoliciesImpl implements Policies {
+public final class PoliciesImpl implements Policies {
 
-    private MessagingProvider messagingProvider;
-    private ResponseForwarder responseForwarder;
-    private OutgoingMessageFactory outgoingMessageFactory;
-    private PointerBus bus;
+    private final MessagingProvider messagingProvider;
+    private final ResponseForwarder responseForwarder;
+    private final OutgoingMessageFactory outgoingMessageFactory;
+    private final PointerBus bus;
 
     public PoliciesImpl(final MessagingProvider messagingProvider,
             final ResponseForwarder responseForwarder,
@@ -71,7 +73,7 @@ public class PoliciesImpl implements Policies {
             final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final PointerBus bus) {
-        return new PoliciesImpl(messagingProvider, responseForwarder, outgoingMessageFactory, bus) {};
+        return new PoliciesImpl(messagingProvider, responseForwarder, outgoingMessageFactory, bus);
     }
 
     @Override
@@ -94,7 +96,7 @@ public class PoliciesImpl implements Policies {
         argumentNotNull(policy);
         assertThatPolicyHasId(policy);
 
-        final PolicyCommand command = outgoingMessageFactory.createPolicy(policy, options);
+        final CreatePolicy command = outgoingMessageFactory.createPolicy(policy, options);
 
         return new SendTerminator<Policy>(messagingProvider, responseForwarder, command)
                 .applyModifyPolicy(response -> {
@@ -167,13 +169,13 @@ public class PoliciesImpl implements Policies {
     public CompletableFuture<Void> delete(final PolicyId policyId, final Option<?>... options) {
         argumentNotNull(policyId);
 
-        final PolicyCommand command = outgoingMessageFactory.deletePolicy(policyId, options);
+        final DeletePolicy command = outgoingMessageFactory.deletePolicy(policyId, options);
         return new SendTerminator<Void>(messagingProvider, responseForwarder, command).applyVoid();
     }
 
     @Override
     public CompletableFuture<Policy> retrieve(PolicyId policyId) {
-        final PolicyCommand command = outgoingMessageFactory.retrievePolicy(policyId);
+        final RetrievePolicy command = outgoingMessageFactory.retrievePolicy(policyId);
         return new SendTerminator<Policy>(messagingProvider, responseForwarder, command).applyViewWithPolicyResponse(
                 pvr ->
         {

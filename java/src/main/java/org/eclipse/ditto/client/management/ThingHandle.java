@@ -108,16 +108,17 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
     CompletableFuture<Thing> retrieve(JsonFieldSelector fieldSelector);
 
     /**
-     * Sets the given {@code Policy} to this Thing. All existing Features are replaced.
+     * Sets the given {@code policyId} to this Thing.
      *
      * @param policyId the PolicyId of the Policy to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return completable future for handling the result of the operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code features} is {@code null}.
+     * @throws IllegalArgumentException if {@code policyId} is {@code null}.
+     * @since 1.1.0
      */
-    CompletableFuture<Void> setPolicy(PolicyId policyId, Option<?>... options);
+    CompletableFuture<Void> setPolicyId(PolicyId policyId, Option<?>... options);
 
     /**
      * Sets the given {@code Features} to this Thing. All existing Features are replaced.

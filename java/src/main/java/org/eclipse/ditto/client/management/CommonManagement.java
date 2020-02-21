@@ -179,7 +179,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * Creates the given {@link Thing}.
      *
      * @param thing the Thing to be created.
-     * @param initialPolicy the Policy used by the created thing.
+     * @param initialPolicy a custom policy to use for the Thing instead of the default Policy.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return completable future providing the created Thing object or a specific {@link
@@ -212,7 +212,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      *
      * @param thingId the identifier of the Thing to be created. It must conform to the namespaced
      * entity ID notation (see Ditto documentation).
-     * @param initialPolicy the Policy used by the created thing.
+     * @param initialPolicy a custom policy to use for the Thing instead of the default Policy.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return completable future providing the created Thing object or a specific {@link
@@ -228,7 +228,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @param thing a JSON object representation of the Thing to be created. The provided JSON object is required to
      * contain a field named {@code "thingId"} of the basic JSON type String which contains the identifier of the Thing
      * to be created. It must conform to the namespaced entity ID notation (see Ditto documentation).
-     * @param initialPolicy the Policy used by the created thing.
+     * @param initialPolicy a custom policy to use for the Thing instead of the default Policy.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return completable future providing the created Thing object or a specific {@link
@@ -261,7 +261,8 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * restricted with option {@link org.eclipse.ditto.client.options.Options.Modify#exists(boolean)}.
      *
      * @param thing the Thing to be put.
-     * @param initialPolicy the Policy which will be applied.
+     * @param initialPolicy a custom policy to use for the Thing instead of the default Policy. This will only apply if
+     * the Thing does not already exist.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return completable future providing an {@link Optional} containing the created Thing object, in case the Thing
@@ -298,7 +299,8 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @param thing a JSON object representation of the Thing to be put. The provided JSON object is required to contain
      * a field named {@code "thingId"} of the basic JSON type String which contains the identifier of the Thing to be
      * put.
-     * @param initialPolicy the Policy which will be applied.
+     * @param initialPolicy a custom policy to use for the Thing instead of the default Policy. This will only apply if
+     * the Thing does not already exist.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return completable future providing an {@link Optional} containing the created Thing object, in case the Thing
@@ -339,37 +341,6 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * Thing}.
      */
     CompletableFuture<Void> update(JsonObject thing, Option<?>... options);
-
-    /**
-     * Updates the given {@link Thing} if it does exist.
-     *
-     * @param thing the Thing to be updated.
-     * @param initialPolicy the Policy which will be applied.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return completable future providing {@code null} in case of success or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
-     * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier.
-     */
-    CompletableFuture<Void> update(Thing thing, @Nullable JsonObject initialPolicy, Option<?>... options);
-
-    /**
-     * Updates a {@link Thing} if it does exist based on the given {@link JsonObject}.
-     *
-     * @param thing a JSON object representation of the Thing to be updated. The provided JSON object is required to
-     * contain a field named {@code "thingId"} of the basic JSON type String which contains the identifier of the Thing
-     * to be updated.
-     * @param initialPolicy the Policy which will be applied.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return completable future providing {@code null} in case of success or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
-     * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
-     * {@code "thingId"}.
-     * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code thing} cannot be parsed to a {@link
-     * Thing}.
-     */
-    CompletableFuture<Void> update(JsonObject thing, JsonObject initialPolicy, Option<?>... options);
 
     /**
      * Deletes the {@link Thing} specified by the given identifier.

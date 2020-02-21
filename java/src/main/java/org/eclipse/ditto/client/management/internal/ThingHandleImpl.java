@@ -48,7 +48,17 @@ import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
-import org.eclipse.ditto.signals.commands.things.ThingCommand;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteAttribute;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributes;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteFeature;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatures;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyAttribute;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributes;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyFeature;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatures;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyId;
+import org.eclipse.ditto.signals.commands.things.query.RetrieveThing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +69,7 @@ import org.slf4j.LoggerFactory;
  * @param <F> the type of {@link FeatureHandle} for handling {@code Feature}s
  * @since 1.0.0
  */
-public abstract class ThingHandleImpl<T extends ThingHandle, F extends FeatureHandle> implements ThingHandle<F> {
+public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends FeatureHandle> implements ThingHandle<F> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ThingHandleImpl.class);
 
@@ -154,7 +164,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle, F extends FeatureHa
 
     @Override
     public CompletableFuture<Void> delete(final Option<?>[] options) {
-        final ThingCommand command = outgoingMessageFactory.deleteThing(thingId, options);
+        final DeleteThing command = outgoingMessageFactory.deleteThing(thingId, options);
         return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
     }
 
@@ -188,7 +198,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle, F extends FeatureHa
         checkArgument(path, p -> !p.isEmpty(), () -> "The path is not allowed to be empty! " +
                 "If you want to update the whole attributes object, please use the setAttributes(JsonObject) method.");
 
-        final ThingCommand command = outgoingMessageFactory.setAttribute(thingId, path, value, options);
+        final ModifyAttribute command = outgoingMessageFactory.setAttribute(thingId, path, value, options);
         return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
     }
 
@@ -198,7 +208,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle, F extends FeatureHa
         checkArgument(attributes, v -> v.isObject() || v.isNull(),
                 () -> "The root attributes entry can only be a JSON" + " object or JSON NULL literal!");
 
-        final ThingCommand command = outgoingMessageFactory.setAttributes(thingId, attributes, options);
+        final ModifyAttributes command = outgoingMessageFactory.setAttributes(thingId, attributes, options);
         return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
     }
 
@@ -206,15 +216,15 @@ public abstract class ThingHandleImpl<T extends ThingHandle, F extends FeatureHa
     public CompletableFuture<Void> setFeatures(final Features features, final Option<?>... options) {
         argumentNotNull(features);
 
-        final ThingCommand command = outgoingMessageFactory.setFeatures(thingId, features, options);
+        final ModifyFeatures command = outgoingMessageFactory.setFeatures(thingId, features, options);
         return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
     }
 
     @Override
-    public CompletableFuture<Void> setPolicy(final PolicyId policyId, final Option<?>... options) {
+    public CompletableFuture<Void> setPolicyId(final PolicyId policyId, final Option<?>... options) {
         argumentNotNull(policyId);
 
-        final ThingCommand command = outgoingMessageFactory.setPolicyId(thingId, policyId, options);
+        final ModifyPolicyId command = outgoingMessageFactory.setPolicyId(thingId, policyId, options);
         return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
     }
 
@@ -222,7 +232,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle, F extends FeatureHa
     public CompletableFuture<Void> putFeature(final Feature feature, final Option<?>... options) {
         argumentNotNull(feature);
 
-        final ThingCommand command = outgoingMessageFactory.setFeature(thingId, feature, options);
+        final ModifyFeature command = outgoingMessageFactory.setFeature(thingId, feature, options);
         return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
     }
 
@@ -230,13 +240,13 @@ public abstract class ThingHandleImpl<T extends ThingHandle, F extends FeatureHa
     public CompletableFuture<Void> deleteFeature(final String featureId, final Option<?>... options) {
         argumentNotNull(featureId);
 
-        final ThingCommand command = outgoingMessageFactory.deleteFeature(thingId, featureId, options);
+        final DeleteFeature command = outgoingMessageFactory.deleteFeature(thingId, featureId, options);
         return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
     }
 
     @Override
     public CompletableFuture<Void> deleteFeatures(final Option<?>... options) {
-        final ThingCommand command = outgoingMessageFactory.deleteFeatures(thingId, options);
+        final DeleteFeatures command = outgoingMessageFactory.deleteFeatures(thingId, options);
         return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
     }
 
@@ -252,13 +262,13 @@ public abstract class ThingHandleImpl<T extends ThingHandle, F extends FeatureHa
         argumentNotNull(path);
         checkArgument(path, p -> !p.isEmpty(), () -> "The root attributes object cannot be deleted!");
 
-        final ThingCommand command = outgoingMessageFactory.deleteAttribute(thingId, path, options);
+        final DeleteAttribute command = outgoingMessageFactory.deleteAttribute(thingId, path, options);
         return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
     }
 
     @Override
     public CompletableFuture<Void> deleteAttributes(final Option<?>... options) {
-        final ThingCommand command = outgoingMessageFactory.deleteAttributes(thingId, options);
+        final DeleteAttributes command = outgoingMessageFactory.deleteAttributes(thingId, options);
         return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
     }
 
@@ -348,7 +358,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle, F extends FeatureHa
 
     @Override
     public CompletableFuture<Thing> retrieve() {
-        final ThingCommand command = outgoingMessageFactory.retrieveThing(thingId);
+        final RetrieveThing command = outgoingMessageFactory.retrieveThing(thingId);
         return new SendTerminator<Thing>(messagingProvider, responseForwarder, channel, command).applyView(tvr ->
         {
             if (tvr != null) {
@@ -363,7 +373,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle, F extends FeatureHa
     public CompletableFuture<Thing> retrieve(final JsonFieldSelector fieldSelector) {
         argumentNotNull(fieldSelector);
 
-        final ThingCommand command = outgoingMessageFactory.retrieveThing(thingId, fieldSelector.getPointers());
+        final RetrieveThing command = outgoingMessageFactory.retrieveThing(thingId, fieldSelector.getPointers());
         return new SendTerminator<Thing>(messagingProvider, responseForwarder, channel, command).applyView(tvr ->
         {
             if (tvr != null) {

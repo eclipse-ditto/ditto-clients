@@ -31,6 +31,7 @@ import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.model.base.headers.entitytag.EntityTagMatcher;
 import org.eclipse.ditto.model.messages.Message;
+import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
 
@@ -67,18 +68,18 @@ public final class MessageAssert extends AbstractAssert<MessageAssert, Message<?
         return this;
     }
 
-    public MessageAssert hasOptionCopyPolicy() {
+    public MessageAssert hasOptionCopyPolicy(final PolicyId policyId) {
         assertThat(((ThingCommand) actual.getPayload().get()).toJson().get(JsonPointer.of("policyIdOrPlaceholder")))
                 .overridingErrorMessage("Thing does not have initial policy which is expected")
-                .isEqualTo(JsonObject.of("{\"policyIdOrPlaceholder\":\"policy.namespace:policyName\"}"));
+                .isEqualTo(JsonObject.of("{\"policyIdOrPlaceholder\":\"" + policyId + "\"}"));
         return this;
     }
 
-    public MessageAssert hasOptionCopyPolicyFromThing() {
+    public MessageAssert hasOptionCopyPolicyFromThing(final ThingId thingId) {
         assertThat(((ThingCommand) actual.getPayload().get()).toJson().get(JsonPointer.of("policyIdOrPlaceholder")))
                 .overridingErrorMessage("Thing does not have initial policy which is expected")
                 .isEqualTo(JsonObject.of(
-                        "{\"policyIdOrPlaceholder\":\"{{ ref:things/example.com:testThing/policyId }}\"}"));
+                        "{\"policyIdOrPlaceholder\":\"{{ ref:things/" + thingId + "/policyId }}\"}"));
         return this;
     }
 

@@ -61,7 +61,9 @@ import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
-import org.eclipse.ditto.signals.commands.things.ThingCommand;
+import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
+import org.eclipse.ditto.signals.commands.things.query.RetrieveThings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,12 +74,10 @@ import org.slf4j.LoggerFactory;
  * @param <F> the type of {@link FeatureHandle} for handling {@code Feature}s
  * @since 1.0.0
  */
-public abstract class CommonManagementImpl<T extends ThingHandle, F extends FeatureHandle> implements
+public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends FeatureHandle> implements
         CommonManagement<T, F> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonManagementImpl.class);
-
-    private static final String INLINE_POLICY_KEY = "_policy";
 
     private final TopicPath.Channel channel;
     private final MessagingProvider messagingProvider;
@@ -279,14 +279,10 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
     public CompletableFuture<Thing> create(final JsonObject jsonObject, final Option<?>... options) {
         argumentNotNull(jsonObject);
 
-        JsonObject initialPolciy = null;
-        if (jsonObject.getValue(INLINE_POLICY_KEY).isPresent()) {
-            initialPolciy = jsonObject.getValue(INLINE_POLICY_KEY).get().asObject();
-            jsonObject.remove(INLINE_POLICY_KEY);
-        }
+        final Optional<JsonObject> initialPolicy = getInlinePolicyFromThingJson(jsonObject);
 
         final Thing thing = ThingsModelFactory.newThing(jsonObject);
-        return create(thing, initialPolciy, options);
+        return create(thing, initialPolicy.orElse(null), options);
     }
 
     @Override
@@ -345,14 +341,10 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
     public CompletableFuture<Optional<Thing>> put(final JsonObject jsonObject, final Option<?>... options) {
         argumentNotNull(jsonObject);
 
-        JsonObject initialPolciy = null;
-        if (jsonObject.getValue(INLINE_POLICY_KEY).isPresent()) {
-            initialPolciy = jsonObject.getValue(INLINE_POLICY_KEY).get().asObject();
-            jsonObject.remove(INLINE_POLICY_KEY);
-        }
+        final Optional<JsonObject> initialPolicy = getInlinePolicyFromThingJson(jsonObject);
 
         final Thing thing = ThingsModelFactory.newThing(jsonObject);
-        return put(thing, initialPolciy, options);
+        return put(thing, initialPolicy.orElse(null), options);
     }
 
     @Override
@@ -366,40 +358,19 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
 
     @Override
     public CompletableFuture<Void> update(final Thing thing, final Option<?>... options) {
-        return update(thing, null, options);
-    }
-
-    @Override
-    public CompletableFuture<Void> update(final Thing thing, @Nullable final JsonObject initialPolicy,
-            final Option<?>... options) {
         argumentNotNull(thing);
         assertThatThingHasId(thing);
 
         return new SendTerminator<Void>(messagingProvider, responseForwarder, channel,
-                outgoingMessageFactory.updateThing(thing, initialPolicy, options)).applyVoid();
+                outgoingMessageFactory.updateThing(thing, options)).applyVoid();
     }
 
     @Override
     public CompletableFuture<Void> update(final JsonObject jsonObject, final Option<?>... options) {
         argumentNotNull(jsonObject);
 
-        JsonObject initialPolciy = null;
-        if (jsonObject.getValue(INLINE_POLICY_KEY).isPresent()) {
-            initialPolciy = jsonObject.getValue(INLINE_POLICY_KEY).get().asObject();
-            jsonObject.remove(INLINE_POLICY_KEY);
-        }
-
         final Thing thing = ThingsModelFactory.newThing(jsonObject);
-        return update(thing, initialPolciy, options);
-    }
-
-    @Override
-    public CompletableFuture<Void> update(final JsonObject jsonObject, final JsonObject initialPolicy,
-            final Option<?>... options) {
-        argumentNotNull(jsonObject);
-
-        final Thing thing = ThingsModelFactory.newThing(jsonObject);
-        return update(thing, initialPolicy, options);
+        return update(thing, options);
     }
 
     @Override
@@ -413,7 +384,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
         argumentNotNull(thing);
         assertThatThingHasId(thing);
 
-        final ThingCommand command = outgoingMessageFactory.createThing(thing, initialPolicy, options);
+        final CreateThing command = outgoingMessageFactory.createThing(thing, initialPolicy, options);
 
         return new SendTerminator<Thing>(messagingProvider, responseForwarder, channel, command)
                 .applyModify(response -> {
@@ -430,7 +401,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
     public CompletableFuture<Void> delete(final ThingId thingId, final Option<?>... options) {
         argumentNotNull(thingId);
 
-        final ThingCommand command = outgoingMessageFactory.deleteThing(thingId, options);
+        final DeleteThing command = outgoingMessageFactory.deleteThing(thingId, options);
         return new SendTerminator<Void>(messagingProvider, responseForwarder, channel, command).applyVoid();
     }
 
@@ -591,6 +562,12 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
                 });
     }
 
+    private static Optional<JsonObject> getInlinePolicyFromThingJson(final JsonObject jsonObject) {
+        return jsonObject.getValue(CreateThing.JSON_INLINE_POLICY.getPointer())
+                .filter(JsonValue::isObject)
+                .map(JsonValue::asObject);
+    }
+
     private static void assertThatThingHasId(final Thing thing) {
         thing.getEntityId().orElseThrow(() -> {
             final String msgPattern = "Mandatory field <{0}> is missing!";
@@ -598,7 +575,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
         });
     }
 
-    private CompletableFuture<List<Thing>> sendRetrieveThingsMessage(final ThingCommand command) {
+    private CompletableFuture<List<Thing>> sendRetrieveThingsMessage(final RetrieveThings command) {
         return new SendTerminator<List<Thing>>(messagingProvider, responseForwarder, channel, command)
                 .applyView(tvr -> {
                     if (tvr != null) {

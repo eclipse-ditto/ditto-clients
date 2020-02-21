@@ -15,6 +15,7 @@ package org.eclipse.ditto.client.assertions;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.assertj.core.api.AbstractAssert;
+import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.policies.Policy;
 import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
@@ -48,4 +49,9 @@ public final class PolicyAssert extends AbstractAssert<PolicyAssert, PolicyComma
     public PolicyAssert hasType(final String expectedType) {
         return assertThatEqual(expectedType, actual.getType(), "type");
     }
+
+    public PolicyAssert hasSchemaVersion(final JsonSchemaVersion expectedSchemaVersion) {
+        return assertThatEqual(actual.getImplementedSchemaVersion(), expectedSchemaVersion, "Schema version");
+    }
+
 }

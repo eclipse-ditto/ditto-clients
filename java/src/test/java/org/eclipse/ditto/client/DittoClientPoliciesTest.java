@@ -22,27 +22,47 @@ import java.util.concurrent.CountDownLatch;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
+import org.eclipse.ditto.client.messaging.mock.MockMessagingProvider;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonMissingFieldException;
-import org.eclipse.ditto.model.policies.PolicyId;
+import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.junit.Test;
 
 public class DittoClientPoliciesTest extends AbstractDittoClientTest {
 
     @Test
+    public void verifyClientDefaultsToSchemaVersion2ForPolicyCommands() throws InterruptedException {
+        final MockMessagingProvider mockProvider = new MockMessagingProvider(JsonSchemaVersion.V_1);
+        final DittoClient client = DittoClients.newInstance(mockProvider);
+
+        final CountDownLatch latch = new CountDownLatch(1);
+        mockProvider.onPolicyCommand(c -> {
+            assertThat(c)
+                    .hasPolicyId(POLICY_ID)
+                    .hasSchemaVersion(JsonSchemaVersion.V_2)
+                    .hasType("policies.commands:retrievePolicy");
+
+            latch.countDown();
+        });
+
+        client.policies().retrieve(POLICY_ID);
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
     public void testCreatePolicy() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        messaging.onCommandSend(c -> {
+        messaging.onPolicyCommand(c -> {
             assertThat(c)
-                    .hasPolicyId(PolicyId.of(POLICY_ID))
+                    .hasPolicyId(POLICY_ID)
                     .hasType("policies.commands:createPolicy");
 
             latch.countDown();
         });
 
-        client.policies().create(PolicyId.of(POLICY_ID));
+        client.policies().create(POLICY_ID);
 
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
     }
@@ -51,7 +71,7 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
     public void createPolicyFailsWithExistsOption() {
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> client.policies()
-                        .create(PolicyId.of(POLICY_ID), Options.Modify.exists(false))
+                        .create(POLICY_ID, Options.Modify.exists(false))
                         .get(TIMEOUT, TIME_UNIT));
     }
 
@@ -59,9 +79,9 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
     public void testPutPolicyWithoutExistsOption() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        messaging.onCommandSend(c -> {
+        messaging.onPolicyCommand(c -> {
             assertThat(c)
-                    .hasPolicyId(PolicyId.of(POLICY_ID))
+                    .hasPolicyId(POLICY_ID)
                     .hasType("policies.commands:modifyPolicy");
 
             latch.countDown();
@@ -76,9 +96,9 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
     public void testPutPolicyWithExistsOptionFalse() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        messaging.onCommandSend(c -> {
+        messaging.onPolicyCommand(c -> {
             assertThat(c)
-                    .hasPolicyId(PolicyId.of(POLICY_ID))
+                    .hasPolicyId(POLICY_ID)
                     .hasType("policies.commands:modifyPolicy");
 
             latch.countDown();
@@ -93,9 +113,9 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
     public void testPutPolicyWithExistsOptionTrue() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        messaging.onCommandSend(c -> {
+        messaging.onPolicyCommand(c -> {
             assertThat(c)
-                    .hasPolicyId(PolicyId.of(POLICY_ID));
+                    .hasPolicyId(POLICY_ID);
 
             latch.countDown();
         });
@@ -109,9 +129,9 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
     public void testUpdatePolicy() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        messaging.onCommandSend(c -> {
+        messaging.onPolicyCommand(c -> {
             assertThat(c)
-                    .hasPolicyId(PolicyId.of(POLICY_ID))
+                    .hasPolicyId(POLICY_ID)
                     .hasType("policies.commands:modifyPolicy");
 
             latch.countDown();
@@ -133,15 +153,15 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
     public void testDeletePolicy() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        messaging.onCommandSend(c -> {
+        messaging.onPolicyCommand(c -> {
             assertThat(c)
-                    .hasPolicyId(PolicyId.of(POLICY_ID))
+                    .hasPolicyId(POLICY_ID)
                     .hasType("policies.commands:deletePolicy");
 
             latch.countDown();
         });
 
-        client.policies().delete(PolicyId.of(POLICY_ID));
+        client.policies().delete(POLICY_ID);
 
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
     }
@@ -150,15 +170,15 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
     public void testRetrievePolicy() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        messaging.onCommandSend(c -> {
+        messaging.onPolicyCommand(c -> {
             assertThat(c)
-                    .hasPolicyId(PolicyId.of(POLICY_ID))
+                    .hasPolicyId(POLICY_ID)
                     .hasType("policies.commands:retrievePolicy");
 
             latch.countDown();
         });
 
-        client.policies().retrieve(PolicyId.of(POLICY_ID));
+        client.policies().retrieve(POLICY_ID);
 
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
     }
@@ -167,15 +187,15 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
     public void testRetrievePolicyFromTwinChannel() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        messaging.onCommandSend(c -> {
+        messaging.onPolicyCommand(c -> {
             assertThat(c)
-                    .hasPolicyId(PolicyId.of(POLICY_ID))
+                    .hasPolicyId(POLICY_ID)
                     .hasType("policies.commands:retrievePolicy");
 
             latch.countDown();
         });
 
-        client.twin().forPolicy(PolicyId.of(POLICY_ID)).retrieve();
+        client.twin().forPolicy(POLICY_ID).retrieve();
 
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
     }
@@ -184,7 +204,7 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
     public void deletePolicyFailsWithExistsOption() {
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> client.policies()
-                        .delete(PolicyId.of(POLICY_ID), Options.Modify.exists(false))
+                        .delete(POLICY_ID, Options.Modify.exists(false))
                         .get(TIMEOUT, TIME_UNIT));
     }
 
