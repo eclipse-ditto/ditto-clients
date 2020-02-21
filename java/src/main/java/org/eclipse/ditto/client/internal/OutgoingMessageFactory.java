@@ -73,6 +73,7 @@ import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDefinition;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperties;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperty;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatures;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyId;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyThing;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveFeature;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThing;
@@ -308,10 +309,8 @@ public final class OutgoingMessageFactory {
         return ModifyFeatures.of(thingId, features, buildDittoHeaders(true, options));
     }
 
-
-    public ModifyThing setPolicyId(final ThingId thingId, final PolicyId policyId, final Option<?>... options) {
-        final Thing thing = Thing.newBuilder().setId(thingId).setPolicyId(policyId).build();
-        return ModifyThing.of(thingId, thing, null, null, buildDittoHeaders(true, options));
+    public ModifyPolicyId setPolicyId(final ThingId thingId, final PolicyId policyId, final Option<?>... options) {
+        return ModifyPolicyId.of(thingId, policyId, buildDittoHeaders(true, options));
     }
 
     public RetrieveFeature retrieveFeature(final ThingId thingId, final String featureId, final Option<?>... options) {

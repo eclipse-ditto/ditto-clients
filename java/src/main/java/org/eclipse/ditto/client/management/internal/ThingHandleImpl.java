@@ -49,6 +49,7 @@ import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -211,10 +212,10 @@ public abstract class ThingHandleImpl<T extends ThingHandle, F extends FeatureHa
     }
 
     @Override
-    public CompletableFuture<Void> setPolicy(final PolicyId policyId, final Option<?>... options) {
+    public CompletableFuture<Void> setPolicyId(final PolicyId policyId, final Option<?>... options) {
         argumentNotNull(policyId);
 
-        final ThingCommand command = outgoingMessageFactory.setPolicyId(thingId, policyId, options);
+        final ModifyPolicyId command = outgoingMessageFactory.setPolicyId(thingId, policyId, options);
         return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
     }
 
