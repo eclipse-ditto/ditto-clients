@@ -74,7 +74,7 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      *
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return completable future providing the created Thing object or a specific {@link
+     * @return completable future providing for handling the deletion a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      */
     CompletableFuture<Void> delete(Option<?>... options);

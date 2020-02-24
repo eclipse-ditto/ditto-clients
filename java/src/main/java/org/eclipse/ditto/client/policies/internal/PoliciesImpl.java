@@ -50,8 +50,7 @@ public final class PoliciesImpl implements Policies {
     public PoliciesImpl(final MessagingProvider messagingProvider,
             final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
-            final PointerBus bus
-    ) {
+            final PointerBus bus) {
         this.messagingProvider = messagingProvider;
         this.responseForwarder = responseForwarder;
         this.outgoingMessageFactory = outgoingMessageFactory;
@@ -62,7 +61,7 @@ public final class PoliciesImpl implements Policies {
      * Creates a new {@code PoliciesImpl} instance.
      *
      * @param messagingProvider implementation of underlying messaging provider.
-     * @param responseForwarder fast cache of response addresses.
+     * @param responseForwarder response forwarder.
      * @param outgoingMessageFactory a factory for messages.
      * @param bus the bus for message routing.
      * @return the new {@code PoliciesImpl} instance.
@@ -84,8 +83,10 @@ public final class PoliciesImpl implements Policies {
         return new SendTerminator<Policy>(messagingProvider, responseForwarder, command)
                 .applyModifyPolicy(response -> {
                     if (response != null) {
-                        return PoliciesModelFactory.newPolicy(response.getEntity(response.getImplementedSchemaVersion())
-                                .orElse(JsonFactory.nullObject()).asObject());
+                        return PoliciesModelFactory.newPolicy(
+                                response.getEntity(response.getImplementedSchemaVersion())
+                                        .orElse(JsonFactory.nullObject())
+                                        .asObject());
                     } else {
                         return null;
                     }
@@ -108,19 +109,14 @@ public final class PoliciesImpl implements Policies {
         return new SendTerminator<Optional<Policy>>(messagingProvider, responseForwarder,
                 outgoingMessageFactory.putPolicy(policy, options))
                 .applyModifyPolicy(response -> {
-            if (response != null) {
-                final Optional<JsonValue> responseEntityOpt =
-                        response.getEntity(response.getImplementedSchemaVersion());
-                if (responseEntityOpt.isPresent()) {
-                    final Policy createdPolicy = PoliciesModelFactory.newPolicy(responseEntityOpt.get().asObject());
-                    return Optional.of(createdPolicy);
-                } else {
-                    return Optional.empty();
-                }
-            } else {
-                throw new IllegalStateException("Response is always expected!");
-            }
-        });
+                    if (response != null) {
+                        return response.getEntity(response.getImplementedSchemaVersion())
+                                .map(JsonValue::asObject)
+                                .map(PoliciesModelFactory::newPolicy);
+                    } else {
+                        throw new IllegalStateException("Response is always expected!");
+                    }
+                });
     }
 
     @Override
@@ -159,22 +155,22 @@ public final class PoliciesImpl implements Policies {
     @Override
     public CompletableFuture<Policy> retrieve(PolicyId policyId) {
         final RetrievePolicy command = outgoingMessageFactory.retrievePolicy(policyId);
-        return new SendTerminator<Policy>(messagingProvider, responseForwarder, command).applyViewWithPolicyResponse(
-                pvr ->
-        {
-            if (pvr != null) {
-                return PoliciesModelFactory.newPolicy(pvr.getEntity(pvr.getImplementedSchemaVersion()).asObject());
-            } else {
-                return null;
-            }
-        });
+        return new SendTerminator<Policy>(messagingProvider, responseForwarder, command)
+                .applyViewWithPolicyResponse(response -> {
+                    if (response != null) {
+                        return PoliciesModelFactory.newPolicy(
+                                response.getEntity(response.getImplementedSchemaVersion()).asObject());
+                    } else {
+                        return null;
+                    }
+                });
     }
 
     private static void assertThatPolicyHasId(final Policy policy) {
-        policy.getEntityId().orElseThrow(() -> {
+        if (!policy.getEntityId().isPresent()) {
             final String msgPattern = "Mandatory field <{0}> is missing!";
-            return new IllegalArgumentException(MessageFormat.format(msgPattern, Policy.JsonFields.ID.getPointer()));
-        });
+            throw new IllegalArgumentException(MessageFormat.format(msgPattern, Policy.JsonFields.ID.getPointer()));
+        }
     }
 
     /**
@@ -194,4 +190,5 @@ public final class PoliciesImpl implements Policies {
     public PointerBus getBus() {
         return bus;
     }
+
 }

@@ -109,7 +109,7 @@ public interface MessagingProvider {
      *
      * @param commandResponseHandler the consumer that is called for incoming command response messages
      */
-    void registerReplyHandler(Consumer<CommandResponse> commandResponseHandler);
+    void registerReplyHandler(Consumer<CommandResponse<?>> commandResponseHandler);
 
     /**
      * Register a named message handler and receipt handler.

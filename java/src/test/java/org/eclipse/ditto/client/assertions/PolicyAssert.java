@@ -21,7 +21,7 @@ import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
 
 /**
- * An assert for {@link Policy}.
+ * Assertions for {@link Policy}.
  */
 public final class PolicyAssert extends AbstractAssert<PolicyAssert, PolicyCommand> {
 

@@ -18,6 +18,7 @@ import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_ID;
 import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_JSON_OBJECT;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 import org.assertj.core.api.Assertions;
@@ -27,6 +28,8 @@ import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonMissingFieldException;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
+import org.eclipse.ditto.model.policies.Policy;
+import org.eclipse.ditto.signals.commands.policies.modify.CreatePolicyResponse;
 import org.junit.Test;
 
 public class DittoClientPoliciesTest extends AbstractDittoClientTest {
@@ -56,7 +59,7 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
 
         messaging.onPolicyCommand(c -> {
             assertThat(c)
-                    .hasPolicyId(POLICY.getEntityId().get())
+                    .hasPolicyId(POLICY_ID)
                     .hasType("policies.commands:createPolicy");
 
             latch.countDown();
@@ -76,8 +79,8 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
     }
 
     @Test
-    public void testPutPolicyWithoutExistsOption() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
+    public void testPutPolicyJsonObject() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(3);
 
         messaging.onPolicyCommand(c -> {
             assertThat(c)
@@ -88,13 +91,15 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
         });
 
         client.policies().put(POLICY_JSON_OBJECT);
+        client.policies().put(POLICY_JSON_OBJECT, Options.Modify.exists(true));
+        client.policies().put(POLICY_JSON_OBJECT, Options.Modify.exists(false));
 
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
     }
 
     @Test
-    public void testPutPolicyWithExistsOptionFalse() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
+    public void testPutPolicyWithoutExistsOption() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(3);
 
         messaging.onPolicyCommand(c -> {
             assertThat(c)
@@ -104,23 +109,9 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
             latch.countDown();
         });
 
-        client.policies().put(POLICY_JSON_OBJECT, Options.Modify.exists(false));
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
-    }
-
-    @Test
-    public void testPutPolicyWithExistsOptionTrue() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onPolicyCommand(c -> {
-            assertThat(c)
-                    .hasPolicyId(POLICY_ID);
-
-            latch.countDown();
-        });
-
+        client.policies().put(POLICY);
         client.policies().put(POLICY, Options.Modify.exists(true));
+        client.policies().put(POLICY, Options.Modify.exists(false));
 
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
     }
@@ -167,6 +158,14 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
     }
 
     @Test
+    public void deletePolicyFailsWithExistsOption() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.policies()
+                        .delete(POLICY_ID, Options.Modify.exists(false))
+                        .get(TIMEOUT, TIME_UNIT));
+    }
+
+    @Test
     public void testRetrievePolicy() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
@@ -181,14 +180,6 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
         client.policies().retrieve(POLICY_ID);
 
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
-    }
-
-    @Test
-    public void deletePolicyFailsWithExistsOption() {
-        assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> client.policies()
-                        .delete(POLICY_ID, Options.Modify.exists(false))
-                        .get(TIMEOUT, TIME_UNIT));
     }
 
     @Test(expected = JsonMissingFieldException.class)

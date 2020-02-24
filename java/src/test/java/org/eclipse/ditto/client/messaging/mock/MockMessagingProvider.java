@@ -73,6 +73,10 @@ public class MockMessagingProvider implements MessagingProvider {
     private final BlockingQueue<Message<?>> eventQueue = new LinkedBlockingQueue<>();
     private final MessagingConfiguration messagingConfiguration;
 
+    private Consumer<CommandResponse<?>> responseConsumer = response -> {
+        LOGGER.info("Not handling response in test: {}", response);
+    };
+
     private Consumer<Message<?>> out = message -> {
         throw new IllegalStateException("Unhandled out-message: " + message);
     };
@@ -119,10 +123,6 @@ public class MockMessagingProvider implements MessagingProvider {
         out.accept(message);
     }
 
-    private void sendPolicyCommand(final PolicyCommand<?> policyCommand, final TopicPath.Channel channel) {
-        outgoingPolicyCommand.accept(policyCommand);
-    }
-
     @Override
     public void sendCommand(final Command<?> command, final TopicPath.Channel channel) {
         //Check if command is a PolicyCommand. Else its a ThingCommand
@@ -131,6 +131,10 @@ public class MockMessagingProvider implements MessagingProvider {
         } else {
             sendThingCommand(command, channel);
         }
+    }
+
+    private void sendPolicyCommand(final PolicyCommand<?> policyCommand, final TopicPath.Channel channel) {
+        outgoingPolicyCommand.accept(policyCommand);
     }
 
     private void sendThingCommand(final Command<?> command, final TopicPath.Channel channel) {
@@ -174,14 +178,18 @@ public class MockMessagingProvider implements MessagingProvider {
         this.out = out;
     }
 
+    public void receiveResponse(final CommandResponse<?> response) {
+        this.responseConsumer.accept(response);
+    }
+
     public void receiveEvent(final Message<ThingEvent> message) {
         LOGGER.debug("Manually receiving Event: {}", message);
         eventQueue.add(message);
     }
 
     @Override
-    public void registerReplyHandler(final Consumer<CommandResponse> commandResponseConsumer) {
-        // noop
+    public void registerReplyHandler(final Consumer<CommandResponse<?>> commandResponseConsumer) {
+        this.responseConsumer = commandResponseConsumer;
     }
 
     @Override

@@ -311,14 +311,9 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         return new SendTerminator<Optional<Thing>>(messagingProvider, responseForwarder, channel,
                 outgoingMessageFactory.putThing(thing, initialPolicy, options)).applyModify(response -> {
             if (response != null) {
-                final Optional<JsonValue> responseEntityOpt =
-                        response.getEntity(response.getImplementedSchemaVersion());
-                if (responseEntityOpt.isPresent()) {
-                    final Thing createdThing = ThingsModelFactory.newThing(responseEntityOpt.get().asObject());
-                    return Optional.of(createdThing);
-                } else {
-                    return Optional.empty();
-                }
+                return response.getEntity(response.getImplementedSchemaVersion())
+                        .map(JsonValue::asObject)
+                        .map(ThingsModelFactory::newThing);
             } else {
                 throw new IllegalStateException("Response is always expected!");
             }
@@ -557,10 +552,10 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     private static void assertThatThingHasId(final Thing thing) {
-        thing.getEntityId().orElseThrow(() -> {
+        if (!thing.getEntityId().isPresent()) {
             final String msgPattern = "Mandatory field <{0}> is missing!";
-            return new IllegalArgumentException(MessageFormat.format(msgPattern, Thing.JsonFields.ID.getPointer()));
-        });
+            throw new IllegalArgumentException(MessageFormat.format(msgPattern, Thing.JsonFields.ID.getPointer()));
+        }
     }
 
     private CompletableFuture<List<Thing>> sendRetrieveThingsMessage(final RetrieveThings command) {

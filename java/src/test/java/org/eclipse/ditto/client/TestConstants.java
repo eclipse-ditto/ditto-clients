@@ -273,7 +273,7 @@ public final class TestConstants {
          * Known Policy in JsonObject.
          */
         public static final JsonObject POLICY_JSON_OBJECT = JsonObject.of("{\n" +
-                "    \"policyId\": \"policy.namespace:policyName\",\n" +
+                "    \"policyId\": \"" + POLICY_ID + "\",\n" +
                 "    \"entries\": {\n" +
                 "        \"maker\": {\n" +
                 "            \"subjects\": {\n" +

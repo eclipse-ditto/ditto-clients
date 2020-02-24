@@ -62,6 +62,7 @@ public interface DittoClient {
      * {@link org.eclipse.ditto.model.policies.Policy}s.
      *
      * @return the Policy handle
+     * @since 1.1.0
      */
     Policies policies();
 }

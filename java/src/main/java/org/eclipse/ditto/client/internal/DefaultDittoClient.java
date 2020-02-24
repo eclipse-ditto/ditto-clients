@@ -14,7 +14,6 @@ package org.eclipse.ditto.client.internal;
 
 import java.text.MessageFormat;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.ditto.client.DittoClient;
 import org.eclipse.ditto.client.changes.ChangeAction;
@@ -89,14 +88,14 @@ public final class DefaultDittoClient implements DittoClient {
     private static final String FEATURE_PROPERTIES_PATTERN = THING_PATTERN + "/features/{1}/properties";
     private static final String FEATURE_PROPERTY_PATTERN = THING_PATTERN + "/features/{1}/properties{2}";
 
-    private final AtomicReference<TwinImpl> twin = new AtomicReference<>(null);
-    private final AtomicReference<LiveImpl> live = new AtomicReference<>(null);
-    private final AtomicReference<PoliciesImpl> policyClient = new AtomicReference<>(null);
+    private final TwinImpl twin;
+    private final LiveImpl live;
+    private final PoliciesImpl policies;
 
-    private DefaultDittoClient(final TwinImpl twin, final LiveImpl live, final PoliciesImpl policyClient) {
-        this.twin.set(twin);
-        this.live.set(live);
-        this.policyClient.set(policyClient);
+    private DefaultDittoClient(final TwinImpl twin, final LiveImpl live, final PoliciesImpl policies) {
+        this.twin = twin;
+        this.live = live;
+        this.policies = policies;
         logVersionInformation();
     }
 
@@ -121,65 +120,61 @@ public final class DefaultDittoClient implements DittoClient {
 
     @Override
     public Twin twin() {
-        final Twin result = twin.get();
-        if (null == result) {
-            throw new IllegalStateException("Twin client is not configured.");
-        }
-        return result;
+        return twin;
     }
 
     @Override
     public Live live() {
-        final Live result = live.get();
-        if (null == result) {
-            throw new IllegalStateException("Live client is not configured.");
-        }
-        return result;
+        return live;
     }
 
     @Override
     public Policies policies() {
-        final Policies result = policyClient.get();
-        if (null == result) {
-            throw new IllegalStateException("Policy client is not configured.");
-        }
-        return result;
+        return policies;
     }
 
     @Override
     public CompletableFuture<Adaptable> sendDittoProtocol(final Adaptable dittoProtocolAdaptable) {
 
-        TopicPath.Group group = dittoProtocolAdaptable.getTopicPath().getGroup();
+        final TopicPath.Group group = dittoProtocolAdaptable.getTopicPath().getGroup();
         switch (group) {
             case THINGS:
-                return getTopicPathChannelForThingsGroup(dittoProtocolAdaptable);
+                return sendDittoProtocolForThingsGroup(dittoProtocolAdaptable);
             case POLICIES:
-                return policyClient.get().getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
+                return sendDittoProtocolForPoliciesGroup(dittoProtocolAdaptable);
             default:
                 throw new IllegalArgumentException("Unknown group: " + group);
         }
     }
 
-    private CompletableFuture<Adaptable> getTopicPathChannelForThingsGroup(final Adaptable dittoProtocolAdaptable) {
+    private CompletableFuture<Adaptable> sendDittoProtocolForThingsGroup(final Adaptable dittoProtocolAdaptable) {
         final TopicPath.Channel channel = dittoProtocolAdaptable.getTopicPath().getChannel();
         switch (channel) {
             case TWIN:
-                return twin.get().getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
+                return twin.getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
             case LIVE:
-                return live.get().getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
+                return live.getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
             default:
-                throw new IllegalArgumentException("Unknown channel: " + channel);
+                throw new IllegalArgumentException("Unsupported channel for things group: " + channel);
         }
+    }
+
+    private CompletableFuture<Adaptable> sendDittoProtocolForPoliciesGroup(final Adaptable dittoProtocolAdaptable) {
+        final TopicPath.Channel channel = dittoProtocolAdaptable.getTopicPath().getChannel();
+        if (TopicPath.Channel.NONE.equals(channel)) {
+            return policies.getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
+        }
+        throw new IllegalArgumentException("Unsupported channel for policies group: " + channel);
     }
 
     @Override
     public void destroy() {
-        twin.get().getMessagingProvider().close();
-        twin.get().getBus().close();
-        live.get().getMessagingProvider().close();
-        live.get().getBus().close();
-        policyClient.get().getMessagingProvider().close();
-        policyClient.get().getBus().close();
+        twin.getMessagingProvider().close();
+        twin.getBus().close();
+        live.getMessagingProvider().close();
+        live.getBus().close();
+        policies.getMessagingProvider().close();
+        policies.getBus().close();
     }
 
     private static void logVersionInformation() {
@@ -212,8 +207,8 @@ public final class DefaultDittoClient implements DittoClient {
 
     private static PoliciesImpl configurePolicyClient(final MessagingProvider messagingProvider,
             final ResponseForwarder responseForwarder) {
-        final String name = TopicPath.Channel.NONE.getName();
-        final PointerBus bus = BusFactory.createPointerBus(name, messagingProvider.getExecutorService());
+        final String busName = TopicPath.Channel.NONE.getName();
+        final PointerBus bus = BusFactory.createPointerBus(busName, messagingProvider.getExecutorService());
         init(bus, messagingProvider, responseForwarder);
         final OutgoingMessageFactory messageFactory = getOutgoingMessageFactoryForPolicies(messagingProvider);
         return PoliciesImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus);

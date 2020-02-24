@@ -41,7 +41,7 @@ public final class ResponseForwarder {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ResponseForwarder.class);
 
-    private final ConcurrentMap<String, CompletableFuture<? extends CommandResponse>> map;
+    private final ConcurrentMap<String, CompletableFuture<CommandResponse>> map;
 
     private ResponseForwarder() {
         map = new ConcurrentHashMap<>();
@@ -73,8 +73,7 @@ public final class ResponseForwarder {
         argumentNotEmpty(correlationId, "correlationId");
         checkNotNull(responsePromise, "response promise");
 
-        final CompletableFuture<CommandResponse> previous =
-                (CompletableFuture<CommandResponse>) map.put(correlationId.toString(), responsePromise);
+        final CompletableFuture<CommandResponse> previous = map.put(correlationId.toString(), responsePromise);
 
         if (null != previous && !responsePromise.equals(previous)) {
             final String msgTemplate = "A new response promise was associated with correlation-id <{0}>!";
@@ -92,7 +91,7 @@ public final class ResponseForwarder {
      * @return the <em>completed</em> response promise which is associated to {@code response} or an empty Optional.
      * @throws NullPointerException if {@code response} is {@code null}.
      */
-    public Optional<CompletableFuture<CommandResponse>> handle(final CommandResponse response) {
+    public Optional<CompletableFuture<CommandResponse>> handle(final CommandResponse<?> response) {
         checkNotNull(response, "ThingCommandResponse to be handled");
 
         final DittoHeaders dittoHeaders = response.getDittoHeaders();
@@ -104,8 +103,7 @@ public final class ResponseForwarder {
 
         final String correlationId = correlationIdOptional.get();
         LOGGER.trace("Received response for correlation-id <{}>.", correlationId);
-        final CompletableFuture<CommandResponse> responsePromise =
-                (CompletableFuture<CommandResponse>) map.remove(correlationId);
+        final CompletableFuture<CommandResponse> responsePromise = map.remove(correlationId);
         if (null != responsePromise) {
             tryToCompleteResponsePromise(response, responsePromise);
         } else {
@@ -115,7 +113,7 @@ public final class ResponseForwarder {
         return Optional.ofNullable(responsePromise);
     }
 
-    private static void tryToCompleteResponsePromise(final CommandResponse response,
+    private static void tryToCompleteResponsePromise(final CommandResponse<?> response,
             final CompletableFuture<CommandResponse> responsePromise) {
 
         try {
@@ -125,13 +123,14 @@ public final class ResponseForwarder {
         }
     }
 
-    private static void completeResponsePromise(final CommandResponse response,
+    private static void completeResponsePromise(final CommandResponse<?> response,
             final CompletableFuture<CommandResponse> responsePromise) {
 
         if (response instanceof ErrorResponse) {
-            responsePromise.completeExceptionally(((ErrorResponse) response).getDittoRuntimeException());
+            responsePromise.completeExceptionally(((ErrorResponse<?>) response).getDittoRuntimeException());
         } else {
             responsePromise.complete(response);
         }
     }
+
 }

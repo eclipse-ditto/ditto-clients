@@ -46,6 +46,7 @@ import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
 import org.eclipse.ditto.model.policies.Policy;
 import org.eclipse.ditto.model.policies.PolicyId;
+import org.eclipse.ditto.model.policies.PolicyIdInvalidException;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.FeatureDefinition;
 import org.eclipse.ditto.model.things.Features;
@@ -232,6 +233,15 @@ public final class OutgoingMessageFactory {
         return DeleteThing.of(thingId, buildDittoHeaders(false, options));
     }
 
+    /**
+     * Build a command for creating a Policy.
+     * @param policy the policy to create.
+     * @param options options to be applied configuring behaviour of this method.
+     * @return The {@link CreatePolicy} command.
+     * @throws NullPointerException if any argument is {@code null}.
+     * @throws PolicyIdInvalidException if the {@link Policy}'s ID is not valid.
+     * @since 1.1.0
+     */
     public CreatePolicy createPolicy(final Policy policy, final Option<?>... options) {
         return CreatePolicy.of(policy, buildDittoHeaders(false, options));
     }
@@ -241,6 +251,8 @@ public final class OutgoingMessageFactory {
      * @param options options to be applied configuring behaviour of this method.
      * @return the PolicyCommand
      * @throws NullPointerException if any argument is {@code null}.
+     * @throws IllegalArgumentException if {@code policy} has no identifier.
+     * @since 1.1.0
      */
     public ModifyPolicy putPolicy(final Policy policy, final Option<?>... options) {
         checkNotNull(policy, "policy");
@@ -257,7 +269,7 @@ public final class OutgoingMessageFactory {
      * @return the PolicyCommand
      * @throws NullPointerException if any argument is {@code null}.
      * @throws IllegalArgumentException if {@code policy} has no identifier.
-     * @throws UnsupportedOperationException if an invalid option has been specified.
+     * @since 1.1.0
      */
     public ModifyPolicy updatePolicy(final Policy policy, final Option<?>... options) {
         checkNotNull(policy, "policy");
@@ -271,10 +283,25 @@ public final class OutgoingMessageFactory {
         return ModifyPolicy.of(policyId, policy, headers);
     }
 
+    /**
+     * Builds a command to retrieve the policy with ID {@code policyId}.
+     * @param policyId the policy to retrieve.
+     * @return the {@link RetrievePolicy} command.
+     * @throws NullPointerException if the policyId is {@code null}.
+     * @since 1.1.0
+     */
     public RetrievePolicy retrievePolicy(final PolicyId policyId) {
         return RetrievePolicy.of(policyId, buildDittoHeaders(false));
     }
 
+    /**
+     * Builds a command to delete the policy with ID {@code policyId}.
+     * @param policyId the policy to delete.
+     * @param options options to be applied configuring behaviour of this method.
+     * @return the {@link DeletePolicy} command.
+     * @throws NullPointerException if the policyId is {@code null}.
+     * @since 1.1.0
+     */
     public DeletePolicy deletePolicy(final PolicyId policyId, final Option<?>... options) {
         return DeletePolicy.of(policyId, buildDittoHeaders(false, options));
     }
