@@ -20,6 +20,7 @@ import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID_COPY_POLICY;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 
@@ -43,6 +44,8 @@ import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyId;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyIdResponse;
 import org.eclipse.ditto.signals.events.things.ThingCreated;
 import org.eclipse.ditto.signals.events.things.ThingDeleted;
 import org.eclipse.ditto.signals.events.things.ThingEvent;
@@ -244,6 +247,31 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
         return MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders)
                 .payload(ThingDeleted.of(THING_ID, 1, DittoHeaders.empty()))
                 .build();
+    }
+
+    @Test
+    public void testSetPolicyId() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING_ID)
+                    .hasSubject(ModifyPolicyId.TYPE)
+                    .matches(message -> {
+                        final ModifyPolicyId command = (ModifyPolicyId) message.getPayload().get();
+                        return POLICY_ID.equals(command.getPolicyEntityId());
+                    });
+
+            messaging.receiveResponse(ModifyPolicyIdResponse.created(THING_ID, POLICY_ID, m.getHeaders()));
+            latch.countDown();
+        });
+
+        final CompletableFuture<Void> response = client.twin()
+                .forId(THING_ID)
+                .setPolicyId(POLICY_ID);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        Assertions.assertThat(response).isCompleted();
     }
 
     @Test
