@@ -93,6 +93,7 @@ public final class Options {
          *
          * @param copyPolicyFrom existing policy which should be copied.
          * @return the new option.
+         * @since 1.1.0
          */
         public static Option<PolicyId> copyPolicy(final PolicyId copyPolicyFrom) {
             return DefaultOption.newInstance(OptionName.Modify.COPY_POLICY, copyPolicyFrom);
@@ -110,6 +111,7 @@ public final class Options {
          *
          * @param thingToCopyPolicyFrom existing thing from which the policy are used
          * @return the new option.
+         * @since 1.1.0
          */
         public static Option<ThingId> copyPolicyFromThing(final ThingId thingToCopyPolicyFrom) {
             return DefaultOption.newInstance(OptionName.Modify.COPY_POLICY_FROM_THING, thingToCopyPolicyFrom);

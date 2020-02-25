@@ -176,6 +176,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier.
      * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
+     * @since 1.1.0
      */
     CompletableFuture<Thing> create(Thing thing, @Nullable final JsonObject initialPolicy, Option<?>... options);
 
@@ -209,6 +210,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code thingId} is {@code null} or empty.
      * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
+     * @since 1.1.0
      */
     CompletableFuture<Thing> create(ThingId thingId, JsonObject initialPolicy, Option<?>... options);
 
@@ -228,6 +230,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code thing} cannot be parsed to a {@link
      * Thing}.
      * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
+     * @since 1.1.0
      */
     CompletableFuture<Thing> create(JsonObject thing, JsonObject initialPolicy, Option<?>... options);
 
@@ -259,7 +262,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * has been created, or an empty Optional, in case the Thing has been updated. Provides a {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier.
-     * @since 1.0.0
+     * @since 1.1.0
      */
     CompletableFuture<Optional<Thing>> put(Thing thing, @Nullable JsonObject initialPolicy, Option<?>... options);
 
@@ -300,6 +303,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * {@code "thingId"}.
      * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code thing} cannot be parsed to a {@link
      * Thing}.
+     * @since 1.1.0
      */
     CompletableFuture<Optional<Thing>> put(JsonObject thing, JsonObject initialPolicy, Option<?>... options);
 

@@ -94,6 +94,7 @@ public final class SendTerminator<T> {
      * @param responseForwarder the response forwarder.
      * @param policyCommand the outgoing message.
      * @throws NullPointerException if any argument is {@code null}.
+     * @since 1.1.0
      */
     public SendTerminator(final MessagingProvider messagingProvider, final ResponseForwarder responseForwarder,
             final PolicyCommand<?> policyCommand) {
@@ -223,6 +224,7 @@ public final class SendTerminator<T> {
      * {@link PolicyQueryCommandResponse}.
      * @return a CompletableFuture of type {@code <T>}.
      * @throws NullPointerException if {@code function} is {@code null}.
+     * @since 1.1.0
      */
     public CompletableFuture<T> applyViewWithPolicyResponse(final Function<PolicyQueryCommandResponse<?>, T> function) {
         final CompletableFuture<CommandResponse> result = createIntermediaryResult(function);

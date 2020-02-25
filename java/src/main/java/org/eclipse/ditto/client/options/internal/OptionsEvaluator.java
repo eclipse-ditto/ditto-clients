@@ -133,6 +133,7 @@ public final class OptionsEvaluator {
         /**
          * Returns whether a Policy for a new Thing should be copied for the modify action.
          * @return an Optional holding the {@link PolicyId} to copy from.
+         * @since 1.1.0
          */
         public Optional<PolicyId> copyPolicy() {
             return getValue(new CopyPolicyOptionVisitor());
@@ -141,6 +142,7 @@ public final class OptionsEvaluator {
         /**
          * Returns whether a Policy for a new Thing should be copied from another Thing for the modify action.
          * @return an Optional holding the {@link ThingId} to copy the Policy from.
+         * @since 1.1.0
          */
         public Optional<ThingId> copyPolicyFromThingId() {
             return getValue(new CopyPolicyFromThingOptionVisitor());
