@@ -98,6 +98,22 @@ client.twin().create("org.eclipse.ditto:new-thing").handle((createdThing, throwa
 }).get(); // this will block the thread! work asynchronously whenever possible!
 ```
 
+#### Manage policies
+
+```java
+        client.policies().create(newPolicy).thenAccept(createdPolicy -> {
+            System.out.println("Created new Policy: " + createdPolicy);
+        }).get();
+
+        client.twin()
+                .forId(ThingId.of("org.eclipse.ditto:new-thing"))
+                .setPolicyId(newPolicy.getEntityId().get())
+                .thenAccept((_void) -> {
+                    System.out.println("PolicyId was adapted");
+                })
+                .get();
+```
+
 #### Subscribe for change notifications
 
 ```java

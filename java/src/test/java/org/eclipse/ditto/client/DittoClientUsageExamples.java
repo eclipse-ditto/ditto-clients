@@ -22,6 +22,8 @@ import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.UUID;
@@ -53,6 +55,15 @@ import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.KnownMessageSubjects;
+import org.eclipse.ditto.model.policies.EffectedPermissions;
+import org.eclipse.ditto.model.policies.PoliciesModelFactory;
+import org.eclipse.ditto.model.policies.Policy;
+import org.eclipse.ditto.model.policies.PolicyEntry;
+import org.eclipse.ditto.model.policies.PolicyId;
+import org.eclipse.ditto.model.policies.Resource;
+import org.eclipse.ditto.model.policies.ResourceKey;
+import org.eclipse.ditto.model.policies.Subject;
+import org.eclipse.ditto.model.policies.SubjectId;
 import org.eclipse.ditto.model.things.FeatureProperties;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingBuilder;
@@ -165,10 +176,30 @@ public final class DittoClientUsageExamples {
         performLoadTestRead(client, loadTestCount, true);
         Thread.sleep(1000);
 
+        System.out.println("\n\nAbout to continue with policy example:");
+        promptEnterKey();
+
+        final PolicyId policyId = client.twin().create()
+                .thenApply(thing -> thing.getPolicyEntityId().get())
+                .get();
+
+        client.policies().update(addNewSubject(client, "DEFAULT", policyId)).get();
+        LOGGER.info("Policy {} is updated", policyId);
+
+
         client.destroy();
         client2.destroy();
         System.out.println("\n\nDittoClientUsageExamples successfully completed!");
         System.exit(0);
+    }
+
+    private static Policy addNewSubject(final DittoClient client, final String label,
+            final PolicyId policyId) throws ExecutionException, InterruptedException {
+        return client.policies().retrieve(policyId).thenApply(policy ->
+                policy.toBuilder()
+                        .forLabel(label)
+                        .setSubject(Subject.newInstance(SubjectId.newInstance("New:Subject")))
+                        .build()).get();
     }
 
     private static void useTwinCommandsAndEvents(final DittoClient client, final DittoClient client2)
