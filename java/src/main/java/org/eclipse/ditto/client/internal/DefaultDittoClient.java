@@ -104,17 +104,19 @@ public final class DefaultDittoClient implements DittoClient {
      *
      * @param twinMessagingProvider the messaging provider to use for the {@code Twin} aspect.
      * @param liveMessagingProvider the messaging provider to use for the {@code Live} aspect.
+     * @param policyMessagingProvider the messaging provider for the {@code Policy} part of the client.
      * @param responseForwarder forwarder used to optimize response performance.
      * @param messageSerializerRegistry registry for all serializers of live messages.
      * @return the client.
      */
     public static DittoClient newInstance(final MessagingProvider twinMessagingProvider,
             final MessagingProvider liveMessagingProvider,
+            final MessagingProvider policyMessagingProvider,
             final ResponseForwarder responseForwarder,
             final MessageSerializerRegistry messageSerializerRegistry) {
         final TwinImpl twin = configureTwin(twinMessagingProvider, responseForwarder);
         final LiveImpl live = configureLive(liveMessagingProvider, responseForwarder, messageSerializerRegistry);
-        final PoliciesImpl policy = configurePolicyClient(twinMessagingProvider, responseForwarder);
+        final PoliciesImpl policy = configurePolicyClient(policyMessagingProvider, responseForwarder);
         return new DefaultDittoClient(twin, live, policy);
     }
 
