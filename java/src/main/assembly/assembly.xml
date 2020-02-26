@@ -39,6 +39,7 @@
                 <include>org.eclipse.ditto:ditto-model-messages</include>
                 <include>org.eclipse.ditto:ditto-model-things</include>
                 <include>org.eclipse.ditto:ditto-signals-base</include>
+                <include>org.eclipse.ditto:ditto-signals-acks</include>
                 <include>org.eclipse.ditto:ditto-signals-commands-base</include>
                 <include>org.eclipse.ditto:ditto-signals-commands-things</include>
                 <include>org.eclipse.ditto:ditto-signals-commands-messages</include>
