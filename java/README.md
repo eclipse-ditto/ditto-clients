@@ -101,16 +101,13 @@ client.twin().create("org.eclipse.ditto:new-thing").handle((createdThing, throwa
 #### Manage policies
 
 ```java
-        client.policies().create(newPolicy).thenAccept(createdPolicy -> {
-            System.out.println("Created new Policy: " + createdPolicy);
-        }).get();
+        client.policies().create(newPolicy)
+                .thenAccept(createdPolicy -> System.out.println("Created new Policy: " + createdPolicy)).get();
 
         client.twin()
                 .forId(ThingId.of("org.eclipse.ditto:new-thing"))
                 .setPolicyId(newPolicy.getEntityId().get())
-                .thenAccept((_void) -> {
-                    System.out.println("PolicyId was adapted");
-                })
+                .thenAccept(_void -> System.out.println("PolicyId was adapted"))
                 .get();
 ```
 

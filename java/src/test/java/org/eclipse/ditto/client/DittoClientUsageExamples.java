@@ -22,8 +22,6 @@ import java.net.URL;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.UUID;
@@ -55,13 +53,6 @@ import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.KnownMessageSubjects;
-import org.eclipse.ditto.model.policies.EffectedPermissions;
-import org.eclipse.ditto.model.policies.PoliciesModelFactory;
-import org.eclipse.ditto.model.policies.Policy;
-import org.eclipse.ditto.model.policies.PolicyEntry;
-import org.eclipse.ditto.model.policies.PolicyId;
-import org.eclipse.ditto.model.policies.Resource;
-import org.eclipse.ditto.model.policies.ResourceKey;
 import org.eclipse.ditto.model.policies.Subject;
 import org.eclipse.ditto.model.policies.SubjectId;
 import org.eclipse.ditto.model.things.FeatureProperties;
@@ -178,14 +169,7 @@ public final class DittoClientUsageExamples {
 
         System.out.println("\n\nAbout to continue with policy example:");
         promptEnterKey();
-
-        final PolicyId policyId = client.twin().create()
-                .thenApply(thing -> thing.getPolicyEntityId().get())
-                .get();
-
-        client.policies().update(addNewSubject(client, "DEFAULT", policyId)).get();
-        LOGGER.info("Policy {} is updated", policyId);
-
+        addNewSubjectToExistingPolicy(client);
 
         client.destroy();
         client2.destroy();
@@ -193,13 +177,24 @@ public final class DittoClientUsageExamples {
         System.exit(0);
     }
 
-    private static Policy addNewSubject(final DittoClient client, final String label,
-            final PolicyId policyId) throws ExecutionException, InterruptedException {
-        return client.policies().retrieve(policyId).thenApply(policy ->
-                policy.toBuilder()
-                        .forLabel(label)
-                        .setSubject(Subject.newInstance(SubjectId.newInstance("New:Subject")))
-                        .build()).get();
+    private static void addNewSubjectToExistingPolicy(final DittoClient client)
+            throws ExecutionException, InterruptedException {
+        client.twin().create()
+                .thenApply(thing -> thing.getPolicyEntityId()
+                        .orElseThrow(() -> new IllegalStateException(("Could not get PolicyId from created Thing."))))
+                .thenCompose(policyId -> client.policies().retrieve(policyId))
+                .thenApply(policy -> {
+                    LOGGER.info("Going to update the Policy {} with a new subject.", policy.getEntityId().orElse(null));
+                    return policy;
+                })
+                .thenApply(policy ->
+                        policy.toBuilder()
+                                .forLabel("DEFAULT")
+                                .setSubject(Subject.newInstance(SubjectId.newInstance("New:Subject")))
+                                .build())
+                .thenCompose(updatedPolicy -> client.policies().update(updatedPolicy))
+                .thenAccept(v -> LOGGER.info("Policy was updated with new subject."))
+                .get();
     }
 
     private static void useTwinCommandsAndEvents(final DittoClient client, final DittoClient client2)
