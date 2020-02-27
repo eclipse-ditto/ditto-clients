@@ -66,6 +66,7 @@ public final class ImmutableGlobalEventFactory implements GlobalEventFactory {
         schemaVersion = theSchemaVersion;
     }
 
+
     /**
      * Returns an instance of {@code ImmutableGlobalEventFactory}.
      *
