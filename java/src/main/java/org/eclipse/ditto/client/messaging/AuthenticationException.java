@@ -52,7 +52,7 @@ public class AuthenticationException extends RuntimeException {
     }
 
     /**
-     * Creates an AutenticationException for the {@code status code its {@code reason}.
+     * Creates an AutenticationException for the {@code status} code its {@code reason}.
      * @param sessionId the sessionId that failed to authenticate.
      * @param cause the cause of the failure.
      * @param status the status code of the failure.
