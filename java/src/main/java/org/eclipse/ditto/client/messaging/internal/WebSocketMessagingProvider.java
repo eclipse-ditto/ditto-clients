@@ -286,7 +286,10 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     private <T> T handleExecutionException(final ExecutionException e) {
         final Throwable cause = e.getCause();
-        if (cause instanceof WebSocketException) {
+        if (cause instanceof AuthenticationException) {
+            // no unneccessary boxing of AuthenticationException
+            throw ((AuthenticationException) cause);
+        } else if (cause instanceof WebSocketException) {
             LOGGER.error("Got exception: {}", cause.getMessage());
 
             if (isAuthenticationException((WebSocketException) cause)) {
@@ -295,6 +298,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                 throw AuthenticationException.forbidden(sessionId, cause);
             }
         }
+
         throw AuthenticationException.of(sessionId, e);
     }
 
