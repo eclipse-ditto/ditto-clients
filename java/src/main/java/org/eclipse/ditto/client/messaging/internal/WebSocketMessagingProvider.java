@@ -296,6 +296,10 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                 throw AuthenticationException.unauthorized(sessionId, cause);
             } else if (isForbidden((WebSocketException) cause)) {
                 throw AuthenticationException.forbidden(sessionId, cause);
+            } else if (cause instanceof OpeningHandshakeException) {
+                final StatusLine statusLine = ((OpeningHandshakeException) cause).getStatusLine();
+                throw AuthenticationException.withStatus(sessionId, cause, statusLine.getStatusCode(),
+                        statusLine.getReasonPhrase());
             }
         }
 

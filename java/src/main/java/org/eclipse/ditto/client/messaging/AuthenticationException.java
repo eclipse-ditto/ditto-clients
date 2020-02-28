@@ -30,6 +30,9 @@ public class AuthenticationException extends RuntimeException {
     private static final String FORBIDDEN_MESSAGE_TEMPLATE =
             "Authentication of session <%s> failed because of insufficient permissions.";
 
+    private static final String STATUS_MESSAGE_TEMPLATE =
+            "Authentication of session <%s> failed with status <%d> and reason: %s";
+
     private static final long serialVersionUID = 4405868587578425044L;
 
     private AuthenticationException(final String message, final Throwable cause) {
@@ -46,6 +49,22 @@ public class AuthenticationException extends RuntimeException {
 
     public static AuthenticationException forbidden(final String sessionId, final Throwable cause) {
         return new AuthenticationException(String.format(FORBIDDEN_MESSAGE_TEMPLATE, sessionId), cause);
+    }
+
+    /**
+     * Creates an AutenticationException for the {@code status code its {@code reason}.
+     * @param sessionId the sessionId that failed to authenticate.
+     * @param cause the cause of the failure.
+     * @param status the status code of the failure.
+     * @param reason a reason message for the failure.
+     * @return the AuthenticationException with the provided information.
+     * @since 1.1.0
+     */
+    public static AuthenticationException withStatus(final String sessionId, final Throwable cause,
+            final int status, final String reason) {
+        return new AuthenticationException(
+                String.format(STATUS_MESSAGE_TEMPLATE, sessionId, status, reason),
+                cause);
     }
 
 }
