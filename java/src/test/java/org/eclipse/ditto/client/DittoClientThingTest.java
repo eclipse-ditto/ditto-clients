@@ -13,11 +13,12 @@
 package org.eclipse.ditto.client;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.eclipse.ditto.client.TestConstants.Policy.POLICY;
 import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_ID;
 import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_JSON_OBJECT;
-import static org.eclipse.ditto.client.TestConstants.Thing.THING_WITH_INLINE_POLICY;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID_COPY_POLICY;
+import static org.eclipse.ditto.client.TestConstants.Thing.THING_WITH_INLINE_POLICY;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
 import java.util.concurrent.CompletableFuture;
@@ -370,7 +371,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
     }
 
     @Test
-    public void testCreateThingWithInitialPolicy() throws InterruptedException {
+    public void testCreateThingWithInitialJSONPolicy() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
         messaging.onSend(m -> {
@@ -383,6 +384,24 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
         });
 
         client.twin().create(THING_ID, POLICY_JSON_OBJECT);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testCreateThingWithInitialPolicy() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING_ID)
+                    .hasInitialPolicy()
+                    .hasNoConditionalHeaders();
+
+            latch.countDown();
+        });
+
+        client.twin().create(THING_ID, POLICY);
 
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
     }
@@ -406,7 +425,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
     }
 
     @Test
-    public void testPutThingWithInitialPolicy() throws InterruptedException {
+    public void testPutThingWithInitialJSONPolicy() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
         messaging.onSend(m -> {
@@ -419,6 +438,24 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
         });
 
         client.twin().put(THING, POLICY_JSON_OBJECT);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testPutThingWithInitialPolicy() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING_ID)
+                    .hasInitialPolicy()
+                    .hasNoConditionalHeaders();
+
+            latch.countDown();
+        });
+
+        client.twin().put(THING, POLICY);
 
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
     }

@@ -52,6 +52,7 @@ import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.policies.Policy;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Features;
 import org.eclipse.ditto.model.things.Thing;
@@ -264,17 +265,31 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
+    public CompletableFuture<Thing> create(final Thing thing, final Option<?>... options) {
+        return processCreate(thing, null, options);
+    }
+
+    @Override
     public CompletableFuture<Thing> create(final JsonObject jsonObject, final Option<?>... options) {
         argumentNotNull(jsonObject);
 
         final Optional<JsonObject> initialPolicy = getInlinePolicyFromThingJson(jsonObject);
 
         final Thing thing = ThingsModelFactory.newThing(jsonObject);
-        return create(thing, initialPolicy.orElse(null), options);
+        return processCreate(thing, initialPolicy.orElse(null), options);
     }
 
     @Override
-    public CompletableFuture<Thing> create(final ThingId thingId, JsonObject initialPolicy,
+    public CompletableFuture<Thing> create(final Policy policy, final Option<?>... options) {
+        // as the backend adds the default namespace, we can here simply use the empty namespace.
+        final Thing thing = ThingsModelFactory.newThingBuilder()
+                .setId(ThingId.generateRandom())
+                .build();
+        return processCreate(thing, policy.toJson(), options);
+    }
+
+    @Override
+    public CompletableFuture<Thing> create(final ThingId thingId, final JsonObject initialPolicy,
             final Option<?>... options) {
         argumentNotNull(thingId);
         argumentNotEmpty(thingId);
@@ -283,27 +298,122 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         final Thing thing = ThingsModelFactory.newThingBuilder()
                 .setId(ThingId.of(thingId))
                 .build();
-        return create(thing, initialPolicy, options);
+        return processCreate(thing, initialPolicy, options);
+    }
+
+
+    @Override
+    public CompletableFuture<Thing> create(final ThingId thingId, final Policy initialPolicy,
+            final Option<?>... options) {
+        argumentNotNull(thingId);
+        argumentNotEmpty(thingId);
+        argumentNotNull(initialPolicy);
+
+        final Thing thing = ThingsModelFactory.newThingBuilder()
+                .setId(ThingId.of(thingId))
+                .build();
+        return processCreate(thing, initialPolicy.toJson(), options);
     }
 
     @Override
-    public CompletableFuture<Thing> create(final JsonObject jsonObject, JsonObject initialPolicy,
+    public CompletableFuture<Thing> create(final JsonObject jsonObject, final JsonObject initialPolicy,
             final Option<?>... options) {
         argumentNotNull(jsonObject);
         argumentNotNull(initialPolicy);
 
         final Thing thing = ThingsModelFactory.newThing(jsonObject);
 
-        return create(thing, initialPolicy, options);
+        return processCreate(thing, initialPolicy, options);
+    }
+
+    @Override
+    public CompletableFuture<Thing> create(final JsonObject jsonObject, final Policy initialPolicy,
+            final Option<?>... options) {
+        argumentNotNull(jsonObject);
+        argumentNotNull(initialPolicy);
+
+        final Thing thing = ThingsModelFactory.newThing(jsonObject);
+
+        return processCreate(thing, initialPolicy.toJson(), options);
+    }
+
+    @Override
+    public CompletableFuture<Thing> create(final Thing thing, final JsonObject initialPolicy,
+            final Option<?>... options) {
+        return processCreate(thing, initialPolicy, options);
+    }
+
+
+    @Override
+    public CompletableFuture<Thing> create(final Thing thing, final Policy initialPolicy,
+            final Option<?>... options) {
+        return processCreate(thing, initialPolicy.toJson(), options);
+    }
+
+    private CompletableFuture<Thing> processCreate(final Thing thing, @Nullable final JsonObject initialPolicy,
+            final Option<?>... options) {
+        argumentNotNull(thing);
+        assertThatThingHasId(thing);
+
+        final CreateThing command = outgoingMessageFactory.createThing(thing, initialPolicy, options);
+
+        return new SendTerminator<Thing>(messagingProvider, responseForwarder, channel, command)
+                .applyModify(response -> {
+                    if (response != null) {
+                        return ThingsModelFactory.newThing(response.getEntity(response.getImplementedSchemaVersion())
+                                .orElse(JsonFactory.nullObject()).asObject());
+                    } else {
+                        return null;
+                    }
+                });
     }
 
     @Override
     public CompletableFuture<Optional<Thing>> put(final Thing thing, final Option<?>... options) {
-        return put(thing, null, options);
+        return processPut(thing, null, options);
     }
 
     @Override
-    public CompletableFuture<Optional<Thing>> put(final Thing thing, @Nullable final JsonObject initialPolicy,
+    public CompletableFuture<Optional<Thing>> put(final JsonObject jsonObject, final Option<?>... options) {
+        argumentNotNull(jsonObject);
+
+        final Optional<JsonObject> initialPolicy = getInlinePolicyFromThingJson(jsonObject);
+
+        final Thing thing = ThingsModelFactory.newThing(jsonObject);
+        return processPut(thing, initialPolicy.orElse(null), options);
+    }
+
+    @Override
+    public CompletableFuture<Optional<Thing>> put(final JsonObject jsonObject, final JsonObject initialPolicy,
+            final Option<?>... options) {
+        argumentNotNull(jsonObject);
+
+        final Thing thing = ThingsModelFactory.newThing(jsonObject);
+        return processPut(thing, initialPolicy, options);
+    }
+
+    @Override
+    public CompletableFuture<Optional<Thing>> put(final JsonObject jsonObject, final Policy initialPolicy,
+            final Option<?>... options) {
+        argumentNotNull(jsonObject);
+
+        final Thing thing = ThingsModelFactory.newThing(jsonObject);
+        return processPut(thing, initialPolicy.toJson(), options);
+    }
+
+    @Override
+    public CompletableFuture<Optional<Thing>> put(final Thing thing, final JsonObject initialPolicy,
+            final Option<?>... options) {
+        return processPut(thing, initialPolicy, options);
+    }
+
+    @Override
+    public CompletableFuture<Optional<Thing>> put(final Thing thing, final Policy initialPolicy,
+            final Option<?>... options) {
+        return processPut(thing, initialPolicy.toJson(), options);
+    }
+
+    private CompletableFuture<Optional<Thing>> processPut(final Thing thing, @Nullable final JsonObject initialPolicy,
             final Option<?>... options) {
         argumentNotNull(thing);
         assertThatThingHasId(thing);
@@ -321,25 +431,6 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Optional<Thing>> put(final JsonObject jsonObject, final Option<?>... options) {
-        argumentNotNull(jsonObject);
-
-        final Optional<JsonObject> initialPolicy = getInlinePolicyFromThingJson(jsonObject);
-
-        final Thing thing = ThingsModelFactory.newThing(jsonObject);
-        return put(thing, initialPolicy.orElse(null), options);
-    }
-
-    @Override
-    public CompletableFuture<Optional<Thing>> put(final JsonObject jsonObject, final JsonObject initialPolicy,
-            final Option<?>... options) {
-        argumentNotNull(jsonObject);
-
-        final Thing thing = ThingsModelFactory.newThing(jsonObject);
-        return put(thing, initialPolicy, options);
-    }
-
-    @Override
     public CompletableFuture<Void> update(final Thing thing, final Option<?>... options) {
         argumentNotNull(thing);
         assertThatThingHasId(thing);
@@ -354,30 +445,6 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
 
         final Thing thing = ThingsModelFactory.newThing(jsonObject);
         return update(thing, options);
-    }
-
-    @Override
-    public CompletableFuture<Thing> create(final Thing thing, final Option<?>... options) {
-        return create(thing, null, options);
-    }
-
-    @Override
-    public CompletableFuture<Thing> create(final Thing thing, @Nullable JsonObject initialPolicy,
-            final Option<?>... options) {
-        argumentNotNull(thing);
-        assertThatThingHasId(thing);
-
-        final CreateThing command = outgoingMessageFactory.createThing(thing, initialPolicy, options);
-
-        return new SendTerminator<Thing>(messagingProvider, responseForwarder, channel, command)
-                .applyModify(response -> {
-                    if (response != null) {
-                        return ThingsModelFactory.newThing(response.getEntity(response.getImplementedSchemaVersion())
-                                .orElse(JsonFactory.nullObject()).asObject());
-                    } else {
-                        return null;
-                    }
-                });
     }
 
     @Override
