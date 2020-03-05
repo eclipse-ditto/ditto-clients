@@ -191,7 +191,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * org.eclipse.ditto.client.options.Options}.
      * @return completable future providing the created Thing object or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
-     * @since 1.0.0
+     * @since 1.1.0
      */
     CompletableFuture<Thing> create(Policy initialPolicy, Option<?>... options);
 
@@ -259,7 +259,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
      * @since 1.1.0
      */
-    CompletableFuture<Thing> create(Thing thing, final Policy initialPolicy, Option<?>... options);
+    CompletableFuture<Thing> create(Thing thing, Policy initialPolicy, Option<?>... options);
 
     /**
      * Creates an empty {@link Thing} for the given identifier.
