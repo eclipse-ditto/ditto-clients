@@ -179,17 +179,19 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code thing} cannot be parsed to a {@link
      * Thing}.
      * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
+     * @since 1.0.0
      */
     CompletableFuture<Thing> create(JsonObject thing, Option<?>... options);
 
     /**
-     * Creates an empty {@link Thing} with an auto-generated identifier.
+     * Creates an empty {@link Thing} with an auto-generated identifier as well as an initial Policy
      *
+     * @param initialPolicy a custom policy to use for the Thing instead of the default Policy.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @param initialPolicy a custom policy to use for the Thing instead of the default Policy.
      * @return completable future providing the created Thing object or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * @since 1.0.0
      */
     CompletableFuture<Thing> create(Policy initialPolicy, Option<?>... options);
 
@@ -206,7 +208,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
      * @since 1.1.0
      */
-    CompletableFuture<Thing> create(Thing thing, final JsonObject initialPolicy, Option<?>... options);
+    CompletableFuture<Thing> create(Thing thing, JsonObject initialPolicy, Option<?>... options);
 
     /**
      * Creates an empty {@link Thing} for the given identifier.
@@ -326,6 +328,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * {@code "thingId"}.
      * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code thing} cannot be parsed to a {@link
      * Thing}.
+     * @since 1.0.0
      */
     CompletableFuture<Optional<Thing>> put(JsonObject thing, Option<?>... options);
 
