@@ -208,6 +208,12 @@
         <mockito.version>3.1.0</mockito.version>
         <jsonassert.version>1.2.3</jsonassert.version>
 
+        <!-- reactive streams versions -->
+        <reactive-streams.version>1.0.3</reactive-streams.version>
+        <reactive-streams-tck.version>${reactive-streams.version}</reactive-streams-tck.version>
+        <!-- carefully set testng version to one whose junit dependency is equal to ${junit.version} -->
+        <reactive-streams-tck.testng.version>6.14.3</reactive-streams-tck.testng.version>
+
         <json-unit.version>1.28.1</json-unit.version>
         <pax.exam.version>4.13.0</pax.exam.version>
         <felix.version>6.0.3</felix.version>
@@ -620,6 +626,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -757,6 +767,11 @@
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.reactivestreams</groupId>
+            <artifactId>reactive-streams</artifactId>
+            <version>${reactive-streams.version}</version>
+        </dependency>
 
         <!-- ### Compile - OSGi ### -->
         <dependency>
@@ -825,12 +840,22 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
+            <artifactId>ditto-signals-commands-thingsearch</artifactId>
+            <version>${ditto.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-signals-events-base</artifactId>
             <version>${ditto.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-signals-events-things</artifactId>
+            <version>${ditto.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.ditto</groupId>
+            <artifactId>ditto-signals-events-thingsearch</artifactId>
             <version>${ditto.version}</version>
         </dependency>
 
@@ -940,6 +965,20 @@
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.framework</artifactId>
             <version>${felix.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Testing - reactive streams compatibility -->
+        <dependency>
+            <groupId>org.reactivestreams</groupId>
+            <artifactId>reactive-streams-tck</artifactId>
+            <version>${reactive-streams-tck.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>${reactive-streams-tck.testng.version}</version>
             <scope>test</scope>
         </dependency>
 

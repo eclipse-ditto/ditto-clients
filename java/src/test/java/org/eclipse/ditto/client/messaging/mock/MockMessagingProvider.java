@@ -152,6 +152,11 @@ public class MockMessagingProvider implements MessagingProvider {
         throw new UnsupportedOperationException("MockMessagingProvider is not able to emitEvent()");
     }
 
+    @Override
+    public void emitAdaptable(final Adaptable message) {
+        throw new UnsupportedOperationException("MockMessagingProvider is not able to emitAdaptable()");
+    }
+
     public void onSend(final Consumer<Message<?>> out) {
         Objects.requireNonNull(out);
         this.out = out;

@@ -189,7 +189,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         // limit the max. outstanding MessageResponseConsumers to not produce a memory leak if messages are never answered
         messageCommandResponseConsumers = new LimitedHashMap<>(MAX_OUTSTANDING_MESSAGE_RESPONSES);
         registrationConfigs = new HashMap<>();
-        customAdaptableResponseFutures = new HashMap<>();
+        customAdaptableResponseFutures = new ConcurrentHashMap<>();
+        // TODO: add expire-after-create for caches of request-response semantic
     }
 
     private static ScheduledThreadPoolExecutor createScheduledThreadPoolExecutor() {
@@ -450,6 +451,11 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         doSendAdaptable(tryToConvertToAdaptable(event, channel));
     }
 
+    @Override
+    public void emitAdaptable(final Adaptable adaptable) {
+        doSendAdaptable(adaptable);
+    }
+
     @Nullable
     private Adaptable tryToConvertToAdaptable(final Event<?> event, final TopicPath.Channel channel) {
 
@@ -491,6 +497,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         return responseFuture;
     }
 
+    // TODO: consider failing the future in callers if websocket is null
     private void doSendAdaptable(@Nullable final Adaptable adaptable) {
         if (null == adaptable) {
             return;
@@ -515,8 +522,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     public boolean registerMessageHandler(final String name, final Map<String, String> registrationConfig,
             final Consumer<Message<?>> handler, final CompletableFuture<Void> receiptFuture) {
         if (subscriptions.containsKey(name)) {
-            LOGGER.info("Client <{}>: Handler {} already registered for client",
-                    sessionId, name);
+            LOGGER.info("Client <{}>: Handler {} already registered for client", sessionId, name);
+            // TODO: some error handling by failing the future???
             receiptFuture.complete(null);
             return false;
         }
@@ -527,18 +534,28 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
         // connection already opened - finish future:
         if (webSocket != null) {
-            if (TwinImpl.CONSUME_TWIN_EVENTS_HANDLER.equals(name)) {
-                sendMeTwinEvents = true;
-                askBackend(PROTOCOL_CMD_START_SEND_EVENTS, registrationConfig, receiptFuture);
-            } else if (LiveImpl.CONSUME_LIVE_MESSAGES_HANDLER.equals(name)) {
-                sendMeLiveMessages = true;
-                askBackend(PROTOCOL_CMD_START_SEND_MESSAGES, registrationConfig, receiptFuture);
-            } else if (LiveImpl.CONSUME_LIVE_COMMANDS_HANDLER.equals(name)) {
-                sendMeLiveCommands = true;
-                askBackend(PROTOCOL_CMD_START_SEND_LIVE_COMMANDS, registrationConfig, receiptFuture);
-            } else if (LiveImpl.CONSUME_LIVE_EVENTS_HANDLER.equals(name)) {
-                sendMeLiveEvents = true;
-                askBackend(PROTOCOL_CMD_START_SEND_LIVE_EVENTS, registrationConfig, receiptFuture);
+            switch (name) {
+                case TwinImpl.CONSUME_TWIN_EVENTS_HANDLER:
+                    sendMeTwinEvents = true;
+                    askBackend(PROTOCOL_CMD_START_SEND_EVENTS, registrationConfig, receiptFuture);
+                    break;
+                case LiveImpl.CONSUME_LIVE_MESSAGES_HANDLER:
+                    sendMeLiveMessages = true;
+                    askBackend(PROTOCOL_CMD_START_SEND_MESSAGES, registrationConfig, receiptFuture);
+                    break;
+                case LiveImpl.CONSUME_LIVE_COMMANDS_HANDLER:
+                    sendMeLiveCommands = true;
+                    askBackend(PROTOCOL_CMD_START_SEND_LIVE_COMMANDS, registrationConfig, receiptFuture);
+                    break;
+                case LiveImpl.CONSUME_LIVE_EVENTS_HANDLER:
+                    sendMeLiveEvents = true;
+                    askBackend(PROTOCOL_CMD_START_SEND_LIVE_EVENTS, registrationConfig, receiptFuture);
+                    break;
+                default:
+                    // TODO: some error handling by failing the future???
+                    LOGGER.info("Client <{}>: Handler {} is not valid.", sessionId, name);
+                    receiptFuture.complete(null);
+                    return false;
             }
         }
 
@@ -968,7 +985,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
             handleLiveCommandResponse((ThingCommandResponse) signal);
         } else if (signal instanceof ThingEvent) {
             LOGGER.debug("Client <{}>: Received LIVE ThingEvent JSON: {}", sessionId, message);
-            handleThingEvent(correlationId, (ThingEvent) signal, LiveImpl.CONSUME_LIVE_EVENTS_HANDLER, jsonifiableAdaptable);
+            handleThingEvent(correlationId, (ThingEvent) signal, LiveImpl.CONSUME_LIVE_EVENTS_HANDLER,
+                    jsonifiableAdaptable);
         } else {
             // if we are at this point we must ask: what the hell is that?
             LOGGER.warn("Client <{}>: Got unknown message on WebSocket on LIVE channel: {}",

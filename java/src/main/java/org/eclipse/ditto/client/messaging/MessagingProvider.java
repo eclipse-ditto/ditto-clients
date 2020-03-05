@@ -106,6 +106,13 @@ public interface MessagingProvider {
     void emitEvent(Event<?> event, TopicPath.Channel channel);
 
     /**
+     * Emit an adaptable message in a fire-and-forget manner.
+     *
+     * @param message the message to emit.
+     */
+    void emitAdaptable(Adaptable message);
+
+    /**
      * Register handler for ThingCommandResponse.
      *
      * @param commandResponseHandler the consumer that is called for incoming command response messages

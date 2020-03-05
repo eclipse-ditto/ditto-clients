@@ -26,6 +26,7 @@ import org.eclipse.ditto.json.JsonPointer;
  */
 final class DefaultRegistry<T> implements Registry<T> {
 
+    // TODO: provide idle timeout mechanism.
     private final ConcurrentHashMap<JsonPointer, List<Registration<T>>> pointerCache = new
             ConcurrentHashMap<>();
     private final ConcurrentHashMap<JsonPointerSelector, List<Registration<T>>> registrationMap = new
