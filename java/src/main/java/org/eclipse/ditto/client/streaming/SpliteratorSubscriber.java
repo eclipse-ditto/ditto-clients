@@ -168,10 +168,10 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
 
     /**
      * Return the characteristics of this spliterator: non-null, immutable, concurrent.
-     * This spliterator is not 100% ordered because {@link this#trySplit()} distributes elements on
-     * first-come-first-serve basis. If {@link this#trySplit()} is never called, then
-     * {@link this#tryAdvance(java.util.function.Consumer)} and
-     * {@link this#forEachRemaining(java.util.function.Consumer)}
+     * This spliterator is not 100% ordered because {@code this#trySplit()} distributes elements on
+     * first-come-first-serve basis. If {@code this#trySplit()} is never called, then
+     * {@code this#tryAdvance(java.util.function.Consumer)} and
+     * {@code this#forEachRemaining(java.util.function.Consumer)}
      * have both a well-defined encounter order.
      *
      * @return characteristics of this spliterator.
