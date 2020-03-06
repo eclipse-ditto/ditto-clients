@@ -12,7 +12,6 @@
  */
 package org.eclipse.ditto.client.live.events.internal;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotEmpty;
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
 import java.time.Instant;
@@ -66,6 +65,7 @@ public final class ImmutableGlobalEventFactory implements GlobalEventFactory {
     private ImmutableGlobalEventFactory(final JsonSchemaVersion theSchemaVersion) {
         schemaVersion = theSchemaVersion;
     }
+
 
     /**
      * Returns an instance of {@code ImmutableGlobalEventFactory}.
