@@ -14,7 +14,6 @@ package org.eclipse.ditto.client.internal;
 
 import java.text.MessageFormat;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.ditto.client.DittoClient;
 import org.eclipse.ditto.client.changes.ChangeAction;
@@ -30,6 +29,8 @@ import org.eclipse.ditto.client.live.Live;
 import org.eclipse.ditto.client.live.internal.LiveImpl;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
+import org.eclipse.ditto.client.policies.Policies;
+import org.eclipse.ditto.client.policies.internal.PoliciesImpl;
 import org.eclipse.ditto.client.twin.Twin;
 import org.eclipse.ditto.client.twin.internal.TwinImpl;
 import org.eclipse.ditto.json.JsonPointer;
@@ -87,12 +88,14 @@ public final class DefaultDittoClient implements DittoClient {
     private static final String FEATURE_PROPERTIES_PATTERN = THING_PATTERN + "/features/{1}/properties";
     private static final String FEATURE_PROPERTY_PATTERN = THING_PATTERN + "/features/{1}/properties{2}";
 
-    private final AtomicReference<TwinImpl> twin = new AtomicReference<>(null);
-    private final AtomicReference<LiveImpl> live = new AtomicReference<>(null);
+    private final TwinImpl twin;
+    private final LiveImpl live;
+    private final PoliciesImpl policies;
 
-    private DefaultDittoClient(final TwinImpl twin, final LiveImpl live) {
-        this.twin.set(twin);
-        this.live.set(live);
+    private DefaultDittoClient(final TwinImpl twin, final LiveImpl live, final PoliciesImpl policies) {
+        this.twin = twin;
+        this.live = live;
+        this.policies = policies;
         logVersionInformation();
     }
 
@@ -101,57 +104,79 @@ public final class DefaultDittoClient implements DittoClient {
      *
      * @param twinMessagingProvider the messaging provider to use for the {@code Twin} aspect.
      * @param liveMessagingProvider the messaging provider to use for the {@code Live} aspect.
+     * @param policyMessagingProvider the messaging provider for the {@code Policy} part of the client.
      * @param responseForwarder forwarder used to optimize response performance.
      * @param messageSerializerRegistry registry for all serializers of live messages.
      * @return the client.
      */
     public static DittoClient newInstance(final MessagingProvider twinMessagingProvider,
             final MessagingProvider liveMessagingProvider,
+            final MessagingProvider policyMessagingProvider,
             final ResponseForwarder responseForwarder,
             final MessageSerializerRegistry messageSerializerRegistry) {
         final TwinImpl twin = configureTwin(twinMessagingProvider, responseForwarder);
         final LiveImpl live = configureLive(liveMessagingProvider, responseForwarder, messageSerializerRegistry);
-        return new DefaultDittoClient(twin, live);
+        final PoliciesImpl policy = configurePolicyClient(policyMessagingProvider, responseForwarder);
+        return new DefaultDittoClient(twin, live, policy);
     }
 
     @Override
     public Twin twin() {
-        final Twin result = twin.get();
-        if (null == result) {
-            throw new IllegalStateException("Twin client is not configured.");
-        }
-        return result;
+        return twin;
     }
 
     @Override
     public Live live() {
-        final Live result = live.get();
-        if (null == result) {
-            throw new IllegalStateException("Live client is not configured.");
-        }
-        return result;
+        return live;
+    }
+
+    @Override
+    public Policies policies() {
+        return policies;
     }
 
     @Override
     public CompletableFuture<Adaptable> sendDittoProtocol(final Adaptable dittoProtocolAdaptable) {
 
+        final TopicPath.Group group = dittoProtocolAdaptable.getTopicPath().getGroup();
+        switch (group) {
+            case THINGS:
+                return sendDittoProtocolForThingsGroup(dittoProtocolAdaptable);
+            case POLICIES:
+                return sendDittoProtocolForPoliciesGroup(dittoProtocolAdaptable);
+            default:
+                throw new IllegalArgumentException("Unknown group: " + group);
+        }
+    }
+
+    private CompletableFuture<Adaptable> sendDittoProtocolForThingsGroup(final Adaptable dittoProtocolAdaptable) {
         final TopicPath.Channel channel = dittoProtocolAdaptable.getTopicPath().getChannel();
         switch (channel) {
             case TWIN:
-                return twin.get().getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
+                return twin.getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
             case LIVE:
-                return live.get().getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
+                return live.getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
             default:
-                throw new IllegalArgumentException("Unknown channel: " + channel);
+                throw new IllegalArgumentException("Unsupported channel for things group: " + channel);
         }
+    }
+
+    private CompletableFuture<Adaptable> sendDittoProtocolForPoliciesGroup(final Adaptable dittoProtocolAdaptable) {
+        final TopicPath.Channel channel = dittoProtocolAdaptable.getTopicPath().getChannel();
+        if (TopicPath.Channel.NONE.equals(channel)) {
+            return policies.getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);
+        }
+        throw new IllegalArgumentException("Unsupported channel for policies group: " + channel);
     }
 
     @Override
     public void destroy() {
-        twin.get().getMessagingProvider().close();
-        twin.get().getBus().close();
-        live.get().getMessagingProvider().close();
-        live.get().getBus().close();
+        twin.getMessagingProvider().close();
+        twin.getBus().close();
+        live.getMessagingProvider().close();
+        live.getBus().close();
+        policies.getMessagingProvider().close();
+        policies.getBus().close();
     }
 
     private static void logVersionInformation() {
@@ -180,6 +205,27 @@ public final class DefaultDittoClient implements DittoClient {
         final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion);
         return LiveImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus, schemaVersion,
                 sessionId, messageSerializerRegistry);
+    }
+
+    private static PoliciesImpl configurePolicyClient(final MessagingProvider messagingProvider,
+            final ResponseForwarder responseForwarder) {
+        final String busName = TopicPath.Channel.NONE.getName();
+        final PointerBus bus = BusFactory.createPointerBus(busName, messagingProvider.getExecutorService());
+        init(bus, messagingProvider, responseForwarder);
+        final OutgoingMessageFactory messageFactory = getOutgoingMessageFactoryForPolicies(messagingProvider);
+        return PoliciesImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus);
+    }
+
+    private static OutgoingMessageFactory getOutgoingMessageFactoryForPolicies(final MessagingProvider messagingProvider) {
+        final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
+        if (JsonSchemaVersion.V_1.equals(schemaVersion)) {
+            LOGGER.warn("The MessagingProvider was configured with JsonSchemaVersion V_1 which is invalid for policy" +
+                    " commands. Therefore defaulting to V_2 for all policy commands." +
+                    " Please consider upgrading to JsonSchemaVersion V_2 as V_1 is deprecated and will be removed" +
+                    " in an upcoming release.");
+            return OutgoingMessageFactory.newInstance(JsonSchemaVersion.V_2);
+        }
+        return OutgoingMessageFactory.newInstance(schemaVersion);
     }
 
     private static void init(final PointerBus bus, final MessagingProvider messagingProvider,

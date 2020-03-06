@@ -32,7 +32,8 @@ import org.junit.Test;
 public class ClientShutdownTest {
 
     private static final List<String> ALLOWED_THREADS = asList("main", "Monitor Ctrl-Break", "BundleWatcher: 1",
-            "surefire-forkedjvm-command-thread", "surefire-forkedjvm-ping-30s", "ping-30s", "Attach API wait loop");
+            "surefire-forkedjvm-command-thread", "surefire-forkedjvm-ping-30s", "ping-30s", "Attach API wait loop",
+            "FelixResolver-");
 
     @Test
     public void testNoMoreActiveThreads() throws InterruptedException {

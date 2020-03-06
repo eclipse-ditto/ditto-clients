@@ -47,8 +47,8 @@ import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.WithFeatureId;
 import org.eclipse.ditto.signals.commands.base.Command;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
+import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
-import org.eclipse.ditto.signals.commands.things.ThingCommandResponse;
 import org.eclipse.ditto.signals.events.base.Event;
 import org.eclipse.ditto.signals.events.things.ThingEvent;
 import org.eclipse.ditto.utils.jsr305.annotations.AllParametersAndReturnValuesAreNonnullByDefault;
@@ -68,26 +68,29 @@ public class MockMessagingProvider implements MessagingProvider {
                     .username("hans")
                     .password("dampf")
                     .build();
-    private final MessagingConfiguration messagingConfiguration = WebSocketMessagingConfiguration.newBuilder()
-            .endpoint("ws://localhost:8080")
-            .jsonSchemaVersion(JsonSchemaVersion.V_1)
-            .build();
     private final AtomicReference<Consumer<Message<?>>> in = new AtomicReference<>();
     private final ExecutorService executor = Executors.newFixedThreadPool(2, new MockThreadFactory());
     private final BlockingQueue<Message<?>> eventQueue = new LinkedBlockingQueue<>();
-    private final JsonifiableAdaptable dummyAdaptable =
-            ProtocolFactory.wrapAsJsonifiableAdaptable(Adaptable.newBuilder(TopicPath.newBuilder(ThingId.dummy())
-                    .twin()
-                    .commands()
-                    .modify()
-                    .build())
-                    .withHeaders(DittoHeaders.empty())
-                    .withPayload(Payload.newBuilder().build())
-                    .build());
+    private final MessagingConfiguration messagingConfiguration;
+
+    private Consumer<CommandResponse<?>> responseConsumer = response -> {
+        LOGGER.info("Not handling response in test: {}", response);
+    };
 
     private Consumer<Message<?>> out = message -> {
         throw new IllegalStateException("Unhandled out-message: " + message);
     };
+    private Consumer<PolicyCommand<?>> outgoingPolicyCommand = command -> {
+        throw new IllegalStateException("Unhandled outgoing command: " + command);
+    };
+
+    public MockMessagingProvider() {
+        this(JsonSchemaVersion.LATEST);
+    }
+
+    public MockMessagingProvider(final JsonSchemaVersion schemaVersion) {
+        this.messagingConfiguration = getDefaultMessagingConfiguration(schemaVersion);
+    }
 
     @Override
     public AuthenticationConfiguration getAuthenticationConfiguration() {
@@ -122,10 +125,23 @@ public class MockMessagingProvider implements MessagingProvider {
 
     @Override
     public void sendCommand(final Command<?> command, final TopicPath.Channel channel) {
+        //Check if command is a PolicyCommand. Else its a ThingCommand
+        if (command instanceof PolicyCommand) {
+            sendPolicyCommand((PolicyCommand<?>) command, channel);
+        } else {
+            sendThingCommand(command, channel);
+        }
+    }
+
+    private void sendPolicyCommand(final PolicyCommand<?> policyCommand, final TopicPath.Channel channel) {
+        outgoingPolicyCommand.accept(policyCommand);
+    }
+
+    private void sendThingCommand(final Command<?> command, final TopicPath.Channel channel) {
         Objects.requireNonNull(out);
         final DittoHeaders dittoHeaders = command.getDittoHeaders();
 
-        final MessageHeadersBuilder headersBuilder =
+        MessageHeadersBuilder headersBuilder =
                 MessageHeaders.newBuilder(MessageDirection.FROM, command.getEntityId(), command.getType())
                         .putHeaders(command.getDittoHeaders())
                         .timestamp(OffsetDateTime.now());
@@ -135,10 +151,10 @@ public class MockMessagingProvider implements MessagingProvider {
         }
         dittoHeaders.getCorrelationId().ifPresent(headersBuilder::correlationId);
 
-        final MessageBuilder<ThingCommand> messageBuilder = Message.<ThingCommand>newBuilder(headersBuilder.build())
-                .payload((ThingCommand) command);
+        final MessageBuilder<ThingCommand<?>> messageBuilder = Message.<ThingCommand<?>>newBuilder(headersBuilder.build())
+                .payload((ThingCommand<?>) command);
 
-        final Message<ThingCommand> message = messageBuilder.build();
+        final Message<ThingCommand<?>> message = messageBuilder.build();
         out.accept(message);
     }
 
@@ -152,6 +168,11 @@ public class MockMessagingProvider implements MessagingProvider {
         throw new UnsupportedOperationException("MockMessagingProvider is not able to emitEvent()");
     }
 
+    public void onPolicyCommand(final Consumer<PolicyCommand<?>> outgoingCommand) {
+        Objects.requireNonNull(outgoingCommand);
+        this.outgoingPolicyCommand = outgoingCommand;
+    }
+
     @Override
     public void emitAdaptable(final Adaptable message) {
         throw new UnsupportedOperationException("MockMessagingProvider is not able to emitAdaptable()");
@@ -162,14 +183,18 @@ public class MockMessagingProvider implements MessagingProvider {
         this.out = out;
     }
 
+    public void receiveResponse(final CommandResponse<?> response) {
+        this.responseConsumer.accept(response);
+    }
+
     public void receiveEvent(final Message<ThingEvent> message) {
         LOGGER.debug("Manually receiving Event: {}", message);
         eventQueue.add(message);
     }
 
     @Override
-    public void registerReplyHandler(final Consumer<ThingCommandResponse> commandResponseConsumer) {
-        // noop
+    public void registerReplyHandler(final Consumer<CommandResponse<?>> commandResponseConsumer) {
+        this.responseConsumer = commandResponseConsumer;
     }
 
     @Override
@@ -202,6 +227,13 @@ public class MockMessagingProvider implements MessagingProvider {
     @Override
     public void close() {
         executor.shutdownNow();
+    }
+
+    private static MessagingConfiguration getDefaultMessagingConfiguration(final JsonSchemaVersion version) {
+        return WebSocketMessagingConfiguration.newBuilder()
+                .endpoint("ws://localhost:8080")
+                .jsonSchemaVersion(version)
+                .build();
     }
 
     private static class MockThreadFactory implements ThreadFactory {

@@ -28,6 +28,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.FeatureChange;
 import org.eclipse.ditto.client.changes.FeaturesChange;
@@ -50,13 +52,16 @@ import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.policies.Policy;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Features;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
-import org.eclipse.ditto.signals.commands.things.ThingCommand;
+import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
+import org.eclipse.ditto.signals.commands.things.query.RetrieveThings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +72,7 @@ import org.slf4j.LoggerFactory;
  * @param <F> the type of {@link FeatureHandle} for handling {@code Feature}s
  * @since 1.0.0
  */
-public abstract class CommonManagementImpl<T extends ThingHandle, F extends FeatureHandle> implements
+public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends FeatureHandle> implements
         CommonManagement<T, F> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonManagementImpl.class);
@@ -260,41 +265,169 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
     }
 
     @Override
+    public CompletableFuture<Thing> create(final Thing thing, final Option<?>... options) {
+        return processCreate(thing, null, options);
+    }
+
+    @Override
     public CompletableFuture<Thing> create(final JsonObject jsonObject, final Option<?>... options) {
         argumentNotNull(jsonObject);
 
+        final Optional<JsonObject> initialPolicy = getInlinePolicyFromThingJson(jsonObject);
+
         final Thing thing = ThingsModelFactory.newThing(jsonObject);
-        return create(thing, options);
+        return processCreate(thing, initialPolicy.orElse(null), options);
+    }
+
+    @Override
+    public CompletableFuture<Thing> create(final Policy policy, final Option<?>... options) {
+        // as the backend adds the default namespace, we can here simply use the empty namespace.
+        final Thing thing = ThingsModelFactory.newThingBuilder()
+                .setId(ThingId.generateRandom())
+                .build();
+        return processCreate(thing, policy.toJson(), options);
+    }
+
+    @Override
+    public CompletableFuture<Thing> create(final ThingId thingId, final JsonObject initialPolicy,
+            final Option<?>... options) {
+        argumentNotNull(thingId);
+        argumentNotEmpty(thingId);
+        argumentNotNull(initialPolicy);
+
+        final Thing thing = ThingsModelFactory.newThingBuilder()
+                .setId(ThingId.of(thingId))
+                .build();
+        return processCreate(thing, initialPolicy, options);
+    }
+
+
+    @Override
+    public CompletableFuture<Thing> create(final ThingId thingId, final Policy initialPolicy,
+            final Option<?>... options) {
+        argumentNotNull(thingId);
+        argumentNotEmpty(thingId);
+        argumentNotNull(initialPolicy);
+
+        final Thing thing = ThingsModelFactory.newThingBuilder()
+                .setId(ThingId.of(thingId))
+                .build();
+        return processCreate(thing, initialPolicy.toJson(), options);
+    }
+
+    @Override
+    public CompletableFuture<Thing> create(final JsonObject jsonObject, final JsonObject initialPolicy,
+            final Option<?>... options) {
+        argumentNotNull(jsonObject);
+        argumentNotNull(initialPolicy);
+
+        final Thing thing = ThingsModelFactory.newThing(jsonObject);
+
+        return processCreate(thing, initialPolicy, options);
+    }
+
+    @Override
+    public CompletableFuture<Thing> create(final JsonObject jsonObject, final Policy initialPolicy,
+            final Option<?>... options) {
+        argumentNotNull(jsonObject);
+        argumentNotNull(initialPolicy);
+
+        final Thing thing = ThingsModelFactory.newThing(jsonObject);
+
+        return processCreate(thing, initialPolicy.toJson(), options);
+    }
+
+    @Override
+    public CompletableFuture<Thing> create(final Thing thing, final JsonObject initialPolicy,
+            final Option<?>... options) {
+        return processCreate(thing, initialPolicy, options);
+    }
+
+
+    @Override
+    public CompletableFuture<Thing> create(final Thing thing, final Policy initialPolicy,
+            final Option<?>... options) {
+        return processCreate(thing, initialPolicy.toJson(), options);
+    }
+
+    private CompletableFuture<Thing> processCreate(final Thing thing, @Nullable final JsonObject initialPolicy,
+            final Option<?>... options) {
+        argumentNotNull(thing);
+        assertThatThingHasId(thing);
+
+        final CreateThing command = outgoingMessageFactory.createThing(thing, initialPolicy, options);
+
+        return new SendTerminator<Thing>(messagingProvider, responseForwarder, channel, command)
+                .applyModify(response -> {
+                    if (response != null) {
+                        return ThingsModelFactory.newThing(response.getEntity(response.getImplementedSchemaVersion())
+                                .orElse(JsonFactory.nullObject()).asObject());
+                    } else {
+                        return null;
+                    }
+                });
     }
 
     @Override
     public CompletableFuture<Optional<Thing>> put(final Thing thing, final Option<?>... options) {
-        argumentNotNull(thing);
-        assertThatThingHasId(thing);
-
-        return new SendTerminator<Optional<Thing>>(messagingProvider, responseForwarder, channel,
-                outgoingMessageFactory.putThing(thing, options)).applyModify(response -> {
-            if (response != null) {
-                final Optional<JsonValue> responseEntityOpt =
-                        response.getEntity(response.getImplementedSchemaVersion());
-                if (responseEntityOpt.isPresent()) {
-                    final Thing createdThing = ThingsModelFactory.newThing(responseEntityOpt.get().asObject());
-                    return Optional.of(createdThing);
-                } else {
-                    return Optional.empty();
-                }
-            } else {
-                throw new IllegalStateException("Response is always expected!");
-            }
-        });
+        return processPut(thing, null, options);
     }
 
     @Override
     public CompletableFuture<Optional<Thing>> put(final JsonObject jsonObject, final Option<?>... options) {
         argumentNotNull(jsonObject);
 
+        final Optional<JsonObject> initialPolicy = getInlinePolicyFromThingJson(jsonObject);
+
         final Thing thing = ThingsModelFactory.newThing(jsonObject);
-        return put(thing, options);
+        return processPut(thing, initialPolicy.orElse(null), options);
+    }
+
+    @Override
+    public CompletableFuture<Optional<Thing>> put(final JsonObject jsonObject, final JsonObject initialPolicy,
+            final Option<?>... options) {
+        argumentNotNull(jsonObject);
+
+        final Thing thing = ThingsModelFactory.newThing(jsonObject);
+        return processPut(thing, initialPolicy, options);
+    }
+
+    @Override
+    public CompletableFuture<Optional<Thing>> put(final JsonObject jsonObject, final Policy initialPolicy,
+            final Option<?>... options) {
+        argumentNotNull(jsonObject);
+
+        final Thing thing = ThingsModelFactory.newThing(jsonObject);
+        return processPut(thing, initialPolicy.toJson(), options);
+    }
+
+    @Override
+    public CompletableFuture<Optional<Thing>> put(final Thing thing, final JsonObject initialPolicy,
+            final Option<?>... options) {
+        return processPut(thing, initialPolicy, options);
+    }
+
+    @Override
+    public CompletableFuture<Optional<Thing>> put(final Thing thing, final Policy initialPolicy,
+            final Option<?>... options) {
+        return processPut(thing, initialPolicy.toJson(), options);
+    }
+
+    private CompletableFuture<Optional<Thing>> processPut(final Thing thing, @Nullable final JsonObject initialPolicy,
+            final Option<?>... options) {
+        argumentNotNull(thing);
+        assertThatThingHasId(thing);
+
+        return new SendTerminator<Optional<Thing>>(messagingProvider, responseForwarder, channel,
+                outgoingMessageFactory.putThing(thing, initialPolicy, options)).applyModify(response -> {
+            if (response != null) {
+                return response.getEntity(response.getImplementedSchemaVersion())
+                        .map(JsonValue::asObject)
+                        .map(ThingsModelFactory::newThing);
+            } else {
+                throw new IllegalStateException("Response is always expected!");
+            }
+        });
     }
 
     @Override
@@ -315,28 +448,10 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
     }
 
     @Override
-    public CompletableFuture<Thing> create(final Thing thing, final Option<?>... options) {
-        argumentNotNull(thing);
-        assertThatThingHasId(thing);
-
-        final ThingCommand command = outgoingMessageFactory.createThing(thing, options);
-
-        return new SendTerminator<Thing>(messagingProvider, responseForwarder, channel, command)
-                .applyModify(response -> {
-                    if (response != null) {
-                        return ThingsModelFactory.newThing(response.getEntity(response.getImplementedSchemaVersion())
-                                .orElse(JsonFactory.nullObject()).asObject());
-                    } else {
-                        return null;
-                    }
-                });
-    }
-
-    @Override
     public CompletableFuture<Void> delete(final ThingId thingId, final Option<?>... options) {
         argumentNotNull(thingId);
 
-        final ThingCommand command = outgoingMessageFactory.deleteThing(thingId, options);
+        final DeleteThing command = outgoingMessageFactory.deleteThing(thingId, options);
         return new SendTerminator<Void>(messagingProvider, responseForwarder, channel, command).applyVoid();
     }
 
@@ -497,14 +612,20 @@ public abstract class CommonManagementImpl<T extends ThingHandle, F extends Feat
                 });
     }
 
-    private static void assertThatThingHasId(final Thing thing) {
-        thing.getEntityId().orElseThrow(() -> {
-            final String msgPattern = "Mandatory field <{0}> is missing!";
-            return new IllegalArgumentException(MessageFormat.format(msgPattern, Thing.JsonFields.ID.getPointer()));
-        });
+    private static Optional<JsonObject> getInlinePolicyFromThingJson(final JsonObject jsonObject) {
+        return jsonObject.getValue(CreateThing.JSON_INLINE_POLICY.getPointer())
+                .filter(JsonValue::isObject)
+                .map(JsonValue::asObject);
     }
 
-    private CompletableFuture<List<Thing>> sendRetrieveThingsMessage(final ThingCommand command) {
+    private static void assertThatThingHasId(final Thing thing) {
+        if (!thing.getEntityId().isPresent()) {
+            final String msgPattern = "Mandatory field <{0}> is missing!";
+            throw new IllegalArgumentException(MessageFormat.format(msgPattern, Thing.JsonFields.ID.getPointer()));
+        }
+    }
+
+    private CompletableFuture<List<Thing>> sendRetrieveThingsMessage(final RetrieveThings command) {
         return new SendTerminator<List<Thing>>(messagingProvider, responseForwarder, channel, command)
                 .applyView(tvr -> {
                     if (tvr != null) {

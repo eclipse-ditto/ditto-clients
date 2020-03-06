@@ -39,7 +39,7 @@ import org.eclipse.ditto.model.things.ThingId;
  * @param <F> the type of {@link FeatureHandle} for handling {@code Feature}s
  * @since 1.0.0
  */
-public final class HandlerRegistry<T extends ThingHandle, F extends FeatureHandle> {
+public final class HandlerRegistry<T extends ThingHandle<F>, F extends FeatureHandle> {
 
     private final PointerBus bus;
     private final ConcurrentHashMap<String, Registration<Consumer<PointerWithData>>> registry;

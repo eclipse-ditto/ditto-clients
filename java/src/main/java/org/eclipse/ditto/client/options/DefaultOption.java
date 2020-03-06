@@ -66,7 +66,7 @@ final class DefaultOption<T> implements Option<T> {
         return type.cast(value);
     }
 
-    @SuppressWarnings({"squid:MethodCyclomaticComplexity", "squid:S1067", "OverlyComplexMethod"})
+    @SuppressWarnings({"squid:MethodCyclomaticComplexity", "squid:S1067"})
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
