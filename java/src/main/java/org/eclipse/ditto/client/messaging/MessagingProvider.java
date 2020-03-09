@@ -19,6 +19,7 @@ import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
+import org.eclipse.ditto.client.internal.AdaptableBus;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
@@ -58,6 +59,13 @@ public interface MessagingProvider {
      * @return the executor service.
      */
     ExecutorService getExecutorService();
+
+    /**
+     * Returns the {@code AdaptableBus} to which incoming messages are published.
+     *
+     * @return the adaptable bus.
+     */
+    AdaptableBus getAdaptableBus();
 
     /**
      * Send Ditto Protocol {@link Adaptable} using the underlying connection.
@@ -110,6 +118,13 @@ public interface MessagingProvider {
      * @param message the message to emit.
      */
     void emitAdaptable(Adaptable message);
+
+    /**
+     * Emit a message in a fire-and-forget manner.
+     *
+     * @param message the message to emit.
+     */
+    void emit(String message);
 
     /**
      * Register handler for ThingCommandResponse.

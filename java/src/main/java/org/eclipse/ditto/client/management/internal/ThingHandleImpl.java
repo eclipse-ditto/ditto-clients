@@ -15,8 +15,11 @@ package org.eclipse.ditto.client.management.internal;
 import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkArgument;
 
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.FeatureChange;
@@ -26,10 +29,10 @@ import org.eclipse.ditto.client.changes.internal.ImmutableChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeatureChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeaturesChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableThingChange;
+import org.eclipse.ditto.client.internal.Classifiers;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
 import org.eclipse.ditto.client.internal.ResponseForwarder;
-import org.eclipse.ditto.client.internal.SendTerminator;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
 import org.eclipse.ditto.client.management.FeatureHandle;
 import org.eclipse.ditto.client.management.ThingHandle;
@@ -46,18 +49,38 @@ import org.eclipse.ditto.model.things.Features;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
+import org.eclipse.ditto.protocoladapter.Adaptable;
+import org.eclipse.ditto.protocoladapter.DittoProtocolAdapter;
+import org.eclipse.ditto.protocoladapter.HeaderTranslator;
+import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
+import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.base.Signal;
+import org.eclipse.ditto.signals.commands.things.ThingCommand;
+import org.eclipse.ditto.signals.commands.things.ThingCommandResponse;
+import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteAttribute;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributeResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributes;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributesResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeature;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatures;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteFeaturesResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyAttribute;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributeResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributes;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributesResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeature;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatures;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyFeaturesResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyId;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyIdResponse;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThing;
+import org.eclipse.ditto.signals.commands.things.query.RetrieveThingResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,13 +95,16 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ThingHandleImpl.class);
 
-    private final TopicPath.Channel channel;
     private final ThingId thingId;
     private final MessagingProvider messagingProvider;
     private final ResponseForwarder responseForwarder;
     private final OutgoingMessageFactory outgoingMessageFactory;
     private final HandlerRegistry<T, F> handlerRegistry;
 
+    // TODO: share the protocol adapter and toString/fromString methods.
+    private final ProtocolAdapter protocolAdapter = DittoProtocolAdapter.of(HeaderTranslator.empty());
+
+    // TODO: why is channel unused?
     protected ThingHandleImpl(
             final TopicPath.Channel channel,
             final ThingId thingId,
@@ -86,7 +112,6 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
             final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final HandlerRegistry<T, F> handlerRegistry) {
-        this.channel = channel;
         this.thingId = thingId;
         this.messagingProvider = messagingProvider;
         this.responseForwarder = responseForwarder;
@@ -155,7 +180,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
     @Override
     public CompletableFuture<Void> delete(final Option<?>[] options) {
         final DeleteThing command = outgoingMessageFactory.deleteThing(thingId, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, DeleteThingResponse.class, this::toVoid);
     }
 
     @Override
@@ -189,7 +214,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
                 "If you want to update the whole attributes object, please use the setAttributes(JsonObject) method.");
 
         final ModifyAttribute command = outgoingMessageFactory.setAttribute(thingId, path, value, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, ModifyAttributeResponse.class, this::toVoid);
     }
 
     @Override
@@ -199,7 +224,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
                 () -> "The root attributes entry can only be a JSON" + " object or JSON NULL literal!");
 
         final ModifyAttributes command = outgoingMessageFactory.setAttributes(thingId, attributes, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, ModifyAttributesResponse.class, this::toVoid);
     }
 
     @Override
@@ -207,7 +232,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
         argumentNotNull(features);
 
         final ModifyFeatures command = outgoingMessageFactory.setFeatures(thingId, features, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, ModifyFeaturesResponse.class, this::toVoid);
     }
 
     @Override
@@ -215,7 +240,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
         argumentNotNull(policyId);
 
         final ModifyPolicyId command = outgoingMessageFactory.setPolicyId(thingId, policyId, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, ModifyPolicyIdResponse.class, this::toVoid);
     }
 
     @Override
@@ -223,7 +248,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
         argumentNotNull(feature);
 
         final ModifyFeature command = outgoingMessageFactory.setFeature(thingId, feature, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, ModifyFeatureResponse.class, this::toVoid);
     }
 
     @Override
@@ -231,13 +256,13 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
         argumentNotNull(featureId);
 
         final DeleteFeature command = outgoingMessageFactory.deleteFeature(thingId, featureId, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, DeleteFeatureResponse.class, this::toVoid);
     }
 
     @Override
     public CompletableFuture<Void> deleteFeatures(final Option<?>... options) {
         final DeleteFeatures command = outgoingMessageFactory.deleteFeatures(thingId, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, DeleteFeaturesResponse.class, this::toVoid);
     }
 
 
@@ -253,13 +278,13 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
         checkArgument(path, p -> !p.isEmpty(), () -> "The root attributes object cannot be deleted!");
 
         final DeleteAttribute command = outgoingMessageFactory.deleteAttribute(thingId, path, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, DeleteAttributeResponse.class, this::toVoid);
     }
 
     @Override
     public CompletableFuture<Void> deleteAttributes(final Option<?>... options) {
         final DeleteAttributes command = outgoingMessageFactory.deleteAttributes(thingId, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, DeleteAttributesResponse.class, this::toVoid);
     }
 
     @Override
@@ -269,6 +294,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
 
     @Override
     public void registerForAttributesChanges(final String registrationId, final Consumer<Change> handler) {
+        // TODO: move to AdaptableBus
         argumentNotNull(handler);
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/attributes", thingId),
@@ -349,14 +375,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
     @Override
     public CompletableFuture<Thing> retrieve() {
         final RetrieveThing command = outgoingMessageFactory.retrieveThing(thingId);
-        return new SendTerminator<Thing>(messagingProvider, responseForwarder, channel, command).applyView(tvr ->
-        {
-            if (tvr != null) {
-                return ThingsModelFactory.newThing(tvr.getEntity(tvr.getImplementedSchemaVersion()).asObject());
-            } else {
-                return null;
-            }
-        });
+        return askThingCommand(command, RetrieveThingResponse.class, RetrieveThingResponse::getThing);
     }
 
     @Override
@@ -364,14 +383,53 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
         argumentNotNull(fieldSelector);
 
         final RetrieveThing command = outgoingMessageFactory.retrieveThing(thingId, fieldSelector.getPointers());
-        return new SendTerminator<Thing>(messagingProvider, responseForwarder, channel, command).applyView(tvr ->
-        {
-            if (tvr != null) {
-                return ThingsModelFactory.newThing(tvr.getEntity(tvr.getImplementedSchemaVersion()).asObject());
+        return askThingCommand(command, RetrieveThingResponse.class, RetrieveThingResponse::getThing);
+    }
+
+    // TODO: abstract over request/response logic for live & policy implementations.
+    private String signalToJsonString(final Signal<?> signal) {
+        return ProtocolFactory.wrapAsJsonifiableAdaptable(protocolAdapter.toAdaptable(signal)).toJsonString();
+    }
+
+    private Signal<?> signalFromAdaptable(final Adaptable adaptable) {
+        return protocolAdapter.fromAdaptable(adaptable);
+    }
+
+    private <S extends ThingCommandResponse<?>, R> CompletableFuture<R> askThingCommand(
+            final ThingCommand<?> command,
+            final Class<S> expectedResponse,
+            final Function<S, R> onSuccess) {
+        return sendSignalAndExpectResponse(command, expectedResponse, onSuccess, ThingErrorResponse.class,
+                errorResponse -> {
+                    throw errorResponse.getDittoRuntimeException();
+                })
+                .toCompletableFuture();
+    }
+
+    private <S, E, R> CompletionStage<R> sendSignalAndExpectResponse(final Signal signal,
+            final Class<S> expectedResponseClass,
+            final Function<S, R> onSuccess,
+            final Class<E> expectedErrorResponseClass,
+            final Function<E, R> onError) {
+
+        // TODO: configure timeout
+        final CompletionStage<Adaptable> responseFuture = messagingProvider.getAdaptableBus()
+                .subscribeOnceForAdaptable(Classifiers.forCorrelationId(signal), Duration.ofSeconds(60L));
+
+        messagingProvider.emit(signalToJsonString(signal));
+        return responseFuture.<R>thenApply(responseAdaptable -> {
+            final Signal<?> response = signalFromAdaptable(responseAdaptable);
+            if (expectedResponseClass.isInstance(response)) {
+                return onSuccess.apply(expectedResponseClass.cast(response));
+            } else if (expectedErrorResponseClass.isInstance(response)) {
+                return onError.apply(expectedErrorResponseClass.cast(response));
             } else {
-                return null;
+                throw new ClassCastException("Expect " + expectedResponseClass.getSimpleName() + ", got: " + response);
             }
         });
     }
 
+    private Void toVoid(final Object ignored) {
+        return null;
+    }
 }

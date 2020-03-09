@@ -15,17 +15,29 @@ package org.eclipse.ditto.client.internal;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.DittoClient;
 import org.eclipse.ditto.client.DittoClients;
 import org.eclipse.ditto.client.messaging.mock.MockMessagingProvider;
 import org.eclipse.ditto.client.rule.FailOnExceptionRule;
+import org.eclipse.ditto.json.JsonObject;
+import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.protocoladapter.DittoProtocolAdapter;
+import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
+import org.eclipse.ditto.protocoladapter.ProtocolFactory;
+import org.eclipse.ditto.signals.base.Signal;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -42,8 +54,11 @@ public abstract class AbstractDittoClientTest {
 
     protected static final int TIMEOUT = 100;
     protected static final TimeUnit TIME_UNIT = TimeUnit.MILLISECONDS;
+    protected static final ProtocolAdapter PROTOCOL_ADAPTER = DittoProtocolAdapter.newInstance();
 
     private final Queue<Throwable> uncaught = new ConcurrentLinkedQueue<>();
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final List<CompletableFuture<?>> assertionFutures = new ArrayList<>();
 
     public DittoClient client;
     public MockMessagingProvider messaging;
@@ -72,6 +87,54 @@ public abstract class AbstractDittoClientTest {
     @After
     public void after() {
         client.destroy();
+        assertAll();
+        executorService.shutdown();
+    }
+
+    protected void assertAll() {
+        CompletableFuture.allOf(assertionFutures.toArray(new CompletableFuture[0])).join();
+    }
+
+    protected void assertEventualCompletion(final CompletableFuture<?> future) {
+        assertionFutures.add(CompletableFuture.runAsync(() -> assertCompletion(future), executorService));
+    }
+
+    protected <T> T expectMsgClass(final Class<T> clazz) {
+        final String nextMessage = messaging.expectEmitted();
+        final Signal<?> signal = PROTOCOL_ADAPTER.fromAdaptable(
+                ProtocolFactory.jsonifiableAdaptableFromJson(JsonObject.of(nextMessage)));
+        if (clazz.isInstance(signal)) {
+            return clazz.cast(signal);
+        } else {
+            throw new AssertionError("Expect " + clazz + ", got " + signal);
+        }
+    }
+
+    protected void reply(final Signal<?> signal) {
+        messaging.getAdaptableBus().publish(toAdaptableJsonString(signal));
+    }
+
+    protected static String toAdaptableJsonString(final Signal<?> signal) {
+        return ProtocolFactory.wrapAsJsonifiableAdaptable(PROTOCOL_ADAPTER.toAdaptable(signal)).toJsonString();
+    }
+
+    protected static void assertCompletion(final CompletableFuture<?> future) {
+        try {
+            future.get(1L, TimeUnit.SECONDS);
+        } catch (final Exception e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    protected static void assertOnlyIfNoneMatchHeader(final Signal<?> signal) {
+        Assertions.assertThat(signal.getDittoHeaders()).doesNotContainKey(DittoHeaderDefinition.IF_MATCH.getKey());
+        Assertions.assertThat(signal.getDittoHeaders())
+                .containsEntry(DittoHeaderDefinition.IF_NONE_MATCH.getKey(), "*");
+    }
+
+    protected static void assertOnlyIfMatchHeader(final Signal<?> signal) {
+        Assertions.assertThat(signal.getDittoHeaders()).doesNotContainKey(DittoHeaderDefinition.IF_NONE_MATCH.getKey());
+        Assertions.assertThat(signal.getDittoHeaders()).containsEntry(DittoHeaderDefinition.IF_MATCH.getKey(), "*");
     }
 
 }

@@ -17,6 +17,8 @@ import java.util.concurrent.CompletableFuture;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import org.eclipse.ditto.client.internal.AdaptableBus;
+import org.eclipse.ditto.client.internal.Classifiers;
 import org.eclipse.ditto.client.internal.CommonManagementImpl;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
@@ -52,6 +54,7 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
                 outgoingMessageFactory,
                 new HandlerRegistry<>(bus),
                 bus);
+        addTwinClassifiers(messagingProvider.getAdaptableBus());
     }
 
     /**
@@ -109,6 +112,12 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
         final CompletableFuture<Void> completableFutureEvents = new CompletableFuture<>();
         getMessagingProvider().deregisterMessageHandler(CONSUME_TWIN_EVENTS_HANDLER, completableFutureEvents);
         return completableFutureEvents;
+    }
+
+    private static void addTwinClassifiers(final AdaptableBus adaptableBus) {
+        // TODO: ensure classifiers are not duplicate
+        // TODO: move common classifiers somewhere else.
+        adaptableBus.addAdaptableClassifier(Classifiers.correlationId());
     }
 
 }

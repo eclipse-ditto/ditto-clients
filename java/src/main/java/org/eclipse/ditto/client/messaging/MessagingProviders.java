@@ -14,9 +14,8 @@ package org.eclipse.ditto.client.messaging;
 
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.internal.DefaultThreadFactory;
@@ -48,14 +47,10 @@ public final class MessagingProviders {
         return webSocket(configuration, authenticationProvider, defaultExecutorService);
     }
 
-    private static ExecutorService createDefaultExecutorService(final String name) {
-        final int availableProcessors = Runtime.getRuntime().availableProcessors();
-        final ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                0, availableProcessors * 8, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
-                new DefaultThreadFactory("ditto-client-" + name),
-                new ThreadPoolExecutor.CallerRunsPolicy());
-        executor.allowCoreThreadTimeOut(true);
-        return executor;
+    // TODO: document
+    public static ScheduledExecutorService createDefaultExecutorService(final String name) {
+        final int corePoolSize = Runtime.getRuntime().availableProcessors() * 8;
+        return Executors.newScheduledThreadPool(corePoolSize, new DefaultThreadFactory("ditto-client-" + name));
     }
 
 }

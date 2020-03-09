@@ -162,7 +162,8 @@ public final class SendTerminator<T> {
         return intermediaryResult.thenApply(pcr -> (PolicyModifyCommandResponse<?>) pcr).thenApply(function);
     }
 
-    private CompletableFuture<CommandResponse> createIntermediaryResult(final Function<? extends CommandResponse<?>, ?> function) {
+    private CompletableFuture<CommandResponse> createIntermediaryResult(
+            final Function<? extends CommandResponse<?>, ?> function) {
         checkNotNull(command, COMMAND_ARGUMENT_NAME);
         checkNotNull(function, "function");
 

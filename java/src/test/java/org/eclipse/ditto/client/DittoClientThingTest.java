@@ -21,7 +21,6 @@ import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID_COPY_POLICY;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_WITH_INLINE_POLICY;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 
@@ -45,6 +44,7 @@ import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyId;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyIdResponse;
 import org.eclipse.ditto.signals.events.things.ThingCreated;
@@ -172,22 +172,9 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
     }
 
     @Test
-    public void testDeleteThing() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasSubject(DeleteThing.TYPE);
-
-            latch.countDown();
-        });
-
-        client.twin()
-                .forId(THING_ID)
-                .delete();
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    public void testDeleteThing() {
+        assertEventualCompletion(client.twin().forId(THING_ID).delete());
+        reply(DeleteThingResponse.of(THING_ID, expectMsgClass(DeleteThing.class).getDittoHeaders()));
     }
 
     @Test
@@ -251,28 +238,9 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
     }
 
     @Test
-    public void testSetPolicyId() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasSubject(ModifyPolicyId.TYPE)
-                    .matches(message -> {
-                        final ModifyPolicyId command = (ModifyPolicyId) message.getPayload().get();
-                        return POLICY_ID.equals(command.getPolicyEntityId());
-                    });
-
-            messaging.receiveResponse(ModifyPolicyIdResponse.created(THING_ID, POLICY_ID, m.getHeaders()));
-            latch.countDown();
-        });
-
-        final CompletableFuture<Void> response = client.twin()
-                .forId(THING_ID)
-                .setPolicyId(POLICY_ID);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
-        Assertions.assertThat(response).isCompleted();
+    public void testSetPolicyId() {
+        assertEventualCompletion(client.twin().forId(THING_ID).setPolicyId(POLICY_ID));
+        reply(ModifyPolicyIdResponse.modified(THING_ID, expectMsgClass(ModifyPolicyId.class).getDittoHeaders()));
     }
 
     @Test

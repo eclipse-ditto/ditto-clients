@@ -46,6 +46,7 @@ import javax.annotation.Nullable;
 
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
+import org.eclipse.ditto.client.internal.AdaptableBus;
 import org.eclipse.ditto.client.internal.DefaultThreadFactory;
 import org.eclipse.ditto.client.internal.VersionReader;
 import org.eclipse.ditto.client.live.internal.LiveImpl;
@@ -147,6 +148,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     private static final String DITTO_CLIENT_USER_AGENT = "DittoClient/" + VersionReader.determineClientVersion();
     private static final int CONNECTION_TIMEOUT_MS = 5000;
 
+    private final AdaptableBus adaptableBus;
     private final MessagingConfiguration messagingConfiguration;
     private final AuthenticationProvider<WebSocket> authenticationProvider;
     private final ExecutorService callbackExecutor;
@@ -172,11 +174,16 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     /**
      * Constructs a new {@code WsMessagingProvider}.
      *
+     * @param adaptableBus the bus to publish all messages to.
      * @param messagingConfiguration the specific configuration to apply.
+     * @param authenticationProvider provider for the authentication method with which to open the websocket.
+     * @param callbackExecutor the executor service to run callbacks with.
      */
-    private WebSocketMessagingProvider(final MessagingConfiguration messagingConfiguration,
+    private WebSocketMessagingProvider(final AdaptableBus adaptableBus,
+            final MessagingConfiguration messagingConfiguration,
             final AuthenticationProvider<WebSocket> authenticationProvider,
             final ExecutorService callbackExecutor) {
+        this.adaptableBus = adaptableBus;
         this.messagingConfiguration = messagingConfiguration;
         this.authenticationProvider = authenticationProvider;
         this.callbackExecutor = callbackExecutor;
@@ -214,7 +221,9 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         checkNotNull(authenticationProvider, "authenticationProvider");
         checkNotNull(callbackExecutor, "callbackExecutor");
 
-        return new WebSocketMessagingProvider(messagingConfiguration, authenticationProvider, callbackExecutor);
+        final AdaptableBus adaptableBus = AdaptableBus.of();
+        return new WebSocketMessagingProvider(adaptableBus, messagingConfiguration, authenticationProvider,
+                callbackExecutor);
     }
 
     @Override
@@ -230,6 +239,11 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     @Override
     public ExecutorService getExecutorService() {
         return callbackExecutor;
+    }
+
+    @Override
+    public AdaptableBus getAdaptableBus() {
+        return adaptableBus;
     }
 
     @Override
@@ -458,6 +472,11 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         doSendAdaptable(adaptable);
     }
 
+    @Override
+    public void emit(final String message) {
+        sendToWebsocket(message);
+    }
+
     @Nullable
     private Adaptable tryToConvertToAdaptable(final Event<?> event, final TopicPath.Channel channel) {
 
@@ -504,14 +523,16 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         if (null == adaptable) {
             return;
         }
+        sendToWebsocket(ProtocolFactory.wrapAsJsonifiableAdaptable(adaptable).toJsonString());
+    }
+
+    private void sendToWebsocket(final String stringMessage) {
         if (webSocket != null && webSocket.isOpen()) {
-            final String stringMessage = ProtocolFactory.wrapAsJsonifiableAdaptable(adaptable).toJsonString();
-            LOGGER.debug("Client <{}>: Sending JSON: {}", sessionId,
-                    stringMessage);
+            LOGGER.debug("Client <{}>: Sending: {}", sessionId, stringMessage);
             webSocket.sendText(stringMessage);
         } else {
-            LOGGER.error("Client <{}>: WebSocket is not connected - going to discard Adaptable '{}'",
-                    sessionId, adaptable);
+            LOGGER.error("Client <{}>: WebSocket is not connected - going to discard message '{}'",
+                    sessionId, stringMessage);
         }
     }
 
@@ -783,6 +804,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     private void handleIncomingMessage(final String message) {
+        adaptableBus.publish(message);
         switch (message) {
             case PROTOCOL_CMD_START_SEND_EVENTS + PROTOCOL_CMD_ACK_SUFFIX:
                 ackSubscription(PROTOCOL_CMD_START_SEND_EVENTS);
@@ -972,7 +994,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
             handleLiveMessageResponse((MessageCommandResponse<?, ?>) signal);
         } else if (signal instanceof ThingCommand) {
             LOGGER.debug("Client <{}>: Received LIVE ThingCommand JSON: {}", sessionId, message);
-            handleLiveCommand(LiveCommandFactory.getInstance().getLiveCommand((ThingCommand<?>) signal), jsonifiableAdaptable);
+            handleLiveCommand(LiveCommandFactory.getInstance().getLiveCommand((ThingCommand<?>) signal),
+                    jsonifiableAdaptable);
         } else if (signal instanceof ThingErrorResponse) {
             final DittoRuntimeException cre = ((ThingErrorResponse) signal).getDittoRuntimeException();
             final String description = cre.getDescription().orElse("");
@@ -989,7 +1012,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
             handleLiveCommandResponse((ThingCommandResponse<?>) signal);
         } else if (signal instanceof ThingEvent) {
             LOGGER.debug("Client <{}>: Received LIVE ThingEvent JSON: {}", sessionId, message);
-            handleThingEvent(correlationId, (ThingEvent<?>) signal, LiveImpl.CONSUME_LIVE_EVENTS_HANDLER, jsonifiableAdaptable);
+            handleThingEvent(correlationId, (ThingEvent<?>) signal, LiveImpl.CONSUME_LIVE_EVENTS_HANDLER,
+                    jsonifiableAdaptable);
         } else {
             // if we are at this point we must ask: what the hell is that?
             LOGGER.warn("Client <{}>: Got unknown message on WebSocket on LIVE channel: {}",

@@ -21,6 +21,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -29,6 +31,7 @@ import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.BasicAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.configuration.WebSocketMessagingConfiguration;
+import org.eclipse.ditto.client.internal.AdaptableBus;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.twin.internal.TwinImpl;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
@@ -38,11 +41,7 @@ import org.eclipse.ditto.model.messages.MessageBuilder;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessageHeadersBuilder;
-import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.Adaptable;
-import org.eclipse.ditto.protocoladapter.JsonifiableAdaptable;
-import org.eclipse.ditto.protocoladapter.Payload;
-import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.WithFeatureId;
 import org.eclipse.ditto.signals.commands.base.Command;
@@ -72,6 +71,8 @@ public class MockMessagingProvider implements MessagingProvider {
     private final ExecutorService executor = Executors.newFixedThreadPool(2, new MockThreadFactory());
     private final BlockingQueue<Message<?>> eventQueue = new LinkedBlockingQueue<>();
     private final MessagingConfiguration messagingConfiguration;
+    private final AdaptableBus adaptableBus = AdaptableBus.of();
+    private final BlockingQueue<String> emittedMessages = new LinkedBlockingQueue<>();
 
     private Consumer<CommandResponse<?>> responseConsumer = response -> {
         LOGGER.info("Not handling response in test: {}", response);
@@ -105,6 +106,11 @@ public class MockMessagingProvider implements MessagingProvider {
     @Override
     public ExecutorService getExecutorService() {
         return executor;
+    }
+
+    @Override
+    public AdaptableBus getAdaptableBus() {
+        return adaptableBus;
     }
 
     @Override
@@ -151,8 +157,9 @@ public class MockMessagingProvider implements MessagingProvider {
         }
         dittoHeaders.getCorrelationId().ifPresent(headersBuilder::correlationId);
 
-        final MessageBuilder<ThingCommand<?>> messageBuilder = Message.<ThingCommand<?>>newBuilder(headersBuilder.build())
-                .payload((ThingCommand<?>) command);
+        final MessageBuilder<ThingCommand<?>> messageBuilder =
+                Message.<ThingCommand<?>>newBuilder(headersBuilder.build())
+                        .payload((ThingCommand<?>) command);
 
         final Message<ThingCommand<?>> message = messageBuilder.build();
         out.accept(message);
@@ -176,6 +183,24 @@ public class MockMessagingProvider implements MessagingProvider {
     @Override
     public void emitAdaptable(final Adaptable message) {
         throw new UnsupportedOperationException("MockMessagingProvider is not able to emitAdaptable()");
+    }
+
+    @Override
+    public void emit(final String message) {
+        emittedMessages.add(message);
+    }
+
+    public String expectEmitted() {
+        try {
+            final String result = emittedMessages.poll(1L, TimeUnit.SECONDS);
+            if (result == null) {
+                throw new TimeoutException("No message emitted");
+            } else {
+                return result;
+            }
+        } catch (final Exception e) {
+            throw new AssertionError(e);
+        }
     }
 
     public void onSend(final Consumer<Message<?>> out) {

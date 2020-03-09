@@ -15,22 +15,33 @@ package org.eclipse.ditto.client;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonPointer;
+import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
+import org.eclipse.ditto.model.things.ThingsModelFactory;
+import org.eclipse.ditto.signals.base.Signal;
+import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
+import org.eclipse.ditto.signals.commands.things.exceptions.ThingNotAccessibleException;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteAttribute;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributeResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributes;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributesResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyAttribute;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributeResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributes;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributesResponse;
 import org.eclipse.ditto.signals.events.things.AttributeCreated;
 import org.eclipse.ditto.signals.events.things.AttributeModified;
 import org.eclipse.ditto.signals.events.things.ThingEvent;
@@ -46,178 +57,97 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     private static final JsonPointer ATTRIBUTE_KEY_OLD = JsonFactory.newPointer("old");
     private static final String ATTRIBUTE_VALUE = "value";
 
-
     @Test
-    public void testAddStringAttributeWithoutExistsOption() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasSubject(ModifyAttribute.TYPE)
-                    .hasNoConditionalHeaders();
-
-            latch.countDown();
-        });
-
-        client.twin()
-                .forId(THING_ID)
-                .putAttribute(ATTRIBUTE_KEY_NEW, ATTRIBUTE_VALUE);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    public void testAddStringAttributeWithExistsOptionFalse() {
+        assertEventualCompletion(
+                client.twin()
+                        .forId(THING_ID)
+                        .putAttribute(ATTRIBUTE_KEY_NEW, ATTRIBUTE_VALUE, Options.Modify.exists(false))
+        );
+        final Signal<?> command = expectMsgClass(ModifyAttribute.class);
+        assertOnlyIfNoneMatchHeader(command);
+        reply(ModifyAttributeResponse.created(THING_ID, ATTRIBUTE_KEY_NEW, JsonValue.of(ATTRIBUTE_VALUE),
+                command.getDittoHeaders()));
     }
 
     @Test
-    public void testAddStringAttributeWithExistsOptionFalse() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasSubject(ModifyAttribute.TYPE)
-                    .hasOnlyIfNoneMatchHeader();
-
-            latch.countDown();
-        });
-
-        client.twin()
-                .forId(THING_ID)
-                .putAttribute(ATTRIBUTE_KEY_NEW, ATTRIBUTE_VALUE, Options.Modify.exists(false));
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    public void testAddStringAttributeWithExistsOptionTrue() {
+        assertEventualCompletion(
+                client.twin()
+                        .forId(THING_ID)
+                        .putAttribute(ATTRIBUTE_KEY_NEW, ATTRIBUTE_VALUE, Options.Modify.exists(true))
+        );
+        final Signal<?> command = expectMsgClass(ModifyAttribute.class);
+        assertOnlyIfMatchHeader(command);
+        reply(ModifyAttributeResponse.modified(THING_ID, ATTRIBUTE_KEY_NEW, command.getDittoHeaders()));
     }
 
     @Test
-    public void testAddStringAttributeWithExistsOptionTrue() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasSubject(ModifyAttribute.TYPE)
-                    .hasOnlyIfMatchHeader();
-
-            latch.countDown();
-        });
-
-        client.twin()
-                .forId(THING_ID)
-                .putAttribute(ATTRIBUTE_KEY_NEW, ATTRIBUTE_VALUE, Options.Modify.exists(true));
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    public void testAddBooleanAttribute() {
+        assertEventualCompletion(
+                client.twin()
+                        .forId(THING_ID)
+                        .putAttribute(ATTRIBUTE_KEY_NEW, true)
+        );
+        final Signal<?> command = expectMsgClass(ModifyAttribute.class);
+        reply(ModifyAttributeResponse.created(THING_ID, ATTRIBUTE_KEY_NEW, JsonValue.of(true),
+                command.getDittoHeaders()));
     }
 
     @Test
-    public void testAddBooleanAttribute() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
+    public void testAddObjectAttribute() {
+        assertEventualCompletion(
+                client.twin()
+                        .forId(THING_ID)
+                        .putAttribute(ATTRIBUTE_KEY_NEW, JsonFactory.newObject("{\"id\": 42, \"name\": \"someName\"}"))
+        );
+        final Signal<?> command = expectMsgClass(ModifyAttribute.class);
+        reply(ModifyAttributeResponse.modified(THING_ID, ATTRIBUTE_KEY_NEW, command.getDittoHeaders()));
+    }
 
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasSubject(ModifyAttribute.TYPE);
-
-            latch.countDown();
-        });
-
-        client.twin()
+    @Test
+    public void testAddAttributeFailureDueToThingErrorResponse() throws Exception {
+        final CompletableFuture<Void> resultFuture = client.twin()
                 .forId(THING_ID)
                 .putAttribute(ATTRIBUTE_KEY_NEW, true);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        final Signal<?> command = expectMsgClass(ModifyAttribute.class);
+        reply(ThingErrorResponse.of(ThingNotAccessibleException.newBuilder(THING_ID).build(),
+                command.getDittoHeaders()));
+        resultFuture.exceptionally(error -> null).get(1L, TimeUnit.SECONDS);
+        assertThat(resultFuture).hasFailedWithThrowableThat().isInstanceOf(ThingNotAccessibleException.class);
     }
 
     @Test
-    public void testAddObjectAttribute() throws Exception {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasSubject(ModifyAttribute.TYPE);
-
-            latch.countDown();
-        });
-
-        client.twin()
-                .forId(THING_ID)
-                .putAttribute(ATTRIBUTE_KEY_NEW, JsonFactory.newObject("{\"id\": 42, \"name\": \"someName\"}"));
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    public void testDeleteAttribute() {
+        assertEventualCompletion(
+                client.twin()
+                        .forId(THING_ID)
+                        .deleteAttribute(ATTRIBUTE_KEY_OLD)
+        );
+        final Signal<?> command = expectMsgClass(DeleteAttribute.class);
+        reply(DeleteAttributeResponse.of(THING_ID, ATTRIBUTE_KEY_NEW, command.getDittoHeaders()));
     }
 
     @Test
-    public void testAddArrayAttribute() throws Exception {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasSubject(ModifyAttribute.TYPE);
-
-            latch.countDown();
-        });
-
-        client.twin()
-                .forId(THING_ID)
-                .putAttribute(ATTRIBUTE_KEY_NEW, JsonFactory.newArray("[1, \"two\"]"));
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    public void testDeleteAttributes() {
+        assertEventualCompletion(
+                client.twin()
+                        .forId(THING_ID)
+                        .deleteAttributes()
+        );
+        final Signal<?> command = expectMsgClass(DeleteAttributes.class);
+        reply(DeleteAttributesResponse.of(THING_ID, command.getDittoHeaders()));
     }
 
     @Test
-    public void testAddObjectAttributePartial() throws Exception {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasSubject(ModifyAttribute.TYPE);
-
-            latch.countDown();
-        });
-
-        client.twin()
-                .forId(THING_ID)
-                .putAttribute(ATTRIBUTE_KEY_NEW.addLeaf(JsonFactory.newKey("name")), "someOtherName");
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
-    }
-
-    @Test
-    public void testDeleteAttribute() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasSubject(DeleteAttribute.TYPE);
-
-            latch.countDown();
-        });
-
-        client.twin()
-                .forId(THING_ID)
-                .deleteAttribute(ATTRIBUTE_KEY_OLD);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
-    }
-
-    @Test
-    public void testDeleteAttributes() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasSubject(DeleteAttributes.TYPE);
-            latch.countDown();
-        });
-
-        client.twin()
+    public void testDeleteAttributesFailureDueToUnexpectedResponse() throws Exception {
+        final CompletableFuture<Void> resultFuture = client.twin()
                 .forId(THING_ID)
                 .deleteAttributes();
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        final Signal<?> command = expectMsgClass(DeleteAttributes.class);
+        reply(command);
+        resultFuture.exceptionally(error -> null).get(1, TimeUnit.SECONDS);
+        assertThat(resultFuture).hasFailedWithThrowableThat().isInstanceOf(ClassCastException.class);
     }
 
     @Test
@@ -293,86 +223,15 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     }
 
     @Test
-    public void testAddNullAttribute() throws Exception {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasSubject(ModifyAttribute.TYPE);
-
-            latch.countDown();
-        });
-
-        client.twin()
-                .forId(THING_ID)
-                .putAttribute(ATTRIBUTE_KEY_NEW, JsonFactory.nullLiteral()); // or "null"
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
-    }
-
-    @Test
-    public void testAddArrayAttributeObject() throws Exception {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasSubject(ModifyAttribute.TYPE);
-
-            latch.countDown();
-        });
-
-        client.twin()
-                .forId(THING_ID)
-                .putAttribute(ATTRIBUTE_KEY_NEW, JsonFactory.newArrayBuilder()
-                        .add(1)
-                        .add("two")
-                        .build());
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
-    }
-
-    @Test
-    public void testAddAttributesStructure() throws Exception {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasSubject(ModifyAttributes.TYPE);
-
-            latch.countDown();
-        });
-
-        client.twin()
-                .forId(THING_ID)
-                .setAttributes(JsonFactory.newObjectBuilder()
-                        .set("att1", 34)
-                        .set("att2", "someValue")
-                        .build());
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
-    }
-
-    @Test
-    public void testAddAttributesStructure_null() throws Exception {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasSubject(ModifyAttributes.TYPE);
-
-            latch.countDown();
-
-        });
-
-        client.twin()
-                .forId(THING_ID)
-                .setAttributes(JsonFactory.nullObject());
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    public void testModifyAttributes_null() {
+        assertEventualCompletion(
+                client.twin()
+                        .forId(THING_ID)
+                        .setAttributes(JsonFactory.nullObject())
+        );
+        final ModifyAttributes modifyAttributes = expectMsgClass(ModifyAttributes.class);
+        assertThat(modifyAttributes.getAttributes()).isEqualTo(ThingsModelFactory.nullAttributes());
+        reply(ModifyAttributesResponse.modified(THING_ID, modifyAttributes.getDittoHeaders()));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -381,5 +240,4 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
                 .forId(THING_ID)
                 .putAttribute(JsonFactory.emptyPointer(), "it should fail");
     }
-
 }
