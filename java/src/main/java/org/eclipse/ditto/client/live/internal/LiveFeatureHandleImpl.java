@@ -26,7 +26,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
 import org.eclipse.ditto.client.internal.ResponseForwarder;
-import org.eclipse.ditto.client.internal.SendTerminator;
 import org.eclipse.ditto.client.internal.bus.JsonPointerSelector;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
 import org.eclipse.ditto.client.live.LiveCommandProcessor;
@@ -124,7 +123,7 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
                 final Message<?> toBeSentMessage =
                         getOutgoingMessageFactory().sendMessage(messageSerializerRegistry, message);
                 LOGGER.trace("Message about to send: {}", toBeSentMessage);
-                new SendTerminator<>(getMessagingProvider(), getResponseForwarder(), toBeSentMessage).send();
+                getMessagingProvider().send(message, channel);
             }
         };
     }
@@ -149,7 +148,7 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
 
         getHandlerRegistry().register(registrationId, selector,
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
-                        getResponseForwarder(), getOutgoingMessageFactory(), messageSerializerRegistry,
+                        getOutgoingMessageFactory(), messageSerializerRegistry,
                         type, handler));
     }
 
@@ -169,7 +168,7 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
 
         getHandlerRegistry().register(registrationId, selector,
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
-                        getResponseForwarder(), getOutgoingMessageFactory(), messageSerializerRegistry,
+                        getOutgoingMessageFactory(), messageSerializerRegistry,
                         handler));
     }
 
@@ -187,7 +186,8 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
                 ImmutableFeatureEventFactory.getInstance(schemaVersion, getThingEntityId(),
                         getFeatureId());
         final Event<?> eventToEmit = eventFunction.apply(featureEventFactory);
-        getMessagingProvider().emitEvent(eventToEmit, TopicPath.Channel.LIVE);
+        // TODO: move emitEvent to AbstractHandler
+        getMessagingProvider().emitEvent(eventToEmit, channel);
     }
 
     /*

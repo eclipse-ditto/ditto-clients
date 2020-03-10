@@ -86,20 +86,14 @@ final class DefaultAdaptableBus implements AdaptableBus {
     }
 
     @Override
-    public AdaptableBus unsubscribeForAdaptable(final Object tag) {
-        persistentAdaptableConsumers.remove(tag);
-        return this;
-    }
-
-    @Override
-    public AdaptableBus subscribeForAdaptable(final Object tag, final Consumer<Adaptable> adaptableConsumer) {
+    public SubscriptionId subscribeForAdaptable(final Object tag, final Consumer<Adaptable> adaptableConsumer) {
         final Entry<Consumer<Adaptable>> entry = new Entry<>(tag, adaptableConsumer);
         addEntry(persistentAdaptableConsumers, entry);
-        return this;
+        return entry;
     }
 
     @Override
-    public CompletionStage<Adaptable> subscribeForAdaptableWithTimeout(final Object tag, final Duration timeout,
+    public SubscriptionId subscribeForAdaptableWithTimeout(final Object tag, final Duration timeout,
             final Consumer<Adaptable> adaptableConsumer, final Predicate<Adaptable> terminationPredicate) {
         final CompletableFuture<Adaptable> terminationFuture = new CompletableFuture<>();
         final AtomicReference<Instant> lastMessage = new AtomicReference<>(Instant.now());
@@ -112,7 +106,7 @@ final class DefaultAdaptableBus implements AdaptableBus {
         terminationFuture.thenAccept(terminated ->
                 // removed due to termination message
                 removeEntry(persistentAdaptableConsumers, entry, () -> {}));
-        return terminationFuture;
+        return entry;
     }
 
     @Override
@@ -286,8 +280,11 @@ final class DefaultAdaptableBus implements AdaptableBus {
         return new TimeoutException("Timed out after " + duration);
     }
 
-    // similar to Map.Entry but with object reference identity and fixed key type.
-    private static final class Entry<T> {
+    /**
+     * Similar to Map.Entry but with object reference identity and fixed key type to act as identifier for
+     * a subscription.
+     */
+    private static final class Entry<T> implements SubscriptionId {
 
         private final Object key;
         private final T value;

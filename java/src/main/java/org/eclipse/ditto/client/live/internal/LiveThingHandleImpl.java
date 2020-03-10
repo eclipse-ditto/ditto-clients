@@ -26,7 +26,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
 import org.eclipse.ditto.client.internal.ResponseForwarder;
-import org.eclipse.ditto.client.internal.SendTerminator;
 import org.eclipse.ditto.client.internal.bus.JsonPointerSelector;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
 import org.eclipse.ditto.client.live.LiveCommandProcessor;
@@ -97,7 +96,8 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
             final OutgoingMessageFactory outgoingMessageFactory,
             final HandlerRegistry<LiveThingHandle, LiveFeatureHandle> handlerRegistry,
             final MessageSerializerRegistry messageSerializerRegistry) {
-        super(TopicPath.Channel.LIVE, thingId,
+        super(TopicPath.Channel.LIVE,
+                thingId,
                 messagingProvider,
                 responseForwarder,
                 outgoingMessageFactory,
@@ -142,7 +142,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
                 final Message<?> toBeSentMessage =
                         getOutgoingMessageFactory().sendMessage(messageSerializerRegistry, message);
                 LOGGER.trace("Message about to send: {}", toBeSentMessage);
-                new SendTerminator<>(getMessagingProvider(), getResponseForwarder(), toBeSentMessage).send();
+                getMessagingProvider().send(toBeSentMessage, channel);
             }
         };
     }
@@ -177,7 +177,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
 
         getHandlerRegistry().register(registrationId, SelectorUtil.or(thingSelector, featureSelector),
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
-                        getResponseForwarder(), getOutgoingMessageFactory(), messageSerializerRegistry,
+                        getOutgoingMessageFactory(), messageSerializerRegistry,
                         type, handler));
     }
 
@@ -206,7 +206,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
 
         getHandlerRegistry().register(registrationId, SelectorUtil.or(thingSelector, featureSelector),
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
-                        getResponseForwarder(), getOutgoingMessageFactory(), messageSerializerRegistry,
+                        getOutgoingMessageFactory(), messageSerializerRegistry,
                         handler));
     }
 
@@ -226,7 +226,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
 
         getHandlerRegistry().register(registrationId, selector,
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
-                        getResponseForwarder(), getOutgoingMessageFactory(), messageSerializerRegistry,
+                        getOutgoingMessageFactory(), messageSerializerRegistry,
                         type, handler));
     }
 
@@ -242,7 +242,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
 
         getHandlerRegistry().register(registrationId, selector,
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
-                        getResponseForwarder(), getOutgoingMessageFactory(), messageSerializerRegistry,
+                        getOutgoingMessageFactory(), messageSerializerRegistry,
                         handler));
     }
 

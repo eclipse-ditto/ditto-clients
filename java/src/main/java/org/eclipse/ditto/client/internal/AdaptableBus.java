@@ -36,10 +36,15 @@ import org.eclipse.ditto.protocoladapter.Adaptable;
  */
 public interface AdaptableBus {
 
-    // TODO
+    /**
+     * Create an adaptable bus.
+     *
+     * @return the adaptable bus.
+     */
     static AdaptableBus of() {
-        final String name = "-adapter-bus-" + UUID.randomUUID();
-        return new DefaultAdaptableBus(MessagingProviders.createDefaultExecutorService(name))
+        final String name = "-adaptable-bus-" + UUID.randomUUID();
+        // the executor service will shutdown when garbage-collected.
+        return new DefaultAdaptableBus(MessagingProviders.createScheduledExecutorService(name))
                 .addStringClassifier(Classifiers.identity());
     }
 
@@ -80,18 +85,15 @@ public interface AdaptableBus {
      */
     CompletionStage<Adaptable> subscribeOnceForAdaptable(Object tag, Duration timeout);
 
-    // TODO
-    AdaptableBus unsubscribeForAdaptable(Object tag);
-
     /**
      * Add a persistent subscriber for an adaptable message. Only effective if no one-time string or adaptable
      * subscriber matches.
      *
      * @param tag the adaptable classification.
      * @param adaptableConsumer the consumer of the adaptable message.
-     * @return this object.
+     * @return the subscription ID.
      */
-    AdaptableBus subscribeForAdaptable(Object tag, Consumer<Adaptable> adaptableConsumer);
+    SubscriptionId subscribeForAdaptable(Object tag, Consumer<Adaptable> adaptableConsumer);
 
     /**
      * Add a persistent subscriber for an adaptable message that are removed after a timeout.
@@ -100,9 +102,9 @@ public interface AdaptableBus {
      * @param timeout how long to wait to remove the subscriber after matching messages stopped arriving.
      * @param adaptableConsumer consumer of non-termination messages.
      * @param terminationPredicate predicate for termination messages.
-     * @return a future containing the termination message if any arrived, or a failed future on timeout.
+     * @return the subscription ID.
      */
-    CompletionStage<Adaptable> subscribeForAdaptableWithTimeout(Object tag,
+    SubscriptionId subscribeForAdaptableWithTimeout(Object tag,
             Duration timeout,
             Consumer<Adaptable> adaptableConsumer,
             Predicate<Adaptable> terminationPredicate);
@@ -113,4 +115,9 @@ public interface AdaptableBus {
      * @param message the string message.
      */
     void publish(String message);
+
+    /**
+     * An empty interface to mark adaptable bus subscriptions.
+     */
+    interface SubscriptionId {}
 }

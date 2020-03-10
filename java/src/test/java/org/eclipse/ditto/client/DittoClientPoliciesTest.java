@@ -20,9 +20,9 @@ import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
 import java.util.function.Function;
 
 import org.assertj.core.api.Assertions;
@@ -34,68 +34,43 @@ import org.eclipse.ditto.json.JsonMissingFieldException;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.policies.Policy;
 import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
+import org.eclipse.ditto.signals.commands.policies.modify.CreatePolicy;
 import org.eclipse.ditto.signals.commands.policies.modify.CreatePolicyResponse;
+import org.eclipse.ditto.signals.commands.policies.modify.DeletePolicy;
 import org.eclipse.ditto.signals.commands.policies.modify.DeletePolicyResponse;
+import org.eclipse.ditto.signals.commands.policies.modify.ModifyPolicy;
 import org.eclipse.ditto.signals.commands.policies.modify.ModifyPolicyResponse;
+import org.eclipse.ditto.signals.commands.policies.query.RetrievePolicy;
 import org.eclipse.ditto.signals.commands.policies.query.RetrievePolicyResponse;
 import org.junit.Test;
 
 public class DittoClientPoliciesTest extends AbstractDittoClientTest {
 
     @Test
-    public void verifyClientDefaultsToSchemaVersion2ForPolicyCommands() throws InterruptedException {
-        final MockMessagingProvider mockProvider = new MockMessagingProvider(JsonSchemaVersion.V_1);
-        final DittoClient client = DittoClients.newInstance(mockProvider);
-
-        final CountDownLatch latch = new CountDownLatch(1);
-        mockProvider.onPolicyCommand(c -> {
-            assertThat(c)
-                    .hasPolicyId(POLICY_ID)
-                    .hasSchemaVersion(JsonSchemaVersion.V_2)
-                    .hasType("policies.commands:retrievePolicy");
-
-            latch.countDown();
-        });
-
-        client.policies().retrieve(POLICY_ID);
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    public void verifyClientDefaultsToSchemaVersion2ForPolicyCommands() {
+        messaging = new MockMessagingProvider(JsonSchemaVersion.V_1);
+        final DittoClient client = DittoClients.newInstance(messaging);
+        assertEventualCompletion(client.policies().retrieve(POLICY_ID));
+        final RetrievePolicy command = expectMsgClass(RetrievePolicy.class);
+        reply(RetrievePolicyResponse.of(POLICY_ID, POLICY, command.getDittoHeaders()));
+        assertThat(command).hasSchemaVersion(JsonSchemaVersion.V_2);
     }
 
     @Test
-    public void testCreatePolicy() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onPolicyCommand(c -> {
-            assertThat(c)
-                    .hasPolicyId(POLICY_ID)
-                    .hasType("policies.commands:createPolicy");
-
-            messaging.receiveResponse(CreatePolicyResponse.of(POLICY_ID, POLICY, c.getDittoHeaders()));
-            latch.countDown();
-        });
-
+    public void testCreatePolicy() throws Exception {
         final CompletableFuture<Policy> policyCompletableFuture = client.policies().create(POLICY);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        final CreatePolicy command = expectMsgClass(CreatePolicy.class);
+        reply(CreatePolicyResponse.of(command.getEntityId(), command.getPolicy(), command.getDittoHeaders()));
+        policyCompletableFuture.get(TIMEOUT, TIME_UNIT);
         Assertions.assertThat(policyCompletableFuture).isCompletedWithValue(POLICY);
     }
 
     @Test
-    public void testCreatePolicyJsonObject() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onPolicyCommand(c -> {
-            assertThat(c)
-                    .hasPolicyId(POLICY_ID)
-                    .hasType("policies.commands:createPolicy");
-
-            messaging.receiveResponse(CreatePolicyResponse.of(POLICY_ID, POLICY, c.getDittoHeaders()));
-            latch.countDown();
-        });
-
+    public void testCreatePolicyJsonObject() throws Exception {
         final CompletableFuture<Policy> policyCompletableFuture = client.policies().create(POLICY_JSON_OBJECT);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        final CreatePolicy command = expectMsgClass(CreatePolicy.class);
+        reply(CreatePolicyResponse.of(command.getEntityId(), command.getPolicy(), command.getDittoHeaders()));
+        policyCompletableFuture.get(TIMEOUT, TIME_UNIT);
         Assertions.assertThat(policyCompletableFuture).isCompletedWithValue(POLICY);
     }
 
@@ -108,104 +83,82 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
     }
 
     @Test
-    public void testPutPolicyJsonObject() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(3);
-        final LinkedList<Function<PolicyCommand<?>, ModifyPolicyResponse>> responseList = new LinkedList<>(Arrays.asList(
-                c -> ModifyPolicyResponse.created(POLICY_ID, POLICY, c.getDittoHeaders()),
-                c -> ModifyPolicyResponse.modified(POLICY_ID, c.getDittoHeaders()),
-                c -> ModifyPolicyResponse.created(POLICY_ID, POLICY, c.getDittoHeaders())
-        ));
-
-        messaging.onPolicyCommand(c -> {
-            assertThat(c)
-                    .hasPolicyId(POLICY_ID)
-                    .hasType("policies.commands:modifyPolicy");
-            final ModifyPolicyResponse response = responseList.pop().apply(c);
-            messaging.receiveResponse(response);
-            latch.countDown();
-        });
+    public void testPutPolicyJsonObject() throws Exception {
+        final LinkedList<Function<PolicyCommand<?>, ModifyPolicyResponse>> responseList =
+                new LinkedList<>(Arrays.asList(
+                        c -> ModifyPolicyResponse.created(POLICY_ID, POLICY, c.getDittoHeaders()),
+                        c -> ModifyPolicyResponse.modified(POLICY_ID, c.getDittoHeaders()),
+                        c -> ModifyPolicyResponse.created(POLICY_ID, POLICY, c.getDittoHeaders())
+                ));
 
         final CompletableFuture<Optional<Policy>> createdResponse = client.policies().put(POLICY_JSON_OBJECT);
-        final CompletableFuture<Optional<Policy>> modifiedResponse = client.policies().put(POLICY_JSON_OBJECT, Options.Modify.exists(true));
-        final CompletableFuture<Optional<Policy>> createdResponse2 = client.policies().put(POLICY_JSON_OBJECT, Options.Modify.exists(false));
+        final CompletableFuture<Optional<Policy>> modifiedResponse =
+                client.policies().put(POLICY_JSON_OBJECT, Options.Modify.exists(true));
+        final CompletableFuture<Optional<Policy>> createdResponse2 =
+                client.policies().put(POLICY_JSON_OBJECT, Options.Modify.exists(false));
+        final List<PolicyCommand<?>> commands = Arrays.asList(
+                expectMsgClass(ModifyPolicy.class),
+                expectMsgClass(ModifyPolicy.class),
+                expectMsgClass(ModifyPolicy.class)
+        );
+        for (int i = 0; i < 3; ++i) {
+            reply(responseList.get(i).apply(commands.get(i)));
+        }
 
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        CompletableFuture.allOf(createdResponse, modifiedResponse, createdResponse2).get(TIMEOUT, TIME_UNIT);
+
         Assertions.assertThat(createdResponse).isCompletedWithValue(Optional.of(POLICY));
         Assertions.assertThat(modifiedResponse).isCompletedWithValue(Optional.empty());
         Assertions.assertThat(createdResponse2).isCompletedWithValue(Optional.of(POLICY));
     }
 
     @Test
-    public void testPutPolicy() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(3);
-        final LinkedList<Function<PolicyCommand<?>, ModifyPolicyResponse>> responseList = new LinkedList<>(Arrays.asList(
-                c -> ModifyPolicyResponse.created(POLICY_ID, POLICY, c.getDittoHeaders()),
-                c -> ModifyPolicyResponse.modified(POLICY_ID, c.getDittoHeaders()),
-                c -> ModifyPolicyResponse.created(POLICY_ID, POLICY, c.getDittoHeaders())
-        ));
-
-        messaging.onPolicyCommand(c -> {
-            assertThat(c)
-                    .hasPolicyId(POLICY_ID)
-                    .hasType("policies.commands:modifyPolicy");
-
-            final ModifyPolicyResponse response = responseList.pop().apply(c);
-            messaging.receiveResponse(response);
-            latch.countDown();
-        });
+    public void testPutPolicy() throws Exception {
+        final LinkedList<Function<PolicyCommand<?>, ModifyPolicyResponse>> responseList =
+                new LinkedList<>(Arrays.asList(
+                        c -> ModifyPolicyResponse.created(POLICY_ID, POLICY, c.getDittoHeaders()),
+                        c -> ModifyPolicyResponse.modified(POLICY_ID, c.getDittoHeaders()),
+                        c -> ModifyPolicyResponse.created(POLICY_ID, POLICY, c.getDittoHeaders())
+                ));
 
         final CompletableFuture<Optional<Policy>> createdResponse = client.policies().put(POLICY);
-        final CompletableFuture<Optional<Policy>> modifiedResponse = client.policies().put(POLICY, Options.Modify.exists(true));
-        final CompletableFuture<Optional<Policy>> createdResponse2 = client.policies().put(POLICY, Options.Modify.exists(false));
+        final CompletableFuture<Optional<Policy>> modifiedResponse =
+                client.policies().put(POLICY, Options.Modify.exists(true));
+        final CompletableFuture<Optional<Policy>> createdResponse2 =
+                client.policies().put(POLICY, Options.Modify.exists(false));
+        final List<PolicyCommand<?>> commands = Arrays.asList(
+                expectMsgClass(ModifyPolicy.class),
+                expectMsgClass(ModifyPolicy.class),
+                expectMsgClass(ModifyPolicy.class)
+        );
+        for (int i = 0; i < 3; ++i) {
+            reply(responseList.get(i).apply(commands.get(i)));
+        }
 
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        CompletableFuture.allOf(createdResponse, modifiedResponse, createdResponse2).get(TIMEOUT, TIME_UNIT);
+
         Assertions.assertThat(createdResponse).isCompletedWithValue(Optional.of(POLICY));
         Assertions.assertThat(modifiedResponse).isCompletedWithValue(Optional.empty());
         Assertions.assertThat(createdResponse2).isCompletedWithValue(Optional.of(POLICY));
     }
 
     @Test
-    public void testUpdatePolicy() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onPolicyCommand(c -> {
-            assertThat(c)
-                    .hasPolicyId(POLICY_ID)
-                    .hasType("policies.commands:modifyPolicy");
-
-            messaging.receiveResponse(ModifyPolicyResponse.modified(POLICY_ID, c.getDittoHeaders()));
-            latch.countDown();
-        });
-
-        final CompletableFuture<Void> modifiedResponse = client.policies().update(POLICY);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
-        Assertions.assertThat(modifiedResponse).isCompleted();
+    public void testUpdatePolicy() {
+        assertEventualCompletion(client.policies().update(POLICY));
+        reply(ModifyPolicyResponse.modified(POLICY_ID, expectMsgClass(ModifyPolicy.class).getDittoHeaders()));
     }
 
     @Test
     public void updatePolicyFailsWithExistsOption() {
-        assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(
-                        () -> client.policies().update(POLICY, Options.Modify.exists(false)).get(TIMEOUT, TIME_UNIT));
+        assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() ->
+                client.policies().update(POLICY, Options.Modify.exists(false)).get(TIMEOUT, TIME_UNIT)
+        );
     }
 
     @Test
-    public void testDeletePolicy() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onPolicyCommand(c -> {
-            assertThat(c)
-                    .hasPolicyId(POLICY_ID)
-                    .hasType("policies.commands:deletePolicy");
-            messaging.receiveResponse(DeletePolicyResponse.of(POLICY_ID, c.getDittoHeaders()));
-            latch.countDown();
-        });
-
-        final CompletableFuture<Void> deletedResponse = client.policies().delete(POLICY_ID);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
-        Assertions.assertThat(deletedResponse).isCompleted();
+    public void testDeletePolicy() {
+        assertEventualCompletion(client.policies().delete(POLICY_ID));
+        reply(DeletePolicyResponse.of(POLICY_ID, expectMsgClass(DeletePolicy.class).getDittoHeaders()));
     }
 
     @Test
@@ -217,20 +170,10 @@ public class DittoClientPoliciesTest extends AbstractDittoClientTest {
     }
 
     @Test
-    public void testRetrievePolicy() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onPolicyCommand(c -> {
-            assertThat(c)
-                    .hasPolicyId(POLICY_ID)
-                    .hasType("policies.commands:retrievePolicy");
-            messaging.receiveResponse(RetrievePolicyResponse.of(POLICY_ID, POLICY, c.getDittoHeaders()));
-            latch.countDown();
-        });
-
+    public void testRetrievePolicy() throws Exception {
         final CompletableFuture<Policy> retrievePolicyResponse = client.policies().retrieve(POLICY_ID);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        reply(RetrievePolicyResponse.of(POLICY_ID, POLICY, expectMsgClass(RetrievePolicy.class).getDittoHeaders()));
+        retrievePolicyResponse.get(TIMEOUT, TIME_UNIT);
         Assertions.assertThat(retrievePolicyResponse).isCompletedWithValue(POLICY);
     }
 

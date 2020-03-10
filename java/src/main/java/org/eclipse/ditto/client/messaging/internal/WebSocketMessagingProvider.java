@@ -391,6 +391,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                     : SendThingMessage.of(thingId, message, dittoHeaders);
             adaptable = tryToConvertToAdaptable(messageCommand);
 
+            // TODO: remove message command response consumers
             final Optional<MessageResponseConsumer<?>> optionalResponseConsumer = message.getResponseConsumer();
             if (optionalCorrelationId.isPresent() && optionalResponseConsumer.isPresent()) {
                 messageCommandResponseConsumers.put(optionalCorrelationId.get(), optionalResponseConsumer.get());

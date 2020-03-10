@@ -43,10 +43,17 @@ import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
+import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
+import org.eclipse.ditto.signals.commands.things.modify.CreateThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyId;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyIdResponse;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyThing;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyThingResponse;
+import org.eclipse.ditto.signals.commands.things.query.RetrieveThing;
+import org.eclipse.ditto.signals.commands.things.query.RetrieveThingResponse;
 import org.eclipse.ditto.signals.events.things.ThingCreated;
 import org.eclipse.ditto.signals.events.things.ThingDeleted;
 import org.eclipse.ditto.signals.events.things.ThingEvent;
@@ -75,20 +82,10 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
             .build();
 
     @Test
-    public void testCreateThing() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasNoConditionalHeaders();
-
-            latch.countDown();
-        });
-
-        client.twin().create(THING_ID);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    public void testCreateThing() {
+        assertEventualCompletion(client.twin().create(THING_ID));
+        reply(CreateThingResponse.of(Thing.newBuilder().setId(THING_ID).build(),
+                expectMsgClass(CreateThing.class).getDittoHeaders()));
     }
 
     @Test
@@ -98,71 +95,27 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
     }
 
     @Test
-    public void testPutThingWithoutExistsOption() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasNoConditionalHeaders();
-
-            latch.countDown();
-        });
-
-        client.twin().put(THING);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    public void testPutThingWithExistsOptionFalse() {
+        assertEventualCompletion(client.twin().put(THING, Options.Modify.exists(false)));
+        final ModifyThing command = expectMsgClass(ModifyThing.class);
+        reply(ModifyThingResponse.created(Thing.newBuilder().setId(THING_ID).build(), command.getDittoHeaders()));
+        assertOnlyIfNoneMatchHeader(command);
     }
 
     @Test
-    public void testPutThingWithExistsOptionFalse() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasOnlyIfNoneMatchHeader();
-
-            latch.countDown();
-        });
-
-        client.twin().put(THING, Options.Modify.exists(false));
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    public void testPutThingWithExistsOptionTrue() {
+        assertEventualCompletion(client.twin().put(THING, Options.Modify.exists(true)));
+        final ModifyThing command = expectMsgClass(ModifyThing.class);
+        reply(ModifyThingResponse.modified(THING_ID, command.getDittoHeaders()));
+        assertOnlyIfMatchHeader(command);
     }
 
     @Test
-    public void testPutThingWithExistsOptionTrue() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasOnlyIfMatchHeader();
-
-            latch.countDown();
-        });
-
-        client.twin().put(THING, Options.Modify.exists(true));
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
-    }
-
-    @Test
-    public void testUpdateThing() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasOnlyIfMatchHeader();
-
-            latch.countDown();
-        });
-
-        client.twin().update(THING);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    public void testUpdateThing() {
+        assertEventualCompletion(client.twin().update(THING));
+        final ModifyThing command = expectMsgClass(ModifyThing.class);
+        reply(ModifyThingResponse.modified(THING_ID, command.getDittoHeaders()));
+        assertOnlyIfMatchHeader(command);
     }
 
     @Test
@@ -299,171 +252,85 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
     }
 
     @Test
-    public void testCreateThingWithoutFeatures() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
+    public void testCreateThingWithoutFeatures() {
         final ThingId thingIdWithoutFeatures = ThingId.of("demo:mything1");
-
-        messaging.onSend(m -> {
-            assertThat(m).hasThingId(thingIdWithoutFeatures);
-
-            latch.countDown();
-        });
-
         final AuthorizationSubject authorizationSubject = AuthorizationModelFactory.newAuthSubject("someSubject");
         final Thing thing = ThingsModelFactory.newThingBuilder()
                 .setId(thingIdWithoutFeatures)
                 .setPermissions(authorizationSubject, ThingsModelFactory.allPermissions())
                 .build();
-
-        client.twin().create(thing);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        assertEventualCompletion(client.twin().create(thing));
+        final CreateThing command = expectMsgClass(CreateThing.class);
+        reply(CreateThingResponse.of(command.getThing(), command.getDittoHeaders()));
+        assertThat((CharSequence) command.getThingEntityId()).isEqualTo(thingIdWithoutFeatures);
     }
 
     @Test
-    public void testCreateThingWithInlinePolicy() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasInitialPolicy()
-                    .hasNoConditionalHeaders();
-
-            latch.countDown();
-        });
-
-        client.twin().create(THING_WITH_INLINE_POLICY);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    public void testCreateThingWithInlinePolicy() {
+        assertEventualCompletion(client.twin().create(THING_WITH_INLINE_POLICY));
+        final CreateThing command = expectMsgClass(CreateThing.class);
+        reply(CreateThingResponse.of(ThingsModelFactory.newThing(THING_WITH_INLINE_POLICY), command.getDittoHeaders()));
+        assertThat(command.getInitialPolicy()).isNotEmpty();
     }
 
     @Test
-    public void testCreateThingWithInitialJSONPolicy() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasInitialPolicy()
-                    .hasNoConditionalHeaders();
-
-            latch.countDown();
-        });
-
+    public void testCreateThingWithInitialJSONPolicy() {
         client.twin().create(THING_ID, POLICY_JSON_OBJECT);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        final CreateThing command = expectMsgClass(CreateThing.class);
+        reply(CreateThingResponse.of(ThingsModelFactory.newThing(THING_WITH_INLINE_POLICY), command.getDittoHeaders()));
+        Assertions.assertThat(command.getInitialPolicy()).isNotEmpty();
     }
 
     @Test
-    public void testCreateThingWithInitialPolicy() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasInitialPolicy()
-                    .hasNoConditionalHeaders();
-
-            latch.countDown();
-        });
-
+    public void testCreateThingWithInitialPolicy() {
         client.twin().create(THING_ID, POLICY);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        final CreateThing command = expectMsgClass(CreateThing.class);
+        reply(CreateThingResponse.of(ThingsModelFactory.newThing(THING_WITH_INLINE_POLICY), command.getDittoHeaders()));
+        Assertions.assertThat(command.getInitialPolicy()).isNotEmpty();
     }
 
     @Test
-    public void testPutThingWithInlinePolicy() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasInitialPolicy()
-                    .hasNoConditionalHeaders();
-
-            latch.countDown();
-        });
-
+    public void testPutThingWithInlinePolicy() {
         client.twin().put(THING_WITH_INLINE_POLICY);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        final ModifyThing command = expectMsgClass(ModifyThing.class);
+        reply(ModifyThingResponse.created(ThingsModelFactory.newThing(THING_WITH_INLINE_POLICY),
+                command.getDittoHeaders()));
+        Assertions.assertThat(command.getInitialPolicy()).isNotEmpty();
     }
 
     @Test
-    public void testPutThingWithInitialJSONPolicy() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasInitialPolicy()
-                    .hasNoConditionalHeaders();
-
-            latch.countDown();
-        });
-
-        client.twin().put(THING, POLICY_JSON_OBJECT);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    public void testPutThingWithInitialJSONPolicy() {
+        assertEventualCompletion(client.twin().put(THING, POLICY_JSON_OBJECT));
+        final ModifyThing createThing = expectMsgClass(ModifyThing.class);
+        reply(CreateThingResponse.of(Thing.newBuilder().setId(THING_ID).build(), createThing.getDittoHeaders()));
+        assertThat((CharSequence) createThing.getThingEntityId()).isEqualTo(THING_ID);
+        assertThat(createThing.getInitialPolicy()).isNotEmpty();
     }
 
     @Test
-    public void testPutThingWithInitialPolicy() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasInitialPolicy()
-                    .hasNoConditionalHeaders();
-
-            latch.countDown();
-        });
-
+    public void testPutThingWithInitialPolicy() {
         client.twin().put(THING, POLICY);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        final ModifyThing command = expectMsgClass(ModifyThing.class);
+        reply(ModifyThingResponse.created(THING, command.getDittoHeaders()));
+        assertThat(command.getInitialPolicy()).contains(POLICY_JSON_OBJECT);
     }
 
     @Test
-    public void testCreateThingWithOptionCopyPolicy() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID_COPY_POLICY)
-                    .hasOptionCopyPolicy(POLICY_ID)
-                    .hasNoConditionalHeaders();
-
-            latch.countDown();
-        });
-
+    public void testCreateThingWithOptionCopyPolicy() {
         final Option<PolicyId> copyPolicy = Options.Modify.copyPolicy(POLICY_ID);
-        client.twin().create(THING_ID_COPY_POLICY, copyPolicy);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        assertEventualCompletion(client.twin().create(THING_ID_COPY_POLICY, copyPolicy));
+        final CreateThing command = expectMsgClass(CreateThing.class);
+        reply(CreateThingResponse.of(THING, command.getDittoHeaders()));
+        assertThat(command.getPolicyIdOrPlaceholder()).contains(POLICY_ID.toString());
     }
 
     @Test
-    public void testCreateThingWithOptionCopyPolicyFromThing() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID_COPY_POLICY)
-                    .hasOptionCopyPolicyFromThing(THING_ID)
-                    .hasNoConditionalHeaders();
-
-            latch.countDown();
-        });
-
+    public void testCreateThingWithOptionCopyPolicyFromThing() {
         final Option<ThingId> copyPolicy = Options.Modify.copyPolicyFromThing(THING_ID);
-        client.twin().create(THING_ID_COPY_POLICY, copyPolicy);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        assertEventualCompletion(client.twin().create(THING_ID_COPY_POLICY, copyPolicy));
+        final CreateThing command = expectMsgClass(CreateThing.class);
+        reply(CreateThingResponse.of(THING, command.getDittoHeaders()));
+        assertThat(command.getPolicyIdOrPlaceholder()).contains("{{ ref:things/" + THING_ID + "/policyId }}");
     }
 
     @Test
@@ -484,22 +351,12 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
     }
 
     @Test
-    public void testPutThingWithOptionCopyPolicy() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasOptionCopyPolicy(POLICY_ID)
-                    .hasNoConditionalHeaders();
-
-            latch.countDown();
-        });
-
+    public void testPutThingWithOptionCopyPolicy() {
         final Option<PolicyId> copyPolicy = Options.Modify.copyPolicy(POLICY_ID);
-        client.twin().put(THING, copyPolicy);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        assertEventualCompletion(client.twin().put(THING, copyPolicy));
+        final ModifyThing command = expectMsgClass(ModifyThing.class);
+        reply(ModifyThingResponse.created(THING, command.getDittoHeaders()));
+        assertThat(command.getPolicyIdOrPlaceholder()).contains(POLICY_ID.toString());
     }
 
     @Test
@@ -517,6 +374,14 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
 
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> client.twin().put(THING, copyPolicy, copyPolicyFromThing));
+    }
+
+    @Test
+    public void testLiveCommand() {
+        assertEventualCompletion(client.live().forId(THING_ID).retrieve());
+        final RetrieveThing command = expectMsgClass(RetrieveThing.class);
+        reply(RetrieveThingResponse.of(THING_ID, THING, command.getDittoHeaders()));
+        assertThat(command.getDittoHeaders().getChannel()).contains(TopicPath.Channel.LIVE.getName());
     }
 
 }

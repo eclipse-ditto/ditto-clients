@@ -47,8 +47,11 @@ public final class MessagingProviders {
         return webSocket(configuration, authenticationProvider, defaultExecutorService);
     }
 
-    // TODO: document
-    public static ScheduledExecutorService createDefaultExecutorService(final String name) {
+    public static ExecutorService createDefaultExecutorService(final String name) {
+        return createScheduledExecutorService(name);
+    }
+
+    public static ScheduledExecutorService createScheduledExecutorService(final String name) {
         final int corePoolSize = Runtime.getRuntime().availableProcessors() * 8;
         return Executors.newScheduledThreadPool(corePoolSize, new DefaultThreadFactory("ditto-client-" + name));
     }

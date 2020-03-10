@@ -15,8 +15,6 @@ package org.eclipse.ditto.client.live.internal;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
-import org.eclipse.ditto.client.internal.ResponseForwarder;
-import org.eclipse.ditto.client.internal.SendTerminator;
 import org.eclipse.ditto.client.internal.bus.PointerWithData;
 import org.eclipse.ditto.client.live.messages.MessageSerializationException;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
@@ -27,6 +25,7 @@ import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageBuilder;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
+import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +58,6 @@ final class LiveMessagesUtil {
 
     static <T, U> Consumer<PointerWithData> createEventConsumerForRepliableMessage(
             final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final MessageSerializerRegistry messageSerializerRegistry,
             final Class<T> type, final Consumer<RepliableMessage<T, U>> handler) {
@@ -74,7 +72,7 @@ final class LiveMessagesUtil {
             {
                 final Message<U> toBeSentMessage = outgoingMessageFactory.sendMessage(messageSerializerRegistry, msg);
                 LOGGER.trace("Response Message about to send: {}", toBeSentMessage);
-                new SendTerminator<>(messagingProvider, responseForwarder, toBeSentMessage).send();
+                messagingProvider.send(toBeSentMessage, TopicPath.Channel.LIVE);
             });
             handler.accept(repliableMessage);
         };
@@ -82,7 +80,6 @@ final class LiveMessagesUtil {
 
     static <U> Consumer<PointerWithData> createEventConsumerForRepliableMessage(
             final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final MessageSerializerRegistry messageSerializerRegistry,
             final Consumer<RepliableMessage<?, U>> handler) {
@@ -95,7 +92,7 @@ final class LiveMessagesUtil {
             {
                 final Message<U> toBeSentMessage = outgoingMessageFactory.sendMessage(messageSerializerRegistry, msg);
                 LOGGER.trace("Response Message about to send: {}", toBeSentMessage);
-                new SendTerminator<>(messagingProvider, responseForwarder, toBeSentMessage).send();
+                messagingProvider.send(toBeSentMessage, TopicPath.Channel.LIVE);
             });
             handler.accept(repliableMessage);
         };

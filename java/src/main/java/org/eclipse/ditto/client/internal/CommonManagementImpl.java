@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -60,8 +59,13 @@ import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
+import org.eclipse.ditto.signals.commands.things.modify.CreateThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteThingResponse;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyThingResponse;
+import org.eclipse.ditto.signals.commands.things.modify.ThingModifyCommandResponse;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThings;
+import org.eclipse.ditto.signals.commands.things.query.RetrieveThingsResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,13 +76,12 @@ import org.slf4j.LoggerFactory;
  * @param <F> the type of {@link FeatureHandle} for handling {@code Feature}s
  * @since 1.0.0
  */
-public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends FeatureHandle> implements
-        CommonManagement<T, F> {
+public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends FeatureHandle>
+        extends AbstractHandle
+        implements CommonManagement<T, F> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonManagementImpl.class);
 
-    private final TopicPath.Channel channel;
-    private final MessagingProvider messagingProvider;
     private final ResponseForwarder responseForwarder;
     private final OutgoingMessageFactory outgoingMessageFactory;
     private final HandlerRegistry<T, F> handlerRegistry;
@@ -92,8 +95,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
             final HandlerRegistry<T, F> handlerRegistry,
             final PointerBus bus) {
 
-        this.channel = channel;
-        this.messagingProvider = messagingProvider;
+        super(messagingProvider, channel);
         this.responseForwarder = responseForwarder;
         this.outgoingMessageFactory = outgoingMessageFactory;
         this.handlerRegistry = handlerRegistry;
@@ -356,16 +358,9 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         assertThatThingHasId(thing);
 
         final CreateThing command = outgoingMessageFactory.createThing(thing, initialPolicy, options);
-
-        return new SendTerminator<Thing>(messagingProvider, responseForwarder, channel, command)
-                .applyModify(response -> {
-                    if (response != null) {
-                        return ThingsModelFactory.newThing(response.getEntity(response.getImplementedSchemaVersion())
-                                .orElse(JsonFactory.nullObject()).asObject());
-                    } else {
-                        return null;
-                    }
-                });
+        return askThingCommand(command, CreateThingResponse.class, response ->
+                response.getThingCreated().orElseGet(() -> ThingsModelFactory.newThing(JsonFactory.nullObject())))
+                .toCompletableFuture();
     }
 
     @Override
@@ -417,17 +412,13 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
             final Option<?>... options) {
         argumentNotNull(thing);
         assertThatThingHasId(thing);
-
-        return new SendTerminator<Optional<Thing>>(messagingProvider, responseForwarder, channel,
-                outgoingMessageFactory.putThing(thing, initialPolicy, options)).applyModify(response -> {
-            if (response != null) {
-                return response.getEntity(response.getImplementedSchemaVersion())
+        return askThingCommand(outgoingMessageFactory.putThing(thing, initialPolicy, options),
+                // response could be either CreateThingResponse or ModifyThingResponse.
+                ThingModifyCommandResponse.class,
+                response -> response.getEntity(response.getImplementedSchemaVersion())
                         .map(JsonValue::asObject)
-                        .map(ThingsModelFactory::newThing);
-            } else {
-                throw new IllegalStateException("Response is always expected!");
-            }
-        });
+                        .map(ThingsModelFactory::newThing)
+        ).toCompletableFuture();
     }
 
     @Override
@@ -435,8 +426,8 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         argumentNotNull(thing);
         assertThatThingHasId(thing);
 
-        return new SendTerminator<Void>(messagingProvider, responseForwarder, channel,
-                outgoingMessageFactory.updateThing(thing, options)).applyVoid();
+        return askThingCommand(outgoingMessageFactory.updateThing(thing, options), ModifyThingResponse.class,
+                this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -452,7 +443,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         argumentNotNull(thingId);
 
         final DeleteThing command = outgoingMessageFactory.deleteThing(thingId, options);
-        return new SendTerminator<Void>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, DeleteThingResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -626,19 +617,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     private CompletableFuture<List<Thing>> sendRetrieveThingsMessage(final RetrieveThings command) {
-        return new SendTerminator<List<Thing>>(messagingProvider, responseForwarder, channel, command)
-                .applyView(tvr -> {
-                    if (tvr != null) {
-                        return tvr.getEntity(tvr.getImplementedSchemaVersion())
-                                .asArray()
-                                .stream()
-                                .map(JsonValue::asObject)
-                                .map(ThingsModelFactory::newThing)
-                                .collect(Collectors.toList());
-                    } else {
-                        return null;
-                    }
-                });
+        return askThingCommand(command, RetrieveThingsResponse.class, RetrieveThingsResponse::getThings)
+                .toCompletableFuture();
     }
-
 }

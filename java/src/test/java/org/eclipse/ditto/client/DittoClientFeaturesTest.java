@@ -15,13 +15,15 @@ package org.eclipse.ditto.client;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonObject;
+import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.FeatureDefinition;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
@@ -30,7 +32,9 @@ import org.eclipse.ditto.signals.commands.things.modify.DeleteFeature;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureDefinition;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureDefinitionResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperties;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteFeaturePropertiesResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperty;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteFeaturePropertyResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatures;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeaturesResponse;
@@ -38,10 +42,14 @@ import org.eclipse.ditto.signals.commands.things.modify.ModifyFeature;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDefinition;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDefinitionResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperties;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyFeaturePropertiesResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperty;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyFeaturePropertyResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatures;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeaturesResponse;
+import org.eclipse.ditto.signals.commands.things.query.RetrieveFeature;
+import org.eclipse.ditto.signals.commands.things.query.RetrieveFeatureResponse;
 import org.junit.Test;
 
 /**
@@ -93,6 +101,15 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientTest {
     }
 
     @Test
+    public void testRetrieveFeature() throws Exception {
+        final CompletableFuture<Feature> featureFuture =
+                client.twin().forId(THING_ID).forFeature(FEATURE_ID).retrieve();
+        reply(RetrieveFeatureResponse.of(THING_ID, FEATURE, expectMsgClass(RetrieveFeature.class).getDittoHeaders()));
+        final Feature retrievedFeature = featureFuture.get(1L, TimeUnit.SECONDS);
+        assertThat(retrievedFeature).isEqualTo(FEATURE);
+    }
+
+    @Test
     public void testSetFeatures() {
         assertEventualCompletion(client.twin().forId(THING_ID).setFeatures(ThingsModelFactory.newFeatures(FEATURE)));
         reply(ModifyFeaturesResponse.modified(THING_ID, expectMsgClass(ModifyFeatures.class).getDittoHeaders()));
@@ -125,82 +142,39 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientTest {
     }
 
     @Test
-    public void testSetFeatureProperty() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        final String path = "density";
+    public void testSetFeatureProperty() {
+        final JsonPointer path = JsonFactory.newPointer("density");
         final int value = 42;
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasFeatureId(FEATURE_ID)
-                    .hasSubject(ModifyFeatureProperty.TYPE);
-
-            latch.countDown();
-        });
-
-        client.twin().forId(THING_ID).forFeature(FEATURE_ID).putProperty(JsonFactory.newPointer(path), value);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        assertEventualCompletion(
+                client.twin().forId(THING_ID).forFeature(FEATURE_ID).putProperty(path, value)
+        );
+        reply(ModifyFeaturePropertyResponse.modified(THING_ID, FEATURE_ID, path,
+                expectMsgClass(ModifyFeatureProperty.class).getDittoHeaders()));
     }
 
     @Test
-    public void testDeleteFeatureProperty() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        final String path = "density";
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasFeatureId(FEATURE_ID)
-                    .hasSubject(DeleteFeatureProperty.TYPE);
-
-            latch.countDown();
-        });
-
-        client.twin().forId(THING_ID).forFeature(FEATURE_ID).deleteProperty(JsonFactory.newPointer(path));
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    public void testDeleteFeatureProperty() {
+        final JsonPointer path = JsonFactory.newPointer("density");
+        assertEventualCompletion(
+                client.twin().forId(THING_ID).forFeature(FEATURE_ID).deleteProperty(path)
+        );
+        reply(DeleteFeaturePropertyResponse.of(THING_ID, FEATURE_ID, path,
+                expectMsgClass(DeleteFeatureProperty.class).getDittoHeaders()));
     }
 
     @Test
-    public void testSetFeatureProperties() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
+    public void testSetFeatureProperties() {
         final JsonObject properties = JsonFactory.newObjectBuilder().set("density", 42).build();
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasFeatureId(FEATURE_ID)
-                    .hasSubject(ModifyFeatureProperties.TYPE);
-
-            latch.countDown();
-        });
-
-        client.twin().forId(THING_ID).forFeature(FEATURE_ID).setProperties(properties);
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        assertEventualCompletion(client.twin().forId(THING_ID).forFeature(FEATURE_ID).setProperties(properties));
+        reply(ModifyFeaturePropertiesResponse.modified(THING_ID, FEATURE_ID,
+                expectMsgClass(ModifyFeatureProperties.class).getDittoHeaders()));
     }
 
     @Test
-    public void testDeleteFeatureProperties() throws InterruptedException {
-        final CountDownLatch latch = new CountDownLatch(1);
-
-        messaging.onSend(m -> {
-            assertThat(m)
-                    .hasThingId(THING_ID)
-                    .hasFeatureId(FEATURE_ID)
-                    .hasSubject(DeleteFeatureProperties.TYPE);
-
-            latch.countDown();
-        });
-
-        client.twin().forId(THING_ID).forFeature(FEATURE_ID).deleteProperties();
-
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    public void testDeleteFeatureProperties() {
+        assertEventualCompletion(client.twin().forId(THING_ID).forFeature(FEATURE_ID).deleteProperties());
+        reply(DeleteFeaturePropertiesResponse.of(THING_ID, FEATURE_ID,
+                expectMsgClass(DeleteFeatureProperties.class).getDittoHeaders()));
     }
 
 }

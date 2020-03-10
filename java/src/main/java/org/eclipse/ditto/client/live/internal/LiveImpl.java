@@ -30,7 +30,6 @@ import org.eclipse.ditto.client.internal.CommonManagementImpl;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
 import org.eclipse.ditto.client.internal.ResponseForwarder;
-import org.eclipse.ditto.client.internal.SendTerminator;
 import org.eclipse.ditto.client.internal.bus.JsonPointerSelector;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
@@ -112,7 +111,6 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
     public static final String CONSUME_LIVE_COMMANDS_HANDLER = "consume-live-commands";
 
     private final JsonSchemaVersion schemaVersion;
-    private final String sessionId;
     private final MessageSerializerRegistry messageSerializerRegistry;
     private final Map<Class<? extends LiveCommand>, Function<? extends LiveCommand, LiveCommandAnswerBuilder.BuildStep>>
             liveCommandsFunctions;
@@ -132,7 +130,6 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                 bus);
 
         this.schemaVersion = schemaVersion;
-        this.sessionId = sessionId;
         this.messageSerializerRegistry = messageSerializerRegistry;
         liveCommandsFunctions = new IdentityHashMap<>();
     }
@@ -317,7 +314,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                 final Message<?> toBeSentMessage =
                         getOutgoingMessageFactory().sendMessage(messageSerializerRegistry, message);
                 LOGGER.trace("Message about to send: {}", toBeSentMessage);
-                new SendTerminator<>(getMessagingProvider(), getResponseForwarder(), toBeSentMessage).send();
+                getMessagingProvider().send(message, channel);
             }
         };
     }
@@ -349,7 +346,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
 
         getHandlerRegistry().register(registrationId, SelectorUtil.or(thingSelector, featureSelector),
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
-                        getResponseForwarder(), getOutgoingMessageFactory(), messageSerializerRegistry,
+                        getOutgoingMessageFactory(), messageSerializerRegistry,
                         type, handler));
     }
 
@@ -387,7 +384,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
 
         getHandlerRegistry().register(registrationId, SelectorUtil.or(thingSelector, featureSelector),
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
-                        getResponseForwarder(), getOutgoingMessageFactory(), messageSerializerRegistry, handler));
+                        getOutgoingMessageFactory(), messageSerializerRegistry, handler));
     }
 
     @Override
@@ -406,7 +403,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
 
         getHandlerRegistry().register(registrationId, selector,
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
-                        getResponseForwarder(), getOutgoingMessageFactory(), messageSerializerRegistry,
+                        getOutgoingMessageFactory(), messageSerializerRegistry,
                         type, handler));
     }
 
@@ -423,7 +420,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
 
         getHandlerRegistry().register(registrationId, selector,
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
-                        getResponseForwarder(), getOutgoingMessageFactory(), messageSerializerRegistry, handler));
+                        getOutgoingMessageFactory(), messageSerializerRegistry, handler));
     }
 
     /*
