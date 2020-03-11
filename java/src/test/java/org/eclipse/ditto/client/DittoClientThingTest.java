@@ -25,7 +25,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 
 import org.assertj.core.api.Assertions;
-import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
+import org.eclipse.ditto.client.internal.AbstractDittoClientThingsTest;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.client.registration.DuplicateRegistrationIdException;
@@ -33,7 +33,6 @@ import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.base.auth.AuthorizationModelFactory;
 import org.eclipse.ditto.model.base.auth.AuthorizationSubject;
-import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
@@ -43,7 +42,6 @@ import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
-import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
@@ -52,8 +50,6 @@ import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyId;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyIdResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyThing;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyThingResponse;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveThing;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveThingResponse;
 import org.eclipse.ditto.signals.events.things.ThingCreated;
 import org.eclipse.ditto.signals.events.things.ThingDeleted;
 import org.eclipse.ditto.signals.events.things.ThingEvent;
@@ -62,7 +58,7 @@ import org.junit.Test;
 /**
  * Test top-level (i.e. Thing) operations of the {@link DittoClient}.
  */
-public final class DittoClientThingTest extends AbstractDittoClientTest {
+public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
 
     private static final String FEATURE_ID = "someFeature";
     private static final JsonPointer ATTRIBUTE_KEY_NEW = JsonFactory.newPointer("new");
@@ -83,7 +79,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
 
     @Test
     public void testCreateThing() {
-        assertEventualCompletion(client.twin().create(THING_ID));
+        assertEventualCompletion(getManagement().create(THING_ID));
         reply(CreateThingResponse.of(Thing.newBuilder().setId(THING_ID).build(),
                 expectMsgClass(CreateThing.class).getDittoHeaders()));
     }
@@ -91,12 +87,13 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
     @Test
     public void createThingFailsWithExistsOption() {
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> client.twin().create(THING_ID, Options.Modify.exists(false)).get(TIMEOUT, TIME_UNIT));
+                .isThrownBy(
+                        () -> getManagement().create(THING_ID, Options.Modify.exists(false)).get(TIMEOUT, TIME_UNIT));
     }
 
     @Test
     public void testPutThingWithExistsOptionFalse() {
-        assertEventualCompletion(client.twin().put(THING, Options.Modify.exists(false)));
+        assertEventualCompletion(getManagement().put(THING, Options.Modify.exists(false)));
         final ModifyThing command = expectMsgClass(ModifyThing.class);
         reply(ModifyThingResponse.created(Thing.newBuilder().setId(THING_ID).build(), command.getDittoHeaders()));
         assertOnlyIfNoneMatchHeader(command);
@@ -104,7 +101,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
 
     @Test
     public void testPutThingWithExistsOptionTrue() {
-        assertEventualCompletion(client.twin().put(THING, Options.Modify.exists(true)));
+        assertEventualCompletion(getManagement().put(THING, Options.Modify.exists(true)));
         final ModifyThing command = expectMsgClass(ModifyThing.class);
         reply(ModifyThingResponse.modified(THING_ID, command.getDittoHeaders()));
         assertOnlyIfMatchHeader(command);
@@ -112,7 +109,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
 
     @Test
     public void testUpdateThing() {
-        assertEventualCompletion(client.twin().update(THING));
+        assertEventualCompletion(getManagement().update(THING));
         final ModifyThing command = expectMsgClass(ModifyThing.class);
         reply(ModifyThingResponse.modified(THING_ID, command.getDittoHeaders()));
         assertOnlyIfMatchHeader(command);
@@ -121,27 +118,28 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
     @Test
     public void updateThingFailsWithExistsOption() {
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> client.twin().update(THING, Options.Modify.exists(false)).get(TIMEOUT, TIME_UNIT));
+                .isThrownBy(() -> getManagement().update(THING, Options.Modify.exists(false)).get(TIMEOUT, TIME_UNIT));
     }
 
     @Test
     public void testDeleteThing() {
-        assertEventualCompletion(client.twin().forId(THING_ID).delete());
+        assertEventualCompletion(getManagement().forId(THING_ID).delete());
         reply(DeleteThingResponse.of(THING_ID, expectMsgClass(DeleteThing.class).getDittoHeaders()));
     }
 
     @Test
     public void deleteThingFailsWithExistsOption() {
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> client.twin().delete(THING_ID, Options.Modify.exists(false)).get(TIMEOUT, TIME_UNIT));
+                .isThrownBy(
+                        () -> getManagement().delete(THING_ID, Options.Modify.exists(false)).get(TIMEOUT, TIME_UNIT));
     }
 
     @Test
     public void testReceiveCreatedEvent() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        client.twin().startConsumption();
-        client.twin().registerForThingChanges("test", change -> {
+        getManagement().startConsumption();
+        getManagement().registerForThingChanges("test", change -> {
             assertThat(change)
                     .hasThingId(THING_ID)
                     .isAdded();
@@ -153,8 +151,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
                 MessageHeaders.newBuilder(MessageDirection.FROM, THING_ID, ThingCreated.TYPE).build();
 
         final Message<ThingEvent> thingCreated = MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders)
-                .payload(ThingCreated.of(Thing.newBuilder().setId(THING_ID).build(), 1,
-                        DittoHeaders.empty()))
+                .payload(ThingCreated.of(Thing.newBuilder().setId(THING_ID).build(), 1, headersWithChannel()))
                 .build();
 
         messaging.receiveEvent(thingCreated);
@@ -166,8 +163,8 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
     public void testReceiveDeletedEvent() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        client.twin().startConsumption();
-        client.twin().registerForThingChanges("test", change -> {
+        getManagement().startConsumption();
+        getManagement().registerForThingChanges("test", change -> {
             assertThat(change)
                     .hasThingId(THING_ID)
                     .isDeleted();
@@ -181,18 +178,18 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
     }
 
-    private static Message<ThingEvent> createThingDeletedMessage() {
+    private Message<ThingEvent> createThingDeletedMessage() {
         final MessageHeaders messageHeaders =
                 MessageHeaders.newBuilder(MessageDirection.FROM, THING_ID, ThingDeleted.TYPE).build();
 
         return MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders)
-                .payload(ThingDeleted.of(THING_ID, 1, DittoHeaders.empty()))
+                .payload(ThingDeleted.of(THING_ID, 1, headersWithChannel()))
                 .build();
     }
 
     @Test
     public void testSetPolicyId() {
-        assertEventualCompletion(client.twin().forId(THING_ID).setPolicyId(POLICY_ID));
+        assertEventualCompletion(getManagement().forId(THING_ID).setPolicyId(POLICY_ID));
         reply(ModifyPolicyIdResponse.modified(THING_ID, expectMsgClass(ModifyPolicyId.class).getDittoHeaders()));
     }
 
@@ -200,9 +197,9 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
     public void testRegisterTwoHandlersWithSameSelector() throws Exception {
         final CountDownLatch latch = new CountDownLatch(2);
 
-        client.twin().startConsumption();
-        client.twin().registerForThingChanges("test", change -> latch.countDown());
-        client.twin().registerForThingChanges("test2", change -> latch.countDown());
+        getManagement().startConsumption();
+        getManagement().registerForThingChanges("test", change -> latch.countDown());
+        getManagement().registerForThingChanges("test2", change -> latch.countDown());
 
         final Message<ThingEvent> thingDeleted = createThingDeletedMessage();
         messaging.receiveEvent(thingDeleted);
@@ -212,9 +209,9 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
 
     @Test(expected = DuplicateRegistrationIdException.class)
     public void testRegisterTwoHandlersWithSameRegistrationId() {
-        client.twin().registerForThingChanges("test", change -> {
+        getManagement().registerForThingChanges("test", change -> {
         });
-        client.twin().registerForThingChanges("test", change -> {
+        getManagement().registerForThingChanges("test", change -> {
         });
     }
 
@@ -224,15 +221,15 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
         final Semaphore sem = new Semaphore(0);
         final String registrationId = "test";
 
-        client.twin().startConsumption();
-        client.twin().registerForThingChanges(registrationId, change -> sem.release());
+        getManagement().startConsumption();
+        getManagement().registerForThingChanges(registrationId, change -> sem.release());
 
         final Message<ThingEvent> thingDeleted = createThingDeletedMessage();
         messaging.receiveEvent(thingDeleted);
         Assertions.assertThat(sem.tryAcquire(1, TIMEOUT, TIME_UNIT)).isTrue();
 
         // test
-        final boolean unregistered = client.twin().deregister(registrationId);
+        final boolean unregistered = getManagement().deregister(registrationId);
         Assertions.assertThat(unregistered).isTrue();
 
         messaging.receiveEvent(thingDeleted);
@@ -243,12 +240,12 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateThingWithMissingId() {
-        client.twin().create(JsonFactory.newObject());
+        getManagement().create(JsonFactory.newObject());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testUpdateThingWithMissingId() {
-        client.twin().update(JsonFactory.newObject());
+        getManagement().update(JsonFactory.newObject());
     }
 
     @Test
@@ -259,7 +256,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
                 .setId(thingIdWithoutFeatures)
                 .setPermissions(authorizationSubject, ThingsModelFactory.allPermissions())
                 .build();
-        assertEventualCompletion(client.twin().create(thing));
+        assertEventualCompletion(getManagement().create(thing));
         final CreateThing command = expectMsgClass(CreateThing.class);
         reply(CreateThingResponse.of(command.getThing(), command.getDittoHeaders()));
         assertThat((CharSequence) command.getThingEntityId()).isEqualTo(thingIdWithoutFeatures);
@@ -267,7 +264,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
 
     @Test
     public void testCreateThingWithInlinePolicy() {
-        assertEventualCompletion(client.twin().create(THING_WITH_INLINE_POLICY));
+        assertEventualCompletion(getManagement().create(THING_WITH_INLINE_POLICY));
         final CreateThing command = expectMsgClass(CreateThing.class);
         reply(CreateThingResponse.of(ThingsModelFactory.newThing(THING_WITH_INLINE_POLICY), command.getDittoHeaders()));
         assertThat(command.getInitialPolicy()).isNotEmpty();
@@ -275,7 +272,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
 
     @Test
     public void testCreateThingWithInitialJSONPolicy() {
-        client.twin().create(THING_ID, POLICY_JSON_OBJECT);
+        getManagement().create(THING_ID, POLICY_JSON_OBJECT);
         final CreateThing command = expectMsgClass(CreateThing.class);
         reply(CreateThingResponse.of(ThingsModelFactory.newThing(THING_WITH_INLINE_POLICY), command.getDittoHeaders()));
         Assertions.assertThat(command.getInitialPolicy()).isNotEmpty();
@@ -283,7 +280,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
 
     @Test
     public void testCreateThingWithInitialPolicy() {
-        client.twin().create(THING_ID, POLICY);
+        getManagement().create(THING_ID, POLICY);
         final CreateThing command = expectMsgClass(CreateThing.class);
         reply(CreateThingResponse.of(ThingsModelFactory.newThing(THING_WITH_INLINE_POLICY), command.getDittoHeaders()));
         Assertions.assertThat(command.getInitialPolicy()).isNotEmpty();
@@ -291,7 +288,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
 
     @Test
     public void testPutThingWithInlinePolicy() {
-        client.twin().put(THING_WITH_INLINE_POLICY);
+        getManagement().put(THING_WITH_INLINE_POLICY);
         final ModifyThing command = expectMsgClass(ModifyThing.class);
         reply(ModifyThingResponse.created(ThingsModelFactory.newThing(THING_WITH_INLINE_POLICY),
                 command.getDittoHeaders()));
@@ -300,7 +297,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
 
     @Test
     public void testPutThingWithInitialJSONPolicy() {
-        assertEventualCompletion(client.twin().put(THING, POLICY_JSON_OBJECT));
+        assertEventualCompletion(getManagement().put(THING, POLICY_JSON_OBJECT));
         final ModifyThing createThing = expectMsgClass(ModifyThing.class);
         reply(CreateThingResponse.of(Thing.newBuilder().setId(THING_ID).build(), createThing.getDittoHeaders()));
         assertThat((CharSequence) createThing.getThingEntityId()).isEqualTo(THING_ID);
@@ -309,7 +306,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
 
     @Test
     public void testPutThingWithInitialPolicy() {
-        client.twin().put(THING, POLICY);
+        getManagement().put(THING, POLICY);
         final ModifyThing command = expectMsgClass(ModifyThing.class);
         reply(ModifyThingResponse.created(THING, command.getDittoHeaders()));
         assertThat(command.getInitialPolicy()).contains(POLICY_JSON_OBJECT);
@@ -318,7 +315,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
     @Test
     public void testCreateThingWithOptionCopyPolicy() {
         final Option<PolicyId> copyPolicy = Options.Modify.copyPolicy(POLICY_ID);
-        assertEventualCompletion(client.twin().create(THING_ID_COPY_POLICY, copyPolicy));
+        assertEventualCompletion(getManagement().create(THING_ID_COPY_POLICY, copyPolicy));
         final CreateThing command = expectMsgClass(CreateThing.class);
         reply(CreateThingResponse.of(THING, command.getDittoHeaders()));
         assertThat(command.getPolicyIdOrPlaceholder()).contains(POLICY_ID.toString());
@@ -327,7 +324,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
     @Test
     public void testCreateThingWithOptionCopyPolicyFromThing() {
         final Option<ThingId> copyPolicy = Options.Modify.copyPolicyFromThing(THING_ID);
-        assertEventualCompletion(client.twin().create(THING_ID_COPY_POLICY, copyPolicy));
+        assertEventualCompletion(getManagement().create(THING_ID_COPY_POLICY, copyPolicy));
         final CreateThing command = expectMsgClass(CreateThing.class);
         reply(CreateThingResponse.of(THING, command.getDittoHeaders()));
         assertThat(command.getPolicyIdOrPlaceholder()).contains("{{ ref:things/" + THING_ID + "/policyId }}");
@@ -338,7 +335,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
         final Option<PolicyId> copyPolicy = Options.Modify.copyPolicy(POLICY_ID);
 
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> client.twin().create(THING_ID_COPY_POLICY, POLICY_JSON_OBJECT, copyPolicy));
+                .isThrownBy(() -> getManagement().create(THING_ID_COPY_POLICY, POLICY_JSON_OBJECT, copyPolicy));
     }
 
     @Test
@@ -347,13 +344,13 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
         final Option<PolicyId> copyPolicy = Options.Modify.copyPolicy(POLICY_ID);
 
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> client.twin().create(THING_ID_COPY_POLICY, copyPolicy, copyPolicyFromThing));
+                .isThrownBy(() -> getManagement().create(THING_ID_COPY_POLICY, copyPolicy, copyPolicyFromThing));
     }
 
     @Test
     public void testPutThingWithOptionCopyPolicy() {
         final Option<PolicyId> copyPolicy = Options.Modify.copyPolicy(POLICY_ID);
-        assertEventualCompletion(client.twin().put(THING, copyPolicy));
+        assertEventualCompletion(getManagement().put(THING, copyPolicy));
         final ModifyThing command = expectMsgClass(ModifyThing.class);
         reply(ModifyThingResponse.created(THING, command.getDittoHeaders()));
         assertThat(command.getPolicyIdOrPlaceholder()).contains(POLICY_ID.toString());
@@ -364,7 +361,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
         final Option<PolicyId> copyPolicy = Options.Modify.copyPolicy(POLICY_ID);
 
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> client.twin().put(THING, POLICY_JSON_OBJECT, copyPolicy));
+                .isThrownBy(() -> getManagement().put(THING, POLICY_JSON_OBJECT, copyPolicy));
     }
 
     @Test
@@ -373,15 +370,6 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
         final Option<PolicyId> copyPolicy = Options.Modify.copyPolicy(POLICY_ID);
 
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> client.twin().put(THING, copyPolicy, copyPolicyFromThing));
+                .isThrownBy(() -> getManagement().put(THING, copyPolicy, copyPolicyFromThing));
     }
-
-    @Test
-    public void testLiveCommand() {
-        assertEventualCompletion(client.live().forId(THING_ID).retrieve());
-        final RetrieveThing command = expectMsgClass(RetrieveThing.class);
-        reply(RetrieveThingResponse.of(THING_ID, THING, command.getDittoHeaders()));
-        assertThat(command.getDittoHeaders().getChannel()).contains(TopicPath.Channel.LIVE.getName());
-    }
-
 }

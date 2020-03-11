@@ -16,6 +16,7 @@ import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotEm
 import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
 
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,7 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
@@ -37,6 +40,8 @@ import org.eclipse.ditto.client.changes.internal.ImmutableChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeatureChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeaturesChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableThingChange;
+import org.eclipse.ditto.client.internal.bus.AdaptableBus;
+import org.eclipse.ditto.client.internal.bus.Classifiers;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
 import org.eclipse.ditto.client.management.CommonManagement;
@@ -51,13 +56,18 @@ import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.messages.Message;
+import org.eclipse.ditto.model.messages.MessageDirection;
+import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.policies.Policy;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Features;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
+import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
@@ -603,6 +613,103 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
                 });
     }
 
+    /**
+     * Request a subscription for a streaming type.
+     *
+     * @param previousSubscriptionId the previous subscription ID if any exists.
+     * @param streamingType the streaming type.
+     * @param protocolCommand the command to start the subscription.
+     * @param protocolCommandAck the expected acknowledgement.
+     * @param futureToCompleteOrFailAfterAck the future to complete or fail after receiving the expected acknowledgement
+     * or not.
+     * @return the subscription ID.
+     */
+    protected AdaptableBus.SubscriptionId subscribe(
+            @Nullable final AdaptableBus.SubscriptionId previousSubscriptionId,
+            final Classifiers.StreamingType streamingType,
+            final String protocolCommand,
+            final String protocolCommandAck,
+            final CompletableFuture<Void> futureToCompleteOrFailAfterAck,
+            final Function<Adaptable, Message<?>> adaptableToMessage) {
+
+        return subscribeAndPublishMessage(previousSubscriptionId, streamingType, protocolCommand, protocolCommandAck,
+                futureToCompleteOrFailAfterAck, adaptable -> bus -> {
+                    final Message<?> message = adaptableToMessage.apply(adaptable);
+                    bus.notify(message.getSubject(), message);
+                });
+    }
+
+    protected AdaptableBus.SubscriptionId subscribeAndPublishMessage(
+            @Nullable final AdaptableBus.SubscriptionId previousSubscriptionId,
+            final Classifiers.StreamingType streamingType,
+            final String protocolCommand,
+            final String protocolCommandAck,
+            final CompletableFuture<Void> futureToCompleteOrFailAfterAck,
+            final Function<Adaptable, NotifyMessage> adaptableToNotifier) {
+
+        final AdaptableBus adaptableBus = messagingProvider.getAdaptableBus();
+        if (previousSubscriptionId != null) {
+            // remove previous subscription without going through back-end because subscription will be replaced
+            adaptableBus.unsubscribe(previousSubscriptionId);
+        }
+        final AdaptableBus.SubscriptionId subscriptionId =
+                adaptableBus.subscribeForAdaptable(streamingType,
+                        adaptable -> adaptableToNotifier.apply(adaptable).accept(getBus()));
+        // TODO: configure timeout
+        adjoin(adaptableBus.subscribeOnceForString(protocolCommandAck, Duration.ofSeconds(60L)),
+                futureToCompleteOrFailAfterAck);
+        messagingProvider.emit(protocolCommand);
+        return subscriptionId;
+    }
+
+    /**
+     * Remove a subscription.
+     *
+     * @param subscriptionId the subscription ID.
+     * @param protocolCommand the command to stop the subscription.
+     * @param protocolCommandAck the expected acknowledgement.
+     * @param futureToCompleteOrFailAfterAck the future to complete or fail after receiving the expected acknowledgement
+     * or not.
+     */
+    protected void unsubscribe(
+            @Nullable final AdaptableBus.SubscriptionId subscriptionId,
+            final String protocolCommand,
+            final String protocolCommandAck,
+            final CompletableFuture<Void> futureToCompleteOrFailAfterAck) {
+
+        final AdaptableBus adaptableBus = messagingProvider.getAdaptableBus();
+        if (adaptableBus.unsubscribe(subscriptionId)) {
+            // TODO: configure timeout
+            adjoin(adaptableBus.subscribeOnceForString(protocolCommandAck, Duration.ofSeconds(60L)),
+                    futureToCompleteOrFailAfterAck);
+            messagingProvider.emit(protocolCommand);
+        } else {
+            futureToCompleteOrFailAfterAck.complete(null);
+        }
+    }
+
+    // TODO: test signal enrichment
+    protected static Message<?> asThingMessage(final Adaptable adaptable) {
+        final Signal<?> signal = PROTOCOL_ADAPTER.fromAdaptable(adaptable);
+        final ThingId thingId = ThingId.of(signal.getEntityId());
+        final MessageHeaders messageHeaders =
+                MessageHeaders.newBuilder(MessageDirection.FROM, thingId, signal.getType())
+                        .correlationId(signal.getDittoHeaders().getCorrelationId().orElse(null))
+                        .build();
+        return Message.newBuilder(messageHeaders)
+                .payload(signal)
+                .extra(adaptable.getPayload().getExtra().orElse(null))
+                .build();
+    }
+
+    private static void adjoin(final CompletionStage<?> stage, final CompletableFuture<Void> future) {
+        stage.thenAccept(ignored -> future.complete(null))
+                .exceptionally(error -> {
+                    future.completeExceptionally(error);
+                    return null;
+                });
+    }
+
     private static Optional<JsonObject> getInlinePolicyFromThingJson(final JsonObject jsonObject) {
         return jsonObject.getValue(CreateThing.JSON_INLINE_POLICY.getPointer())
                 .filter(JsonValue::isObject)
@@ -619,5 +726,11 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     private CompletableFuture<List<Thing>> sendRetrieveThingsMessage(final RetrieveThings command) {
         return askThingCommand(command, RetrieveThingsResponse.class, RetrieveThingsResponse::getThings)
                 .toCompletableFuture();
+    }
+
+    @FunctionalInterface
+    protected interface NotifyMessage {
+
+        void accept(final PointerBus pointerBus);
     }
 }

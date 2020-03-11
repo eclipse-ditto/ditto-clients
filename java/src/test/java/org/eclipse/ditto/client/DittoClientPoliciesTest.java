@@ -27,7 +27,7 @@ import java.util.function.Function;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
-import org.eclipse.ditto.client.messaging.mock.MockMessagingProvider;
+import org.eclipse.ditto.client.messaging.internal.MockMessagingProvider;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonMissingFieldException;

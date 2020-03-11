@@ -33,6 +33,7 @@ import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
@@ -172,7 +173,9 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
 
         final Message<ThingEvent> thingCreated =
                 MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders).payload(
-                        ThingCreated.of(thing1, 1, DittoHeaders.empty())).build();
+                        ThingCreated.of(thing1, 1,
+                                DittoHeaders.newBuilder().schemaVersion(JsonSchemaVersion.V_1).build()
+                        )).build();
 
         messaging.receiveEvent(thingCreated);
 
@@ -218,7 +221,9 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
 
         final Message<ThingEvent> thingCreated =
                 MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders).payload(
-                        ThingCreated.of(thing1, 1, DittoHeaders.empty())).build();
+                        ThingCreated.of(thing1, 1,
+                                DittoHeaders.newBuilder().schemaVersion(JsonSchemaVersion.V_1).build()
+                        )).build();
 
         // only create the Thing once:
         messaging.receiveEvent(thingCreated);

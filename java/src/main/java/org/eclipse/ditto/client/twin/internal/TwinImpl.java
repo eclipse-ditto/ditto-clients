@@ -12,17 +12,19 @@
  */
 package org.eclipse.ditto.client.twin.internal;
 
+import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import org.eclipse.ditto.client.internal.AdaptableBus;
-import org.eclipse.ditto.client.internal.Classifiers;
 import org.eclipse.ditto.client.internal.CommonManagementImpl;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
 import org.eclipse.ditto.client.internal.ResponseForwarder;
+import org.eclipse.ditto.client.internal.bus.AdaptableBus;
+import org.eclipse.ditto.client.internal.bus.Classifiers;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.twin.Twin;
@@ -41,8 +43,14 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
 
     /**
      * Handler name for consuming twin events.
+     * TODO: delete if unused
      */
     public static final String CONSUME_TWIN_EVENTS_HANDLER = "consume-twin-events";
+
+    // TODO: configure timeout.
+    private static final Duration TIMEOUT = Duration.ofSeconds(60L);
+
+    private final AtomicReference<AdaptableBus.SubscriptionId> twinEventSubscription = new AtomicReference<>();
 
     private TwinImpl(final MessagingProvider messagingProvider,
             final ResponseForwarder responseForwarder,
@@ -98,26 +106,37 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
 
     @Override
     protected CompletableFuture<Void> doStartConsumption(final Map<String, String> consumptionConfig) {
-        final CompletableFuture<Void> completableFutureEvents = new CompletableFuture<>();
-
-        // register message handler which handles twin events:
-        getMessagingProvider().registerMessageHandler(CONSUME_TWIN_EVENTS_HANDLER, consumptionConfig,
-                m -> getBus().notify(m.getSubject(), m), completableFutureEvents);
-
-        return completableFutureEvents;
+        // TODO: log START-SEND-EVENTS
+        // TODO: test broken pipe
+        final CompletableFuture<Void> ackFuture = new CompletableFuture<>();
+        twinEventSubscription.getAndUpdate(previousSubscriptionId -> subscribe(
+                previousSubscriptionId,
+                Classifiers.StreamingType.TWIN_EVENT,
+                buildProtocolCommand(Classifiers.StreamingType.TWIN_EVENT.start(), consumptionConfig),
+                Classifiers.StreamingType.TWIN_EVENT.startAck(),
+                ackFuture,
+                CommonManagementImpl::asThingMessage
+        ));
+        return ackFuture;
     }
 
     @Override
     public CompletableFuture<Void> suspendConsumption() {
-        final CompletableFuture<Void> completableFutureEvents = new CompletableFuture<>();
-        getMessagingProvider().deregisterMessageHandler(CONSUME_TWIN_EVENTS_HANDLER, completableFutureEvents);
-        return completableFutureEvents;
+        // TODO: log STOP-SEND-EVENTS
+        final CompletableFuture<Void> ackFuture = new CompletableFuture<>();
+        twinEventSubscription.getAndUpdate(subscriptionId -> {
+            unsubscribe(subscriptionId, Classifiers.StreamingType.TWIN_EVENT.stop(),
+                    Classifiers.StreamingType.TWIN_EVENT.stopAck(), ackFuture);
+            return null;
+        });
+        return ackFuture;
     }
 
     private static void addTwinClassifiers(final AdaptableBus adaptableBus) {
         // TODO: ensure classifiers are not duplicate
-        // TODO: move common classifiers somewhere else.
-        adaptableBus.addAdaptableClassifier(Classifiers.correlationId());
+        // TODO: move streaming type classifier to BusFactory.
+        adaptableBus.addAdaptableClassifier(Classifiers.correlationId())
+                .addAdaptableClassifier(Classifiers.streamingType());
     }
 
 }

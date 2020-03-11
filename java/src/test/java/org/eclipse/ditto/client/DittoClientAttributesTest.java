@@ -20,12 +20,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Assertions;
-import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
+import org.eclipse.ditto.client.internal.AbstractDittoClientThingsTest;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
@@ -50,7 +49,7 @@ import org.junit.Test;
 /**
  * Test attribute-related operations of the {@link DittoClient}.
  */
-public final class DittoClientAttributesTest extends AbstractDittoClientTest {
+public final class DittoClientAttributesTest extends AbstractDittoClientThingsTest {
 
     private static final JsonPointer ATTRIBUTE_KEY_NEW = JsonFactory.newPointer("new");
     private static final JsonPointer ATTRIBUTE_KEY_REALLY_NEW = JsonFactory.newPointer("reallyNew");
@@ -60,7 +59,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     @Test
     public void testAddStringAttributeWithExistsOptionFalse() {
         assertEventualCompletion(
-                client.twin()
+                getManagement()
                         .forId(THING_ID)
                         .putAttribute(ATTRIBUTE_KEY_NEW, ATTRIBUTE_VALUE, Options.Modify.exists(false))
         );
@@ -73,7 +72,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     @Test
     public void testAddStringAttributeWithExistsOptionTrue() {
         assertEventualCompletion(
-                client.twin()
+                getManagement()
                         .forId(THING_ID)
                         .putAttribute(ATTRIBUTE_KEY_NEW, ATTRIBUTE_VALUE, Options.Modify.exists(true))
         );
@@ -85,7 +84,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     @Test
     public void testAddBooleanAttribute() {
         assertEventualCompletion(
-                client.twin()
+                getManagement()
                         .forId(THING_ID)
                         .putAttribute(ATTRIBUTE_KEY_NEW, true)
         );
@@ -97,7 +96,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     @Test
     public void testAddObjectAttribute() {
         assertEventualCompletion(
-                client.twin()
+                getManagement()
                         .forId(THING_ID)
                         .putAttribute(ATTRIBUTE_KEY_NEW, JsonFactory.newObject("{\"id\": 42, \"name\": \"someName\"}"))
         );
@@ -107,7 +106,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
 
     @Test
     public void testAddAttributeFailureDueToThingErrorResponse() throws Exception {
-        final CompletableFuture<Void> resultFuture = client.twin()
+        final CompletableFuture<Void> resultFuture = getManagement()
                 .forId(THING_ID)
                 .putAttribute(ATTRIBUTE_KEY_NEW, true);
         final Signal<?> command = expectMsgClass(ModifyAttribute.class);
@@ -120,7 +119,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     @Test
     public void testDeleteAttribute() {
         assertEventualCompletion(
-                client.twin()
+                getManagement()
                         .forId(THING_ID)
                         .deleteAttribute(ATTRIBUTE_KEY_OLD)
         );
@@ -131,7 +130,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     @Test
     public void testDeleteAttributes() {
         assertEventualCompletion(
-                client.twin()
+                getManagement()
                         .forId(THING_ID)
                         .deleteAttributes()
         );
@@ -141,7 +140,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
 
     @Test
     public void testDeleteAttributesFailureDueToUnexpectedResponse() throws Exception {
-        final CompletableFuture<Void> resultFuture = client.twin()
+        final CompletableFuture<Void> resultFuture = getManagement()
                 .forId(THING_ID)
                 .deleteAttributes();
         final Signal<?> command = expectMsgClass(DeleteAttributes.class);
@@ -154,8 +153,8 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     public void testReceiveAttributeModifiedEvent() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        client.twin().startConsumption();
-        client.twin().registerForAttributeChanges("test", ATTRIBUTE_KEY_NEW, attributeChange -> {
+        getManagement().startConsumption();
+        getManagement().registerForAttributeChanges("test", ATTRIBUTE_KEY_NEW, attributeChange -> {
             assertThat(attributeChange)
                     .hasThingId(THING_ID)
                     .hasPath(ATTRIBUTE_KEY_NEW)
@@ -171,7 +170,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
 
         final Message<ThingEvent> attributeModified = MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders)
                 .payload(AttributeModified.of(THING_ID, ATTRIBUTE_KEY_NEW, JsonFactory.newValue("value"), 1,
-                        DittoHeaders.empty()))
+                        headersWithChannel()))
                 .build();
 
         messaging.receiveEvent(attributeModified);
@@ -183,8 +182,8 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     public void testReceiveAttributeModifiedEventWithActionAdded() throws Exception {
         final CountDownLatch latch = new CountDownLatch(1);
 
-        client.twin().startConsumption();
-        client.twin().registerForAttributeChanges("test", ATTRIBUTE_KEY_REALLY_NEW, attributeChange -> {
+        getManagement().startConsumption();
+        getManagement().registerForAttributeChanges("test", ATTRIBUTE_KEY_REALLY_NEW, attributeChange -> {
             assertThat(attributeChange)
                     .hasThingId(THING_ID)
                     .hasPath(ATTRIBUTE_KEY_REALLY_NEW)
@@ -200,7 +199,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
 
         final Message<ThingEvent> attributeCreated = MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders)
                 .payload(AttributeCreated.of(THING_ID, ATTRIBUTE_KEY_REALLY_NEW, JsonFactory.newValue("value"), 1,
-                        DittoHeaders.empty()))
+                        headersWithChannel()))
                 .build();
 
         messaging.receiveEvent(attributeCreated);
@@ -210,14 +209,14 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testDeleteAttribute_attributesRootPath() {
-        client.twin()
+        getManagement()
                 .forId(THING_ID)
                 .deleteAttribute(JsonFactory.emptyPointer());
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testDeleteAttribute_attributesEmptyPath() {
-        client.twin()
+        getManagement()
                 .forId(THING_ID)
                 .deleteAttribute(JsonFactory.emptyPointer());
     }
@@ -225,7 +224,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
     @Test
     public void testModifyAttributes_null() {
         assertEventualCompletion(
-                client.twin()
+                getManagement()
                         .forId(THING_ID)
                         .setAttributes(JsonFactory.nullObject())
         );
@@ -236,7 +235,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testChangeAttributeWithEmptyPointerThrowsException() {
-        client.twin()
+        getManagement()
                 .forId(THING_ID)
                 .putAttribute(JsonFactory.emptyPointer(), "it should fail");
     }

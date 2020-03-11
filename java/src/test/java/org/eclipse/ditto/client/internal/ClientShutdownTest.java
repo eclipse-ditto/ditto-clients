@@ -23,7 +23,7 @@ import java.util.stream.Stream;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.DittoClients;
-import org.eclipse.ditto.client.messaging.mock.MockMessagingProvider;
+import org.eclipse.ditto.client.messaging.internal.MockMessagingProvider;
 import org.junit.Test;
 
 /**

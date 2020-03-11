@@ -19,7 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Assertions;
-import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
+import org.eclipse.ditto.client.internal.AbstractDittoClientThingsTest;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonObject;
@@ -55,7 +55,7 @@ import org.junit.Test;
 /**
  * Test feature-related operations of the {@link DittoClient}.
  */
-public final class DittoClientFeaturesTest extends AbstractDittoClientTest {
+public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest {
 
     private static final String FEATURE_ID = "someFeature";
     private static final Feature FEATURE = ThingsModelFactory.newFeatureBuilder()
@@ -68,7 +68,7 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientTest {
     @Test
     public void testSetFeatureWithExistsOptionFalse() {
         assertEventualCompletion(
-                client.twin().forId(THING_ID).putFeature(FEATURE, Options.Modify.exists(false))
+                getManagement().forId(THING_ID).putFeature(FEATURE, Options.Modify.exists(false))
         );
         final ModifyFeature command = expectMsgClass(ModifyFeature.class);
         reply(ModifyFeatureResponse.created(THING_ID, FEATURE, command.getDittoHeaders()));
@@ -79,7 +79,7 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientTest {
     @Test
     public void testSetFeatureWithExistsOptionTrue() {
         assertEventualCompletion(
-                client.twin().forId(THING_ID).putFeature(FEATURE, Options.Modify.exists(true))
+                getManagement().forId(THING_ID).putFeature(FEATURE, Options.Modify.exists(true))
         );
         final ModifyFeature command = expectMsgClass(ModifyFeature.class);
         reply(ModifyFeatureResponse.modified(THING_ID, FEATURE_ID, command.getDittoHeaders()));
@@ -89,13 +89,13 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientTest {
 
     @Test
     public void testDeleteFeature() {
-        assertEventualCompletion(client.twin().forId(THING_ID).deleteFeature(FEATURE_ID));
+        assertEventualCompletion(getManagement().forId(THING_ID).deleteFeature(FEATURE_ID));
         reply(DeleteFeatureResponse.of(THING_ID, FEATURE_ID, expectMsgClass(DeleteFeature.class).getDittoHeaders()));
     }
 
     @Test
     public void testDeleteFeatures() {
-        assertEventualCompletion(client.twin().forId(THING_ID).deleteFeatures());
+        assertEventualCompletion(getManagement().forId(THING_ID).deleteFeatures());
         final Signal<?> command = expectMsgClass(DeleteFeatures.class);
         reply(DeleteFeaturesResponse.of(THING_ID, command.getDittoHeaders()));
     }
@@ -103,7 +103,7 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientTest {
     @Test
     public void testRetrieveFeature() throws Exception {
         final CompletableFuture<Feature> featureFuture =
-                client.twin().forId(THING_ID).forFeature(FEATURE_ID).retrieve();
+                getManagement().forId(THING_ID).forFeature(FEATURE_ID).retrieve();
         reply(RetrieveFeatureResponse.of(THING_ID, FEATURE, expectMsgClass(RetrieveFeature.class).getDittoHeaders()));
         final Feature retrievedFeature = featureFuture.get(1L, TimeUnit.SECONDS);
         assertThat(retrievedFeature).isEqualTo(FEATURE);
@@ -111,7 +111,7 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientTest {
 
     @Test
     public void testSetFeatures() {
-        assertEventualCompletion(client.twin().forId(THING_ID).setFeatures(ThingsModelFactory.newFeatures(FEATURE)));
+        assertEventualCompletion(getManagement().forId(THING_ID).setFeatures(ThingsModelFactory.newFeatures(FEATURE)));
         reply(ModifyFeaturesResponse.modified(THING_ID, expectMsgClass(ModifyFeatures.class).getDittoHeaders()));
     }
 
@@ -119,7 +119,7 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientTest {
     public void setFeatureDefinition() {
         final FeatureDefinition definition = FeatureDefinition.fromIdentifier("org.eclipse.ditto:test:0.1.0");
         assertEventualCompletion(
-                client.twin()
+                getManagement()
                         .forId(THING_ID)
                         .forFeature(FEATURE_ID)
                         .setDefinition(definition)
@@ -132,7 +132,7 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientTest {
     @Test
     public void deleteFeatureDefinition() {
         assertEventualCompletion(
-                client.twin()
+                getManagement()
                         .forId(THING_ID)
                         .forFeature(FEATURE_ID)
                         .deleteDefinition()
@@ -146,7 +146,7 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientTest {
         final JsonPointer path = JsonFactory.newPointer("density");
         final int value = 42;
         assertEventualCompletion(
-                client.twin().forId(THING_ID).forFeature(FEATURE_ID).putProperty(path, value)
+                getManagement().forId(THING_ID).forFeature(FEATURE_ID).putProperty(path, value)
         );
         reply(ModifyFeaturePropertyResponse.modified(THING_ID, FEATURE_ID, path,
                 expectMsgClass(ModifyFeatureProperty.class).getDittoHeaders()));
@@ -156,7 +156,7 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientTest {
     public void testDeleteFeatureProperty() {
         final JsonPointer path = JsonFactory.newPointer("density");
         assertEventualCompletion(
-                client.twin().forId(THING_ID).forFeature(FEATURE_ID).deleteProperty(path)
+                getManagement().forId(THING_ID).forFeature(FEATURE_ID).deleteProperty(path)
         );
         reply(DeleteFeaturePropertyResponse.of(THING_ID, FEATURE_ID, path,
                 expectMsgClass(DeleteFeatureProperty.class).getDittoHeaders()));
@@ -165,14 +165,14 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientTest {
     @Test
     public void testSetFeatureProperties() {
         final JsonObject properties = JsonFactory.newObjectBuilder().set("density", 42).build();
-        assertEventualCompletion(client.twin().forId(THING_ID).forFeature(FEATURE_ID).setProperties(properties));
+        assertEventualCompletion(getManagement().forId(THING_ID).forFeature(FEATURE_ID).setProperties(properties));
         reply(ModifyFeaturePropertiesResponse.modified(THING_ID, FEATURE_ID,
                 expectMsgClass(ModifyFeatureProperties.class).getDittoHeaders()));
     }
 
     @Test
     public void testDeleteFeatureProperties() {
-        assertEventualCompletion(client.twin().forId(THING_ID).forFeature(FEATURE_ID).deleteProperties());
+        assertEventualCompletion(getManagement().forId(THING_ID).forFeature(FEATURE_ID).deleteProperties());
         reply(DeleteFeaturePropertiesResponse.of(THING_ID, FEATURE_ID,
                 expectMsgClass(DeleteFeatureProperties.class).getDittoHeaders()));
     }

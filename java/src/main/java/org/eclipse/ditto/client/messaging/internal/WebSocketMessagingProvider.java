@@ -46,9 +46,9 @@ import javax.annotation.Nullable;
 
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
-import org.eclipse.ditto.client.internal.AdaptableBus;
 import org.eclipse.ditto.client.internal.DefaultThreadFactory;
 import org.eclipse.ditto.client.internal.VersionReader;
+import org.eclipse.ditto.client.internal.bus.AdaptableBus;
 import org.eclipse.ditto.client.live.internal.LiveImpl;
 import org.eclipse.ditto.client.messaging.AuthenticationException;
 import org.eclipse.ditto.client.messaging.AuthenticationProvider;
@@ -123,6 +123,9 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     private static final int RECONNECTION_TIMEOUT_SECONDS = 5;
 
+    // TODO: remove protocol-specific code
+    private static final DittoProtocolAdapter PROTOCOL_ADAPTER = DittoProtocolAdapter.of(HeaderTranslator.empty());
+
     private static final String PROTOCOL_CMD_START_SEND_EVENTS = "START-SEND-EVENTS";
     private static final String PROTOCOL_CMD_STOP_SEND_EVENTS = "STOP-SEND-EVENTS";
 
@@ -157,7 +160,6 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     private final Map<String, CompletableFuture<Void>> subscriptionsAcks;
     private final Map<String, Consumer<Message<?>>> subscriptions;
     private final ScheduledExecutorService reconnectExecutor;
-    private final DittoProtocolAdapter protocolAdapter;
     private final AtomicBoolean reconnecting = new AtomicBoolean(false);
     private final AtomicBoolean initiallyConnected = new AtomicBoolean(false);
     private final Map<String, MessageResponseConsumer<?>> messageCommandResponseConsumers;
@@ -166,6 +168,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     private Consumer<CommandResponse<?>> commandResponseConsumer;
     private WebSocket webSocket;
+
+    // TODO: replace by concurrent hash map of messages to send on reconnect indexed by type
     private boolean sendMeTwinEvents = false;
     private boolean sendMeLiveMessages = false;
     private boolean sendMeLiveCommands = false;
@@ -193,13 +197,10 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         subscriptions = new ConcurrentHashMap<>();
         reconnectExecutor = messagingConfiguration.isReconnectEnabled() ? createScheduledThreadPoolExecutor() : null;
 
-        // by using an empty HeaderTranslator, make sure that all incoming and outgoing headers are just passed through
-        protocolAdapter = DittoProtocolAdapter.of(HeaderTranslator.empty());
         // limit the max. outstanding MessageResponseConsumers to not produce a memory leak if messages are never answered
         messageCommandResponseConsumers = new LimitedHashMap<>(MAX_OUTSTANDING_MESSAGE_RESPONSES);
         registrationConfigs = new HashMap<>();
         customAdaptableResponseFutures = new ConcurrentHashMap<>();
-        // TODO: add expire-after-create for caches of request-response semantic
     }
 
     private static ScheduledThreadPoolExecutor createScheduledThreadPoolExecutor() {
@@ -369,60 +370,44 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     @Override
     public void send(final Message<?> message, final TopicPath.Channel channel) {
-        final DittoHeadersBuilder headersBuilder = DittoHeaders.newBuilder();
-        final Optional<String> optionalCorrelationId = message.getCorrelationId();
-        optionalCorrelationId.ifPresent(headersBuilder::correlationId);
-        final DittoHeaders dittoHeaders = headersBuilder.build();
-
-        final ThingId thingId = message.getThingEntityId();
-        final Optional<HttpStatusCode> statusCodeOptional = message.getStatusCode();
-        final Optional<String> featureIdOptional = message.getFeatureId();
-        final Adaptable adaptable;
-        if (statusCodeOptional.isPresent()) {
-            // this is treated as a response message
-            final HttpStatusCode statusCode = statusCodeOptional.get();
-            final MessageCommandResponse<?, ?> messageCommandResponse = featureIdOptional.isPresent()
-                    ? SendFeatureMessageResponse.of(thingId, featureIdOptional.get(), message, statusCode, dittoHeaders)
-                    : SendThingMessageResponse.of(thingId, message, statusCode, dittoHeaders);
-            adaptable = tryToConvertToAdaptable(messageCommandResponse);
-        } else {
-            final MessageCommand<?, ?> messageCommand = featureIdOptional.isPresent()
-                    ? SendFeatureMessage.of(thingId, featureIdOptional.get(), message, dittoHeaders)
-                    : SendThingMessage.of(thingId, message, dittoHeaders);
-            adaptable = tryToConvertToAdaptable(messageCommand);
-
-            // TODO: remove message command response consumers
-            final Optional<MessageResponseConsumer<?>> optionalResponseConsumer = message.getResponseConsumer();
-            if (optionalCorrelationId.isPresent() && optionalResponseConsumer.isPresent()) {
-                messageCommandResponseConsumers.put(optionalCorrelationId.get(), optionalResponseConsumer.get());
-            }
-        }
+        final Adaptable adaptable = constructAdaptableFromMessage(message, channel);
         doSendAdaptable(adaptable);
     }
 
+    private static <T> void logUnknownType(final T type, final Throwable throwable) {
+        final String typeName = type.getClass().getSimpleName();
+        LOGGER.error("Client: Unknown {} type: <{}> - NOT sending via Ditto WebSocket!", typeName,
+                throwable.getMessage());
+    }
+
     @Nullable
-    private Adaptable tryToConvertToAdaptable(final MessageCommandResponse<?, ?> messageCommandResponse) {
+    private static Adaptable tryToConvertToAdaptable(final MessageCommandResponse<?, ?> messageCommandResponse) {
         try {
-            return protocolAdapter.toAdaptable(messageCommandResponse);
+            return PROTOCOL_ADAPTER.toAdaptable(messageCommandResponse);
         } catch (final UnknownCommandException e) {
             logUnknownType(messageCommandResponse, e);
             return null;
         }
     }
 
-    private <T> void logUnknownType(final T type, final Throwable throwable) {
-        final String typeName = type.getClass().getSimpleName();
-        LOGGER.error("Client <{}>: Unknown {} type: <{}> - NOT sending via Ditto WebSocket!",
-                sessionId,
-                typeName, throwable.getMessage());
+    @Nullable
+    private static Adaptable tryToConvertToAdaptable(final MessageCommand<?, ?> messageCommand) {
+        try {
+            return PROTOCOL_ADAPTER.toAdaptable(messageCommand);
+        } catch (final UnknownCommandException e) {
+            logUnknownType(messageCommand, e);
+            return null;
+        }
     }
 
     @Nullable
-    private Adaptable tryToConvertToAdaptable(final MessageCommand<?, ?> messageCommand) {
+    private static Adaptable tryToConvertToAdaptable(final Command<?> command, final TopicPath.Channel channel) {
+
         try {
-            return protocolAdapter.toAdaptable(messageCommand);
+            final Command<?> adjustedCommand = command.setDittoHeaders(adjustHeadersForLive(command));
+            return PROTOCOL_ADAPTER.toAdaptable(adjustedCommand, channel);
         } catch (final UnknownCommandException e) {
-            logUnknownType(messageCommand, e);
+            logUnknownType(command, e);
             return null;
         }
     }
@@ -430,18 +415,6 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     @Override
     public void sendCommand(final Command<?> command, final TopicPath.Channel channel) {
         doSendAdaptable(tryToConvertToAdaptable(command, channel));
-    }
-
-    @Nullable
-    private Adaptable tryToConvertToAdaptable(final Command<?> command, final TopicPath.Channel channel) {
-
-        try {
-            final Command<?> adjustedCommand = command.setDittoHeaders(adjustHeadersForLive(command));
-            return protocolAdapter.toAdaptable(adjustedCommand, channel);
-        } catch (final UnknownCommandException e) {
-            logUnknownType(command, e);
-            return null;
-        }
     }
 
     @Override
@@ -456,7 +429,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         try {
             final CommandResponse<?> adjustedResponse = commandResponse.setDittoHeaders(
                     adjustHeadersForLive(commandResponse));
-            return protocolAdapter.toAdaptable(adjustedResponse, channel);
+            return PROTOCOL_ADAPTER.toAdaptable(adjustedResponse, channel);
         } catch (final UnknownCommandException e) {
             logUnknownType(commandResponse, e);
             return null;
@@ -483,14 +456,14 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
         try {
             final Event<?> adjustedEvent = event.setDittoHeaders(adjustHeadersForLive(event));
-            return protocolAdapter.toAdaptable(adjustedEvent, channel);
+            return PROTOCOL_ADAPTER.toAdaptable(adjustedEvent, channel);
         } catch (final UnknownCommandException e) {
             logUnknownType(event, e);
             return null;
         }
     }
 
-    private DittoHeaders adjustHeadersForLive(final WithDittoHeaders<?> withDittoHeaders) {
+    private static DittoHeaders adjustHeadersForLive(final WithDittoHeaders<?> withDittoHeaders) {
 
         return withDittoHeaders.getDittoHeaders().toBuilder()
                 .removeHeader(DittoHeaderDefinition.READ_SUBJECTS.getKey())
@@ -542,6 +515,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         commandResponseConsumer = commandResponseHandler;
     }
 
+    // TODO: replace by "registerStartUpMessage" for messages to re-send on re-connect
     @Override
     public boolean registerMessageHandler(final String name, final Map<String, String> registrationConfig,
             final Consumer<Message<?>> handler, final CompletableFuture<Void> receiptFuture) {
@@ -806,6 +780,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     private void handleIncomingMessage(final String message) {
         adaptableBus.publish(message);
+        // TODO: remove the rest except the logging part
         switch (message) {
             case PROTOCOL_CMD_START_SEND_EVENTS + PROTOCOL_CMD_ACK_SUFFIX:
                 ackSubscription(PROTOCOL_CMD_START_SEND_EVENTS);
@@ -923,7 +898,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     private Signal<?> adaptToSignal(final Adaptable adaptable) {
-        return protocolAdapter.fromAdaptable(adaptable);
+        return PROTOCOL_ADAPTER.fromAdaptable(adaptable);
     }
 
     @Nullable
@@ -1138,6 +1113,41 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     private void handleLiveCommandResponse(final CommandResponse<?> commandResponse) {
         commandResponseConsumer.accept(commandResponse);
+    }
+
+    @Nullable
+    static Adaptable constructAdaptableFromMessage(final Message<?> message, final TopicPath.Channel channel) {
+        final DittoHeadersBuilder headersBuilder = DittoHeaders.newBuilder().channel(channel.getName());
+        final Optional<String> optionalCorrelationId = message.getCorrelationId();
+        optionalCorrelationId.ifPresent(headersBuilder::correlationId);
+        final DittoHeaders dittoHeaders = headersBuilder.build();
+
+        final ThingId thingId = message.getThingEntityId();
+        final Optional<HttpStatusCode> statusCodeOptional = message.getStatusCode();
+        final Optional<String> featureIdOptional = message.getFeatureId();
+        final Adaptable adaptable;
+        if (statusCodeOptional.isPresent()) {
+            // this is treated as a response message
+            final HttpStatusCode statusCode = statusCodeOptional.get();
+            final MessageCommandResponse<?, ?> messageCommandResponse = featureIdOptional.isPresent()
+                    ? SendFeatureMessageResponse.of(thingId, featureIdOptional.get(), message, statusCode, dittoHeaders)
+                    : SendThingMessageResponse.of(thingId, message, statusCode, dittoHeaders);
+            adaptable = tryToConvertToAdaptable(messageCommandResponse);
+        } else {
+            final MessageCommand<?, ?> messageCommand = featureIdOptional.isPresent()
+                    ? SendFeatureMessage.of(thingId, featureIdOptional.get(), message, dittoHeaders)
+                    : SendThingMessage.of(thingId, message, dittoHeaders);
+            adaptable = tryToConvertToAdaptable(messageCommand);
+
+            // TODO: remove message command response consumers
+            /*
+            final Optional<MessageResponseConsumer<?>> optionalResponseConsumer = message.getResponseConsumer();
+            if (optionalCorrelationId.isPresent() && optionalResponseConsumer.isPresent()) {
+                messageCommandResponseConsumers.put(optionalCorrelationId.get(), optionalResponseConsumer.get());
+            }
+             */
+        }
+        return adaptable;
     }
 
     /**

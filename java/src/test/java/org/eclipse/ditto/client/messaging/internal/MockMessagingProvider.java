@@ -10,10 +10,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.messaging.mock;
+package org.eclipse.ditto.client.messaging.internal;
 
 import java.time.OffsetDateTime;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
@@ -31,7 +32,7 @@ import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.BasicAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.configuration.WebSocketMessagingConfiguration;
-import org.eclipse.ditto.client.internal.AdaptableBus;
+import org.eclipse.ditto.client.internal.bus.AdaptableBus;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.twin.internal.TwinImpl;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
@@ -42,7 +43,12 @@ import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessageHeadersBuilder;
 import org.eclipse.ditto.protocoladapter.Adaptable;
+import org.eclipse.ditto.protocoladapter.DittoProtocolAdapter;
+import org.eclipse.ditto.protocoladapter.HeaderTranslator;
+import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
+import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.base.WithFeatureId;
 import org.eclipse.ditto.signals.commands.base.Command;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
@@ -60,6 +66,7 @@ import org.slf4j.LoggerFactory;
 @AllParametersAndReturnValuesAreNonnullByDefault
 public class MockMessagingProvider implements MessagingProvider {
 
+    private static final ProtocolAdapter PROTOCOL_ADAPTER = DittoProtocolAdapter.of(HeaderTranslator.empty());
     private static final Logger LOGGER = LoggerFactory.getLogger(MockMessagingProvider.class);
 
     private final AuthenticationConfiguration authenticationConfiguration =
@@ -125,6 +132,8 @@ public class MockMessagingProvider implements MessagingProvider {
 
     @Override
     public void send(final Message<?> message, final TopicPath.Channel channel) {
+        emitAdaptable(WebSocketMessagingProvider.constructAdaptableFromMessage(message, channel));
+        // TODO: remove unused
         Objects.requireNonNull(out);
         out.accept(message);
     }
@@ -182,7 +191,7 @@ public class MockMessagingProvider implements MessagingProvider {
 
     @Override
     public void emitAdaptable(final Adaptable message) {
-        throw new UnsupportedOperationException("MockMessagingProvider is not able to emitAdaptable()");
+        emit(ProtocolFactory.wrapAsJsonifiableAdaptable(message).toJsonString());
     }
 
     @Override
@@ -212,9 +221,14 @@ public class MockMessagingProvider implements MessagingProvider {
         this.responseConsumer.accept(response);
     }
 
+    // TODO: remove if unused.
     public void receiveEvent(final Message<ThingEvent> message) {
         LOGGER.debug("Manually receiving Event: {}", message);
-        eventQueue.add(message);
+        adaptableBus.publish(
+                ProtocolFactory.wrapAsJsonifiableAdaptable(
+                        PROTOCOL_ADAPTER.toAdaptable((Signal<?>) message.getPayload()
+                                .orElseThrow(NoSuchElementException::new))
+                ).toJsonString());
     }
 
     @Override

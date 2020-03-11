@@ -15,11 +15,12 @@ package org.eclipse.ditto.client.live.internal;
 import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
 
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.util.Arrays;
-import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -30,6 +31,8 @@ import org.eclipse.ditto.client.internal.CommonManagementImpl;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
 import org.eclipse.ditto.client.internal.ResponseForwarder;
+import org.eclipse.ditto.client.internal.bus.AdaptableBus;
+import org.eclipse.ditto.client.internal.bus.Classifiers;
 import org.eclipse.ditto.client.internal.bus.JsonPointerSelector;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
@@ -45,15 +48,17 @@ import org.eclipse.ditto.client.live.messages.PendingMessage;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.client.live.messages.internal.ImmutableMessageSender;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
-import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.KnownMessageSubjects;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.things.ThingId;
-import org.eclipse.ditto.model.things.WithThingId;
+import org.eclipse.ditto.protocoladapter.Adaptable;
+import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.base.WithFeatureId;
+import org.eclipse.ditto.signals.commands.live.LiveCommandFactory;
 import org.eclipse.ditto.signals.commands.live.base.LiveCommand;
 import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswer;
 import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswerBuilder;
@@ -80,6 +85,9 @@ import org.eclipse.ditto.signals.commands.live.query.RetrieveFeaturePropertyLive
 import org.eclipse.ditto.signals.commands.live.query.RetrieveFeaturesLiveCommand;
 import org.eclipse.ditto.signals.commands.live.query.RetrieveThingLiveCommand;
 import org.eclipse.ditto.signals.commands.live.query.RetrieveThingsLiveCommand;
+import org.eclipse.ditto.signals.commands.messages.MessageCommand;
+import org.eclipse.ditto.signals.commands.messages.MessageCommandResponse;
+import org.eclipse.ditto.signals.commands.things.ThingCommand;
 import org.eclipse.ditto.signals.events.base.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,13 +122,13 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
     private final MessageSerializerRegistry messageSerializerRegistry;
     private final Map<Class<? extends LiveCommand>, Function<? extends LiveCommand, LiveCommandAnswerBuilder.BuildStep>>
             liveCommandsFunctions;
+    private final Map<Classifiers.StreamingType, AdaptableBus.SubscriptionId> subscriptionIds;
 
     private LiveImpl(final MessagingProvider messagingProvider,
             final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final PointerBus bus,
             final JsonSchemaVersion schemaVersion,
-            final String sessionId,
             final MessageSerializerRegistry messageSerializerRegistry) {
         super(TopicPath.Channel.LIVE,
                 messagingProvider,
@@ -131,7 +139,8 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
 
         this.schemaVersion = schemaVersion;
         this.messageSerializerRegistry = messageSerializerRegistry;
-        liveCommandsFunctions = new IdentityHashMap<>();
+        liveCommandsFunctions = new ConcurrentHashMap<>();
+        subscriptionIds = new ConcurrentHashMap<>();
     }
 
     /**
@@ -142,7 +151,6 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
      * @param outgoingMessageFactory a factory for messages.
      * @param bus the bus for message routing.
      * @param schemaVersion the json schema version of the messaging protocol.
-     * @param sessionId the session identifier of this client.
      * @param messageSerializerRegistry the registry to serialize and de-serialize messages.
      * @return the new {@code LiveImpl} instance.
      */
@@ -151,10 +159,9 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
             final OutgoingMessageFactory outgoingMessageFactory,
             final PointerBus bus,
             final JsonSchemaVersion schemaVersion,
-            final String sessionId,
             final MessageSerializerRegistry messageSerializerRegistry) {
         return new LiveImpl(messagingProvider, responseForwarder, outgoingMessageFactory, bus, schemaVersion,
-                sessionId, messageSerializerRegistry);
+                messageSerializerRegistry);
     }
 
     @Override
@@ -179,87 +186,64 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                         completableFutureLiveCommands);
 
         // register message handler which handles live events:
-        getMessagingProvider().registerMessageHandler(CONSUME_LIVE_EVENTS_HANDLER, consumptionConfig,
-                m -> getBus().notify(m.getSubject(), m), completableFutureEvents);
+        subscriptionIds.compute(Classifiers.StreamingType.LIVE_EVENT, (streamingType, previousSubscriptionId) ->
+                subscribe(previousSubscriptionId,
+                        streamingType,
+                        buildProtocolCommand(Classifiers.StreamingType.LIVE_EVENT.start(), consumptionConfig),
+                        Classifiers.StreamingType.LIVE_EVENT.startAck(),
+                        completableFutureEvents,
+                        CommonManagementImpl::asThingMessage)
+        );
 
         // register message handler which handles incoming messages:
-        getMessagingProvider().registerMessageHandler(CONSUME_LIVE_MESSAGES_HANDLER, consumptionConfig,
-                m -> {
-                    final String messagePath = calculateMessagePath(m);
-                    if (messagePath != null) {
-                        getBus().notify(JsonFactory.newPointer(messagePath), m);
-                    }
-                },
-                completableFutureMessages);
+        subscriptionIds.compute(Classifiers.StreamingType.LIVE_MESSAGE, (streamingType, previousSubscriptionId) ->
+                subscribeAndPublishMessage(previousSubscriptionId,
+                        streamingType,
+                        buildProtocolCommand(Classifiers.StreamingType.LIVE_MESSAGE.start(), consumptionConfig),
+                        Classifiers.StreamingType.LIVE_MESSAGE.startAck(),
+                        completableFutureMessages,
+                        adaptable -> bus -> {
+                            final Message<?> message = adaptableAsLiveMessage(adaptable);
+                            // TODO: instead of calculateMessagePath, use the path in adaptable.
+                            // ignore messages with null message path on purpose.
+                            final CharSequence messagePath = calculateMessagePath(message);
+                            if (messagePath != null) {
+                                bus.notify(messagePath, message);
+                            }
+                        })
+        );
 
         // register message handler which handles live commands:
-        getMessagingProvider().registerMessageHandler(CONSUME_LIVE_COMMANDS_HANDLER, consumptionConfig, m ->
-                getBus().getExecutor().execute(() -> m.getPayload()
-                        .map(p -> (LiveCommand) p).ifPresent(liveCommand -> {
-                            boolean handled = false;
-
-                            if (liveCommand instanceof WithThingId) {
-                                final ThingId thingId = liveCommand.getThingEntityId();
-                                if (liveCommand instanceof WithFeatureId) {
-                                    final String featureId = ((WithFeatureId) liveCommand).getFeatureId();
-                                    handled = getFeatureHandle(thingId, featureId)
-                                            .filter(h -> h instanceof LiveCommandProcessor)
-                                            .map(h -> (LiveCommandProcessor) h)
-                                            .map(h -> h.processLiveCommand(liveCommand))
-                                            .orElse(false);
-                                    LOGGER.debug("Live command of type '{}' handled with specific feature handle: {}",
-                                            liveCommand.getType(), handled);
-                                }
-                                if (!handled) {
-                                    handled = getThingHandle(thingId)
-                                            .filter(h -> h instanceof LiveCommandProcessor)
-                                            .map(h -> (LiveCommandProcessor) h)
-                                            .map(h -> h.processLiveCommand(liveCommand))
-                                            .orElse(false);
-                                    LOGGER.debug("Live command of type '{}' handled with specific thing handle: {}",
-                                            liveCommand.getType(), handled);
-                                }
-                            }
-
-                            if (!handled) {
-                                handled = processLiveCommand(liveCommand);
-                                LOGGER.debug("Live command of type '{}' handled with global handle: {}",
-                                        liveCommand.getType(),
-                                        handled);
-                            }
-
-                            if (!handled) {
-                                LOGGER.warn("Incoming live command of type '{}'  was not processed.",
-                                        liveCommand.getType());
-                            }
-                        })), completableFutureLiveCommands);
+        subscriptionIds.compute(Classifiers.StreamingType.LIVE_COMMAND, (streamingType, previousSubscriptionId) ->
+                subscribeAndPublishMessage(previousSubscriptionId,
+                        streamingType,
+                        buildProtocolCommand(Classifiers.StreamingType.LIVE_COMMAND.start(), consumptionConfig),
+                        Classifiers.StreamingType.LIVE_COMMAND.startAck(),
+                        completableFutureLiveCommands,
+                        adaptable -> bus -> bus.getExecutor().submit(() -> handleLiveCommandOrResponse(adaptable))
+                )
+        );
         return completableFutureCombined;
     }
 
     @Override
     public CompletableFuture<Void> suspendConsumption() {
-        final CompletableFuture<Void> completableFutureEvents = new CompletableFuture<>();
-        final CompletableFuture<Void> completableFutureMessages = new CompletableFuture<>();
-        final CompletableFuture<Void> completableFutureLiveCommands = new CompletableFuture<>();
-        final CompletableFuture<Void> completableFutureCombined = CompletableFuture.allOf(completableFutureEvents,
-                completableFutureMessages, completableFutureLiveCommands);
-
-        getMessagingProvider().deregisterMessageHandler(CONSUME_LIVE_EVENTS_HANDLER, completableFutureEvents);
-        getMessagingProvider().deregisterMessageHandler(CONSUME_LIVE_MESSAGES_HANDLER, completableFutureMessages);
-        getMessagingProvider().deregisterMessageHandler(CONSUME_LIVE_COMMANDS_HANDLER, completableFutureLiveCommands);
-
-        return completableFutureCombined;
+        return CompletableFuture.allOf(
+                subscriptionIds.entrySet()
+                        .stream()
+                        .map(entry -> {
+                            final CompletableFuture<Void> future = new CompletableFuture<>();
+                            unsubscribe(entry.getValue(), entry.getKey().stop(), entry.getKey().stopAck(), future);
+                            return future;
+                        })
+                        .toArray(CompletableFuture[]::new)
+        );
     }
 
     @Nullable
     private static String calculateMessagePath(final Message<?> message) {
         final ThingId thingId = message.getThingEntityId();
         final String subject = message.getSubject();
-
-        if (thingId == null || subject == null) {
-            LOGGER.info("Received message with missing thingId and/or subject - ignoring: <{}>", message);
-            return null;
-        }
 
         final MessageDirection direction;
         try {
@@ -310,11 +294,28 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                         .thingId(thingId);
             }
 
+            // TODO: make this generic
             private void sendMessage(final Message<T> message) {
                 final Message<?> toBeSentMessage =
                         getOutgoingMessageFactory().sendMessage(messageSerializerRegistry, message);
+
+                final String correlationId = toBeSentMessage.getCorrelationId().orElse(null);
                 LOGGER.trace("Message about to send: {}", toBeSentMessage);
-                getMessagingProvider().send(message, channel);
+                message.getResponseConsumer().ifPresent(consumer ->
+                        getMessagingProvider().getAdaptableBus().subscribeOnceForAdaptable(
+                                Classifiers.forCorrelationId(correlationId),
+                                Duration.ofSeconds(60)
+                        ).handle((responseAdaptable, error) -> {
+                            // TODO: improve typing.
+                            final Signal<?> response = PROTOCOL_ADAPTER.fromAdaptable(responseAdaptable);
+                            final Message responseMessage = response instanceof MessageCommand
+                                    ? ((MessageCommand<?, ?>) response).getMessage()
+                                    : ((MessageCommandResponse<?, ?>) response).getMessage();
+                            consumer.getResponseConsumer().accept(responseMessage, error);
+                            return null;
+                        })
+                );
+                getMessagingProvider().send(toBeSentMessage, channel);
             }
         };
     }
@@ -764,4 +765,64 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
         liveCommandAnswer.getEvent().ifPresent(e -> getMessagingProvider().emitEvent(e, TopicPath.Channel.LIVE));
     }
 
+    private void handleLiveCommandOrResponse(final Adaptable adaptable) {
+        if (adaptable.getPayload().getStatus().isPresent()) {
+            // is live command response; just publish.
+            messagingProvider.getAdaptableBus()
+                    .publish(ProtocolFactory.wrapAsJsonifiableAdaptable(adaptable).toJsonString());
+        } else {
+            // throw ClassCastException when called on signal of incorrect type
+            final ThingCommand<?> command = (ThingCommand<?>) PROTOCOL_ADAPTER.fromAdaptable(adaptable);
+            handleLiveCommand(LiveCommandFactory.getInstance().getLiveCommand(command));
+        }
+    }
+
+    private void handleLiveCommand(final LiveCommand<?, ?> liveCommand) {
+        boolean handled = false;
+
+        final ThingId thingId = liveCommand.getThingEntityId();
+        if (liveCommand instanceof WithFeatureId) {
+            final String featureId = ((WithFeatureId) liveCommand).getFeatureId();
+            handled = getFeatureHandle(thingId, featureId)
+                    .filter(h -> h instanceof LiveCommandProcessor)
+                    .map(h -> (LiveCommandProcessor) h)
+                    .map(h -> h.processLiveCommand(liveCommand))
+                    .orElse(false);
+            LOGGER.debug("Live command of type '{}' handled with specific feature handle: {}",
+                    liveCommand.getType(), handled);
+        }
+
+        if (!handled) {
+            handled = getThingHandle(thingId)
+                    .filter(h -> h instanceof LiveCommandProcessor)
+                    .map(h -> (LiveCommandProcessor) h)
+                    .map(h -> h.processLiveCommand(liveCommand))
+                    .orElse(false);
+            LOGGER.debug("Live command of type '{}' handled with specific thing handle: {}",
+                    liveCommand.getType(), handled);
+        }
+
+        if (!handled) {
+            handled = processLiveCommand(liveCommand);
+            LOGGER.debug("Live command of type '{}' handled with global handle: {}",
+                    liveCommand.getType(),
+                    handled);
+        }
+
+        if (!handled) {
+            LOGGER.warn("Incoming live command of type '{}'  was not processed.",
+                    liveCommand.getType());
+        }
+
+    }
+
+    private static Message<?> adaptableAsLiveMessage(final Adaptable adaptable) {
+        final Signal<?> signal = PROTOCOL_ADAPTER.fromAdaptable(adaptable);
+        if (signal instanceof MessageCommand) {
+            return ((MessageCommand<?, ?>) signal).getMessage();
+        } else {
+            // ClassCastException on incorrect type
+            return ((MessageCommandResponse<?, ?>) signal).getMessage();
+        }
+    }
 }

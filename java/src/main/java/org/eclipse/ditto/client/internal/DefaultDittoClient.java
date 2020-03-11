@@ -204,7 +204,7 @@ public final class DefaultDittoClient implements DittoClient {
         final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
         final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion);
         return LiveImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus, schemaVersion,
-                sessionId, messageSerializerRegistry);
+                messageSerializerRegistry);
     }
 
     private static PoliciesImpl configurePolicyClient(final MessagingProvider messagingProvider,
@@ -216,7 +216,8 @@ public final class DefaultDittoClient implements DittoClient {
         return PoliciesImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus);
     }
 
-    private static OutgoingMessageFactory getOutgoingMessageFactoryForPolicies(final MessagingProvider messagingProvider) {
+    private static OutgoingMessageFactory getOutgoingMessageFactoryForPolicies(
+            final MessagingProvider messagingProvider) {
         final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
         if (JsonSchemaVersion.V_1.equals(schemaVersion)) {
             LOGGER.warn("The MessagingProvider was configured with JsonSchemaVersion V_1 which is invalid for policy" +

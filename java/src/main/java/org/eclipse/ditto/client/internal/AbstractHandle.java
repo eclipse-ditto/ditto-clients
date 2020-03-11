@@ -12,10 +12,16 @@
  */
 package org.eclipse.ditto.client.internal;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import org.eclipse.ditto.client.internal.bus.Classifiers;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.model.base.headers.WithDittoHeaders;
@@ -179,6 +185,27 @@ public abstract class AbstractHandle {
         });
     }
 
+    /**
+     * Build a protocol command together with parameters.
+     *
+     * @param protocolCmd the protocol command.
+     * @param parameters the parameters.
+     * @return the string to send.
+     */
+    protected String buildProtocolCommand(final String protocolCmd, final Map<String, String> parameters) {
+        final String paramsString = parameters.entrySet()
+                .stream()
+                .map(entry -> urlEncode(entry.getKey()) + "=" + urlEncode(entry.getValue()))
+                .collect(Collectors.joining("&"));
+        final String toSend;
+        if (paramsString.isEmpty()) {
+            toSend = protocolCmd;
+        } else {
+            toSend = protocolCmd + "?" + paramsString;
+        }
+        return toSend;
+    }
+
     private static <T extends WithDittoHeaders<T>> T setChannel(final T signal, final TopicPath.Channel channel) {
         switch (channel) {
             case LIVE:
@@ -201,6 +228,14 @@ public abstract class AbstractHandle {
                         .removeHeader(DittoHeaderDefinition.RESPONSE_REQUIRED.getKey())
                         .build()
         );
+    }
+
+    private static String urlEncode(final String value) {
+        try {
+            return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
+        } catch (final UnsupportedEncodingException e) {
+            throw new IllegalStateException("Missing standard charset UTF 8 for encoding.", e);
+        }
     }
 
 }

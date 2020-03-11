@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.internal;
+package org.eclipse.ditto.client.internal.bus;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -107,6 +108,19 @@ final class DefaultAdaptableBus implements AdaptableBus {
                 // removed due to termination message
                 removeEntry(persistentAdaptableConsumers, entry, () -> {}));
         return entry;
+    }
+
+    @Override
+    public boolean unsubscribe(@Nullable final SubscriptionId subscriptionId) {
+        if (subscriptionId != null) {
+            final AtomicBoolean removed = new AtomicBoolean(false);
+            if (subscriptionId instanceof Entry) {
+                removeEntry(persistentAdaptableConsumers, (Entry<?>) subscriptionId, () -> removed.set(true));
+            }
+            return removed.get();
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -251,7 +265,7 @@ final class DefaultAdaptableBus implements AdaptableBus {
         return Optional.empty();
     }
 
-    private static <T> void removeEntry(final Map<Object, Set<Entry<T>>> registry, final Entry<T> entry,
+    private static <T> void removeEntry(final Map<Object, Set<Entry<T>>> registry, final Entry<?> entry,
             final Runnable onRemove) {
         registry.computeIfPresent(entry.key, (key, set) -> {
             if (set.remove(entry)) {

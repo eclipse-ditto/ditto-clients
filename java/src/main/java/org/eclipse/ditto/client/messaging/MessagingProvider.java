@@ -19,7 +19,7 @@ import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
-import org.eclipse.ditto.client.internal.AdaptableBus;
+import org.eclipse.ditto.client.internal.bus.AdaptableBus;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;

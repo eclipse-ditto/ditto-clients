@@ -10,13 +10,15 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.internal;
+package org.eclipse.ditto.client.internal.bus;
 
 import java.time.Duration;
 import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
 
 import org.eclipse.ditto.client.messaging.MessagingProviders;
 import org.eclipse.ditto.protocoladapter.Adaptable;
@@ -38,6 +40,7 @@ public interface AdaptableBus {
 
     /**
      * Create an adaptable bus.
+     * TODO: move to BusFactory
      *
      * @return the adaptable bus.
      */
@@ -108,6 +111,9 @@ public interface AdaptableBus {
             Duration timeout,
             Consumer<Adaptable> adaptableConsumer,
             Predicate<Adaptable> terminationPredicate);
+
+    // TODO
+    boolean unsubscribe(@Nullable SubscriptionId subscriptionId);
 
     /**
      * Publish a string message that may or may not be an adaptable.

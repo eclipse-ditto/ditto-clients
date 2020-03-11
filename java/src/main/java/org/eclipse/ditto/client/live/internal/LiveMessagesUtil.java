@@ -68,8 +68,7 @@ final class LiveMessagesUtil {
             final Message<T> deserializedMessage =
                     ImmutableDeserializingMessage.of(message, type, messageSerializerRegistry);
 
-            final RepliableMessage<T, U> repliableMessage = ImmutableRepliableMessage.of(deserializedMessage, msg ->
-            {
+            final RepliableMessage<T, U> repliableMessage = ImmutableRepliableMessage.of(deserializedMessage, msg -> {
                 final Message<U> toBeSentMessage = outgoingMessageFactory.sendMessage(messageSerializerRegistry, msg);
                 LOGGER.trace("Response Message about to send: {}", toBeSentMessage);
                 messagingProvider.send(toBeSentMessage, TopicPath.Channel.LIVE);

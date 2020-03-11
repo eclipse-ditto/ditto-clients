@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.internal;
+package org.eclipse.ditto.client.internal.bus;
 
 import java.util.Optional;
 
@@ -20,7 +20,12 @@ import java.util.Optional;
 @FunctionalInterface
 public interface Classifier<T> {
 
-    // TODO
+    /**
+     * Classify a message for subscribers.
+     *
+     * @param message the message.
+     * @return the classification of the message if any is known.
+     */
     Optional<Object> classify(T message);
 
 }

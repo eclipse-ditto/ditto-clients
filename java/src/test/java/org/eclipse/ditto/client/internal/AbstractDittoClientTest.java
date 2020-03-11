@@ -26,13 +26,19 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.Nullable;
+
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.DittoClient;
 import org.eclipse.ditto.client.DittoClients;
-import org.eclipse.ditto.client.messaging.mock.MockMessagingProvider;
+import org.eclipse.ditto.client.messaging.internal.MockMessagingProvider;
 import org.eclipse.ditto.client.rule.FailOnExceptionRule;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
+import org.eclipse.ditto.model.messages.Message;
+import org.eclipse.ditto.model.messages.MessageBuilder;
+import org.eclipse.ditto.model.messages.MessageDirection;
+import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.DittoProtocolAdapter;
 import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
@@ -99,6 +105,10 @@ public abstract class AbstractDittoClientTest {
         assertionFutures.add(CompletableFuture.runAsync(() -> assertCompletion(future), executorService));
     }
 
+    protected void expectMsg(final String msg) {
+        Assertions.assertThat(messaging.expectEmitted()).isEqualTo(msg);
+    }
+
     protected <T> T expectMsgClass(final Class<T> clazz) {
         final String nextMessage = messaging.expectEmitted();
         final Signal<?> signal = PROTOCOL_ADAPTER.fromAdaptable(
@@ -111,7 +121,11 @@ public abstract class AbstractDittoClientTest {
     }
 
     protected void reply(final Signal<?> signal) {
-        messaging.getAdaptableBus().publish(toAdaptableJsonString(signal));
+        reply(toAdaptableJsonString(signal));
+    }
+
+    protected void reply(final String ack) {
+        messaging.getAdaptableBus().publish(ack);
     }
 
     protected static String toAdaptableJsonString(final Signal<?> signal) {
@@ -135,6 +149,13 @@ public abstract class AbstractDittoClientTest {
     protected static void assertOnlyIfMatchHeader(final Signal<?> signal) {
         Assertions.assertThat(signal.getDittoHeaders()).doesNotContainKey(DittoHeaderDefinition.IF_NONE_MATCH.getKey());
         Assertions.assertThat(signal.getDittoHeaders()).containsEntry(DittoHeaderDefinition.IF_MATCH.getKey(), "*");
+    }
+
+    protected static <T> MessageBuilder<T> newMessageBuilder(final ThingId thingId, final String subject,
+            @Nullable final String correlationId) {
+        final MessageHeaders messageHeaders =
+                MessageHeaders.newBuilder(MessageDirection.FROM, thingId, subject).correlationId(correlationId).build();
+        return Message.newBuilder(messageHeaders);
     }
 
 }
