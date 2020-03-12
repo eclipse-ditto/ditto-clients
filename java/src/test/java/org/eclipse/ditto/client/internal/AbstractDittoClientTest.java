@@ -158,4 +158,14 @@ public abstract class AbstractDittoClientTest {
         return Message.newBuilder(messageHeaders);
     }
 
+
+    protected static <T> MessageBuilder<T> newMessageBuilder(final ThingId thingId, final String featureId,
+            final String subject, @Nullable final String correlationId) {
+        final MessageHeaders messageHeaders =
+                MessageHeaders.newBuilder(MessageDirection.FROM, thingId, subject)
+                        .featureId(featureId)
+                        .correlationId(correlationId)
+                        .build();
+        return Message.newBuilder(messageHeaders);
+    }
 }

@@ -92,8 +92,9 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonManagementImpl.class);
 
+    protected final OutgoingMessageFactory outgoingMessageFactory;
+
     private final ResponseForwarder responseForwarder;
-    private final OutgoingMessageFactory outgoingMessageFactory;
     private final HandlerRegistry<T, F> handlerRegistry;
     private final PointerBus bus;
 

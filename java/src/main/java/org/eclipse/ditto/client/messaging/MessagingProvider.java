@@ -12,7 +12,9 @@
  */
 package org.eclipse.ditto.client.messaging;
 
+import java.time.Duration;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
@@ -20,8 +22,10 @@ import java.util.function.Consumer;
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
+import org.eclipse.ditto.client.internal.bus.Classifiers;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.protocoladapter.Adaptable;
+import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.commands.base.Command;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
@@ -68,13 +72,45 @@ public interface MessagingProvider {
     AdaptableBus getAdaptableBus();
 
     /**
+     * Emit a message in a fire-and-forget manner.
+     *
+     * @param message the message to emit.
+     */
+    void emit(String message);
+
+    /**
+     * Emit an adaptable message in a fire-and-forget manner.
+     *
+     * @param message the message to emit.
+     */
+    default void emitAdaptable(Adaptable message) {
+        emit(ProtocolFactory.wrapAsJsonifiableAdaptable(message).toJsonString());
+    }
+
+    /**
      * Send Ditto Protocol {@link Adaptable} using the underlying connection.
+     * TODO: does this method belong here?
      *
      * @param adaptable the adaptable to be sent
      * @return a CompletableFuture containing the correlated response to the sent {@code dittoProtocolAdaptable}
      * @throws UnsupportedOperationException if the MessagingProvider is not able to send Messages
      */
-    CompletableFuture<Adaptable> sendAdaptable(Adaptable adaptable);
+    default CompletableFuture<Adaptable> sendAdaptable(Adaptable adaptable) {
+        final String correlationId = adaptable.getDittoHeaders()
+                .getCorrelationId()
+                .orElseGet(() -> UUID.randomUUID().toString());
+        final Adaptable adaptableToSend = adaptable.getDittoHeaders()
+                .getCorrelationId()
+                .map(cid -> adaptable)
+                .orElseGet(() -> adaptable.setDittoHeaders(
+                        adaptable.getDittoHeaders().toBuilder().correlationId(correlationId).build())
+                );
+        final CompletableFuture<Adaptable> result = getAdaptableBus()
+                .subscribeOnceForAdaptable(Classifiers.forCorrelationId(correlationId), Duration.ofSeconds(60L))
+                .toCompletableFuture();
+        emitAdaptable(adaptableToSend);
+        return result;
+    }
 
     /**
      * Send message using the underlying connection.
@@ -83,7 +119,10 @@ public interface MessagingProvider {
      * @param channel the Channel to use for sending the message (Live/Twin)
      * @throws UnsupportedOperationException if the MessagingProvider is not able to send Messages
      */
-    void send(Message<?> message, TopicPath.Channel channel);
+    @Deprecated
+    default void send(Message<?> message, TopicPath.Channel channel) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Send command using the underlying connection.
@@ -92,7 +131,10 @@ public interface MessagingProvider {
      * @param channel the Channel to use for sending the command (Live/Twin)
      * @throws UnsupportedOperationException if the MessagingProvider is not able to send Commands
      */
-    void sendCommand(Command<?> command, TopicPath.Channel channel);
+    @Deprecated
+    default void sendCommand(Command<?> command, TopicPath.Channel channel) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Send CommandResponse using the underlying connection.
@@ -101,7 +143,10 @@ public interface MessagingProvider {
      * @param channel the Channel to use for sending the commandResponse (Live/Twin)
      * @throws UnsupportedOperationException if the MessagingProvider is not able to send CommandResponses
      */
-    void sendCommandResponse(CommandResponse<?> commandResponse, TopicPath.Channel channel);
+    @Deprecated
+    default void sendCommandResponse(CommandResponse<?> commandResponse, TopicPath.Channel channel) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Emits Event using the underlying connection.
@@ -110,28 +155,20 @@ public interface MessagingProvider {
      * @param channel the Channel to use for emitting the event (Live/Twin)
      * @throws UnsupportedOperationException if the MessagingProvider is not able to emit Events
      */
-    void emitEvent(Event<?> event, TopicPath.Channel channel);
-
-    /**
-     * Emit an adaptable message in a fire-and-forget manner.
-     *
-     * @param message the message to emit.
-     */
-    void emitAdaptable(Adaptable message);
-
-    /**
-     * Emit a message in a fire-and-forget manner.
-     *
-     * @param message the message to emit.
-     */
-    void emit(String message);
+    @Deprecated
+    default void emitEvent(Event<?> event, TopicPath.Channel channel) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Register handler for ThingCommandResponse.
      *
      * @param commandResponseHandler the consumer that is called for incoming command response messages
      */
-    void registerReplyHandler(Consumer<CommandResponse<?>> commandResponseHandler);
+    @Deprecated
+    default void registerReplyHandler(Consumer<CommandResponse<?>> commandResponseHandler) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Register a named message handler and receipt handler.
@@ -142,10 +179,13 @@ public interface MessagingProvider {
      * @param receiptFuture the future that takes responses to this register call
      * @return the {@code true} if handler was registered, {@code false} otherwise (e.g. handler was already registered)
      */
-    boolean registerMessageHandler(String name,
+    @Deprecated
+    default boolean registerMessageHandler(String name,
             Map<String, String> registrationConfig,
             Consumer<Message<?>> handler,
-            CompletableFuture<Void> receiptFuture);
+            CompletableFuture<Void> receiptFuture) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Remove a previously registered message handler.
@@ -153,7 +193,10 @@ public interface MessagingProvider {
      * @param name name of the handler to deregister
      * @param future the future to handle the response
      */
-    void deregisterMessageHandler(String name, CompletableFuture<Void> future);
+    @Deprecated
+    default void deregisterMessageHandler(String name, CompletableFuture<Void> future) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Close the underlying connection.

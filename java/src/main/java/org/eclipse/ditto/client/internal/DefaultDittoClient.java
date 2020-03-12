@@ -189,7 +189,7 @@ public final class DefaultDittoClient implements DittoClient {
             final ResponseForwarder responseForwarder) {
         final String name = TopicPath.Channel.TWIN.getName();
         final PointerBus bus = BusFactory.createPointerBus(name, messagingProvider.getExecutorService());
-        init(bus, messagingProvider, responseForwarder);
+        init(bus, messagingProvider);
         final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
         final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion);
         return TwinImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus);
@@ -199,7 +199,7 @@ public final class DefaultDittoClient implements DittoClient {
             final ResponseForwarder responseForwarder, final MessageSerializerRegistry messageSerializerRegistry) {
         final String name = TopicPath.Channel.LIVE.getName();
         final PointerBus bus = BusFactory.createPointerBus(name, messagingProvider.getExecutorService());
-        init(bus, messagingProvider, responseForwarder);
+        init(bus, messagingProvider);
         final String sessionId = messagingProvider.getAuthenticationConfiguration().getSessionId();
         final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
         final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion);
@@ -211,7 +211,7 @@ public final class DefaultDittoClient implements DittoClient {
             final ResponseForwarder responseForwarder) {
         final String busName = TopicPath.Channel.NONE.getName();
         final PointerBus bus = BusFactory.createPointerBus(busName, messagingProvider.getExecutorService());
-        init(bus, messagingProvider, responseForwarder);
+        init(bus, messagingProvider);
         final OutgoingMessageFactory messageFactory = getOutgoingMessageFactoryForPolicies(messagingProvider);
         return PoliciesImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus);
     }
@@ -229,11 +229,9 @@ public final class DefaultDittoClient implements DittoClient {
         return OutgoingMessageFactory.newInstance(schemaVersion);
     }
 
-    private static void init(final PointerBus bus, final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder) {
+    private static void init(final PointerBus bus, final MessagingProvider messagingProvider) {
         registerKeyBasedDistributorForIncomingEvents(bus);
         registerKeyBasedHandlersForIncomingEvents(bus);
-        messagingProvider.registerReplyHandler(responseForwarder::handle);
         messagingProvider.initialize();
     }
 

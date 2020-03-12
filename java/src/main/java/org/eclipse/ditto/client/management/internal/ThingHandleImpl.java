@@ -85,9 +85,10 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ThingHandleImpl.class);
 
+    protected final OutgoingMessageFactory outgoingMessageFactory;
+
     private final ThingId thingId;
     private final ResponseForwarder responseForwarder;
-    private final OutgoingMessageFactory outgoingMessageFactory;
     private final HandlerRegistry<T, F> handlerRegistry;
 
     protected ThingHandleImpl(

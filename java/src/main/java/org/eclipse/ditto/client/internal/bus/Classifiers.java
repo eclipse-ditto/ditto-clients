@@ -17,6 +17,8 @@ import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 import java.util.Objects;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
@@ -77,9 +79,10 @@ public final class Classifiers {
      *
      * @param correlationId the correlation ID.
      * @return the key for the correlation ID.
+     * @throws java.lang.NullPointerException if the argument is null.
      */
-    public static Object forCorrelationId(final String correlationId) {
-        return new CorrelationId(correlationId);
+    public static Object forCorrelationId(@Nullable final String correlationId) {
+        return new CorrelationId(checkNotNull(correlationId, "correlationId"));
     }
 
     /**

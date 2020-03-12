@@ -69,10 +69,11 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureHandleImpl.class);
 
+    protected final OutgoingMessageFactory outgoingMessageFactory;
+
     private final ThingId thingId;
     private final String featureId;
     private final ResponseForwarder responseForwarder;
-    private final OutgoingMessageFactory outgoingMessageFactory;
     private final HandlerRegistry<T, F> handlerRegistry;
 
     protected FeatureHandleImpl(final TopicPath.Channel channel,

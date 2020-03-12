@@ -206,7 +206,7 @@ public abstract class AbstractHandle {
         return toSend;
     }
 
-    private static <T extends WithDittoHeaders<T>> T setChannel(final T signal, final TopicPath.Channel channel) {
+    protected <T extends WithDittoHeaders<T>> T setChannel(final T signal, final TopicPath.Channel channel) {
         switch (channel) {
             case LIVE:
                 return adjustHeadersForLive(signal);
@@ -215,6 +215,15 @@ public abstract class AbstractHandle {
             default:
                 return signal;
         }
+    }
+
+    protected Adaptable adaptOutgoingLiveSignal(final Signal<?> liveSignal) {
+        return PROTOCOL_ADAPTER.toAdaptable(adjustHeadersForLiveSignal(liveSignal));
+    }
+
+    @SuppressWarnings("unchecked")
+    protected static Signal<?> adjustHeadersForLiveSignal(final Signal<?> signal) {
+        return adjustHeadersForLive((Signal) signal);
     }
 
     // TODO: is it necessary to remove read-subjects, auth-subjects and response-required?
@@ -237,5 +246,4 @@ public abstract class AbstractHandle {
             throw new IllegalStateException("Missing standard charset UTF 8 for encoding.", e);
         }
     }
-
 }

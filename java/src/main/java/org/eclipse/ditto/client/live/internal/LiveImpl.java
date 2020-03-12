@@ -15,7 +15,6 @@ package org.eclipse.ditto.client.live.internal;
 import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
 
 import java.text.MessageFormat;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
@@ -42,11 +41,9 @@ import org.eclipse.ditto.client.live.LiveFeatureHandle;
 import org.eclipse.ditto.client.live.LiveThingHandle;
 import org.eclipse.ditto.client.live.events.GlobalEventFactory;
 import org.eclipse.ditto.client.live.events.internal.ImmutableGlobalEventFactory;
-import org.eclipse.ditto.client.live.messages.MessageSender;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.live.messages.PendingMessage;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
-import org.eclipse.ditto.client.live.messages.internal.ImmutableMessageSender;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.KnownMessageSubjects;
@@ -278,46 +275,8 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
 
     @Override
     public <T> PendingMessage<T> message() {
-        return new PendingMessage<T>() {
-
-            @Override
-            public MessageSender.SetFeatureIdOrSubject<T> from(final ThingId thingId) {
-                return ImmutableMessageSender.<T>newInstance()
-                        .from(this::sendMessage)
-                        .thingId(thingId);
-            }
-
-            @Override
-            public MessageSender.SetFeatureIdOrSubject<T> to(final ThingId thingId) {
-                return ImmutableMessageSender.<T>newInstance()
-                        .to(this::sendMessage)
-                        .thingId(thingId);
-            }
-
-            // TODO: make this generic
-            private void sendMessage(final Message<T> message) {
-                final Message<?> toBeSentMessage =
-                        getOutgoingMessageFactory().sendMessage(messageSerializerRegistry, message);
-
-                final String correlationId = toBeSentMessage.getCorrelationId().orElse(null);
-                LOGGER.trace("Message about to send: {}", toBeSentMessage);
-                message.getResponseConsumer().ifPresent(consumer ->
-                        getMessagingProvider().getAdaptableBus().subscribeOnceForAdaptable(
-                                Classifiers.forCorrelationId(correlationId),
-                                Duration.ofSeconds(60)
-                        ).handle((responseAdaptable, error) -> {
-                            // TODO: improve typing.
-                            final Signal<?> response = PROTOCOL_ADAPTER.fromAdaptable(responseAdaptable);
-                            final Message responseMessage = response instanceof MessageCommand
-                                    ? ((MessageCommand<?, ?>) response).getMessage()
-                                    : ((MessageCommandResponse<?, ?>) response).getMessage();
-                            consumer.getResponseConsumer().accept(responseMessage, error);
-                            return null;
-                        })
-                );
-                getMessagingProvider().send(toBeSentMessage, channel);
-            }
-        };
+        return PendingMessageImpl.of(LOGGER, outgoingMessageFactory, messageSerializerRegistry, PROTOCOL_ADAPTER,
+                messagingProvider, channel);
     }
 
     @Override
@@ -346,9 +305,8 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                 subject);
 
         getHandlerRegistry().register(registrationId, SelectorUtil.or(thingSelector, featureSelector),
-                LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
-                        getOutgoingMessageFactory(), messageSerializerRegistry,
-                        type, handler));
+                LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
+                        getOutgoingMessageFactory(), messageSerializerRegistry, type, handler));
     }
 
     private static void checkRegistrationId(final String registrationId) {
@@ -384,7 +342,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                 subject);
 
         getHandlerRegistry().register(registrationId, SelectorUtil.or(thingSelector, featureSelector),
-                LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
+                LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
                         getOutgoingMessageFactory(), messageSerializerRegistry, handler));
     }
 
@@ -403,7 +361,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                         KnownMessageSubjects.CLAIM_SUBJECT);
 
         getHandlerRegistry().register(registrationId, selector,
-                LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
+                LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
                         getOutgoingMessageFactory(), messageSerializerRegistry,
                         type, handler));
     }
@@ -420,7 +378,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                         KnownMessageSubjects.CLAIM_SUBJECT);
 
         getHandlerRegistry().register(registrationId, selector,
-                LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
+                LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
                         getOutgoingMessageFactory(), messageSerializerRegistry, handler));
     }
 
@@ -432,11 +390,9 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
     @Override
     public void emitEvent(final Function<GlobalEventFactory, Event<?>> eventFunction) {
         argumentNotNull(eventFunction);
-
-        final GlobalEventFactory globalEventFactory = ImmutableGlobalEventFactory.getInstance(
-                schemaVersion);
+        final GlobalEventFactory globalEventFactory = ImmutableGlobalEventFactory.getInstance(schemaVersion);
         final Event<?> eventToEmit = eventFunction.apply(globalEventFactory);
-        getMessagingProvider().emitEvent(eventToEmit, TopicPath.Channel.LIVE);
+        getMessagingProvider().emit(signalToJsonString(adjustHeadersForLiveSignal(eventToEmit)));
     }
 
     /*
@@ -725,12 +681,15 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
 
     private void registerLiveCommandToAnswerBuilderFunction(final Class<? extends LiveCommand> liveCommandClass,
             final Function<? extends LiveCommand, LiveCommandAnswerBuilder.BuildStep> function) {
-        if (liveCommandsFunctions.containsKey(liveCommandClass)) {
-            throw new IllegalStateException("A Function for '" + liveCommandClass.getSimpleName() + "' is already " +
-                    "defined. Stop the registered handler before registering a new handler.");
-        } else {
-            liveCommandsFunctions.put(liveCommandClass, function);
-        }
+        liveCommandsFunctions.compute(liveCommandClass, (key, value) -> {
+            if (value != null) {
+                throw new IllegalStateException(
+                        "A Function for '" + liveCommandClass.getSimpleName() + "' is already " +
+                                "defined. Stop the registered handler before registering a new handler.");
+            } else {
+                return function;
+            }
+        });
     }
 
     private void unregisterLiveCommandToAnswerBuilderFunction(final Class<? extends LiveCommand> liveCommandClass) {
@@ -761,8 +720,9 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
 
     private void processLiveCommandAnswer(final LiveCommandAnswer liveCommandAnswer) {
         liveCommandAnswer.getResponse()
-                .ifPresent(r -> getMessagingProvider().sendCommandResponse(r, TopicPath.Channel.LIVE));
-        liveCommandAnswer.getEvent().ifPresent(e -> getMessagingProvider().emitEvent(e, TopicPath.Channel.LIVE));
+                .ifPresent(r -> getMessagingProvider()
+                        .emitAdaptable(PROTOCOL_ADAPTER.toAdaptable(adjustHeadersForLiveSignal(r))));
+        liveCommandAnswer.getEvent().ifPresent(e -> getMessagingProvider().emitAdaptable(adaptOutgoingLiveSignal(e)));
     }
 
     private void handleLiveCommandOrResponse(final Adaptable adaptable) {

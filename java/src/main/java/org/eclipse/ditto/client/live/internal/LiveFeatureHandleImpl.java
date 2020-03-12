@@ -33,15 +33,12 @@ import org.eclipse.ditto.client.live.LiveFeatureHandle;
 import org.eclipse.ditto.client.live.LiveThingHandle;
 import org.eclipse.ditto.client.live.events.FeatureEventFactory;
 import org.eclipse.ditto.client.live.events.internal.ImmutableFeatureEventFactory;
-import org.eclipse.ditto.client.live.messages.MessageSender;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.live.messages.PendingMessageWithFeatureId;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
-import org.eclipse.ditto.client.live.messages.internal.ImmutableMessageSender;
 import org.eclipse.ditto.client.management.internal.FeatureHandleImpl;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
-import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.commands.live.base.LiveCommand;
@@ -102,30 +99,8 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
 
     @Override
     public <T> PendingMessageWithFeatureId<T> message() {
-        return new PendingMessageWithFeatureId<T>() {
-            @Override
-            public MessageSender.SetSubject<T> from() {
-                return ImmutableMessageSender.<T>newInstance()
-                        .from(this::sendMessage)
-                        .thingId(getThingEntityId())
-                        .featureId(getFeatureId());
-            }
-
-            @Override
-            public MessageSender.SetSubject<T> to() {
-                return ImmutableMessageSender.<T>newInstance()
-                        .to(this::sendMessage)
-                        .thingId(getThingEntityId())
-                        .featureId(getFeatureId());
-            }
-
-            private void sendMessage(final Message<T> message) {
-                final Message<?> toBeSentMessage =
-                        getOutgoingMessageFactory().sendMessage(messageSerializerRegistry, message);
-                LOGGER.trace("Message about to send: {}", toBeSentMessage);
-                getMessagingProvider().send(message, channel);
-            }
-        };
+        return PendingMessageImpl.<T>of(LOGGER, outgoingMessageFactory, messageSerializerRegistry, PROTOCOL_ADAPTER,
+                messagingProvider, channel).withThingAndFeatureIds(getThingEntityId(), getFeatureId());
     }
 
     @Override
@@ -147,7 +122,7 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
                 getThingEntityId(), getFeatureId(), subject);
 
         getHandlerRegistry().register(registrationId, selector,
-                LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
+                LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
                         getOutgoingMessageFactory(), messageSerializerRegistry,
                         type, handler));
     }
@@ -167,7 +142,7 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
                 getThingEntityId(), getFeatureId(), subject);
 
         getHandlerRegistry().register(registrationId, selector,
-                LiveMessagesUtil.createEventConsumerForRepliableMessage(getMessagingProvider(),
+                LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
                         getOutgoingMessageFactory(), messageSerializerRegistry,
                         handler));
     }
@@ -181,13 +156,10 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
     @Override
     public void emitEvent(final Function<FeatureEventFactory, Event<?>> eventFunction) {
         argumentNotNull(eventFunction);
-
         final FeatureEventFactory featureEventFactory =
-                ImmutableFeatureEventFactory.getInstance(schemaVersion, getThingEntityId(),
-                        getFeatureId());
+                ImmutableFeatureEventFactory.getInstance(schemaVersion, getThingEntityId(), getFeatureId());
         final Event<?> eventToEmit = eventFunction.apply(featureEventFactory);
-        // TODO: move emitEvent to AbstractHandler
-        getMessagingProvider().emitEvent(eventToEmit, channel);
+        getMessagingProvider().emit(signalToJsonString(adjustHeadersForLiveSignal(eventToEmit)));
     }
 
     /*
@@ -324,12 +296,15 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
 
     private void registerLiveCommandToAnswerBuilderFunction(final Class<? extends LiveCommand> liveCommandClass,
             final Function<? extends LiveCommand, LiveCommandAnswerBuilder.BuildStep> function) {
-        if (liveCommandsFunctions.containsKey(liveCommandClass)) {
-            throw new IllegalStateException("A Function for '" + liveCommandClass.getSimpleName() + "' is already " +
-                    "defined. Stop the registered handler before registering a new handler.");
-        } else {
-            liveCommandsFunctions.put(liveCommandClass, function);
-        }
+        liveCommandsFunctions.compute(liveCommandClass, (key, value) -> {
+            if (value != null) {
+                throw new IllegalStateException(
+                        "A Function for '" + liveCommandClass.getSimpleName() + "' is already " +
+                                "defined. Stop the registered handler before registering a new handler.");
+            } else {
+                return function;
+            }
+        });
     }
 
     private void unregisterLiveCommandToAnswerBuilderFunction(final Class<? extends LiveCommand> liveCommandClass) {
@@ -361,8 +336,8 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
 
     private void processLiveCommandAnswer(final LiveCommandAnswer liveCommandAnswer) {
         liveCommandAnswer.getResponse()
-                .ifPresent(r -> getMessagingProvider().sendCommandResponse(r, TopicPath.Channel.LIVE));
-        liveCommandAnswer.getEvent().ifPresent(e -> getMessagingProvider().emitEvent(e, TopicPath.Channel.LIVE));
+                .ifPresent(r -> getMessagingProvider().emitAdaptable(adaptOutgoingLiveSignal(r)));
+        liveCommandAnswer.getEvent().ifPresent(e -> getMessagingProvider().emitAdaptable(adaptOutgoingLiveSignal(e)));
     }
 
 }

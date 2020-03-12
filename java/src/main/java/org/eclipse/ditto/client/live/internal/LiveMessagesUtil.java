@@ -12,6 +12,7 @@
  */
 package org.eclipse.ditto.client.live.internal;
 
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
@@ -22,10 +23,23 @@ import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.client.live.messages.internal.ImmutableDeserializingMessage;
 import org.eclipse.ditto.client.live.messages.internal.ImmutableRepliableMessage;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
+import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.model.base.headers.DittoHeadersBuilder;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageBuilder;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
+import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.protocoladapter.Adaptable;
+import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.base.Signal;
+import org.eclipse.ditto.signals.commands.messages.MessageCommand;
+import org.eclipse.ditto.signals.commands.messages.MessageCommandResponse;
+import org.eclipse.ditto.signals.commands.messages.SendFeatureMessage;
+import org.eclipse.ditto.signals.commands.messages.SendFeatureMessageResponse;
+import org.eclipse.ditto.signals.commands.messages.SendThingMessage;
+import org.eclipse.ditto.signals.commands.messages.SendThingMessageResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +71,7 @@ final class LiveMessagesUtil {
     }
 
     static <T, U> Consumer<PointerWithData> createEventConsumerForRepliableMessage(
+            final ProtocolAdapter protocolAdapter,
             final MessagingProvider messagingProvider,
             final OutgoingMessageFactory outgoingMessageFactory,
             final MessageSerializerRegistry messageSerializerRegistry,
@@ -71,13 +86,15 @@ final class LiveMessagesUtil {
             final RepliableMessage<T, U> repliableMessage = ImmutableRepliableMessage.of(deserializedMessage, msg -> {
                 final Message<U> toBeSentMessage = outgoingMessageFactory.sendMessage(messageSerializerRegistry, msg);
                 LOGGER.trace("Response Message about to send: {}", toBeSentMessage);
-                messagingProvider.send(toBeSentMessage, TopicPath.Channel.LIVE);
+                messagingProvider.emitAdaptable(
+                        LiveMessagesUtil.constructAdaptableFromMessage(toBeSentMessage, protocolAdapter));
             });
             handler.accept(repliableMessage);
         };
     }
 
     static <U> Consumer<PointerWithData> createEventConsumerForRepliableMessage(
+            final ProtocolAdapter protocolAdapter,
             final MessagingProvider messagingProvider,
             final OutgoingMessageFactory outgoingMessageFactory,
             final MessageSerializerRegistry messageSerializerRegistry,
@@ -91,7 +108,7 @@ final class LiveMessagesUtil {
             {
                 final Message<U> toBeSentMessage = outgoingMessageFactory.sendMessage(messageSerializerRegistry, msg);
                 LOGGER.trace("Response Message about to send: {}", toBeSentMessage);
-                messagingProvider.send(toBeSentMessage, TopicPath.Channel.LIVE);
+                messagingProvider.emitAdaptable(constructAdaptableFromMessage(toBeSentMessage, protocolAdapter));
             });
             handler.accept(repliableMessage);
         };
@@ -115,4 +132,31 @@ final class LiveMessagesUtil {
         return messageBuilder.build();
     }
 
+    public static Adaptable constructAdaptableFromMessage(final Message<?> message,
+            final ProtocolAdapter protocolAdapter) {
+        final TopicPath.Channel channel = TopicPath.Channel.LIVE;
+        final DittoHeadersBuilder headersBuilder = DittoHeaders.newBuilder().channel(channel.getName());
+        final Optional<String> optionalCorrelationId = message.getCorrelationId();
+        optionalCorrelationId.ifPresent(headersBuilder::correlationId);
+        final DittoHeaders dittoHeaders = headersBuilder.build();
+
+        final ThingId thingId = message.getThingEntityId();
+        final Optional<HttpStatusCode> statusCodeOptional = message.getStatusCode();
+        final Optional<String> featureIdOptional = message.getFeatureId();
+        final Adaptable adaptable;
+        if (statusCodeOptional.isPresent()) {
+            // this is treated as a response message
+            final HttpStatusCode statusCode = statusCodeOptional.get();
+            final MessageCommandResponse<?, ?> messageCommandResponse = featureIdOptional.isPresent()
+                    ? SendFeatureMessageResponse.of(thingId, featureIdOptional.get(), message, statusCode, dittoHeaders)
+                    : SendThingMessageResponse.of(thingId, message, statusCode, dittoHeaders);
+            adaptable = protocolAdapter.toAdaptable((Signal<?>) messageCommandResponse);
+        } else {
+            final MessageCommand<?, ?> messageCommand = featureIdOptional.isPresent()
+                    ? SendFeatureMessage.of(thingId, featureIdOptional.get(), message, dittoHeaders)
+                    : SendThingMessage.of(thingId, message, dittoHeaders);
+            adaptable = protocolAdapter.toAdaptable((Signal<?>) messageCommand);
+        }
+        return adaptable;
+    }
 }

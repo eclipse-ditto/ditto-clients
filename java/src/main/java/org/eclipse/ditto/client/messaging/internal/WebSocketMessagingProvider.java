@@ -18,17 +18,10 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.text.MessageFormat;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -39,7 +32,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -49,57 +41,10 @@ import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.internal.DefaultThreadFactory;
 import org.eclipse.ditto.client.internal.VersionReader;
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
-import org.eclipse.ditto.client.live.internal.LiveImpl;
 import org.eclipse.ditto.client.messaging.AuthenticationException;
 import org.eclipse.ditto.client.messaging.AuthenticationProvider;
 import org.eclipse.ditto.client.messaging.MessagingException;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
-import org.eclipse.ditto.client.twin.internal.TwinImpl;
-import org.eclipse.ditto.json.JsonFactory;
-import org.eclipse.ditto.json.JsonMissingFieldException;
-import org.eclipse.ditto.json.JsonObject;
-import org.eclipse.ditto.json.JsonParseException;
-import org.eclipse.ditto.json.JsonPointer;
-import org.eclipse.ditto.json.JsonRuntimeException;
-import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.base.common.HttpStatusCode;
-import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
-import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
-import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.model.base.headers.DittoHeadersBuilder;
-import org.eclipse.ditto.model.base.headers.WithDittoHeaders;
-import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
-import org.eclipse.ditto.model.messages.Message;
-import org.eclipse.ditto.model.messages.MessageDirection;
-import org.eclipse.ditto.model.messages.MessageHeaders;
-import org.eclipse.ditto.model.messages.MessageResponseConsumer;
-import org.eclipse.ditto.model.things.ThingId;
-import org.eclipse.ditto.protocoladapter.Adaptable;
-import org.eclipse.ditto.protocoladapter.DittoProtocolAdapter;
-import org.eclipse.ditto.protocoladapter.HeaderTranslator;
-import org.eclipse.ditto.protocoladapter.JsonifiableAdaptable;
-import org.eclipse.ditto.protocoladapter.ProtocolFactory;
-import org.eclipse.ditto.protocoladapter.TopicPath;
-import org.eclipse.ditto.protocoladapter.UnknownCommandException;
-import org.eclipse.ditto.signals.base.Signal;
-import org.eclipse.ditto.signals.commands.base.Command;
-import org.eclipse.ditto.signals.commands.base.CommandResponse;
-import org.eclipse.ditto.signals.commands.base.ErrorResponse;
-import org.eclipse.ditto.signals.commands.live.LiveCommandFactory;
-import org.eclipse.ditto.signals.commands.live.base.LiveCommand;
-import org.eclipse.ditto.signals.commands.messages.MessageCommand;
-import org.eclipse.ditto.signals.commands.messages.MessageCommandResponse;
-import org.eclipse.ditto.signals.commands.messages.SendFeatureMessage;
-import org.eclipse.ditto.signals.commands.messages.SendFeatureMessageResponse;
-import org.eclipse.ditto.signals.commands.messages.SendThingMessage;
-import org.eclipse.ditto.signals.commands.messages.SendThingMessageResponse;
-import org.eclipse.ditto.signals.commands.policies.PolicyCommandResponse;
-import org.eclipse.ditto.signals.commands.policies.PolicyErrorResponse;
-import org.eclipse.ditto.signals.commands.things.ThingCommand;
-import org.eclipse.ditto.signals.commands.things.ThingCommandResponse;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.events.base.Event;
-import org.eclipse.ditto.signals.events.things.ThingEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,28 +68,13 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     private static final int RECONNECTION_TIMEOUT_SECONDS = 5;
 
-    // TODO: remove protocol-specific code
-    private static final DittoProtocolAdapter PROTOCOL_ADAPTER = DittoProtocolAdapter.of(HeaderTranslator.empty());
-
+    // TODO: convert to on-startup messages
     private static final String PROTOCOL_CMD_START_SEND_EVENTS = "START-SEND-EVENTS";
-    private static final String PROTOCOL_CMD_STOP_SEND_EVENTS = "STOP-SEND-EVENTS";
-
     private static final String PROTOCOL_CMD_START_SEND_MESSAGES = "START-SEND-MESSAGES";
-    private static final String PROTOCOL_CMD_STOP_SEND_MESSAGES = "STOP-SEND-MESSAGES";
-
     private static final String PROTOCOL_CMD_START_SEND_LIVE_COMMANDS = "START-SEND-LIVE-COMMANDS";
-    private static final String PROTOCOL_CMD_STOP_SEND_LIVE_COMMANDS = "STOP-SEND-LIVE-COMMANDS";
-
     private static final String PROTOCOL_CMD_START_SEND_LIVE_EVENTS = "START-SEND-LIVE-EVENTS";
-    private static final String PROTOCOL_CMD_STOP_SEND_LIVE_EVENTS = "STOP-SEND-LIVE-EVENTS";
-
+    // TODO: restore JWT-TOKEN-handling
     private static final String PROTOCOL_CMD_JWT_TOKEN = "JWT-TOKEN";
-
-    /**
-     * The backend sends the protocol message above suffixed by ":ACK" when the subscription was created. E.g.: {@code
-     * START-SEND-EVENTS:ACK}
-     */
-    private static final String PROTOCOL_CMD_ACK_SUFFIX = ":ACK";
 
     private static final int MAX_OUTSTANDING_MESSAGE_RESPONSES = 250;
 
@@ -157,16 +87,10 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     private final ExecutorService callbackExecutor;
 
     private final String sessionId;
-    private final Map<String, CompletableFuture<Void>> subscriptionsAcks;
-    private final Map<String, Consumer<Message<?>>> subscriptions;
     private final ScheduledExecutorService reconnectExecutor;
     private final AtomicBoolean reconnecting = new AtomicBoolean(false);
     private final AtomicBoolean initiallyConnected = new AtomicBoolean(false);
-    private final Map<String, MessageResponseConsumer<?>> messageCommandResponseConsumers;
-    private final Map<String, Map<String, String>> registrationConfigs;
-    private final Map<String, CompletableFuture<Adaptable>> customAdaptableResponseFutures;
 
-    private Consumer<CommandResponse<?>> commandResponseConsumer;
     private WebSocket webSocket;
 
     // TODO: replace by concurrent hash map of messages to send on reconnect indexed by type
@@ -193,14 +117,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         this.callbackExecutor = callbackExecutor;
 
         sessionId = authenticationProvider.getConfiguration().getSessionId();
-        subscriptionsAcks = new ConcurrentHashMap<>();
-        subscriptions = new ConcurrentHashMap<>();
         reconnectExecutor = messagingConfiguration.isReconnectEnabled() ? createScheduledThreadPoolExecutor() : null;
-
-        // limit the max. outstanding MessageResponseConsumers to not produce a memory leak if messages are never answered
-        messageCommandResponseConsumers = new LimitedHashMap<>(MAX_OUTSTANDING_MESSAGE_RESPONSES);
-        registrationConfigs = new HashMap<>();
-        customAdaptableResponseFutures = new ConcurrentHashMap<>();
     }
 
     private static ScheduledThreadPoolExecutor createScheduledThreadPoolExecutor() {
@@ -275,6 +192,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     /**
      * Wrapper that catches exceptions of {@code future.get()} and wraps them in a {@link AuthenticationException}.
+     * TODO: make async.
      *
      * @param future the Future to be wrapped.
      * @param <T> the type of the computed result.
@@ -369,135 +287,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     @Override
-    public void send(final Message<?> message, final TopicPath.Channel channel) {
-        final Adaptable adaptable = constructAdaptableFromMessage(message, channel);
-        doSendAdaptable(adaptable);
-    }
-
-    private static <T> void logUnknownType(final T type, final Throwable throwable) {
-        final String typeName = type.getClass().getSimpleName();
-        LOGGER.error("Client: Unknown {} type: <{}> - NOT sending via Ditto WebSocket!", typeName,
-                throwable.getMessage());
-    }
-
-    @Nullable
-    private static Adaptable tryToConvertToAdaptable(final MessageCommandResponse<?, ?> messageCommandResponse) {
-        try {
-            return PROTOCOL_ADAPTER.toAdaptable(messageCommandResponse);
-        } catch (final UnknownCommandException e) {
-            logUnknownType(messageCommandResponse, e);
-            return null;
-        }
-    }
-
-    @Nullable
-    private static Adaptable tryToConvertToAdaptable(final MessageCommand<?, ?> messageCommand) {
-        try {
-            return PROTOCOL_ADAPTER.toAdaptable(messageCommand);
-        } catch (final UnknownCommandException e) {
-            logUnknownType(messageCommand, e);
-            return null;
-        }
-    }
-
-    @Nullable
-    private static Adaptable tryToConvertToAdaptable(final Command<?> command, final TopicPath.Channel channel) {
-
-        try {
-            final Command<?> adjustedCommand = command.setDittoHeaders(adjustHeadersForLive(command));
-            return PROTOCOL_ADAPTER.toAdaptable(adjustedCommand, channel);
-        } catch (final UnknownCommandException e) {
-            logUnknownType(command, e);
-            return null;
-        }
-    }
-
-    @Override
-    public void sendCommand(final Command<?> command, final TopicPath.Channel channel) {
-        doSendAdaptable(tryToConvertToAdaptable(command, channel));
-    }
-
-    @Override
-    public void sendCommandResponse(final CommandResponse<?> commandResponse, final TopicPath.Channel channel) {
-        doSendAdaptable(tryToConvertToAdaptable(commandResponse, channel));
-    }
-
-    @Nullable
-    private Adaptable tryToConvertToAdaptable(final CommandResponse<?> commandResponse,
-            final TopicPath.Channel channel) {
-
-        try {
-            final CommandResponse<?> adjustedResponse = commandResponse.setDittoHeaders(
-                    adjustHeadersForLive(commandResponse));
-            return PROTOCOL_ADAPTER.toAdaptable(adjustedResponse, channel);
-        } catch (final UnknownCommandException e) {
-            logUnknownType(commandResponse, e);
-            return null;
-        }
-    }
-
-    @Override
-    public void emitEvent(final Event<?> event, final TopicPath.Channel channel) {
-        doSendAdaptable(tryToConvertToAdaptable(event, channel));
-    }
-
-    @Override
-    public void emitAdaptable(final Adaptable adaptable) {
-        doSendAdaptable(adaptable);
-    }
-
-    @Override
     public void emit(final String message) {
         sendToWebsocket(message);
-    }
-
-    @Nullable
-    private Adaptable tryToConvertToAdaptable(final Event<?> event, final TopicPath.Channel channel) {
-
-        try {
-            final Event<?> adjustedEvent = event.setDittoHeaders(adjustHeadersForLive(event));
-            return PROTOCOL_ADAPTER.toAdaptable(adjustedEvent, channel);
-        } catch (final UnknownCommandException e) {
-            logUnknownType(event, e);
-            return null;
-        }
-    }
-
-    private static DittoHeaders adjustHeadersForLive(final WithDittoHeaders<?> withDittoHeaders) {
-
-        return withDittoHeaders.getDittoHeaders().toBuilder()
-                .removeHeader(DittoHeaderDefinition.READ_SUBJECTS.getKey())
-                .removeHeader(DittoHeaderDefinition.AUTHORIZATION_SUBJECTS.getKey())
-                .removeHeader(DittoHeaderDefinition.RESPONSE_REQUIRED.getKey())
-                .build();
-    }
-
-    @Override
-    public CompletableFuture<Adaptable> sendAdaptable(final Adaptable adaptable) {
-
-        DittoHeaders headers = adaptable.getHeaders().orElseGet(DittoHeaders::empty);
-        Adaptable adaptableToSend = adaptable;
-        if (!headers.getCorrelationId().isPresent()) {
-            final String newCorrelationId = UUID.randomUUID().toString();
-            headers = headers.toBuilder().correlationId(newCorrelationId)
-                    .build();
-            adaptableToSend = adaptable.setDittoHeaders(headers);
-        }
-
-        final String correlationId = getCorrelationIdOrThrow(headers).toString();
-        doSendAdaptable(adaptableToSend);
-
-        final CompletableFuture<Adaptable> responseFuture = new CompletableFuture<>();
-        customAdaptableResponseFutures.put(correlationId, responseFuture);
-        return responseFuture;
-    }
-
-    // TODO: consider failing the future in callers if websocket is null
-    private void doSendAdaptable(@Nullable final Adaptable adaptable) {
-        if (null == adaptable) {
-            return;
-        }
-        sendToWebsocket(ProtocolFactory.wrapAsJsonifiableAdaptable(adaptable).toJsonString());
     }
 
     private void sendToWebsocket(final String stringMessage) {
@@ -507,75 +298,6 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         } else {
             LOGGER.error("Client <{}>: WebSocket is not connected - going to discard message '{}'",
                     sessionId, stringMessage);
-        }
-    }
-
-    @Override
-    public void registerReplyHandler(final Consumer<CommandResponse<?>> commandResponseHandler) {
-        commandResponseConsumer = commandResponseHandler;
-    }
-
-    // TODO: replace by "registerStartUpMessage" for messages to re-send on re-connect
-    @Override
-    public boolean registerMessageHandler(final String name, final Map<String, String> registrationConfig,
-            final Consumer<Message<?>> handler, final CompletableFuture<Void> receiptFuture) {
-        if (subscriptions.containsKey(name)) {
-            LOGGER.info("Client <{}>: Handler {} already registered for client", sessionId, name);
-            // TODO: some error handling by failing the future???
-            receiptFuture.complete(null);
-            return false;
-        }
-
-        LOGGER.trace("Client <{}>: Registering incoming message handler'", sessionId);
-        subscriptions.put(name, handler);
-        registrationConfigs.put(name, registrationConfig);
-
-        // connection already opened - finish future:
-        if (webSocket != null) {
-            switch (name) {
-                case TwinImpl.CONSUME_TWIN_EVENTS_HANDLER:
-                    sendMeTwinEvents = true;
-                    askBackend(PROTOCOL_CMD_START_SEND_EVENTS, registrationConfig, receiptFuture);
-                    break;
-                case LiveImpl.CONSUME_LIVE_MESSAGES_HANDLER:
-                    sendMeLiveMessages = true;
-                    askBackend(PROTOCOL_CMD_START_SEND_MESSAGES, registrationConfig, receiptFuture);
-                    break;
-                case LiveImpl.CONSUME_LIVE_COMMANDS_HANDLER:
-                    sendMeLiveCommands = true;
-                    askBackend(PROTOCOL_CMD_START_SEND_LIVE_COMMANDS, registrationConfig, receiptFuture);
-                    break;
-                case LiveImpl.CONSUME_LIVE_EVENTS_HANDLER:
-                    sendMeLiveEvents = true;
-                    askBackend(PROTOCOL_CMD_START_SEND_LIVE_EVENTS, registrationConfig, receiptFuture);
-                    break;
-                default:
-                    // TODO: some error handling by failing the future???
-                    LOGGER.info("Client <{}>: Handler {} is not valid.", sessionId, name);
-                    receiptFuture.complete(null);
-                    return false;
-            }
-        }
-
-        return true;
-    }
-
-    @Override
-    public synchronized void deregisterMessageHandler(final String name, final CompletableFuture<Void> future) {
-        subscriptions.remove(name);
-
-        if (TwinImpl.CONSUME_TWIN_EVENTS_HANDLER.equals(name)) {
-            sendMeTwinEvents = false;
-            askBackend(PROTOCOL_CMD_STOP_SEND_EVENTS, Collections.emptyMap(), future);
-        } else if (LiveImpl.CONSUME_LIVE_MESSAGES_HANDLER.equals(name)) {
-            sendMeLiveMessages = false;
-            askBackend(PROTOCOL_CMD_STOP_SEND_MESSAGES, Collections.emptyMap(), future);
-        } else if (LiveImpl.CONSUME_LIVE_COMMANDS_HANDLER.equals(name)) {
-            sendMeLiveCommands = false;
-            askBackend(PROTOCOL_CMD_STOP_SEND_LIVE_COMMANDS, Collections.emptyMap(), future);
-        } else if (LiveImpl.CONSUME_LIVE_EVENTS_HANDLER.equals(name)) {
-            sendMeLiveEvents = false;
-            askBackend(PROTOCOL_CMD_STOP_SEND_LIVE_EVENTS, Collections.emptyMap(), future);
         }
     }
 
@@ -610,22 +332,19 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                         sessionId);
 
                 // ensures that on re-connection the client subscribes again for the previously subscribed stuff:
+                // TODO: replace by registry of on-startup messages.
                 final CompletableFuture<Void> receiptFuture = new CompletableFuture<>();
                 if (sendMeTwinEvents) {
-                    askBackend(PROTOCOL_CMD_START_SEND_EVENTS,
-                            registrationConfigs.get(TwinImpl.CONSUME_TWIN_EVENTS_HANDLER), receiptFuture);
+                    askBackend(PROTOCOL_CMD_START_SEND_EVENTS, Collections.emptyMap(), receiptFuture);
                 }
                 if (sendMeLiveMessages) {
-                    askBackend(PROTOCOL_CMD_START_SEND_MESSAGES,
-                            registrationConfigs.get(LiveImpl.CONSUME_LIVE_MESSAGES_HANDLER), receiptFuture);
+                    askBackend(PROTOCOL_CMD_START_SEND_MESSAGES, Collections.emptyMap(), receiptFuture);
                 }
                 if (sendMeLiveCommands) {
-                    askBackend(PROTOCOL_CMD_START_SEND_LIVE_COMMANDS,
-                            registrationConfigs.get(LiveImpl.CONSUME_LIVE_COMMANDS_HANDLER), receiptFuture);
+                    askBackend(PROTOCOL_CMD_START_SEND_LIVE_COMMANDS, Collections.emptyMap(), receiptFuture);
                 }
                 if (sendMeLiveEvents) {
-                    askBackend(PROTOCOL_CMD_START_SEND_LIVE_EVENTS,
-                            registrationConfigs.get(LiveImpl.CONSUME_LIVE_EVENTS_HANDLER), receiptFuture);
+                    askBackend(PROTOCOL_CMD_START_SEND_LIVE_EVENTS, Collections.emptyMap(), receiptFuture);
                 }
             }
             initiallyConnected.set(true);
@@ -658,7 +377,6 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
             LOGGER.debug("Client <{}>: Backend now <{}>.", sessionId, protocolCmd);
             receiptFuture.complete(aVoid);
         }, callbackExecutor);
-        subscriptionsAcks.put(protocolCmd, loggingFuture);
     }
 
     private static String urlEncode(final String value) {
@@ -779,423 +497,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     private void handleIncomingMessage(final String message) {
+        LOGGER.trace("Client <{}>: Got <{}>", sessionId, message);
         adaptableBus.publish(message);
-        // TODO: remove the rest except the logging part
-        switch (message) {
-            case PROTOCOL_CMD_START_SEND_EVENTS + PROTOCOL_CMD_ACK_SUFFIX:
-                ackSubscription(PROTOCOL_CMD_START_SEND_EVENTS);
-                return;
-            case PROTOCOL_CMD_STOP_SEND_EVENTS + PROTOCOL_CMD_ACK_SUFFIX:
-                ackSubscription(PROTOCOL_CMD_STOP_SEND_EVENTS);
-                return;
-            case PROTOCOL_CMD_START_SEND_MESSAGES + PROTOCOL_CMD_ACK_SUFFIX:
-                ackSubscription(PROTOCOL_CMD_START_SEND_MESSAGES);
-                return;
-            case PROTOCOL_CMD_STOP_SEND_MESSAGES + PROTOCOL_CMD_ACK_SUFFIX:
-                ackSubscription(PROTOCOL_CMD_STOP_SEND_MESSAGES);
-                return;
-            case PROTOCOL_CMD_START_SEND_LIVE_COMMANDS + PROTOCOL_CMD_ACK_SUFFIX:
-                ackSubscription(PROTOCOL_CMD_START_SEND_LIVE_COMMANDS);
-                return;
-            case PROTOCOL_CMD_STOP_SEND_LIVE_COMMANDS + PROTOCOL_CMD_ACK_SUFFIX:
-                ackSubscription(PROTOCOL_CMD_STOP_SEND_LIVE_COMMANDS);
-                return;
-            case PROTOCOL_CMD_START_SEND_LIVE_EVENTS + PROTOCOL_CMD_ACK_SUFFIX:
-                ackSubscription(PROTOCOL_CMD_START_SEND_LIVE_EVENTS);
-                return;
-            case PROTOCOL_CMD_STOP_SEND_LIVE_EVENTS + PROTOCOL_CMD_ACK_SUFFIX:
-                ackSubscription(PROTOCOL_CMD_STOP_SEND_LIVE_EVENTS);
-                return;
-            case PROTOCOL_CMD_JWT_TOKEN + PROTOCOL_CMD_ACK_SUFFIX:
-                LOGGER.trace("Ack for JWT received.");
-                return;
-            default:
-                // no protocol message, treat as JSON below ..
-        }
-
-        final JsonObject messageJson = tryToGetMessageAsJsonObject(message);
-        if (null == messageJson) {
-            return;
-        }
-        final JsonifiableAdaptable jsonifiableAdaptable = tryToGetJsonifiableAdaptableFromMessageJson(messageJson);
-        if (null == jsonifiableAdaptable) {
-            return;
-        }
-
-        final TopicPath.Channel channel = getChannelOrNull(jsonifiableAdaptable);
-        final DittoHeaders headers = jsonifiableAdaptable.getHeaders().orElseGet(DittoHeaders::empty);
-        final String correlationId = getCorrelationIdOrThrow(headers).toString();
-        if (customAdaptableResponseFutures.containsKey(correlationId)) {
-            customAdaptableResponseFutures.remove(correlationId)
-                    .complete(jsonifiableAdaptable);
-        } else if (TopicPath.Channel.TWIN == channel) {
-            handleTwinMessage(message, correlationId, jsonifiableAdaptable);
-        } else if (TopicPath.Channel.LIVE == channel) {
-            handleLiveMessage(message, correlationId, jsonifiableAdaptable);
-        } else if (TopicPath.Channel.NONE == channel) {
-            handleNoneChannelMessage(message, jsonifiableAdaptable);
-        } else {
-            final String msgPattern = "Client <{}>: Got Jsonifiable on unknown channel <{}>: <{}>";
-            LOGGER.warn(msgPattern, sessionId, channel, jsonifiableAdaptable);
-        }
-    }
-
-    private void ackSubscription(final String protocolCommand) {
-        final CompletableFuture<Void> subscriptionAckPromise = subscriptionsAcks.remove(protocolCommand);
-        if (null != subscriptionAckPromise) {
-            LOGGER.trace("Acking pending <{}>.", protocolCommand);
-            subscriptionAckPromise.complete(null);
-        }
-    }
-
-    @Nullable
-    private JsonObject tryToGetMessageAsJsonObject(final String message) {
-        try {
-            return getMessageAsJsonObject(message);
-        } catch (final JsonParseException e) {
-            // What the hell was the message?
-            final String msgPattern = "Client <{}>: Got unknown non-JSON message on WebSocket: {}";
-            LOGGER.warn(msgPattern, sessionId, message, e);
-            return null; // renounce on Optional because of object creation impact on performance (probably irrelevant)
-        }
-    }
-
-    private static JsonObject getMessageAsJsonObject(final String message) {
-        final JsonValue jsonValue = JsonFactory.readFrom(message);
-        if (!jsonValue.isObject()) {
-            final String msgPattern = "The WebSocket message was not a JSON object as required:\n{0}";
-            throw new JsonParseException(MessageFormat.format(msgPattern, message));
-        }
-        return jsonValue.asObject();
-    }
-
-    @Nullable
-    private JsonifiableAdaptable tryToGetJsonifiableAdaptableFromMessageJson(final JsonObject messageJson) {
-        try {
-            return getJsonifiableAdaptableFromMessageJson(messageJson);
-        } catch (final JsonRuntimeException e) {
-            // That should not happen; the backend sent a wrong format!
-            final String msgPattern = "Client <{}>: Incoming message could not be parsed to JSON due to: <{}>:\n  <{}>";
-            LOGGER.warn(msgPattern, sessionId, e.getMessage(), messageJson);
-            return null;
-        }
-    }
-
-    private static JsonifiableAdaptable getJsonifiableAdaptableFromMessageJson(final JsonObject messageJson) {
-        return ProtocolFactory.jsonifiableAdaptableFromJson(messageJson);
-    }
-
-    @Nullable
-    private Signal<?> tryToAdaptToSignal(final Adaptable adaptable, final String message) {
-        try {
-            return adaptToSignal(adaptable);
-        } catch (final DittoRuntimeException e) {
-            // That should not happen; the backend sent a wrong format!
-            LOGGER.warn("Client <{}>: Incoming message could not be parsed to Signal due to: <{}>:\n <{}>",
-                    sessionId, e.getMessage(), message);
-            return null;
-        }
-    }
-
-    private Signal<?> adaptToSignal(final Adaptable adaptable) {
-        return PROTOCOL_ADAPTER.fromAdaptable(adaptable);
-    }
-
-    @Nullable
-    private static TopicPath.Channel getChannelOrNull(final Adaptable jsonifiableAdaptable) {
-        final TopicPath topicPath = jsonifiableAdaptable.getTopicPath();
-        TopicPath.Channel result = topicPath.getChannel();
-        if (null == result) {
-            result = jsonifiableAdaptable.getHeaders()
-                    .flatMap(DittoHeaders::getChannel)
-                    .flatMap(TopicPath.Channel::forName)
-                    .orElse(null);
-        }
-
-        return result;
-    }
-
-    private static CharSequence getCorrelationIdOrThrow(final DittoHeaders dittoHeaders) {
-        return dittoHeaders.getCorrelationId().orElseThrow(() -> {
-            final JsonPointer headersPointer = JsonifiableAdaptable.JsonFields.HEADERS.getPointer();
-            final JsonPointer correlationIdPointer = JsonPointer.of(DittoHeaderDefinition.CORRELATION_ID.getKey());
-
-            return new JsonMissingFieldException(headersPointer.append(correlationIdPointer));
-        });
-    }
-
-    private void handleTwinMessage(final String message, final CharSequence correlationId,
-            final JsonifiableAdaptable jsonifiableAdaptable) {
-
-        final Signal<?> signal = tryToAdaptToSignal(jsonifiableAdaptable, message);
-        if (null == signal) {
-            return;
-        }
-
-        if (signal instanceof ThingCommandResponse) {
-            LOGGER.debug("Client <{}>: Received TWIN Response JSON: {}", sessionId, message);
-            if (signal instanceof ThingErrorResponse) {
-                final DittoRuntimeException cre = ((ErrorResponse<?>) signal).getDittoRuntimeException();
-                final String description = cre.getDescription().orElse("");
-                LOGGER.debug("Client <{}>: Got TWIN ThingErrorResponse: <{}: {} - {}>", sessionId,
-                        cre.getClass().getSimpleName(), cre.getMessage(), description);
-            }
-            commandResponseConsumer.accept((ThingCommandResponse<?>) signal);
-        } else if (signal instanceof ThingEvent) {
-            LOGGER.debug("Client <{}>: Received TWIN Event JSON: {}", sessionId, message);
-            handleThingEvent(correlationId, (ThingEvent<?>) signal, TwinImpl.CONSUME_TWIN_EVENTS_HANDLER,
-                    jsonifiableAdaptable);
-        } else {
-            // if we are at this point we must ask: what the hell is that?
-            LOGGER.warn("Client <{}>: Got unknown message on WebSocket on TWIN channel: {}",
-                    sessionId, message);
-        }
-    }
-
-    private void handleLiveMessage(final String message, final CharSequence correlationId,
-            final JsonifiableAdaptable jsonifiableAdaptable) {
-
-        final Signal<?> signal = tryToAdaptToSignal(jsonifiableAdaptable, message);
-        if (null == signal) {
-            return;
-        }
-
-        if (signal instanceof MessageCommand) {
-            LOGGER.debug("Client <{}>: Received LIVE MessageCommand JSON: {}", sessionId,
-                    message);
-            handleLiveMessage((MessageCommand<?, ?>) signal);
-        } else if (signal instanceof MessageCommandResponse) {
-            LOGGER.debug("Client <{}>: Received LIVE MessageCommandResponse JSON: {}", sessionId,
-                    message);
-            handleLiveMessageResponse((MessageCommandResponse<?, ?>) signal);
-        } else if (signal instanceof ThingCommand) {
-            LOGGER.debug("Client <{}>: Received LIVE ThingCommand JSON: {}", sessionId, message);
-            handleLiveCommand(LiveCommandFactory.getInstance().getLiveCommand((ThingCommand<?>) signal),
-                    jsonifiableAdaptable);
-        } else if (signal instanceof ThingErrorResponse) {
-            final DittoRuntimeException cre = ((ThingErrorResponse) signal).getDittoRuntimeException();
-            final String description = cre.getDescription().orElse("");
-            LOGGER.warn("Client <{}>: Got LIVE ThingErrorResponse: <{}: {} - {}>", sessionId,
-                    cre.getClass().getSimpleName(), cre.getMessage(), description);
-            if (messageCommandResponseConsumers.containsKey(correlationId.toString())) {
-                handleLiveMessageResponse((ThingErrorResponse) signal);
-            } else {
-                handleLiveCommandResponse((ThingErrorResponse) signal);
-            }
-        } else if (signal instanceof ThingCommandResponse) {
-            LOGGER.debug("Client <{}>: Received LIVE ThingCommandResponse JSON: {}", sessionId,
-                    message);
-            handleLiveCommandResponse((ThingCommandResponse<?>) signal);
-        } else if (signal instanceof ThingEvent) {
-            LOGGER.debug("Client <{}>: Received LIVE ThingEvent JSON: {}", sessionId, message);
-            handleThingEvent(correlationId, (ThingEvent<?>) signal, LiveImpl.CONSUME_LIVE_EVENTS_HANDLER,
-                    jsonifiableAdaptable);
-        } else {
-            // if we are at this point we must ask: what the hell is that?
-            LOGGER.warn("Client <{}>: Got unknown message on WebSocket on LIVE channel: {}",
-                    sessionId, message);
-        }
-    }
-
-
-    private void handleNoneChannelMessage(final String message, final JsonifiableAdaptable jsonifiableAdaptable) {
-
-        final Signal<?> signal = tryToAdaptToSignal(jsonifiableAdaptable, message);
-        if (null == signal) {
-            return;
-        }
-
-        if (signal instanceof PolicyCommandResponse) {
-            LOGGER.debug("Client <{}>: Received PolicyCommandResponse JSON: {}", sessionId, message);
-            if (signal instanceof PolicyErrorResponse) {
-                final DittoRuntimeException cre = ((PolicyErrorResponse) signal).getDittoRuntimeException();
-                final String description = cre.getDescription().orElse("");
-                LOGGER.debug("Client <{}>: Got PolicyErrorResponse: <{}: {} - {}>", sessionId,
-                        cre.getClass().getSimpleName(), cre.getMessage(), description);
-            }
-            commandResponseConsumer.accept((PolicyCommandResponse<?>) signal);
-        } else {
-            // if we are at this point we must ask: what the hell is that?
-            LOGGER.warn("Client <{}>: Got unknown message on WebSocket on NONE channel: {}",
-                    sessionId, message);
-        }
-    }
-
-    private void handleThingEvent(final CharSequence correlationId, final ThingEvent<?> jsonifiable,
-            final String subscriptionKey, final JsonifiableAdaptable jsonifiableAdaptable) {
-
-        final MessageHeaders messageHeaders =
-                MessageHeaders.newBuilder(MessageDirection.FROM, jsonifiable.getEntityId(), jsonifiable.getType())
-                        .correlationId(correlationId)
-                        .build();
-        final Message<ThingEvent<?>> eventMessage = Message.<ThingEvent<?>>newBuilder(messageHeaders)
-                .payload(jsonifiable)
-                .extra(jsonifiableAdaptable.getPayload().getExtra().orElse(null))
-                .build();
-        final Consumer<Message<?>> eventConsumer = subscriptions.get(subscriptionKey);
-        if (eventConsumer != null) {
-            eventConsumer.accept(eventMessage);
-        } else {
-            LOGGER.debug("Client <{}>: Dropping incoming event as no subscription for consuming events was" +
-                            " registered. Did you call 'client.twin().startConsumption()' or" +
-                            " 'client.live().startConsumption()' ?",
-                    sessionId);
-        }
-    }
-
-    private void handleLiveMessage(final MessageCommand<?, ?> messageCommand) {
-
-        final Message<?> message = messageCommand.getMessage();
-        final Consumer<Message<?>> messageConsumer = subscriptions.get(LiveImpl.CONSUME_LIVE_MESSAGES_HANDLER);
-        if (messageConsumer != null) {
-            messageConsumer.accept(message);
-        } else {
-            LOGGER.warn("Client <{}>: Dropping incoming message as no subscription for consuming messages was" +
-                    " registered. Did you call 'client.twin().startConsumption()' or" +
-                    " 'client.live().startConsumption()'?", sessionId);
-        }
-    }
-
-    private void handleLiveMessageResponse(final MessageCommandResponse<?, ?> messageCommandResponse) {
-
-        final Message message = messageCommandResponse.getMessage();
-        LOGGER.debug("Client <{}>: Received response message: {}", sessionId, message);
-        final String correlationId = messageCommandResponse.getDittoHeaders().getCorrelationId().orElse("");
-        Optional.ofNullable(messageCommandResponseConsumers.remove(correlationId))
-                .ifPresent(consumer -> consumer.getResponseConsumer().accept(message, null));
-    }
-
-    private void handleLiveMessageResponse(final ErrorResponse<?> errorResponse) {
-
-        final String correlationId = errorResponse.getDittoHeaders().getCorrelationId().orElse("");
-        Optional.ofNullable(messageCommandResponseConsumers.remove(correlationId))
-                .ifPresent(consumer ->
-                        consumer.getResponseConsumer().accept(null, errorResponse.getDittoRuntimeException()));
-    }
-
-    private void handleLiveCommand(final LiveCommand<?, ?> liveCommand,
-            final JsonifiableAdaptable jsonifiableAdaptable) {
-
-        final DittoHeaders dittoHeaders = liveCommand.getDittoHeaders();
-        final Optional<JsonSchemaVersion> commandSchemaVersion = dittoHeaders.getSchemaVersion();
-        // only accept events with either with:
-        // * missing schemaVersion, or
-        // * with the same schemaVersion as the client uses
-        if (!commandSchemaVersion.isPresent() ||
-                commandSchemaVersion.get().equals(messagingConfiguration.getJsonSchemaVersion())) {
-            final MessageHeaders messageHeaders =
-                    MessageHeaders.newBuilder(MessageDirection.FROM, liveCommand.getThingEntityId(),
-                            liveCommand.getType())
-                            .correlationId(dittoHeaders.getCorrelationId().orElse(null))
-                            .build();
-            final Message<LiveCommand<?, ?>> liveCommandMessage = Message.<LiveCommand<?, ?>>newBuilder(messageHeaders)
-                    .payload(liveCommand)
-                    .extra(jsonifiableAdaptable.getPayload().getExtra().orElse(null))
-                    .build();
-
-            final Consumer<Message<?>> liveCommandConsumer = subscriptions.get(LiveImpl.CONSUME_LIVE_COMMANDS_HANDLER);
-            if (liveCommandConsumer != null) {
-                liveCommandConsumer.accept(liveCommandMessage);
-            } else {
-                LOGGER.warn(
-                        "Client <{}>: Dropping incoming live command as no subscription for consuming live commands " +
-                                "was registered. Did you call 'client.live().startConsumption()' ?",
-                        sessionId);
-            }
-        } else {
-            LOGGER.trace(
-                    "Client <{}>: Received live command in other JsonSchemaVersion ({}) than the client uses ({}), not  " +
-                            "delivering it: {}", sessionId,
-                    commandSchemaVersion.get(),
-                    messagingConfiguration.getEndpointUri(), liveCommand);
-        }
-    }
-
-    private void handleLiveCommandResponse(final CommandResponse<?> commandResponse) {
-        commandResponseConsumer.accept(commandResponse);
-    }
-
-    @Nullable
-    static Adaptable constructAdaptableFromMessage(final Message<?> message, final TopicPath.Channel channel) {
-        final DittoHeadersBuilder headersBuilder = DittoHeaders.newBuilder().channel(channel.getName());
-        final Optional<String> optionalCorrelationId = message.getCorrelationId();
-        optionalCorrelationId.ifPresent(headersBuilder::correlationId);
-        final DittoHeaders dittoHeaders = headersBuilder.build();
-
-        final ThingId thingId = message.getThingEntityId();
-        final Optional<HttpStatusCode> statusCodeOptional = message.getStatusCode();
-        final Optional<String> featureIdOptional = message.getFeatureId();
-        final Adaptable adaptable;
-        if (statusCodeOptional.isPresent()) {
-            // this is treated as a response message
-            final HttpStatusCode statusCode = statusCodeOptional.get();
-            final MessageCommandResponse<?, ?> messageCommandResponse = featureIdOptional.isPresent()
-                    ? SendFeatureMessageResponse.of(thingId, featureIdOptional.get(), message, statusCode, dittoHeaders)
-                    : SendThingMessageResponse.of(thingId, message, statusCode, dittoHeaders);
-            adaptable = tryToConvertToAdaptable(messageCommandResponse);
-        } else {
-            final MessageCommand<?, ?> messageCommand = featureIdOptional.isPresent()
-                    ? SendFeatureMessage.of(thingId, featureIdOptional.get(), message, dittoHeaders)
-                    : SendThingMessage.of(thingId, message, dittoHeaders);
-            adaptable = tryToConvertToAdaptable(messageCommand);
-
-            // TODO: remove message command response consumers
-            /*
-            final Optional<MessageResponseConsumer<?>> optionalResponseConsumer = message.getResponseConsumer();
-            if (optionalCorrelationId.isPresent() && optionalResponseConsumer.isPresent()) {
-                messageCommandResponseConsumers.put(optionalCorrelationId.get(), optionalResponseConsumer.get());
-            }
-             */
-        }
-        return adaptable;
-    }
-
-    /**
-     * A LinkedHashMap with a {@code maxSize}, removing the oldest entries as new ones get in.
-     */
-    private static class LimitedHashMap<K, V> extends LinkedHashMap<K, V> {
-
-        private static final long serialVersionUID = -2771080576933386538L;
-
-        private final int maxSize;
-
-        private LimitedHashMap(final int maxSize) {
-            this.maxSize = maxSize;
-        }
-
-        @Override
-        protected boolean removeEldestEntry(final Map.Entry<K, V> eldest) {
-            return size() > maxSize;
-        }
-
-        @Override
-        public boolean equals(@Nullable final Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            if (!super.equals(o)) {
-                return false;
-            }
-            final LimitedHashMap<?, ?> that = (LimitedHashMap<?, ?>) o;
-            return maxSize == that.maxSize;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(super.hashCode(), maxSize);
-        }
-
-        @Override
-        public String toString() {
-            return getClass().getSimpleName() + " [" +
-                    super.toString() +
-                    ", maxSize=" + maxSize +
-                    "]";
-        }
-
     }
 
 }
