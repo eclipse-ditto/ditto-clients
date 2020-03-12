@@ -64,6 +64,7 @@ import org.eclipse.ditto.protocoladapter.JsonifiableAdaptable;
 import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommandAnswerBuilder;
 import org.eclipse.ditto.signals.commands.live.modify.ModifyFeaturePropertyLiveCommandAnswerBuilder;
+import org.eclipse.ditto.signals.events.thingsearch.SubscriptionEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -140,7 +141,7 @@ public final class DittoClientUsageExamples {
         client2.live().startConsumption().get();
         LOGGER.info("Subscribed for Live events/commands/messages");
 
-        System.out.println("\n\nContinuing with TWIN commands/events demo:");
+       System.out.println("\n\nContinuing with TWIN commands/events demo:");
         useTwinCommandsAndEvents(client, client2);
         System.out.println("\n\nFinished with TWIN commands/events demo");
 
@@ -157,6 +158,12 @@ public final class DittoClientUsageExamples {
         System.out.println("\n\nFinished with LIVE messages demo");
         Thread.sleep(500);
 
+        System.out.println("\n\nAbout to continue with search commands:");
+        promptEnterKey();
+        useSearchCommands(client);
+        System.out.println("\n\nFinished with SEARCH commands demo");
+        Thread.sleep(500);
+
         System.out.println("\n\nAbout to continue with small load test:");
         promptEnterKey();
 
@@ -170,6 +177,7 @@ public final class DittoClientUsageExamples {
         System.out.println("\n\nAbout to continue with policy example:");
         promptEnterKey();
         addNewSubjectToExistingPolicy(client);
+        System.out.println("\n\nFinished with policy example");
 
         client.destroy();
         client2.destroy();
@@ -562,6 +570,61 @@ public final class DittoClientUsageExamples {
         });
     }
 
+    private static void useSearchCommands(final DittoClient client) {
+
+        final JsonifiableAdaptable createSubscription = ProtocolFactory.jsonifiableAdaptableFromJson(
+                JsonFactory.readFrom("{\n" +
+                        "  \"topic\": \"_/_/things/twin/search/subscribe\",\n" +
+                        "  \"headers\": {},\n" +
+                        "  \"path\": \"/\",\n" +
+                        "  \"value\": \n " +
+                        "  {\"filter\": \"exists(attributes/location)\",\n" +
+                        "  \"options\": \"size(3)\"}\n" +
+                        "  }").asObject());
+        client.sendDittoProtocol(createSubscription).whenComplete((a, t) -> {
+            if (a != null) {
+                LOGGER.info("sendDittoProtocol: Received adaptable as response: {}", a);
+                final JsonifiableAdaptable requestSubscription = ProtocolFactory.jsonifiableAdaptableFromJson(
+                        JsonFactory.readFrom("{\n" +
+                                "  \"topic\": \"_/_/things/twin/search/request\",\n" +
+                                "  \"headers\": {\"correlationId:\": \"" +
+                                a.getHeaders().orElse(null).getCorrelationId().orElse(null) + "\"},\n" +
+                                "  \"path\": \"/\",\n" +
+                                "  \"value\": \n " +
+                                "  {\"subscriptionId\": \"" +
+                                a.getPayload().getValue().flatMap(value -> value.asObject().getValue(
+                                        SubscriptionEvent.JsonFields.SUBSCRIPTION_ID)).orElse(null) + "\",\n" +
+                                "  \"demand\": 4}\n" +
+                                "  }").asObject());
+
+                client.sendDittoProtocol(requestSubscription).whenComplete((a1, t1) -> {
+                    if (a1 != null) {
+                        LOGGER.info("sendDittoProtocol: Received adaptable as response: {}", a1);
+
+                        final JsonifiableAdaptable cancelSubscription = ProtocolFactory.jsonifiableAdaptableFromJson(
+                                JsonFactory.readFrom("{\n" +
+                                        "  \"topic\": \"_/_/things/twin/search/cancel\",\n" +
+                                        "  \"headers\": {\"correlationId:\": \"" +
+                                        a.getHeaders().orElse(null).getCorrelationId().orElse(null) + "\"},\n" +
+                                        "  \"path\": \"/\",\n" +
+                                        "  \"value\": \n " +
+                                        "  {\"subscriptionId\": \"" +
+                                        a.getPayload().getValue().flatMap(value -> value.asObject().getValue(
+                                                SubscriptionEvent.JsonFields.SUBSCRIPTION_ID)).orElse(null) + "\",\n" +
+                                        "  }").asObject());
+                        client.sendDittoProtocol(cancelSubscription);
+                    }
+                    if (t1 != null) {
+                        LOGGER.warn("sendDittoProtocol: Received throwable as response", t1);
+                    }
+                });
+            }
+            if (t != null) {
+                LOGGER.warn("sendDittoProtocol: Received throwable as response", t);
+            }
+        });
+    }
+
     private static double getDuration(final long startTimeStamp) {
         final int nanosecondsToMillisecondsFactor = 1_000_000;
         return (double) (System.nanoTime() - startTimeStamp) / nanosecondsToMillisecondsFactor;
@@ -612,7 +675,8 @@ public final class DittoClientUsageExamples {
     private static MessagingProvider createMessagingProvider() {
         final MessagingConfiguration.Builder builder = WebSocketMessagingConfiguration.newBuilder()
                 .endpoint(DITTO_ENDPOINT_URL)
-                .jsonSchemaVersion(JsonSchemaVersion.V_2);
+                .jsonSchemaVersion(JsonSchemaVersion.V_2)
+                .reconnectEnabled(false);
 
         final ProxyConfiguration proxyConfiguration;
         if (PROXY_HOST != null && !PROXY_HOST.isEmpty()) {
