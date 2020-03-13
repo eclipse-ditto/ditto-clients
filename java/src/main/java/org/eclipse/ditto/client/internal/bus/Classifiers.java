@@ -14,15 +14,18 @@ package org.eclipse.ditto.client.internal.bus;
 
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
+import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
 
+import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.Signal;
+import org.eclipse.ditto.signals.events.thingsearch.SubscriptionEvent;
 
 /**
  * Factory class for classifiers.
@@ -37,7 +40,7 @@ public final class Classifiers {
      * @return classifier that classifies each object as itself.
      */
     public static <T> Classifier<T> identity() {
-        return Optional::of;
+        return Identity::of;
     }
 
     /**
@@ -61,17 +64,34 @@ public final class Classifiers {
     }
 
     /**
+     * Classify thing-search events.
+     *
+     * @return classifier for thing-search events.
+     */
+    public static Classifier<Adaptable> thingsSearch() {
+        return Instances.THINGS_SEARCH_CLASSIFIER;
+    }
+
+    /**
+     * Create a classification key from a string representing the string itself.
+     *
+     * @param string the string.
+     * @return the classification key.
+     */
+    public static Classifier.Classification forString(final String string) {
+        return new Identity<>(string);
+    }
+
+    /**
      * Create a classification key from the correlation ID of a signal.
      * Signals without correlation IDs are not classified to anything meaningful.
      *
      * @param signal the signal whose correlation ID is used for classification.
      * @return the classification key.
+     * @throws java.lang.NullPointerException if the signal has no correlation ID.
      */
-    public static Object forCorrelationId(final Signal<?> signal) {
-        return signal.getDittoHeaders()
-                .getCorrelationId()
-                .map(Classifiers::forCorrelationId)
-                .orElseGet(Object::new);
+    public static Classifier.Classification forCorrelationId(final Signal<?> signal) {
+        return forCorrelationId(signal.getDittoHeaders().getCorrelationId().orElse(null));
     }
 
     /**
@@ -79,16 +99,27 @@ public final class Classifiers {
      *
      * @param correlationId the correlation ID.
      * @return the key for the correlation ID.
-     * @throws java.lang.NullPointerException if the argument is null.
+     * @throws java.lang.NullPointerException if the argument is null (but the argument is marked
+     * {@code @Nullable} to centralize throwing of {@code NullPointerException}).
      */
-    public static Object forCorrelationId(@Nullable final String correlationId) {
+    public static Classifier.Classification forCorrelationId(@Nullable final String correlationId) {
         return new CorrelationId(checkNotNull(correlationId, "correlationId"));
+    }
+
+    /**
+     * Create a search-protocol subscription ID classification key.
+     *
+     * @param searchSubscriptionId the search-protocol subscription ID.
+     * @return the key.
+     */
+    public static Classifier.Classification forThingsSearch(final String searchSubscriptionId) {
+        return new SearchSubscriptionId(searchSubscriptionId);
     }
 
     /**
      * The classified streaming types.
      */
-    public enum StreamingType {
+    public enum StreamingType implements Classifier.Classification {
         LIVE_COMMAND("START-SEND-LIVE-COMMANDS", "STOP-SEND-LIVE-COMMANDS"),
         LIVE_EVENT("START-SEND-LIVE-EVENTS", "STOP-SEND-LIVE-EVENTS"),
         LIVE_MESSAGE("START-SEND-MESSAGES", "STOP-SEND-MESSAGES"),
@@ -140,23 +171,23 @@ public final class Classifiers {
         }
     }
 
-    private static final class CorrelationId {
+    private static abstract class Literal<T> implements Classifier.Classification {
 
-        private final String correlationId;
+        protected final T value;
 
-        private CorrelationId(final String correlationId) {
-            this.correlationId = checkNotNull(correlationId, "correlationId");
+        protected Literal(final T value) {
+            this.value = value;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getClass(), correlationId);
+            return Objects.hash(getClass(), value);
         }
 
         @Override
         public boolean equals(final Object o) {
-            if (o instanceof CorrelationId) {
-                return Objects.equals(correlationId, ((CorrelationId) o).correlationId);
+            if (o.getClass() == getClass()) {
+                return Objects.equals(value, getClass().cast(o).value);
             } else {
                 return false;
             }
@@ -164,14 +195,39 @@ public final class Classifiers {
 
         @Override
         public String toString() {
-            return getClass().getSimpleName() + "[" + correlationId + "]";
+            return getClass().getSimpleName() + "[" + value + "]";
+        }
+    }
+
+    private static final class CorrelationId extends Literal<String> {
+
+        private CorrelationId(final String correlationId) {
+            super(correlationId);
+        }
+    }
+
+    private static final class SearchSubscriptionId extends Literal<String> {
+
+        private SearchSubscriptionId(final String searchSubscriptionId) {
+            super(searchSubscriptionId);
+        }
+    }
+
+    private static final class Identity<T> extends Literal<T> {
+
+        private Identity(final T value) {
+            super(value);
+        }
+
+        private static <T> Optional<Classifier.Classification> of(final T value) {
+            return Optional.of(new Identity<>(value));
         }
     }
 
     private static final class StreamingTypeClassifier implements Classifier<Adaptable> {
 
         @Override
-        public Optional<Object> classify(final Adaptable message) {
+        public Optional<Classification> classify(final Adaptable message) {
             final TopicPath topicPath = message.getTopicPath();
             if (topicPath.getGroup() == TopicPath.Group.THINGS) {
                 switch (topicPath.getChannel()) {
@@ -194,6 +250,25 @@ public final class Classifiers {
         }
     }
 
+    private static final class ThingsSearchClassifier implements Classifier<Adaptable> {
+
+        private static final EnumSet<TopicPath.SearchAction> SEARCH_EVENTS = EnumSet.of(
+                TopicPath.SearchAction.HAS_NEXT,
+                TopicPath.SearchAction.COMPLETE,
+                TopicPath.SearchAction.FAILED
+        );
+
+        @Override
+        public Optional<Classification> classify(final Adaptable message) {
+            return message.getTopicPath().getSearchAction()
+                    .filter(SEARCH_EVENTS::contains)
+                    .flatMap(action -> message.getPayload().getValue())
+                    .filter(JsonValue::isObject)
+                    .flatMap(jsonValue -> jsonValue.asObject().getValue(SubscriptionEvent.JsonFields.SUBSCRIPTION_ID))
+                    .map(SearchSubscriptionId::new);
+        }
+    }
+
     private static final class Instances {
 
         private static final Classifier<Adaptable> CORRELATION_ID_CLASSIFIER = adaptable ->
@@ -202,5 +277,7 @@ public final class Classifiers {
                         .map(CorrelationId::new);
 
         private static final Classifier<Adaptable> STREAMING_TYPE_CLASSIFIER = new StreamingTypeClassifier();
+
+        private static final Classifier<Adaptable> THINGS_SEARCH_CLASSIFIER = new ThingsSearchClassifier();
     }
 }

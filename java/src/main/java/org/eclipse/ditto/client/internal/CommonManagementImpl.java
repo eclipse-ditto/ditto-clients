@@ -40,6 +40,7 @@ import org.eclipse.ditto.client.changes.internal.ImmutableFeatureChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeaturesChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableThingChange;
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
+import org.eclipse.ditto.client.internal.bus.Classifier;
 import org.eclipse.ditto.client.internal.bus.Classifiers;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
@@ -644,7 +645,8 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         final AdaptableBus.SubscriptionId subscriptionId =
                 adaptableBus.subscribeForAdaptable(streamingType,
                         adaptable -> adaptableToNotifier.apply(adaptable).accept(getBus()));
-        adjoin(adaptableBus.subscribeOnceForString(protocolCommandAck, getTimeout()), futureToCompleteOrFailAfterAck);
+        final Classifier.Classification tag = Classifiers.forString(protocolCommandAck);
+        adjoin(adaptableBus.subscribeOnceForString(tag, getTimeout()), futureToCompleteOrFailAfterAck);
         messagingProvider.emit(protocolCommand);
         return subscriptionId;
     }
@@ -667,7 +669,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         final AdaptableBus adaptableBus = messagingProvider.getAdaptableBus();
         if (adaptableBus.unsubscribe(subscriptionId)) {
             LOGGER.trace("Sending {} and waiting for {}", protocolCommand, protocolCommandAck);
-            adjoin(adaptableBus.subscribeOnceForString(protocolCommandAck, getTimeout()),
+            adjoin(adaptableBus.subscribeOnceForString(Classifiers.forString(protocolCommandAck), getTimeout()),
                     futureToCompleteOrFailAfterAck);
             messagingProvider.emit(protocolCommand);
         } else {

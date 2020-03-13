@@ -50,6 +50,7 @@ public final class BusFactory {
         return new DefaultAdaptableBus(MessagingProviders.createScheduledExecutorService(name))
                 .addStringClassifier(Classifiers.identity())
                 .addAdaptableClassifier(Classifiers.correlationId())
-                .addAdaptableClassifier(Classifiers.streamingType());
+                .addAdaptableClassifier(Classifiers.streamingType())
+                .addAdaptableClassifier(Classifiers.thingsSearch());
     }
 }

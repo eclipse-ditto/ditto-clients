@@ -176,7 +176,7 @@ public interface MessagingProvider {
     /**
      * Throw {@code UnsupportedOperationException}.
      * Protocol-relevant concerns are moved away from messaging providers into API handles.
-     * Use {@code this#emit(String)} instead.
+     * Use {@code this#emitAdaptable(Adaptable)} or {@code this#emit(String)} instead.
      *
      * @param event ignored.
      * @param channel ignored.
@@ -188,9 +188,11 @@ public interface MessagingProvider {
     }
 
     /**
-     * Register handler for ThingCommandResponse.
+     * Throw {@code UnsupportedOperationException}.
+     * Protocol-relevant concerns are moved away from messaging providers into API handles.
      *
-     * @param commandResponseHandler the consumer that is called for incoming command response messages
+     * @param commandResponseHandler ignored.
+     * @throws UnsupportedOperationException always.
      */
     @Deprecated
     default void registerReplyHandler(Consumer<CommandResponse<?>> commandResponseHandler) {
@@ -198,13 +200,15 @@ public interface MessagingProvider {
     }
 
     /**
-     * Register a named message handler and receipt handler.
+     * Throw {@code UnsupportedOperationException}.
+     * Protocol-relevant concerns are moved away from messaging providers into API handles.
      *
-     * @param name name of the message handler
-     * @param registrationConfig optional configuration for this registration
-     * @param handler the handler invoked when new message are received
-     * @param receiptFuture the future that takes responses to this register call
-     * @return the {@code true} if handler was registered, {@code false} otherwise (e.g. handler was already registered)
+     * @param name ignored.
+     * @param registrationConfig ignored.
+     * @param handler ignored.
+     * @param receiptFuture ignored.
+     * @return nothing.
+     * @throws UnsupportedOperationException always.
      */
     @Deprecated
     default boolean registerMessageHandler(String name,
@@ -215,10 +219,12 @@ public interface MessagingProvider {
     }
 
     /**
-     * Remove a previously registered message handler.
+     * Throw {@code UnsupportedOperationException}.
+     * Protocol-relevant concerns are moved away from messaging providers into API handles.
      *
-     * @param name name of the handler to deregister
-     * @param future the future to handle the response
+     * @param name ignored.
+     * @param future ignored.
+     * @throws UnsupportedOperationException always.
      */
     @Deprecated
     default void deregisterMessageHandler(String name, CompletableFuture<Void> future) {

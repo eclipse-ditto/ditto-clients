@@ -23,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -52,9 +53,10 @@ final class DefaultAdaptableBus implements AdaptableBus {
     private final Collection<Classifier<String>> stringClassifiers;
     private final Collection<Classifier<Adaptable>> adaptableClassifiers;
 
-    private final Map<Object, Set<Entry<Consumer<String>>>> oneTimeStringConsumers;
-    private final Map<Object, Set<Entry<Consumer<Adaptable>>>> oneTimeAdaptableConsumers;
-    private final Map<Object, Set<Entry<Consumer<Adaptable>>>> persistentAdaptableConsumers;
+    private final Map<Classifier.Classification, Set<Entry<Consumer<String>>>> oneTimeStringConsumers;
+    private final Map<Classifier.Classification, Set<Entry<Consumer<Adaptable>>>> oneTimeAdaptableConsumers;
+    private final Map<Classifier.Classification, Set<Entry<Consumer<Adaptable>>>> persistentAdaptableConsumers;
+    private final Map<SubscriptionId, Future<?>> timeoutFutures;
 
     DefaultAdaptableBus(final ScheduledExecutorService scheduledExecutorService) {
         this.scheduledExecutorService = scheduledExecutorService;
@@ -63,6 +65,7 @@ final class DefaultAdaptableBus implements AdaptableBus {
         oneTimeStringConsumers = new ConcurrentHashMap<>();
         oneTimeAdaptableConsumers = new ConcurrentHashMap<>();
         persistentAdaptableConsumers = new ConcurrentHashMap<>();
+        timeoutFutures = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -78,25 +81,28 @@ final class DefaultAdaptableBus implements AdaptableBus {
     }
 
     @Override
-    public CompletionStage<String> subscribeOnceForString(final Object tag, final Duration timeout) {
+    public CompletionStage<String> subscribeOnceForString(final Classifier.Classification tag, final Duration timeout) {
         return subscribeOnce(oneTimeStringConsumers, tag, timeout);
     }
 
     @Override
-    public CompletionStage<Adaptable> subscribeOnceForAdaptable(final Object tag, final Duration timeout) {
+    public CompletionStage<Adaptable> subscribeOnceForAdaptable(final Classifier.Classification tag,
+            final Duration timeout) {
         return subscribeOnce(oneTimeAdaptableConsumers, tag, timeout);
     }
 
     @Override
-    public SubscriptionId subscribeForAdaptable(final Object tag, final Consumer<Adaptable> adaptableConsumer) {
+    public SubscriptionId subscribeForAdaptable(final Classifier.Classification tag,
+            final Consumer<Adaptable> adaptableConsumer) {
         final Entry<Consumer<Adaptable>> entry = new Entry<>(tag, adaptableConsumer);
         addEntry(persistentAdaptableConsumers, entry);
         return entry;
     }
 
     @Override
-    public SubscriptionId subscribeForAdaptableWithTimeout(final Object tag, final Duration timeout,
-            final Consumer<Adaptable> adaptableConsumer, final Predicate<Adaptable> terminationPredicate) {
+    public SubscriptionId subscribeForAdaptableWithTimeout(final Classifier.Classification tag, final Duration timeout,
+            final Consumer<Adaptable> adaptableConsumer, final Predicate<Adaptable> terminationPredicate,
+            final Consumer<Throwable> onTimeout) {
         final CompletableFuture<Adaptable> terminationFuture = new CompletableFuture<>();
         final AtomicReference<Instant> lastMessage = new AtomicReference<>(Instant.now());
         final Entry<Consumer<Adaptable>> entry = new Entry<>(
@@ -105,9 +111,11 @@ final class DefaultAdaptableBus implements AdaptableBus {
         );
         addEntry(persistentAdaptableConsumers, entry);
         removeAfterIdle(persistentAdaptableConsumers, entry, timeout, terminationFuture, lastMessage);
-        terminationFuture.thenAccept(terminated ->
-                // removed due to termination message
-                removeEntry(persistentAdaptableConsumers, entry, () -> {}));
+        terminationFuture.thenAccept(terminated -> removeEntry(persistentAdaptableConsumers, entry, () -> {}))
+                .exceptionally(timeoutError -> {
+                    onTimeout.accept(timeoutError);
+                    return null;
+                });
         return entry;
     }
 
@@ -135,13 +143,13 @@ final class DefaultAdaptableBus implements AdaptableBus {
             final Optional<Adaptable> adaptableOptional = parseAsAdaptable(message);
             if (adaptableOptional.isPresent()) {
                 final Adaptable adaptable = adaptableOptional.get();
-                final List<Object> tags = getAllAdaptableTags(adaptable);
+                final List<Classifier.Classification> tags = getAllAdaptableTags(adaptable);
                 if (publishToOneTimeAdaptableSubscribers(adaptable, tags) ||
                         publishToPersistentAdaptableSubscribers(adaptable, tags)) {
                     return;
                 }
             }
-            LOGGER.warn("Client got unhandled message: {}", message);
+            LOGGER.trace("Client got unhandled message: {}", message);
         }
     }
 
@@ -158,14 +166,15 @@ final class DefaultAdaptableBus implements AdaptableBus {
             } else {
                 // not terminated
                 lastMessage.set(Instant.now());
-                adaptableConsumer.accept(message);
             }
+            // feed message to adaptable consumer in any case
+            adaptableConsumer.accept(message);
         };
     }
 
     private <T> CompletionStage<T> subscribeOnce(
-            final Map<Object, Set<Entry<Consumer<T>>>> registry,
-            final Object tag,
+            final Map<Classifier.Classification, Set<Entry<Consumer<T>>>> registry,
+            final Classifier.Classification tag,
             final Duration timeout) {
         final CompletableFuture<T> resultFuture = new CompletableFuture<>();
         final Entry<Consumer<T>> subscriber = new Entry<>(tag, resultFuture::complete);
@@ -176,7 +185,7 @@ final class DefaultAdaptableBus implements AdaptableBus {
 
     private boolean publishToOneTimeStringSubscribers(final String message) {
         for (final Classifier<String> stringClassifier : stringClassifiers) {
-            final Optional<Object> tag = stringClassifier.classify(message);
+            final Optional<Classifier.Classification> tag = stringClassifier.classify(message);
             if (tag.isPresent()) {
                 final Consumer<String> subscriber = removeOne(oneTimeStringConsumers, tag.get());
                 if (subscriber != null) {
@@ -188,8 +197,9 @@ final class DefaultAdaptableBus implements AdaptableBus {
         return false;
     }
 
-    private boolean publishToOneTimeAdaptableSubscribers(final Adaptable adaptable, final List<Object> tags) {
-        for (final Object tag : tags) {
+    private boolean publishToOneTimeAdaptableSubscribers(final Adaptable adaptable,
+            final List<Classifier.Classification> tags) {
+        for (final Classifier.Classification tag : tags) {
             final Consumer<Adaptable> oneTimeSubscriber = removeOne(oneTimeAdaptableConsumers, tag);
             if (oneTimeSubscriber != null) {
                 oneTimeSubscriber.accept(adaptable);
@@ -199,9 +209,10 @@ final class DefaultAdaptableBus implements AdaptableBus {
         return false;
     }
 
-    private boolean publishToPersistentAdaptableSubscribers(final Adaptable adaptable, final List<Object> tags) {
+    private boolean publishToPersistentAdaptableSubscribers(final Adaptable adaptable,
+            final List<Classifier.Classification> tags) {
         boolean publishedToPersistentSubscribers = false;
-        for (final Object tag : tags) {
+        for (final Classifier.Classification tag : tags) {
             final Set<Entry<Consumer<Adaptable>>> persistentConsumers = persistentAdaptableConsumers.get(tag);
             if (persistentConsumers != null && !persistentConsumers.isEmpty()) {
                 publishedToPersistentSubscribers = true;
@@ -213,23 +224,32 @@ final class DefaultAdaptableBus implements AdaptableBus {
         return publishedToPersistentSubscribers;
     }
 
-    private List<Object> getAllAdaptableTags(final Adaptable adaptable) {
+    private List<Classifier.Classification> getAllAdaptableTags(final Adaptable adaptable) {
         return adaptableClassifiers.stream()
                 .flatMap(classifier -> classifier.classify(adaptable).map(Stream::of).orElseGet(Stream::empty))
                 .collect(Collectors.toList());
     }
 
-    private <T> void removeAfter(final Map<Object, Set<Entry<T>>> registry,
+    private <T> void removeAfter(final Map<Classifier.Classification, Set<Entry<T>>> registry,
             final Entry<T> entry,
             final Duration after,
             final CompletableFuture<?> futureToFail) {
         final Runnable cancellationRunnable = () ->
                 removeEntry(registry, entry, () -> futureToFail.completeExceptionally(timeout(after)));
-        scheduledExecutorService.schedule(cancellationRunnable, after.toMillis(), TimeUnit.MILLISECONDS);
+        schedule(entry, cancellationRunnable, after);
+    }
+
+    private void schedule(final SubscriptionId subscriptionId, final Runnable runnable, final Duration when) {
+        timeoutFutures.compute(subscriptionId, (k, v) -> {
+            if (v != null) {
+                v.cancel(false);
+            }
+            return scheduledExecutorService.schedule(runnable, when.toMillis(), TimeUnit.MILLISECONDS);
+        });
     }
 
     private <T> void removeAfterIdle(
-            final Map<Object, Set<Entry<T>>> registry,
+            final Map<Classifier.Classification, Set<Entry<T>>> registry,
             final Entry<T> entry,
             final Duration timeout,
             final CompletableFuture<Adaptable> terminationFuture,
@@ -244,10 +264,11 @@ final class DefaultAdaptableBus implements AdaptableBus {
                 removeAfterIdle(registry, entry, timeout, terminationFuture, lastMessage);
             }
         };
-        scheduledExecutorService.schedule(cancellationRunnable, timeout.toMillis(), TimeUnit.MILLISECONDS);
+        schedule(entry, cancellationRunnable, timeout);
     }
 
-    private static <T> void addEntry(final Map<Object, Set<Entry<T>>> registry, final Entry<T> entry) {
+    private static <T> void addEntry(final Map<Classifier.Classification, Set<Entry<T>>> registry,
+            final Entry<T> entry) {
         registry.compute(entry.key, (key, previousSet) -> {
             final Set<Entry<T>> concurrentHashSet =
                     previousSet != null ? previousSet : ConcurrentHashMap.newKeySet();
@@ -270,7 +291,8 @@ final class DefaultAdaptableBus implements AdaptableBus {
         return Optional.empty();
     }
 
-    private static <T> void removeEntry(final Map<Object, Set<Entry<T>>> registry, final Entry<?> entry,
+    private <T> void removeEntry(final Map<Classifier.Classification, Set<Entry<T>>> registry,
+            final Entry<?> entry,
             final Runnable onRemove) {
         registry.computeIfPresent(entry.key, (key, set) -> {
             if (set.remove(entry)) {
@@ -278,10 +300,15 @@ final class DefaultAdaptableBus implements AdaptableBus {
             }
             return set.isEmpty() ? null : set;
         });
+        timeoutFutures.computeIfPresent(entry, (k, v) -> {
+            v.cancel(false);
+            return null;
+        });
     }
 
     @Nullable
-    private static <T> T removeOne(final Map<Object, Set<Entry<T>>> registry, final Object tag) {
+    private static <T> T removeOne(final Map<Classifier.Classification, Set<Entry<T>>> registry,
+            final Classifier.Classification tag) {
         final AtomicReference<T> result = new AtomicReference<>(null);
         registry.computeIfPresent(tag, (k, set) -> set.stream()
                 .findAny()
@@ -305,10 +332,10 @@ final class DefaultAdaptableBus implements AdaptableBus {
      */
     private static final class Entry<T> implements SubscriptionId {
 
-        private final Object key;
+        private final Classifier.Classification key;
         private final T value;
 
-        private Entry(final Object key, final T value) {
+        private Entry(final Classifier.Classification key, final T value) {
             this.key = key;
             this.value = value;
         }

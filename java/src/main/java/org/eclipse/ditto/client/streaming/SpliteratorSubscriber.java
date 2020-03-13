@@ -41,7 +41,7 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
     private final BlockingQueue<Optional<T>> buffer;
     private final long timeoutMillis;
     private final int capacity;
-    private final long batchSize;
+    private final int batchSize;
     private final AtomicReference<Subscription> subscription;
     private final AtomicInteger splits;
 
@@ -92,6 +92,7 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
     @Override
     public void onNext(final T t) {
         buffer.add(Optional.of(checkNotNull(t)));
+        request();
     }
 
     @Override
@@ -140,7 +141,7 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
 
     @Override
     public Spliterator<T> trySplit() {
-        final int nextSplits = splits.updateAndGet(n -> Math.min(capacity, n + 1));
+        final int nextSplits = splits.updateAndGet(n -> Math.min(capacity, n) + 1);
         if (nextSplits <= capacity) {
             // 'this' is thread safe.
             // no need to check subscription != null because return type does not expose subscriber methods

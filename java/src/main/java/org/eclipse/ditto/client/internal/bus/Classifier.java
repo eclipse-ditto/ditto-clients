@@ -26,6 +26,10 @@ public interface Classifier<T> {
      * @param message the message.
      * @return the classification of the message if any is known.
      */
-    Optional<Object> classify(T message);
+    Optional<Classification> classify(T message);
 
+    /**
+     * Opaque type of classifications.
+     */
+    interface Classification {}
 }

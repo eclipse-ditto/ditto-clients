@@ -13,14 +13,12 @@
 package org.eclipse.ditto.client.internal.bus;
 
 import java.time.Duration;
-import java.util.UUID;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import org.eclipse.ditto.client.messaging.MessagingProviders;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 
 /**
@@ -62,7 +60,7 @@ public interface AdaptableBus {
      * @return a future adaptable matching the tag according to the classifiers, or a failed future
      * if no adaptable is matched within the timeout.
      */
-    CompletionStage<String> subscribeOnceForString(Object tag, Duration timeout);
+    CompletionStage<String> subscribeOnceForString(Classifier.Classification tag, Duration timeout);
 
     /**
      * Add a one-time subscriber for an adaptable message. Only effective if no one-time string subscriber matches.
@@ -72,7 +70,7 @@ public interface AdaptableBus {
      * @return a future adaptable matching the tag according to the classifiers, or a failed future
      * if no adaptable is matched within the timeout.
      */
-    CompletionStage<Adaptable> subscribeOnceForAdaptable(Object tag, Duration timeout);
+    CompletionStage<Adaptable> subscribeOnceForAdaptable(Classifier.Classification tag, Duration timeout);
 
     /**
      * Add a persistent subscriber for an adaptable message. Only effective if no one-time string or adaptable
@@ -82,7 +80,7 @@ public interface AdaptableBus {
      * @param adaptableConsumer the consumer of the adaptable message.
      * @return the subscription ID.
      */
-    SubscriptionId subscribeForAdaptable(Object tag, Consumer<Adaptable> adaptableConsumer);
+    SubscriptionId subscribeForAdaptable(Classifier.Classification tag, Consumer<Adaptable> adaptableConsumer);
 
     /**
      * Add a persistent subscriber for an adaptable message that are removed after a timeout.
@@ -91,12 +89,13 @@ public interface AdaptableBus {
      * @param timeout how long to wait to remove the subscriber after matching messages stopped arriving.
      * @param adaptableConsumer consumer of non-termination messages.
      * @param terminationPredicate predicate for termination messages.
+     * @param onTimeout what to do in case of timeout.
      * @return the subscription ID.
      */
-    SubscriptionId subscribeForAdaptableWithTimeout(Object tag,
+    SubscriptionId subscribeForAdaptableWithTimeout(Classifier.Classification tag,
             Duration timeout,
             Consumer<Adaptable> adaptableConsumer,
-            Predicate<Adaptable> terminationPredicate);
+            Predicate<Adaptable> terminationPredicate, final Consumer<Throwable> onTimeout);
 
     /**
      * Remove a subscription from the bus. Do nothing if the subscription ID is null.

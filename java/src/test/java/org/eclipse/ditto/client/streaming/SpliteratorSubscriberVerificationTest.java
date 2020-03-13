@@ -21,13 +21,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Tests {@link SpliteratorSubscriber}.
+ * Verify reactive-streams compatibility of {@link SpliteratorSubscriber}.
  */
-public final class SpliteratorSubscriberTest extends SubscriberWhiteboxVerification<Integer> {
+public final class SpliteratorSubscriberVerificationTest extends SubscriberWhiteboxVerification<Integer> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpliteratorSubscriberTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpliteratorSubscriberVerificationTest.class);
 
-    public SpliteratorSubscriberTest() {
+    public SpliteratorSubscriberVerificationTest() {
         super(new TestEnvironment(true));
     }
 
