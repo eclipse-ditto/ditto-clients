@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 
 final class DefaultAdaptableBus implements AdaptableBus {
 
+    private static final String ACK_SUFFIX = ":ACK";
     private static final Logger LOGGER = LoggerFactory.getLogger(AdaptableBus.class);
 
     private final ScheduledExecutorService scheduledExecutorService;
@@ -128,16 +129,20 @@ final class DefaultAdaptableBus implements AdaptableBus {
         if (publishToOneTimeStringSubscribers(message)) {
             return;
         }
-        final Optional<Adaptable> adaptableOptional = parseAsAdaptable(message);
-        if (adaptableOptional.isPresent()) {
-            final Adaptable adaptable = adaptableOptional.get();
-            final List<Object> tags = getAllAdaptableTags(adaptable);
-            if (publishToOneTimeAdaptableSubscribers(adaptable, tags) ||
-                    publishToPersistentAdaptableSubscribers(adaptable, tags)) {
-                return;
+        if (message.endsWith(ACK_SUFFIX)) {
+            LOGGER.trace("Client got acknowledgement for which there is no subscriber: {}", message);
+        } else {
+            final Optional<Adaptable> adaptableOptional = parseAsAdaptable(message);
+            if (adaptableOptional.isPresent()) {
+                final Adaptable adaptable = adaptableOptional.get();
+                final List<Object> tags = getAllAdaptableTags(adaptable);
+                if (publishToOneTimeAdaptableSubscribers(adaptable, tags) ||
+                        publishToPersistentAdaptableSubscribers(adaptable, tags)) {
+                    return;
+                }
             }
+            LOGGER.warn("Client got unhandled message: {}", message);
         }
-        LOGGER.warn("Client got unhandled message: {}", message);
     }
 
     private Consumer<Adaptable> withTermination(

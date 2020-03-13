@@ -20,7 +20,6 @@ import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.ditto.client.internal.AbstractHandle;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
-import org.eclipse.ditto.client.internal.ResponseForwarder;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.options.Option;
@@ -45,16 +44,13 @@ import org.eclipse.ditto.signals.commands.policies.query.RetrievePolicyResponse;
  */
 public final class PoliciesImpl extends AbstractHandle implements Policies {
 
-    private final ResponseForwarder responseForwarder;
     private final OutgoingMessageFactory outgoingMessageFactory;
     private final PointerBus bus;
 
     public PoliciesImpl(final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final PointerBus bus) {
         super(messagingProvider, TopicPath.Channel.NONE);
-        this.responseForwarder = responseForwarder;
         this.outgoingMessageFactory = outgoingMessageFactory;
         this.bus = bus;
     }
@@ -63,16 +59,14 @@ public final class PoliciesImpl extends AbstractHandle implements Policies {
      * Creates a new {@code PoliciesImpl} instance.
      *
      * @param messagingProvider implementation of underlying messaging provider.
-     * @param responseForwarder response forwarder.
      * @param outgoingMessageFactory a factory for messages.
      * @param bus the bus for message routing.
      * @return the new {@code PoliciesImpl} instance.
      */
     public static PoliciesImpl newInstance(final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final PointerBus bus) {
-        return new PoliciesImpl(messagingProvider, responseForwarder, outgoingMessageFactory, bus);
+        return new PoliciesImpl(messagingProvider, outgoingMessageFactory, bus);
     }
 
     @Override

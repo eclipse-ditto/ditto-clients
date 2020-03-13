@@ -15,13 +15,10 @@ package org.eclipse.ditto.client.messaging.internal;
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -32,7 +29,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -41,6 +37,7 @@ import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.internal.DefaultThreadFactory;
 import org.eclipse.ditto.client.internal.VersionReader;
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
+import org.eclipse.ditto.client.internal.bus.BusFactory;
 import org.eclipse.ditto.client.messaging.AuthenticationException;
 import org.eclipse.ditto.client.messaging.AuthenticationProvider;
 import org.eclipse.ditto.client.messaging.MessagingException;
@@ -64,40 +61,22 @@ import com.neovisionaries.ws.client.WebSocketFrame;
  */
 public final class WebSocketMessagingProvider extends WebSocketAdapter implements MessagingProvider {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketMessagingProvider.class);
-
-    private static final int RECONNECTION_TIMEOUT_SECONDS = 5;
-
-    // TODO: convert to on-startup messages
-    private static final String PROTOCOL_CMD_START_SEND_EVENTS = "START-SEND-EVENTS";
-    private static final String PROTOCOL_CMD_START_SEND_MESSAGES = "START-SEND-MESSAGES";
-    private static final String PROTOCOL_CMD_START_SEND_LIVE_COMMANDS = "START-SEND-LIVE-COMMANDS";
-    private static final String PROTOCOL_CMD_START_SEND_LIVE_EVENTS = "START-SEND-LIVE-EVENTS";
-    // TODO: restore JWT-TOKEN-handling
-    private static final String PROTOCOL_CMD_JWT_TOKEN = "JWT-TOKEN";
-
-    private static final int MAX_OUTSTANDING_MESSAGE_RESPONSES = 250;
-
     private static final String DITTO_CLIENT_USER_AGENT = "DittoClient/" + VersionReader.determineClientVersion();
+    private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketMessagingProvider.class);
     private static final int CONNECTION_TIMEOUT_MS = 5000;
+    private static final int RECONNECTION_TIMEOUT_SECONDS = 5;
 
     private final AdaptableBus adaptableBus;
     private final MessagingConfiguration messagingConfiguration;
     private final AuthenticationProvider<WebSocket> authenticationProvider;
     private final ExecutorService callbackExecutor;
-
     private final String sessionId;
     private final ScheduledExecutorService reconnectExecutor;
+    private final Map<Object, String> subscriptionMessages;
     private final AtomicBoolean reconnecting = new AtomicBoolean(false);
     private final AtomicBoolean initiallyConnected = new AtomicBoolean(false);
 
-    private WebSocket webSocket;
-
-    // TODO: replace by concurrent hash map of messages to send on reconnect indexed by type
-    private boolean sendMeTwinEvents = false;
-    private boolean sendMeLiveMessages = false;
-    private boolean sendMeLiveCommands = false;
-    private boolean sendMeLiveEvents = false;
+    volatile private WebSocket webSocket;
 
     /**
      * Constructs a new {@code WsMessagingProvider}.
@@ -117,10 +96,11 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         this.callbackExecutor = callbackExecutor;
 
         sessionId = authenticationProvider.getConfiguration().getSessionId();
-        reconnectExecutor = messagingConfiguration.isReconnectEnabled() ? createScheduledThreadPoolExecutor() : null;
+        reconnectExecutor = messagingConfiguration.isReconnectEnabled() ? createReconnectExecutor() : null;
+        subscriptionMessages = new ConcurrentHashMap<>();
     }
 
-    private static ScheduledThreadPoolExecutor createScheduledThreadPoolExecutor() {
+    private static ScheduledThreadPoolExecutor createReconnectExecutor() {
         return new ScheduledThreadPoolExecutor(1, new DefaultThreadFactory("ditto-client-reconnect"));
     }
 
@@ -139,7 +119,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         checkNotNull(authenticationProvider, "authenticationProvider");
         checkNotNull(callbackExecutor, "callbackExecutor");
 
-        final AdaptableBus adaptableBus = AdaptableBus.of();
+        final AdaptableBus adaptableBus = BusFactory.createAdaptableBus();
         return new WebSocketMessagingProvider(adaptableBus, messagingConfiguration, authenticationProvider,
                 callbackExecutor);
     }
@@ -165,13 +145,25 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     @Override
+    public MessagingProvider registerSubscriptionMessage(final Object key, final String message) {
+        subscriptionMessages.put(key, message);
+        return this;
+    }
+
+    @Override
+    public MessagingProvider unregisterSubscriptionMessage(final Object key) {
+        subscriptionMessages.remove(key);
+        return this;
+    }
+
+    @Override
     public void initialize() {
         if (webSocket != null && webSocket.isOpen()) {
             // if wsClient was already initialized, skip another initialization
             return;
         }
 
-        safeGet(initiateConnection(createWebsocket()));
+        initiateConnection(createWebsocket());
     }
 
     private WebSocket createWebsocket() {
@@ -192,7 +184,6 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     /**
      * Wrapper that catches exceptions of {@code future.get()} and wraps them in a {@link AuthenticationException}.
-     * TODO: make async.
      *
      * @param future the Future to be wrapped.
      * @param <T> the type of the computed result.
@@ -259,7 +250,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
      * This promise may be completed exceptionally if the connection upgrade attempt to web socket failed.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    private CompletableFuture<WebSocket> initiateConnection(final WebSocket ws) {
+    private WebSocket initiateConnection(final WebSocket ws) {
         checkNotNull(ws, "ws");
 
         authenticationProvider.prepareAuthentication(ws);
@@ -267,14 +258,12 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
         LOGGER.info("Connecting WebSocket on endpoint <{}>", ws.getURI());
         final ExecutorService connectionExecutor = createConnectionExecutor();
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                return safeGet(ws.connect(connectionExecutor));
-            } finally {
-                // right after the connection was established, the connectionExecutor may release its threads:
-                connectionExecutor.shutdown();
-            }
-        }, connectionExecutor);
+        try {
+            return safeGet(ws.connect(connectionExecutor));
+        } finally {
+            // right after the connection was established, the connectionExecutor may release its threads:
+            connectionExecutor.shutdown();
+        }
     }
 
     private static ExecutorService createConnectionExecutor() {
@@ -321,7 +310,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     @Override
     public void onConnected(final WebSocket websocket, final Map<String, List<String>> headers) {
-        this.webSocket = websocket;
+        webSocket = websocket;
 
         callbackExecutor.execute(() -> {
             LOGGER.info("Client <{}>: WebSocket connection is established", sessionId);
@@ -330,62 +319,12 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                 // we were already connected - so this is a reconnect
                 LOGGER.info("Client <{}>: Subscribing again for messages from backend after reconnection",
                         sessionId);
-
-                // ensures that on re-connection the client subscribes again for the previously subscribed stuff:
-                // TODO: replace by registry of on-startup messages.
-                final CompletableFuture<Void> receiptFuture = new CompletableFuture<>();
-                if (sendMeTwinEvents) {
-                    askBackend(PROTOCOL_CMD_START_SEND_EVENTS, Collections.emptyMap(), receiptFuture);
-                }
-                if (sendMeLiveMessages) {
-                    askBackend(PROTOCOL_CMD_START_SEND_MESSAGES, Collections.emptyMap(), receiptFuture);
-                }
-                if (sendMeLiveCommands) {
-                    askBackend(PROTOCOL_CMD_START_SEND_LIVE_COMMANDS, Collections.emptyMap(), receiptFuture);
-                }
-                if (sendMeLiveEvents) {
-                    askBackend(PROTOCOL_CMD_START_SEND_LIVE_EVENTS, Collections.emptyMap(), receiptFuture);
-                }
+                subscriptionMessages.values().forEach(this::emit);
             }
             initiallyConnected.set(true);
         });
     }
 
-
-    private void askBackend(final String protocolCmd, final Map<String, String> registrationConfig,
-            final CompletableFuture<Void> receiptFuture) {
-        LOGGER.info("Client <{}>: Requesting at backend that this client wants to <{}> with params <{}>",
-                sessionId, protocolCmd, registrationConfig);
-        if (webSocket != null) {
-            final String paramsString = registrationConfig.entrySet()
-                    .stream()
-                    .map(entry -> urlEncode(entry.getKey()) + "=" + urlEncode(entry.getValue()))
-                    .collect(Collectors.joining("&"));
-            final String toSend;
-            if (paramsString.isEmpty()) {
-                toSend = protocolCmd;
-            } else {
-                toSend = protocolCmd + "?" + paramsString;
-            }
-            LOGGER.debug("Sending: {}", toSend);
-            webSocket.sendText(toSend);
-        }
-
-        final CompletableFuture<Void> loggingFuture = new CompletableFuture<>();
-        // thenAcceptAsync is very important here! Otherwise the main thread is blocked and no other messages are received:
-        loggingFuture.thenAcceptAsync(aVoid -> {
-            LOGGER.debug("Client <{}>: Backend now <{}>.", sessionId, protocolCmd);
-            receiptFuture.complete(aVoid);
-        }, callbackExecutor);
-    }
-
-    private static String urlEncode(final String value) {
-        try {
-            return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
-        } catch (final UnsupportedEncodingException e) {
-            throw new IllegalStateException("Missing standard charset UTF 8 for encoding.", e);
-        }
-    }
 
     @Override
     public void onDisconnected(final WebSocket websocket, final WebSocketFrame serverCloseFrame,
@@ -469,7 +408,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
             LOGGER.info("Recreating Websocket..");
             webSocket.clearHeaders();
             webSocket.clearListeners();
-            return safeGet(initiateConnection(webSocket.recreate()));
+            return initiateConnection(webSocket.recreate());
         } catch (final AuthenticationException | IOException e) {
             // log error, but try again (don't end loop)
             final String msgFormat = "Client <{}>: Failed to establish connection ({}): {}";

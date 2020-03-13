@@ -25,7 +25,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
-import org.eclipse.ditto.client.internal.ResponseForwarder;
 import org.eclipse.ditto.client.internal.bus.JsonPointerSelector;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
 import org.eclipse.ditto.client.live.LiveCommandProcessor;
@@ -76,13 +75,11 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
 
     LiveFeatureHandleImpl(final ThingId thingId, final String featureId,
             final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final HandlerRegistry<LiveThingHandle, LiveFeatureHandle> handlerRegistry,
             final MessageSerializerRegistry messageSerializerRegistry) {
         super(TopicPath.Channel.LIVE, thingId, featureId,
                 messagingProvider,
-                responseForwarder,
                 outgoingMessageFactory,
                 handlerRegistry);
 

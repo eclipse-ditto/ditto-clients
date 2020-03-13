@@ -30,11 +30,14 @@ import org.eclipse.ditto.client.configuration.BasicAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.configuration.WebSocketMessagingConfiguration;
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
+import org.eclipse.ditto.client.internal.bus.BusFactory;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.Message;
+import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.DittoProtocolAdapter;
 import org.eclipse.ditto.protocoladapter.HeaderTranslator;
+import org.eclipse.ditto.protocoladapter.Payload;
 import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
 import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.signals.base.Signal;
@@ -60,7 +63,7 @@ public class MockMessagingProvider implements MessagingProvider {
     private final AtomicReference<Consumer<Message<?>>> in = new AtomicReference<>();
     private final ExecutorService executor = Executors.newFixedThreadPool(2, new MockThreadFactory());
     private final MessagingConfiguration messagingConfiguration;
-    private final AdaptableBus adaptableBus = AdaptableBus.of();
+    private final AdaptableBus adaptableBus = BusFactory.createAdaptableBus();
     private final BlockingQueue<String> emittedMessages = new LinkedBlockingQueue<>();
     private final AtomicReference<Consumer<Object>> onSendConsumer = new AtomicReference<>(m -> {});
 
@@ -93,6 +96,18 @@ public class MockMessagingProvider implements MessagingProvider {
     }
 
     @Override
+    public MessagingProvider registerSubscriptionMessage(final Object key, final String message) {
+        // no-op
+        return this;
+    }
+
+    @Override
+    public MessagingProvider unregisterSubscriptionMessage(final Object key) {
+        // no-op
+        return this;
+    }
+
+    @Override
     public void initialize() {
         // noop
     }
@@ -122,11 +137,15 @@ public class MockMessagingProvider implements MessagingProvider {
 
     public void receiveEvent(final Message<ThingEvent> message) {
         LOGGER.debug("Manually receiving Event: {}", message);
-        adaptableBus.publish(
-                ProtocolFactory.wrapAsJsonifiableAdaptable(
-                        PROTOCOL_ADAPTER.toAdaptable((Signal<?>) message.getPayload()
-                                .orElseThrow(NoSuchElementException::new))
-                ).toJsonString());
+        final Adaptable fromMessagePayload =
+                PROTOCOL_ADAPTER.toAdaptable((Signal<?>) message.getPayload().orElseThrow(NoSuchElementException::new));
+        final Adaptable adaptable =
+                ProtocolFactory.newAdaptableBuilder(fromMessagePayload)
+                        .withPayload(Payload.newBuilder(fromMessagePayload.getPayload())
+                                .withExtra(message.getExtra().orElse(null))
+                                .build())
+                        .build();
+        adaptableBus.publish(ProtocolFactory.wrapAsJsonifiableAdaptable(adaptable).toJsonString());
     }
 
     @Override

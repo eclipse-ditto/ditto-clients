@@ -25,7 +25,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
-import org.eclipse.ditto.client.internal.ResponseForwarder;
 import org.eclipse.ditto.client.internal.bus.JsonPointerSelector;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
 import org.eclipse.ditto.client.live.LiveCommandProcessor;
@@ -89,14 +88,12 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
 
     LiveThingHandleImpl(final ThingId thingId,
             final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final HandlerRegistry<LiveThingHandle, LiveFeatureHandle> handlerRegistry,
             final MessageSerializerRegistry messageSerializerRegistry) {
         super(TopicPath.Channel.LIVE,
                 thingId,
                 messagingProvider,
-                responseForwarder,
                 outgoingMessageFactory,
                 handlerRegistry);
 
@@ -108,7 +105,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
 
     @Override
     protected LiveFeatureHandleImpl createFeatureHandle(final ThingId thingId, final String featureId) {
-        return new LiveFeatureHandleImpl(thingId, featureId, getMessagingProvider(), getResponseForwarder(),
+        return new LiveFeatureHandleImpl(thingId, featureId, getMessagingProvider(),
                 getOutgoingMessageFactory(), getHandlerRegistry(), messageSerializerRegistry);
     }
 
@@ -197,7 +194,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
         LiveMessagesUtil.checkSerializerExistForMessageType(messageSerializerRegistry, type);
 
         final JsonPointerSelector selector =
-                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/inbox/messages/{1}", getThingEntityId(),
+                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/{1}", getThingEntityId(),
                         KnownMessageSubjects.CLAIM_SUBJECT);
 
         getHandlerRegistry().register(registrationId, selector,

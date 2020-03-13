@@ -16,6 +16,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.ditto.client.messaging.MessagingProvider;
+import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionCreated;
@@ -24,7 +25,7 @@ import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
 /**
- * TODO
+ * Publisher of search results.
  */
 public final class SearchPublisher implements Publisher<SubscriptionHasNext> {
 
@@ -38,7 +39,8 @@ public final class SearchPublisher implements Publisher<SubscriptionHasNext> {
         this.messagingProvider = messagingProvider;
         this.protocolAdapter = protocolAdapter;
         subscribed = new AtomicBoolean(false);
-        subscriptionFuture = messagingProvider.sendAdaptable(protocolAdapter.toAdaptable(createSubscription))
+        final Adaptable adaptable = protocolAdapter.toAdaptable(createSubscription);
+        subscriptionFuture = messagingProvider.sendAdaptable(adaptable)
                 .thenApply(answer -> {
                     final Signal<?> signal = protocolAdapter.fromAdaptable(answer);
                     if (signal instanceof SubscriptionCreated) {

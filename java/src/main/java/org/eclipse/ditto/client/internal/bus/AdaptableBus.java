@@ -39,19 +39,6 @@ import org.eclipse.ditto.protocoladapter.Adaptable;
 public interface AdaptableBus {
 
     /**
-     * Create an adaptable bus.
-     * TODO: move to BusFactory
-     *
-     * @return the adaptable bus.
-     */
-    static AdaptableBus of() {
-        final String name = "-adaptable-bus-" + UUID.randomUUID();
-        // the executor service will shutdown when garbage-collected.
-        return new DefaultAdaptableBus(MessagingProviders.createScheduledExecutorService(name))
-                .addStringClassifier(Classifiers.identity());
-    }
-
-    /**
      * Add another string classifier.
      *
      * @param classifier the string classifier.
@@ -61,7 +48,6 @@ public interface AdaptableBus {
 
     /**
      * Add another adaptable classifier.
-     * TODO: split this into one-time vs. persistent classifiers?
      *
      * @param adaptableClassifier the adaptable classifier
      * @return this object.
@@ -112,7 +98,12 @@ public interface AdaptableBus {
             Consumer<Adaptable> adaptableConsumer,
             Predicate<Adaptable> terminationPredicate);
 
-    // TODO
+    /**
+     * Remove a subscription from the bus. Do nothing if the subscription ID is null.
+     *
+     * @param subscriptionId the subscription ID.
+     * @return whether the removed subscription exists.
+     */
     boolean unsubscribe(@Nullable SubscriptionId subscriptionId);
 
     /**

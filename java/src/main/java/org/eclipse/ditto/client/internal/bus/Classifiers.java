@@ -106,19 +106,30 @@ public final class Classifiers {
             stopAck = ack(stopCommand);
         }
 
-        // TODO
+        /**
+         * @return The protocol command to start streaming.
+         */
         public String start() {
             return startCommand;
         }
 
+        /**
+         * @return The protocol command to stop streaming.
+         */
         public String stop() {
             return stopCommand;
         }
 
+        /**
+         * @return The acknowledgement of {@code this#start()}.
+         */
         public String startAck() {
             return startAck;
         }
 
+        /**
+         * @return The acknowledgement of {@code this#stop()}.
+         */
         public String stopAck() {
             return stopAck;
         }
@@ -185,12 +196,11 @@ public final class Classifiers {
 
     private static final class Instances {
 
-        private static final Classifier<Adaptable> CORRELATION_ID_CLASSIFIER =
-                adaptable -> adaptable.getHeaders()
+        private static final Classifier<Adaptable> CORRELATION_ID_CLASSIFIER = adaptable ->
+                adaptable.getHeaders()
                         .flatMap(DittoHeaders::getCorrelationId)
                         .map(CorrelationId::new);
 
-        private static final Classifier<Adaptable> STREAMING_TYPE_CLASSIFIER =
-                new StreamingTypeClassifier();
+        private static final Classifier<Adaptable> STREAMING_TYPE_CLASSIFIER = new StreamingTypeClassifier();
     }
 }

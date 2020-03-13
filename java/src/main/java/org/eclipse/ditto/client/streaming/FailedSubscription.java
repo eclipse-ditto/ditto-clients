@@ -15,13 +15,17 @@ package org.eclipse.ditto.client.streaming;
 import org.reactivestreams.Subscription;
 
 /**
- * TODO
+ * A subscription that has failed to notify subscribers early.
  */
 public final class FailedSubscription implements Subscription {
 
     private FailedSubscription() {}
 
-    // TODO: javadoc
+    /**
+     * Create a failed subscription.
+     *
+     * @return a failed subscription.
+     */
     public static Subscription of() {
         // create new object each time to trigger rule 2.5
         return new FailedSubscription();

@@ -12,7 +12,6 @@
  */
 package org.eclipse.ditto.client.twin.internal;
 
-import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
@@ -22,7 +21,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.eclipse.ditto.client.internal.CommonManagementImpl;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
-import org.eclipse.ditto.client.internal.ResponseForwarder;
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
 import org.eclipse.ditto.client.internal.bus.Classifiers;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
@@ -41,44 +39,30 @@ import org.eclipse.ditto.protocoladapter.TopicPath;
 @ParametersAreNonnullByDefault
 public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFeatureHandle> implements Twin {
 
-    /**
-     * Handler name for consuming twin events.
-     * TODO: delete if unused
-     */
-    public static final String CONSUME_TWIN_EVENTS_HANDLER = "consume-twin-events";
-
-    // TODO: configure timeout.
-    private static final Duration TIMEOUT = Duration.ofSeconds(60L);
-
     private final AtomicReference<AdaptableBus.SubscriptionId> twinEventSubscription = new AtomicReference<>();
 
     private TwinImpl(final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final PointerBus bus) {
         super(TopicPath.Channel.TWIN,
                 messagingProvider,
-                responseForwarder,
                 outgoingMessageFactory,
                 new HandlerRegistry<>(bus),
                 bus);
-        addTwinClassifiers(messagingProvider.getAdaptableBus());
     }
 
     /**
      * Creates a new {@code TwinImpl} instance.
      *
      * @param messagingProvider implementation of underlying messaging provider.
-     * @param responseForwarder fast cache of response addresses.
      * @param outgoingMessageFactory a factory for messages.
      * @param bus the bus for message routing.
      * @return the new {@code TwinImpl} instance.
      */
     public static TwinImpl newInstance(final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final PointerBus bus) {
-        return new TwinImpl(messagingProvider, responseForwarder, outgoingMessageFactory, bus);
+        return new TwinImpl(messagingProvider, outgoingMessageFactory, bus);
     }
 
     @Override
@@ -87,7 +71,6 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
         return new TwinThingHandleImpl(
                 thingId,
                 getMessagingProvider(),
-                getResponseForwarder(),
                 getOutgoingMessageFactory(),
                 getHandlerRegistry());
     }
@@ -99,21 +82,21 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
                 thingId,
                 featureId,
                 getMessagingProvider(),
-                getResponseForwarder(),
                 getOutgoingMessageFactory(),
                 getHandlerRegistry());
     }
 
     @Override
     protected CompletableFuture<Void> doStartConsumption(final Map<String, String> consumptionConfig) {
-        // TODO: log START-SEND-EVENTS
-        // TODO: test broken pipe
         final CompletableFuture<Void> ackFuture = new CompletableFuture<>();
+        final Classifiers.StreamingType streamingType = Classifiers.StreamingType.TWIN_EVENT;
+        final String subscriptionMessage = buildProtocolCommand(streamingType.start(), consumptionConfig);
+        messagingProvider.registerSubscriptionMessage(streamingType, subscriptionMessage);
         twinEventSubscription.getAndUpdate(previousSubscriptionId -> subscribe(
                 previousSubscriptionId,
-                Classifiers.StreamingType.TWIN_EVENT,
-                buildProtocolCommand(Classifiers.StreamingType.TWIN_EVENT.start(), consumptionConfig),
-                Classifiers.StreamingType.TWIN_EVENT.startAck(),
+                streamingType,
+                subscriptionMessage,
+                streamingType.startAck(),
                 ackFuture,
                 CommonManagementImpl::asThingMessage
         ));
@@ -122,21 +105,13 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
 
     @Override
     public CompletableFuture<Void> suspendConsumption() {
-        // TODO: log STOP-SEND-EVENTS
+        final Classifiers.StreamingType streamingType = Classifiers.StreamingType.TWIN_EVENT;
+        messagingProvider.unregisterSubscriptionMessage(streamingType);
         final CompletableFuture<Void> ackFuture = new CompletableFuture<>();
         twinEventSubscription.getAndUpdate(subscriptionId -> {
-            unsubscribe(subscriptionId, Classifiers.StreamingType.TWIN_EVENT.stop(),
-                    Classifiers.StreamingType.TWIN_EVENT.stopAck(), ackFuture);
+            unsubscribe(subscriptionId, streamingType.stop(), streamingType.stopAck(), ackFuture);
             return null;
         });
         return ackFuture;
     }
-
-    private static void addTwinClassifiers(final AdaptableBus adaptableBus) {
-        // TODO: ensure classifiers are not duplicate
-        // TODO: move streaming type classifier to BusFactory.
-        adaptableBus.addAdaptableClassifier(Classifiers.correlationId())
-                .addAdaptableClassifier(Classifiers.streamingType());
-    }
-
 }

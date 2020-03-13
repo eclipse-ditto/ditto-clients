@@ -241,7 +241,7 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
         final String subject = "claim";
         final String payload = "THOU BELONGEST TO ME!";
         return SendClaimMessage.of(THING_ID,
-                AbstractDittoClientTest.<String>newMessageBuilder(THING_ID, subject, null)
+                AbstractDittoClientTest.<String>newMessageBuilder(subject)
                         .payload(payload)
                         .build(),
                 DittoHeaders.newBuilder().randomCorrelationId().build());
@@ -252,7 +252,7 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
         final String responsePayload = "THOU WISHEST!";
         final HttpStatusCode responseStatus = HttpStatusCode.PAYMENT_REQUIRED;
         return SendClaimMessageResponse.of(THING_ID,
-                AbstractDittoClientTest.<String>newMessageBuilder(THING_ID, subject, null)
+                AbstractDittoClientTest.<String>newMessageBuilder(subject)
                         .payload(responsePayload)
                         .build(),
                 responseStatus,
@@ -260,10 +260,9 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
     }
 
     private SendFeatureMessage<String> featureMessage() {
-        final String subject = "request";
         final String payload = "MAKE COFFEE!";
         return SendFeatureMessage.of(THING_ID, FEATURE_ID,
-                AbstractDittoClientTest.<String>newMessageBuilder(THING_ID, FEATURE_ID, subject, null)
+                AbstractDittoClientTest.<String>newFeatureMessageBuilder(FEATURE_ID)
                         .payload(payload)
                         .build(),
                 DittoHeaders.newBuilder().randomCorrelationId().build()
@@ -271,11 +270,10 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
     }
 
     private SendFeatureMessageResponse<String> featureMessageResponse() {
-        final String subject = "request";
         final String responsePayload = "MAKE IT THYSELFE.";
         final HttpStatusCode responseStatus = HttpStatusCode.IM_A_TEAPOT;
         return SendFeatureMessageResponse.of(THING_ID, FEATURE_ID,
-                AbstractDittoClientTest.<String>newMessageBuilder(THING_ID, FEATURE_ID, subject, null)
+                AbstractDittoClientTest.<String>newFeatureMessageBuilder(FEATURE_ID)
                         .payload(responsePayload)
                         .build(),
                 responseStatus,
@@ -286,7 +284,7 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
         final String subject = "request";
         final String payload = "MAKE COFFEE!";
         return SendThingMessage.of(THING_ID,
-                AbstractDittoClientTest.<String>newMessageBuilder(THING_ID, subject, null)
+                AbstractDittoClientTest.<String>newMessageBuilder(subject)
                         .payload(payload)
                         .build(),
                 DittoHeaders.newBuilder().randomCorrelationId().build()
@@ -298,7 +296,7 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
         final String responsePayload = "MAKE IT THYSELFE.";
         final HttpStatusCode responseStatus = HttpStatusCode.IM_A_TEAPOT;
         return SendThingMessageResponse.of(THING_ID,
-                AbstractDittoClientTest.<String>newMessageBuilder(THING_ID, subject, null)
+                AbstractDittoClientTest.<String>newMessageBuilder(subject)
                         .payload(responsePayload)
                         .build(),
                 responseStatus,
@@ -311,7 +309,7 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
         assertThat((CharSequence) featureDeleted.getThingEntityId()).isEqualTo(THING_ID);
     }
 
-    private <T extends MessageCommand<?, ?>> void testMessageSending(
+    private void testMessageSending(
             final MessageSender.SetSubject<Object> sender,
             final MessageCommand<String, ?> command,
             final MessageCommandResponse<String, ?> expectedResponse) {

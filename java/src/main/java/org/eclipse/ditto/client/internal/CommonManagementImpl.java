@@ -16,7 +16,6 @@ import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotEm
 import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
 
 import java.text.MessageFormat;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -94,20 +93,17 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
 
     protected final OutgoingMessageFactory outgoingMessageFactory;
 
-    private final ResponseForwarder responseForwarder;
     private final HandlerRegistry<T, F> handlerRegistry;
     private final PointerBus bus;
 
     protected CommonManagementImpl(
             final TopicPath.Channel channel,
             final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final HandlerRegistry<T, F> handlerRegistry,
             final PointerBus bus) {
 
         super(messagingProvider, channel);
-        this.responseForwarder = responseForwarder;
         this.outgoingMessageFactory = outgoingMessageFactory;
         this.handlerRegistry = handlerRegistry;
         this.bus = bus;
@@ -161,15 +157,6 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
      */
     protected MessagingProvider getMessagingProvider() {
         return messagingProvider;
-    }
-
-    /**
-     * Returns the ResponseForwarder this CommonManagement uses.
-     *
-     * @return the ResponseForwarder this CommonManagement uses.
-     */
-    protected ResponseForwarder getResponseForwarder() {
-        return responseForwarder;
     }
 
     /**
@@ -648,6 +635,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
             final CompletableFuture<Void> futureToCompleteOrFailAfterAck,
             final Function<Adaptable, NotifyMessage> adaptableToNotifier) {
 
+        LOGGER.trace("Sending {} and waiting for {}", protocolCommand, protocolCommandAck);
         final AdaptableBus adaptableBus = messagingProvider.getAdaptableBus();
         if (previousSubscriptionId != null) {
             // remove previous subscription without going through back-end because subscription will be replaced
@@ -656,9 +644,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         final AdaptableBus.SubscriptionId subscriptionId =
                 adaptableBus.subscribeForAdaptable(streamingType,
                         adaptable -> adaptableToNotifier.apply(adaptable).accept(getBus()));
-        // TODO: configure timeout
-        adjoin(adaptableBus.subscribeOnceForString(protocolCommandAck, Duration.ofSeconds(60L)),
-                futureToCompleteOrFailAfterAck);
+        adjoin(adaptableBus.subscribeOnceForString(protocolCommandAck, getTimeout()), futureToCompleteOrFailAfterAck);
         messagingProvider.emit(protocolCommand);
         return subscriptionId;
     }
@@ -680,16 +666,16 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
 
         final AdaptableBus adaptableBus = messagingProvider.getAdaptableBus();
         if (adaptableBus.unsubscribe(subscriptionId)) {
-            // TODO: configure timeout
-            adjoin(adaptableBus.subscribeOnceForString(protocolCommandAck, Duration.ofSeconds(60L)),
+            LOGGER.trace("Sending {} and waiting for {}", protocolCommand, protocolCommandAck);
+            adjoin(adaptableBus.subscribeOnceForString(protocolCommandAck, getTimeout()),
                     futureToCompleteOrFailAfterAck);
             messagingProvider.emit(protocolCommand);
         } else {
+            LOGGER.trace("Requested to {} but won't because already stopped", protocolCommand);
             futureToCompleteOrFailAfterAck.complete(null);
         }
     }
 
-    // TODO: test signal enrichment
     protected static Message<?> asThingMessage(final Adaptable adaptable) {
         final Signal<?> signal = PROTOCOL_ADAPTER.fromAdaptable(adaptable);
         final ThingId thingId = ThingId.of(signal.getEntityId());

@@ -23,7 +23,6 @@ import org.eclipse.ditto.client.changes.internal.ImmutableChange;
 import org.eclipse.ditto.client.internal.AbstractHandle;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
-import org.eclipse.ditto.client.internal.ResponseForwarder;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
 import org.eclipse.ditto.client.management.FeatureHandle;
 import org.eclipse.ditto.client.management.ThingHandle;
@@ -73,21 +72,18 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
 
     private final ThingId thingId;
     private final String featureId;
-    private final ResponseForwarder responseForwarder;
     private final HandlerRegistry<T, F> handlerRegistry;
 
     protected FeatureHandleImpl(final TopicPath.Channel channel,
             final ThingId thingId,
             final String featureId,
             final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final HandlerRegistry<T, F> handlerRegistry) {
 
         super(messagingProvider, channel);
         this.thingId = thingId;
         this.featureId = featureId;
-        this.responseForwarder = responseForwarder;
         this.outgoingMessageFactory = outgoingMessageFactory;
         this.handlerRegistry = handlerRegistry;
     }
@@ -99,15 +95,6 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
      */
     protected MessagingProvider getMessagingProvider() {
         return messagingProvider;
-    }
-
-    /**
-     * Returns the ResponseForwarder this FeatureHandle uses.
-     *
-     * @return the ResponseForwarder this FeatureHandle uses.
-     */
-    protected ResponseForwarder getResponseForwarder() {
-        return responseForwarder;
     }
 
     /**

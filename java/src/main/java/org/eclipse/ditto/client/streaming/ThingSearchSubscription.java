@@ -24,7 +24,7 @@ import org.eclipse.ditto.signals.events.thingsearch.SubscriptionCreated;
 import org.reactivestreams.Subscription;
 
 /**
- * TODO
+ * Subscription of search results of a query.
  */
 public final class ThingSearchSubscription implements Subscription {
 
@@ -42,7 +42,14 @@ public final class ThingSearchSubscription implements Subscription {
         cancelled = new AtomicBoolean(false);
     }
 
-    // TODO: javadoc
+    /**
+     * Create a search subscription.
+     *
+     * @param event the event informing the existence of the subscription on the backend.
+     * @param protocolAdapter the protocol adapter.
+     * @param messagingProvider the messaging provider.
+     * @return a search subscription.
+     */
     public static Subscription of(final SubscriptionCreated event,
             final ProtocolAdapter protocolAdapter,
             final MessagingProvider messagingProvider) {

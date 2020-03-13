@@ -12,7 +12,10 @@
  */
 package org.eclipse.ditto.client.internal.bus;
 
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
+
+import org.eclipse.ditto.client.messaging.MessagingProviders;
 
 /**
  * Factory for creating Buses (e.g. {@link PointerBus}).
@@ -36,4 +39,17 @@ public final class BusFactory {
         return new DefaultPointerBus(name, executor);
     }
 
+    /**
+     * Create an adaptable bus.
+     *
+     * @return the adaptable bus.
+     */
+    public static AdaptableBus createAdaptableBus() {
+        final String name = "-adaptable-bus-" + UUID.randomUUID();
+        // the executor service will shutdown when garbage-collected.
+        return new DefaultAdaptableBus(MessagingProviders.createScheduledExecutorService(name))
+                .addStringClassifier(Classifiers.identity())
+                .addAdaptableClassifier(Classifiers.correlationId())
+                .addAdaptableClassifier(Classifiers.streamingType());
+    }
 }

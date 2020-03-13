@@ -168,9 +168,8 @@ public abstract class AbstractHandle {
             final Class<E> expectedErrorResponseClass,
             final Function<E, R> onError) {
 
-        // TODO: configure timeout
         final CompletionStage<Adaptable> responseFuture = messagingProvider.getAdaptableBus()
-                .subscribeOnceForAdaptable(Classifiers.forCorrelationId(signal), Duration.ofSeconds(60L));
+                .subscribeOnceForAdaptable(Classifiers.forCorrelationId(signal), getTimeout());
 
         messagingProvider.emit(signalToJsonString(signal));
         return responseFuture.thenApply(responseAdaptable -> {
@@ -183,6 +182,15 @@ public abstract class AbstractHandle {
                 throw new ClassCastException("Expect " + expectedResponseClass.getSimpleName() + ", got: " + response);
             }
         });
+    }
+
+    /**
+     * Get the timeout in the messaging configuration.
+     *
+     * @return the timeout.
+     */
+    protected Duration getTimeout() {
+        return messagingProvider.getMessagingConfiguration().getTimeout();
     }
 
     /**
@@ -226,7 +234,6 @@ public abstract class AbstractHandle {
         return adjustHeadersForLive((Signal) signal);
     }
 
-    // TODO: is it necessary to remove read-subjects, auth-subjects and response-required?
     private static <T extends WithDittoHeaders<T>> T adjustHeadersForLive(final T signal) {
         return signal.setDittoHeaders(
                 signal.getDittoHeaders()

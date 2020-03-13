@@ -16,7 +16,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
-import org.eclipse.ditto.client.internal.ResponseForwarder;
 import org.eclipse.ditto.client.management.internal.ThingHandleImpl;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.twin.TwinFeatureHandle;
@@ -38,16 +37,14 @@ public final class TwinThingHandleImpl extends ThingHandleImpl<TwinThingHandle, 
      *
      * @param thingId thing id
      * @param twinMessagingProvider twin messaging provider
-     * @param responseForwarder response forwarder
      * @param outgoingMessageFactory outgoing message factory
      * @param handlerRegistry handler registry
      */
     TwinThingHandleImpl(final ThingId thingId,
             final MessagingProvider twinMessagingProvider,
-            final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final HandlerRegistry<TwinThingHandle, TwinFeatureHandle> handlerRegistry) {
-        super(TopicPath.Channel.TWIN, thingId, twinMessagingProvider, responseForwarder, outgoingMessageFactory,
+        super(TopicPath.Channel.TWIN, thingId, twinMessagingProvider, outgoingMessageFactory,
                 handlerRegistry);
     }
 
@@ -58,7 +55,6 @@ public final class TwinThingHandleImpl extends ThingHandleImpl<TwinThingHandle, 
                 thingId,
                 featureId,
                 getMessagingProvider(),
-                getResponseForwarder(),
                 getOutgoingMessageFactory(),
                 getHandlerRegistry());
     }

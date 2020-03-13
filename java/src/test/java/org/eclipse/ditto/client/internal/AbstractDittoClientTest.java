@@ -26,8 +26,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Nullable;
-
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.DittoClient;
 import org.eclipse.ditto.client.DittoClients;
@@ -151,20 +149,21 @@ public abstract class AbstractDittoClientTest {
         Assertions.assertThat(signal.getDittoHeaders()).containsEntry(DittoHeaderDefinition.IF_MATCH.getKey(), "*");
     }
 
-    protected static <T> MessageBuilder<T> newMessageBuilder(final ThingId thingId, final String subject,
-            @Nullable final String correlationId) {
+    protected static <T> MessageBuilder<T> newMessageBuilder(final String subject) {
         final MessageHeaders messageHeaders =
-                MessageHeaders.newBuilder(MessageDirection.FROM, thingId, subject).correlationId(correlationId).build();
+                MessageHeaders.newBuilder(MessageDirection.FROM, org.eclipse.ditto.client.TestConstants.Thing.THING_ID,
+                        subject).correlationId(
+                        null).build();
         return Message.newBuilder(messageHeaders);
     }
 
 
-    protected static <T> MessageBuilder<T> newMessageBuilder(final ThingId thingId, final String featureId,
-            final String subject, @Nullable final String correlationId) {
+    protected static <T> MessageBuilder<T> newFeatureMessageBuilder(final String featureId) {
         final MessageHeaders messageHeaders =
-                MessageHeaders.newBuilder(MessageDirection.FROM, thingId, subject)
+                MessageHeaders.newBuilder(MessageDirection.FROM, org.eclipse.ditto.client.TestConstants.Thing.THING_ID,
+                        "request")
                         .featureId(featureId)
-                        .correlationId(correlationId)
+                        .correlationId(null)
                         .build();
         return Message.newBuilder(messageHeaders);
     }

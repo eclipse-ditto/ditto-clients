@@ -29,7 +29,6 @@ import org.eclipse.ditto.client.changes.internal.ImmutableThingChange;
 import org.eclipse.ditto.client.internal.AbstractHandle;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
-import org.eclipse.ditto.client.internal.ResponseForwarder;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
 import org.eclipse.ditto.client.management.FeatureHandle;
 import org.eclipse.ditto.client.management.ThingHandle;
@@ -88,19 +87,16 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
     protected final OutgoingMessageFactory outgoingMessageFactory;
 
     private final ThingId thingId;
-    private final ResponseForwarder responseForwarder;
     private final HandlerRegistry<T, F> handlerRegistry;
 
     protected ThingHandleImpl(
             final TopicPath.Channel channel,
             final ThingId thingId,
             final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final HandlerRegistry<T, F> handlerRegistry) {
         super(messagingProvider, channel);
         this.thingId = thingId;
-        this.responseForwarder = responseForwarder;
         this.outgoingMessageFactory = outgoingMessageFactory;
         this.handlerRegistry = handlerRegistry;
     }
@@ -112,15 +108,6 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
      */
     protected MessagingProvider getMessagingProvider() {
         return messagingProvider;
-    }
-
-    /**
-     * Returns the ResponseForwarder this ThingHandle uses.
-     *
-     * @return the ResponseForwarder this ThingHandle uses.
-     */
-    protected ResponseForwarder getResponseForwarder() {
-        return responseForwarder;
     }
 
     /**
@@ -280,7 +267,6 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
 
     @Override
     public void registerForAttributesChanges(final String registrationId, final Consumer<Change> handler) {
-        // TODO: move to AdaptableBus
         argumentNotNull(handler);
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/attributes", thingId),

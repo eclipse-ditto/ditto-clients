@@ -16,7 +16,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.client.internal.DefaultDittoClient;
-import org.eclipse.ditto.client.internal.ResponseForwarder;
 import org.eclipse.ditto.client.live.internal.MessageSerializerFactory;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
@@ -83,11 +82,13 @@ public final class DittoClients {
      * @since 1.1.0
      */
     public static DittoClient newInstance(final MessagingProvider twinMessagingProvider,
-            final MessagingProvider liveMessagingProvider, final MessagingProvider policyMessagingProvider) {
+            final MessagingProvider liveMessagingProvider,
+            final MessagingProvider policyMessagingProvider) {
 
         final MessageSerializerRegistry messageSerializerRegistry =
                 MessageSerializerFactory.newInstance().getMessageSerializerRegistry();
-        return newInstance(twinMessagingProvider, liveMessagingProvider, policyMessagingProvider, messageSerializerRegistry);
+        return newInstance(twinMessagingProvider, liveMessagingProvider, policyMessagingProvider,
+                messageSerializerRegistry);
     }
 
     /**
@@ -103,9 +104,11 @@ public final class DittoClients {
      * could not be established
      */
     public static DittoClient newInstance(final MessagingProvider twinMessagingProvider,
-            final MessagingProvider liveMessagingProvider, final MessageSerializerRegistry messageSerializerRegistry) {
+            final MessagingProvider liveMessagingProvider,
+            final MessageSerializerRegistry messageSerializerRegistry) {
 
-        return newInstance(twinMessagingProvider, liveMessagingProvider, twinMessagingProvider, messageSerializerRegistry);
+        return newInstance(twinMessagingProvider, liveMessagingProvider, twinMessagingProvider,
+                messageSerializerRegistry);
     }
 
     /**
@@ -126,9 +129,10 @@ public final class DittoClients {
             final MessagingProvider liveMessagingProvider, final MessagingProvider policyMessagingProvider,
             final MessageSerializerRegistry messageSerializerRegistry) {
 
-        final ResponseForwarder responseForwarder = ResponseForwarder.getInstance();
-        return DefaultDittoClient.newInstance(twinMessagingProvider, liveMessagingProvider, policyMessagingProvider,
-                responseForwarder, messageSerializerRegistry);
+        return DefaultDittoClient.newInstance(twinMessagingProvider,
+                liveMessagingProvider,
+                policyMessagingProvider,
+                messageSerializerRegistry);
     }
 
 }
