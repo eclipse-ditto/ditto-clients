@@ -27,6 +27,7 @@ import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.twin.Twin;
 import org.eclipse.ditto.client.twin.TwinFeatureHandle;
+import org.eclipse.ditto.client.twin.TwinSearchHandle;
 import org.eclipse.ditto.client.twin.TwinThingHandle;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.TopicPath;
@@ -40,6 +41,7 @@ import org.eclipse.ditto.protocoladapter.TopicPath;
 public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFeatureHandle> implements Twin {
 
     private final AtomicReference<AdaptableBus.SubscriptionId> twinEventSubscription = new AtomicReference<>();
+    private final TwinSearchHandle search;
 
     private TwinImpl(final MessagingProvider messagingProvider,
             final OutgoingMessageFactory outgoingMessageFactory,
@@ -49,6 +51,7 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
                 outgoingMessageFactory,
                 new HandlerRegistry<>(bus),
                 bus);
+        search = new TwinSearchHandleImpl(messagingProvider);
     }
 
     /**
@@ -113,5 +116,10 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
             return null;
         });
         return ackFuture;
+    }
+
+    @Override
+    public TwinSearchHandle search() {
+        return search;
     }
 }

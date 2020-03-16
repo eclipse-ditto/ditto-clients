@@ -14,8 +14,8 @@ package org.eclipse.ditto.client.streaming;
 
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
+import java.time.Duration;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.Spliterator;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -24,6 +24,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -35,10 +37,11 @@ import org.reactivestreams.Subscription;
  * probability of blocking.
  *
  * @param <T> the type of elements.
+ * @since 1.1.0
  */
 public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterator<T> {
 
-    private final BlockingQueue<Optional<T>> buffer;
+    private final BlockingQueue<Element<T>> buffer;
     private final long timeoutMillis;
     private final int capacity;
     private final int batchSize;
@@ -66,6 +69,20 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
         return new SpliteratorSubscriber<>(10000L, 2, 1);
     }
 
+    public static <T> SpliteratorSubscriber<T> of(final Duration timeout, final int bufferSize, final int batchSize) {
+        if (timeout.isNegative()) {
+            throw new IllegalArgumentException("Expect positive timeout, got: " + timeout);
+        }
+        if (batchSize <= 0) {
+            throw new IllegalArgumentException("Expect positive batchSize, got: " + batchSize);
+        }
+        if (batchSize > bufferSize) {
+            throw new IllegalArgumentException("Expect bufferSize to be at least batchSize=" + batchSize +
+                    ", got: " + bufferSize);
+        }
+        return new SpliteratorSubscriber<>(Math.max(1L, timeout.toMillis()), bufferSize, batchSize);
+    }
+
     /**
      * Represent this spliterator as a stream.
      *
@@ -91,13 +108,13 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
 
     @Override
     public void onNext(final T t) {
-        buffer.add(Optional.of(checkNotNull(t)));
+        buffer.add(new HasElement<>(checkNotNull(t)));
         request();
     }
 
     @Override
     public void onError(final Throwable t) {
-        addEos();
+        addErrors(t);
     }
 
     @Override
@@ -107,7 +124,15 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
 
     private void addEos() {
         // overfill buffer with EOS to prevent concurrent pulling in order to support infinite splitting of this.
-        buffer.addAll(Collections.nCopies(capacity + 1, Optional.empty()));
+        addNCopies(new Completed<>());
+    }
+
+    private void addErrors(final Throwable error) {
+        addNCopies(new Failed<>(error));
+    }
+
+    private void addNCopies(final Element<T> element) {
+        buffer.addAll(Collections.nCopies(capacity + 1, element));
     }
 
     private void request() {
@@ -119,7 +144,7 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
 
     @Override
     public boolean tryAdvance(final Consumer<? super T> consumer) {
-        final Optional<T> next;
+        final Element<T> next;
         try {
             next = buffer.poll(timeoutMillis, TimeUnit.MILLISECONDS);
         } catch (final Exception e) {
@@ -127,15 +152,22 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
         }
         if (next == null) {
             throw new IllegalStateException("timed out after " + timeoutMillis + " ms");
-        } else if (next.isPresent()) {
-            consumer.accept(next.get());
-            request();
-            return true;
         } else {
-            // next == Optional.empty() signifying stream termination
-            // add EOS back to the buffer in case others are polling
-            buffer.add(next);
-            return false;
+            return next.eval(
+                    e -> {
+                        consumer.accept(e);
+                        request();
+                        return true;
+                    },
+                    () -> {
+                        buffer.add(next);
+                        return false;
+                    },
+                    error -> {
+                        buffer.add(next);
+                        throw wrapAsRuntimeException(error);
+                    }
+            );
         }
     }
 
@@ -180,5 +212,58 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
     @Override
     public int characteristics() {
         return NONNULL | IMMUTABLE | CONCURRENT;
+    }
+
+    private static RuntimeException wrapAsRuntimeException(final Throwable error) {
+        if (error instanceof RuntimeException) {
+            return (RuntimeException) error;
+        } else {
+            return new CompletionException("SpliteratorSubscriber encountered " + error.getClass() +
+                    " while reading from its publisher", error);
+        }
+    }
+
+    private interface Element<T> {
+
+        <S> S eval(Function<T, S> onElement, Supplier<S> onComplete, Function<Throwable, S> onError);
+    }
+
+    private static final class HasElement<T> implements Element<T> {
+
+        private final T element;
+
+        private HasElement(final T element) {
+            this.element = element;
+        }
+
+        @Override
+        public <S> S eval(final Function<T, S> onElement, final Supplier<S> onComplete,
+                final Function<Throwable, S> onError) {
+            return onElement.apply(element);
+        }
+    }
+
+    private static final class Completed<T> implements Element<T> {
+
+        @Override
+        public <S> S eval(final Function<T, S> onElement, final Supplier<S> onComplete,
+                final Function<Throwable, S> onError) {
+            return onComplete.get();
+        }
+    }
+
+    private static final class Failed<T> implements Element<T> {
+
+        private final Throwable error;
+
+        private Failed(final Throwable error) {
+            this.error = error;
+        }
+
+        @Override
+        public <S> S eval(final Function<T, S> onElement, final Supplier<S> onComplete,
+                final Function<Throwable, S> onError) {
+            return onError.apply(error);
+        }
     }
 }

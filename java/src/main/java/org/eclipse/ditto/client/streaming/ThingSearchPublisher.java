@@ -31,6 +31,8 @@ import org.reactivestreams.Subscriber;
 
 /**
  * Publisher of search results.
+ *
+ * @since 1.1.0
  */
 public final class ThingSearchPublisher implements Publisher<SubscriptionHasNext> {
 

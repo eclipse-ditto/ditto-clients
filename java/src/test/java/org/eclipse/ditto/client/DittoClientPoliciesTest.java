@@ -44,7 +44,10 @@ import org.eclipse.ditto.signals.commands.policies.query.RetrievePolicy;
 import org.eclipse.ditto.signals.commands.policies.query.RetrievePolicyResponse;
 import org.junit.Test;
 
-public class DittoClientPoliciesTest extends AbstractDittoClientTest {
+/**
+ * Test the policies interface.
+ */
+public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
 
     @Test
     public void verifyClientDefaultsToSchemaVersion2ForPolicyCommands() {

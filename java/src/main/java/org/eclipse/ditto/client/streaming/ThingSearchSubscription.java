@@ -39,6 +39,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Subscription of search results of a query.
+ *
+ * @since 1.1.0
  */
 public final class ThingSearchSubscription implements Subscription {
 

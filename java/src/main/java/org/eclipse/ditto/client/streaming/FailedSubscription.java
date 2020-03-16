@@ -16,6 +16,8 @@ import org.reactivestreams.Subscription;
 
 /**
  * A subscription that has failed to notify subscribers early.
+ *
+ * @since 1.1.0
  */
 public final class FailedSubscription implements Subscription {
 

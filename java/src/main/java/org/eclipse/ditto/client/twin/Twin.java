@@ -48,4 +48,11 @@ public interface Twin extends CommonManagement<TwinThingHandle, TwinFeatureHandl
     // overwritten in order to display a better suiting javadoc for the user
     CompletableFuture<Void> startConsumption(Option<?>... consumptionOptions);
 
+    /**
+     * Retrieve the handle for search operations.
+     *
+     * @return the search handle.
+     * @since 1.1.0
+     */
+    TwinSearchHandle search();
 }
