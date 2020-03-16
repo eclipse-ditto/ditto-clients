@@ -31,6 +31,7 @@ import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.client.registration.DuplicateRegistrationIdException;
 import org.eclipse.ditto.json.JsonFactory;
+import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.base.auth.AuthorizationModelFactory;
 import org.eclipse.ditto.model.base.auth.AuthorizationSubject;
@@ -39,6 +40,7 @@ import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
+import org.eclipse.ditto.model.policies.Policy;
 import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Thing;
@@ -371,7 +373,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
     }
 
     @Test
-    public void testCreateThingWithInitialJSONPolicy() throws InterruptedException {
+    public void testCreateThingWithInitialPolicyJson() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
         messaging.onSend(m -> {
@@ -386,6 +388,12 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
         client.twin().create(THING_ID, POLICY_JSON_OBJECT);
 
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testCreateThingWithInitialPolicyJsonNullable() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.twin().create(THING_ID, (JsonObject) null));
     }
 
     @Test
@@ -407,6 +415,12 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
     }
 
     @Test
+    public void testCreateThingWithInitialPolicyNull() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.twin().create(THING_ID, (Policy) null));
+    }
+
+    @Test
     public void testPutThingWithInlinePolicy() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
@@ -425,7 +439,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
     }
 
     @Test
-    public void testPutThingWithInitialJSONPolicy() throws InterruptedException {
+    public void testPutThingWithInitialPolicyJson() throws InterruptedException {
         final CountDownLatch latch = new CountDownLatch(1);
 
         messaging.onSend(m -> {
@@ -440,6 +454,12 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
         client.twin().put(THING, POLICY_JSON_OBJECT);
 
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testPutThingWithInitialPolicyJsonNull() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.twin().put(THING, (JsonObject) null));
     }
 
     @Test
@@ -458,6 +478,12 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
         client.twin().put(THING, POLICY);
 
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testPutThingWithInitialPolicyNull() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.twin().put(THING, (Policy) null));
     }
 
     @Test

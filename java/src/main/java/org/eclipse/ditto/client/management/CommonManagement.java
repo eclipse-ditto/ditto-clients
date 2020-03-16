@@ -204,7 +204,8 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * org.eclipse.ditto.client.options.Options}.
      * @return completable future providing the created Thing object or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier.
+     * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier, or if
+     * {@code initialPolicy} is {@code null}.
      * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
      * @since 1.1.0
      */
@@ -220,7 +221,8 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * org.eclipse.ditto.client.options.Options}.
      * @return completable future providing the created Thing object or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code thingId} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code thingId} is {@code null} or empty, or if {@code initialPolicy} is
+     * {@code null}.
      * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
      * @since 1.1.0
      */
@@ -238,7 +240,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @return completable future providing the created Thing object or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
-     * {@code "thingId"}.
+     * {@code "thingId"}, or if {@code initialPolicy} is {@code null}.
      * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code thing} cannot be parsed to a {@link
      * Thing}.
      * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
@@ -255,7 +257,8 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * org.eclipse.ditto.client.options.Options}.
      * @return completable future providing the created Thing object or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier.
+     * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier, or if
+     * {@code initialPolicy} is {@code null}.
      * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
      * @since 1.1.0
      */
@@ -271,7 +274,8 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * org.eclipse.ditto.client.options.Options}.
      * @return completable future providing the created Thing object or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code thingId} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code thingId} is {@code null} or empty, or if {@code initialPolicy} is
+     * {@code null}.
      * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
      * @since 1.1.0
      */
@@ -289,7 +293,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @return completable future providing the created Thing object or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
-     * {@code "thingId"}.
+     * {@code "thingId"}, or if {@code initialPolicy} is {@code null}.
      * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code thing} cannot be parsed to a {@link
      * Thing}.
      * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
@@ -344,7 +348,8 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @return completable future providing an {@link Optional} containing the created Thing object, in case the Thing
      * has been created, or an empty Optional, in case the Thing has been updated. Provides a {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
-     * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier.
+     * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier, or if
+     * {@code initialPolicy} is {@code null}.
      * @since 1.1.0
      */
     CompletableFuture<Optional<Thing>> put(Thing thing, JsonObject initialPolicy, Option<?>... options);
@@ -364,7 +369,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * has been created, or an empty Optional, in case the Thing has been updated. Provides a {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
-     * {@code "thingId"}.
+     * {@code "thingId"}, or if {@code initialPolicy} is {@code null}.
      * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code thing} cannot be parsed to a {@link
      * Thing}.
      * @since 1.1.0
@@ -383,7 +388,8 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @return completable future providing an {@link Optional} containing the created Thing object, in case the Thing
      * has been created, or an empty Optional, in case the Thing has been updated. Provides a {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
-     * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier.
+     * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier, or if
+     * {@code initialPolicy} is {@code null}.
      * @since 1.1.0
      */
     CompletableFuture<Optional<Thing>> put(Thing thing, Policy initialPolicy, Option<?>... options);
@@ -403,7 +409,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * has been created, or an empty Optional, in case the Thing has been updated. Provides a {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
-     * {@code "thingId"}.
+     * {@code "thingId"}, or if {@code initialPolicy} is {@code null}.
      * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code thing} cannot be parsed to a {@link
      * Thing}.
      * @since 1.1.0
