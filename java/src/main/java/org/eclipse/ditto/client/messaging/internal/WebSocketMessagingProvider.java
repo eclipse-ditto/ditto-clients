@@ -466,7 +466,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
         return withDittoHeaders.getDittoHeaders().toBuilder()
                 .removeHeader(DittoHeaderDefinition.READ_SUBJECTS.getKey())
-                .removeHeader(DittoHeaderDefinition.AUTHORIZATION_SUBJECTS.getKey())
+                .removeHeader(DittoHeaderDefinition.AUTHORIZATION_CONTEXT.getKey())
                 .removeHeader(DittoHeaderDefinition.RESPONSE_REQUIRED.getKey())
                 .build();
     }

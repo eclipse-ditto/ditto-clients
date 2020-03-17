@@ -20,6 +20,7 @@ import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.base.auth.AuthorizationContext;
 import org.eclipse.ditto.model.base.auth.AuthorizationModelFactory;
 import org.eclipse.ditto.model.base.auth.AuthorizationSubject;
+import org.eclipse.ditto.model.base.auth.DittoAuthorizationContextType;
 import org.eclipse.ditto.model.things.AccessControlList;
 import org.eclipse.ditto.model.things.AclEntry;
 import org.eclipse.ditto.model.things.Attributes;
@@ -63,7 +64,8 @@ public final class TestConstants {
          * An Authorization Context which contains all known Authorization Subjects.
          */
         public static final AuthorizationContext AUTH_CONTEXT =
-                AuthorizationModelFactory.newAuthContext(AUTH_SUBJECT_OLDMAN, AUTH_SUBJECT_GRIMES);
+                AuthorizationModelFactory.newAuthContext(DittoAuthorizationContextType.UNSPECIFIED,
+                        AUTH_SUBJECT_OLDMAN, AUTH_SUBJECT_GRIMES);
 
         /**
          * The known ACL entry of John Oldman.
