@@ -13,11 +13,8 @@
 package org.eclipse.ditto.client.twin;
 
 import java.util.Set;
-import java.util.function.Function;
 
 import javax.annotation.Nullable;
-
-import org.eclipse.ditto.model.query.criteria.Criteria;
 
 /**
  * Builder of thing-search queries.
@@ -32,15 +29,7 @@ public interface SearchQueryBuilder {
      * @param filter the filter as string, or null to remove the filter.
      * @return this builder.
      */
-    SearchQueryBuilder filterString(@Nullable String filter);
-
-    /**
-     * Set the filter string using a factory that makes it easy to create grammatical filter strings.
-     *
-     * @param criteriaCreator function to create a criteria from a factory.
-     * @return this builder.
-     */
-    SearchQueryBuilder filter(Function<SearchFactory, Criteria> criteriaCreator);
+    SearchQueryBuilder filter(@Nullable String filter);
 
     /**
      * Set the options as string.
@@ -48,15 +37,7 @@ public interface SearchQueryBuilder {
      * @param options options as comma-separated string, or null to remove all options.
      * @return this builder.
      */
-    SearchQueryBuilder optionsString(@Nullable String options);
-
-    /**
-     * Add an option to the current list of options using a factory that makes it easy to create well-formed options.
-     *
-     * @param optionCreator function to create an option from a factory.
-     * @return this builder.
-     */
-    SearchQueryBuilder option(Function<SearchFactory, org.eclipse.ditto.model.thingsearch.Option> optionCreator);
+    SearchQueryBuilder options(@Nullable String options);
 
     /**
      * Set the fields to select in search results.

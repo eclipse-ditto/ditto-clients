@@ -16,22 +16,16 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
-import org.eclipse.ditto.client.twin.SearchFactory;
 import org.eclipse.ditto.client.twin.SearchQueryBuilder;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.model.query.criteria.Criteria;
-import org.eclipse.ditto.model.thingsearch.Option;
 import org.eclipse.ditto.signals.commands.thingsearch.subscription.CreateSubscription;
 
 final class SearchQueryBuilderImpl implements SearchQueryBuilder {
-
-    private static final SearchFactory SEARCH_FACTORY = new SearchFactoryImpl();
 
     @Nullable private String filter;
     private final List<String> options = new ArrayList<>();
@@ -43,30 +37,17 @@ final class SearchQueryBuilderImpl implements SearchQueryBuilder {
     SearchQueryBuilderImpl() {}
 
     @Override
-    public SearchQueryBuilder filterString(@Nullable String filter) {
+    public SearchQueryBuilder filter(@Nullable String filter) {
         this.filter = filter;
         return this;
     }
 
     @Override
-    public SearchQueryBuilder filter(Function<SearchFactory, Criteria> criteriaCreator) {
-        final Criteria criteria = criteriaCreator.apply(SEARCH_FACTORY);
-        this.filter = criteria.accept(ToStringVisitors.CRITERIA);
-        return this;
-    }
-
-    @Override
-    public SearchQueryBuilder optionsString(@Nullable final String options) {
+    public SearchQueryBuilder options(@Nullable final String options) {
         this.options.clear();
         if (options != null) {
             this.options.add(options);
         }
-        return this;
-    }
-
-    @Override
-    public SearchQueryBuilder option(final Function<SearchFactory, Option> optionCreator) {
-        options.add(optionCreator.apply(SEARCH_FACTORY).toString());
         return this;
     }
 

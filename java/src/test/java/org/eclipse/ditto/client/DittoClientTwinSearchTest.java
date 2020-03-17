@@ -15,7 +15,6 @@ package org.eclipse.ditto.client;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.concurrent.atomic.AtomicReference;
@@ -64,16 +63,12 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
 
     @Test
     public void emptyResults() {
+        final String filter = "not(or(exists(/features/f1/properties/p1),eq(/attributes/a/b/c,5),exists(thingId)))";
+        final String options = "size(5),sort(+/thingId,-/attributes/x)";
         final Stream<Thing> searchResultStream = createStreamUnderTest(search ->
-                search.filter(sf ->
-                        sf.nor(Arrays.asList(
-                                sf.existsCriteria(sf.existsByFeatureProperty("f1", "p1")),
-                                sf.fieldCriteria(sf.filterByAttribute("a/b/c"), sf.eq(5)),
-                                sf.any()
-                        )))
+                search.filter(filter)
                         .fields("thingId,policyId")
-                        .option(sf -> sf.sizeOption(5))
-                        .option(sf -> sf.sortOption(sort -> sort.asc(sf.sortByThingId()).desc(sf.sortByAttribute("x"))))
+                        .options(options)
                         .namespace("hello.world")
                         .bufferedPages(55)
                         .pagesPerBatch(22)
@@ -82,9 +77,8 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
         final String subscriptionId = "my-empty-subscription";
         reply(SubscriptionCreated.of(subscriptionId, createSubscription.getDittoHeaders()));
         reply(SubscriptionComplete.of(subscriptionId, createSubscription.getDittoHeaders()));
-        assertThat(createSubscription.getFilter())
-                .contains("not(or(exists(/features/f1/properties/p1),eq(/attributes/a/b/c,5),exists(thingId)))");
-        assertThat(createSubscription.getOptions()).contains("size(5),sort(+/thingId,-/attributes/x)");
+        assertThat(createSubscription.getFilter()).contains(filter);
+        assertThat(createSubscription.getOptions()).contains(options);
         assertThat(createSubscription.getSelectedFields().map(JsonFieldSelector::getPointers).orElse(null))
                 .contains(JsonPointer.of("thingId"), JsonPointer.of("policyId"));
         assertThat(searchResultStream).isEmpty();
