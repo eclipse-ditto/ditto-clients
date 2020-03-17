@@ -190,7 +190,7 @@
         <revision>0-SNAPSHOT</revision>
 
         <!-- ### Compile dependencies versions -->
-        <ditto.version>1.1.0-M2</ditto.version>
+        <ditto.version>${revision}</ditto.version>
         <minimal-json.version>0.9.5</minimal-json.version>
         <nv-websocket-client.version>2.9</nv-websocket-client.version>
         <classindex.version>3.8</classindex.version>
@@ -240,7 +240,7 @@
         <ditto.thirdPartyLicences.excludedGroups>
             (org\.eclipse\.ditto.*)
         </ditto.thirdPartyLicences.excludedGroups>
-        
+
         <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
     </properties>
 
