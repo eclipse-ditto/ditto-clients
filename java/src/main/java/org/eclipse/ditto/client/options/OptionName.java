@@ -59,7 +59,17 @@ public interface OptionName extends Predicate<Object> {
          * <p>If the option is not specified, it does not matter whether the object exists.
          * </p>
          */
-        EXISTS
+        EXISTS,
+        /**
+         * Name of the option for defining whether the policy should be copied from another policy when creating a thing.
+         * @since 1.1.0
+         */
+        COPY_POLICY,
+        /**
+         * Name of the option for defining whether the policy should be copied from another thing when creating a thing.
+         * @since 1.1.0
+         */
+        COPY_POLICY_FROM_THING
     }
 
     /**

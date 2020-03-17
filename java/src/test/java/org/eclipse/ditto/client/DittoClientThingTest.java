@@ -13,17 +13,25 @@
 package org.eclipse.ditto.client;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.eclipse.ditto.client.TestConstants.Policy.POLICY;
+import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_ID;
+import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_JSON_OBJECT;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
+import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID_COPY_POLICY;
+import static org.eclipse.ditto.client.TestConstants.Thing.THING_WITH_INLINE_POLICY;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 
 import org.assertj.core.api.Assertions;
-import org.eclipse.ditto.client.registration.DuplicateRegistrationIdException;
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
+import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.Options;
+import org.eclipse.ditto.client.registration.DuplicateRegistrationIdException;
 import org.eclipse.ditto.json.JsonFactory;
+import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.base.auth.AuthorizationModelFactory;
 import org.eclipse.ditto.model.base.auth.AuthorizationSubject;
@@ -32,11 +40,15 @@ import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
+import org.eclipse.ditto.model.policies.Policy;
+import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyId;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyIdResponse;
 import org.eclipse.ditto.signals.events.things.ThingCreated;
 import org.eclipse.ditto.signals.events.things.ThingDeleted;
 import org.eclipse.ditto.signals.events.things.ThingEvent;
@@ -59,6 +71,7 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
 
     private static final Thing THING = ThingsModelFactory.newThingBuilder()
             .setId(THING_ID)
+            .setPolicyId(POLICY_ID)
             .setAttribute(ATTRIBUTE_KEY_NEW, JsonFactory.newValue(ATTRIBUTE_VALUE))
             .setFeature(FEATURE)
             .build();
@@ -240,6 +253,31 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
     }
 
     @Test
+    public void testSetPolicyId() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING_ID)
+                    .hasSubject(ModifyPolicyId.TYPE)
+                    .matches(message -> {
+                        final ModifyPolicyId command = (ModifyPolicyId) message.getPayload().get();
+                        return POLICY_ID.equals(command.getPolicyEntityId());
+                    });
+
+            messaging.receiveResponse(ModifyPolicyIdResponse.created(THING_ID, POLICY_ID, m.getHeaders()));
+            latch.countDown();
+        });
+
+        final CompletableFuture<Void> response = client.twin()
+                .forId(THING_ID)
+                .setPolicyId(POLICY_ID);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        Assertions.assertThat(response).isCompleted();
+    }
+
+    @Test
     public void testRegisterTwoHandlersWithSameSelector() throws Exception {
         final CountDownLatch latch = new CountDownLatch(2);
 
@@ -314,6 +352,229 @@ public final class DittoClientThingTest extends AbstractDittoClientTest {
         client.twin().create(thing);
 
         Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testCreateThingWithInlinePolicy() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING_ID)
+                    .hasInitialPolicy()
+                    .hasNoConditionalHeaders();
+
+            latch.countDown();
+        });
+
+        client.twin().create(THING_WITH_INLINE_POLICY);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testCreateThingWithInitialPolicyJson() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING_ID)
+                    .hasInitialPolicy()
+                    .hasNoConditionalHeaders();
+
+            latch.countDown();
+        });
+
+        client.twin().create(THING_ID, POLICY_JSON_OBJECT);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testCreateThingWithInitialPolicyJsonNullable() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.twin().create(THING_ID, (JsonObject) null));
+    }
+
+    @Test
+    public void testCreateThingWithInitialPolicy() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING_ID)
+                    .hasInitialPolicy()
+                    .hasNoConditionalHeaders();
+
+            latch.countDown();
+        });
+
+        client.twin().create(THING_ID, POLICY);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testCreateThingWithInitialPolicyNull() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.twin().create(THING_ID, (Policy) null));
+    }
+
+    @Test
+    public void testPutThingWithInlinePolicy() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING_ID)
+                    .hasInitialPolicy()
+                    .hasNoConditionalHeaders();
+
+            latch.countDown();
+        });
+
+        client.twin().put(THING_WITH_INLINE_POLICY);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testPutThingWithInitialPolicyJson() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING_ID)
+                    .hasInitialPolicy()
+                    .hasNoConditionalHeaders();
+
+            latch.countDown();
+        });
+
+        client.twin().put(THING, POLICY_JSON_OBJECT);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testPutThingWithInitialPolicyJsonNull() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.twin().put(THING, (JsonObject) null));
+    }
+
+    @Test
+    public void testPutThingWithInitialPolicy() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING_ID)
+                    .hasInitialPolicy()
+                    .hasNoConditionalHeaders();
+
+            latch.countDown();
+        });
+
+        client.twin().put(THING, POLICY);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testPutThingWithInitialPolicyNull() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.twin().put(THING, (Policy) null));
+    }
+
+    @Test
+    public void testCreateThingWithOptionCopyPolicy() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING_ID_COPY_POLICY)
+                    .hasOptionCopyPolicy(POLICY_ID)
+                    .hasNoConditionalHeaders();
+
+            latch.countDown();
+        });
+
+        final Option<PolicyId> copyPolicy = Options.Modify.copyPolicy(POLICY_ID);
+        client.twin().create(THING_ID_COPY_POLICY, copyPolicy);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testCreateThingWithOptionCopyPolicyFromThing() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING_ID_COPY_POLICY)
+                    .hasOptionCopyPolicyFromThing(THING_ID)
+                    .hasNoConditionalHeaders();
+
+            latch.countDown();
+        });
+
+        final Option<ThingId> copyPolicy = Options.Modify.copyPolicyFromThing(THING_ID);
+        client.twin().create(THING_ID_COPY_POLICY, copyPolicy);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testCreateThingWithJsonInlinePolicyAndOptionCopyPolicy() {
+        final Option<PolicyId> copyPolicy = Options.Modify.copyPolicy(POLICY_ID);
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.twin().create(THING_ID_COPY_POLICY, POLICY_JSON_OBJECT, copyPolicy));
+    }
+
+    @Test
+    public void testCreateThingWithAllOptionCopyPolicy() {
+        final Option<ThingId> copyPolicyFromThing = Options.Modify.copyPolicyFromThing(THING_ID);
+        final Option<PolicyId> copyPolicy = Options.Modify.copyPolicy(POLICY_ID);
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.twin().create(THING_ID_COPY_POLICY, copyPolicy, copyPolicyFromThing));
+    }
+
+    @Test
+    public void testPutThingWithOptionCopyPolicy() throws InterruptedException {
+        final CountDownLatch latch = new CountDownLatch(1);
+
+        messaging.onSend(m -> {
+            assertThat(m)
+                    .hasThingId(THING_ID)
+                    .hasOptionCopyPolicy(POLICY_ID)
+                    .hasNoConditionalHeaders();
+
+            latch.countDown();
+        });
+
+        final Option<PolicyId> copyPolicy = Options.Modify.copyPolicy(POLICY_ID);
+        client.twin().put(THING, copyPolicy);
+
+        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+    }
+
+    @Test
+    public void testPutThingWithJsonInlinePolicyAndOptionCopyPolicy() {
+        final Option<PolicyId> copyPolicy = Options.Modify.copyPolicy(POLICY_ID);
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.twin().put(THING, POLICY_JSON_OBJECT, copyPolicy));
+    }
+
+    @Test
+    public void testPutThingWithAllOptionCopyPolicy() {
+        final Option<ThingId> copyPolicyFromThing = Options.Modify.copyPolicyFromThing(THING_ID);
+        final Option<PolicyId> copyPolicy = Options.Modify.copyPolicy(POLICY_ID);
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.twin().put(THING, copyPolicy, copyPolicyFromThing));
     }
 
 }

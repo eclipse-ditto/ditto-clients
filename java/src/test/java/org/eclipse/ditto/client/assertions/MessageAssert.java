@@ -25,11 +25,15 @@ import java.util.Optional;
 
 import org.assertj.core.api.AbstractAssert;
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
+import org.eclipse.ditto.json.JsonObject;
+import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.model.base.headers.entitytag.EntityTagMatcher;
 import org.eclipse.ditto.model.messages.Message;
+import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.signals.commands.things.ThingCommand;
 
 import net.javacrumbs.jsonunit.JsonAssert;
 
@@ -55,6 +59,28 @@ public final class MessageAssert extends AbstractAssert<MessageAssert, Message<?
 
     public MessageAssert hasThingId(final ThingId expectedThingId) {
         return assertThatEqual(expectedThingId, actual.getThingEntityId(), "Thing identifier");
+    }
+
+    public MessageAssert hasInitialPolicy() {
+        assertThat(((ThingCommand) actual.getPayload().get()).toJson().get(JsonPointer.of("initialPolicy")))
+                .overridingErrorMessage("Thing does not have initial policy which is expected")
+                .isNotEqualTo(JsonObject.of("{}"));
+        return this;
+    }
+
+    public MessageAssert hasOptionCopyPolicy(final PolicyId policyId) {
+        assertThat(((ThingCommand) actual.getPayload().get()).toJson().get(JsonPointer.of("policyIdOrPlaceholder")))
+                .overridingErrorMessage("Thing does not have initial policy which is expected")
+                .isEqualTo(JsonObject.of("{\"policyIdOrPlaceholder\":\"" + policyId + "\"}"));
+        return this;
+    }
+
+    public MessageAssert hasOptionCopyPolicyFromThing(final ThingId thingId) {
+        assertThat(((ThingCommand) actual.getPayload().get()).toJson().get(JsonPointer.of("policyIdOrPlaceholder")))
+                .overridingErrorMessage("Thing does not have initial policy which is expected")
+                .isEqualTo(JsonObject.of(
+                        "{\"policyIdOrPlaceholder\":\"{{ ref:things/" + thingId + "/policyId }}\"}"));
+        return this;
     }
 
     public MessageAssert hasFeatureId(final String expectedFeatureId) {

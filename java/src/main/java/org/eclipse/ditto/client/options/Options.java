@@ -15,6 +15,8 @@ package org.eclipse.ditto.client.options;
 import java.util.Arrays;
 
 import org.eclipse.ditto.client.management.CommonManagement;
+import org.eclipse.ditto.model.policies.PolicyId;
+import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.json.JsonFieldSelector;
 
 /**
@@ -78,6 +80,41 @@ public final class Options {
          */
         public static Option<Boolean> exists(final boolean exists) {
             return DefaultOption.newInstance(OptionName.Modify.EXISTS, exists);
+        }
+
+        /**
+         * Creates an option for specifying whether the created policy should copied from a already existing policy
+         * <p>
+         * The returned option has the name {@link OptionName.Modify#COPY_POLICY} and the given {@code boolean} value.
+         * </p>
+         * <p>
+         * If this Option is not specified, it does not matter whether the object exists.
+         * </p>
+         *
+         * @param copyPolicyFrom existing policy which should be copied.
+         * @return the new option.
+         * @since 1.1.0
+         */
+        public static Option<PolicyId> copyPolicy(final PolicyId copyPolicyFrom) {
+            return DefaultOption.newInstance(OptionName.Modify.COPY_POLICY, copyPolicyFrom);
+        }
+
+
+        /**
+         * Creates an option for specifying whether the created policy should be copied from an already existing thing
+         * <p>
+         * The returned option has the name {@link OptionName.Modify#COPY_POLICY_FROM_THING} and the given {@code boolean} value.
+         * </p>
+         * <p>
+         * If this Option is not specified, it does not matter whether the object exists.
+         * </p>
+         *
+         * @param thingToCopyPolicyFrom existing thing from which the policy are used
+         * @return the new option.
+         * @since 1.1.0
+         */
+        public static Option<ThingId> copyPolicyFromThing(final ThingId thingToCopyPolicyFrom) {
+            return DefaultOption.newInstance(OptionName.Modify.COPY_POLICY_FROM_THING, thingToCopyPolicyFrom);
         }
     }
 

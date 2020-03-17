@@ -30,7 +30,8 @@ import org.junit.Test;
 public class ClientShutdownTest {
 
     private static final List<String> ALLOWED_THREADS = asList("main", "Monitor Ctrl-Break", "BundleWatcher: 1",
-            "surefire-forkedjvm-command-thread", "surefire-forkedjvm-ping-30s", "ping-30s", "Attach API wait loop");
+            "surefire-forkedjvm-command-thread", "surefire-forkedjvm-ping-30s", "ping-30s", "Attach API wait loop",
+            "FelixResolver-");
 
     @Test
     public void testNoMoreActiveThreads() throws InterruptedException {
@@ -50,13 +51,18 @@ public class ClientShutdownTest {
         // filter out main thread and monitor thread
         final List<String> activeThreads = Stream.of(threads)
                 .map(Thread::getName)
-                .filter(name -> !ALLOWED_THREADS.contains(name))
+                .filter(ClientShutdownTest::isForbiddenThread)
                 .collect(Collectors.toList());
 
         // expect no more active threads
         Assertions.assertThat(activeThreads)
                 .withFailMessage("There are %d threads active: %s", activeThreads.size(), activeThreads)
                 .isEmpty();
+    }
+
+    private static boolean isForbiddenThread(final String threadName) {
+        return ALLOWED_THREADS.stream()
+                .noneMatch(allowedThread -> allowedThread.equals(threadName) || threadName.startsWith(allowedThread));
     }
 
 }

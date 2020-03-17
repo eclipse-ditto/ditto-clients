@@ -58,7 +58,7 @@ final class UserProvidedOptions {
         Collections.addAll(optionsAsSet, options);
 
         final Consumer<Option<?>[]> optionsValidator = new OptionsValidator();
-        optionsValidator.accept(optionsAsSet.toArray(new Option<?>[optionsAsSet.size()]));
+        optionsValidator.accept(optionsAsSet.toArray(new Option<?>[0]));
 
         return new UserProvidedOptions(optionsAsSet);
     }

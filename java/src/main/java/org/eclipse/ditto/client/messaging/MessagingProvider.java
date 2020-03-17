@@ -24,7 +24,6 @@ import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.commands.base.Command;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
-import org.eclipse.ditto.signals.commands.things.ThingCommandResponse;
 import org.eclipse.ditto.signals.events.base.Event;
 
 /**
@@ -110,7 +109,7 @@ public interface MessagingProvider {
      *
      * @param commandResponseHandler the consumer that is called for incoming command response messages
      */
-    void registerReplyHandler(Consumer<ThingCommandResponse> commandResponseHandler);
+    void registerReplyHandler(Consumer<CommandResponse<?>> commandResponseHandler);
 
     /**
      * Register a named message handler and receipt handler.

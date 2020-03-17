@@ -157,11 +157,10 @@ public final class DefaultMessageSerializerRegistry implements MessageSerializer
 
     private <T> Stream<MessageSerializerKey<?>> getSerializerKeysForJavaTypeAndSubject(final Class<T> javaType,
             final String subject) {
-        return serializers.entrySet()
+        return serializers.keySet()
                 .stream()
-                .filter(entry -> entry.getKey().getJavaType().isAssignableFrom(javaType))
-                .filter(entry -> entry.getKey().getSubject().equals(subject))
-                .map(Map.Entry::getKey);
+                .filter(key -> key.getJavaType().isAssignableFrom(javaType))
+                .filter(key -> key.getSubject().equals(subject));
     }
 
 }

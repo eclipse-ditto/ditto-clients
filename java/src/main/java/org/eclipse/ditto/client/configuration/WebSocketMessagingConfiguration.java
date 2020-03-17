@@ -87,7 +87,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         private boolean reconnectEnabled = true;
         private ProxyConfiguration proxyConfiguration;
         private TrustStoreConfiguration trustStoreConfiguration;
-        
+
         @Override
         public MessagingConfiguration.Builder jsonSchemaVersion(final JsonSchemaVersion jsonSchemaVersion) {
             this.jsonSchemaVersion = checkNotNull(jsonSchemaVersion, "jsonSchemaVersion");

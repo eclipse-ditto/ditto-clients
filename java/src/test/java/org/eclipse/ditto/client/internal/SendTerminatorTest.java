@@ -21,7 +21,11 @@ import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
+import org.eclipse.ditto.model.policies.Label;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.commands.policies.PolicyCommandResponse;
+import org.eclipse.ditto.signals.commands.policies.modify.DeletePolicyEntryResponse;
+import org.eclipse.ditto.signals.commands.policies.modify.PolicyModifyCommand;
 import org.eclipse.ditto.signals.commands.things.ThingCommandResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributeResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ThingModifyCommand;
@@ -41,6 +45,7 @@ public final class SendTerminatorTest {
 
     private static final String CORRELATION_ID = "0815-4711-2342-3311";
     private static final String THING_ID = "com.example:my-thing";
+    private static final String POLICY_ID = "com.example:my-policy";
 
     private static DittoHeaders dittoHeaders;
 
@@ -48,7 +53,10 @@ public final class SendTerminatorTest {
     private MessagingProvider messagingProvider;
 
     @Mock
-    private ThingModifyCommand command;
+    private ThingModifyCommand thingModifyCommand;
+
+    @Mock
+    private PolicyModifyCommand policyModifyCommand;
 
     private ResponseForwarder responseForwarder;
 
@@ -59,14 +67,15 @@ public final class SendTerminatorTest {
 
     @Before
     public void setUp() {
-        Mockito.when(command.getDittoHeaders()).thenReturn(dittoHeaders);
+        Mockito.when(thingModifyCommand.getDittoHeaders()).thenReturn(dittoHeaders);
+        Mockito.when(policyModifyCommand.getDittoHeaders()).thenReturn(dittoHeaders);
         responseForwarder = ResponseForwarder.getInstance();
     }
 
     @Test
     public void tryToSendMessageWithoutMessageBeingSet() {
         final SendTerminator underTest =
-                new SendTerminator(messagingProvider, responseForwarder, TopicPath.Channel.TWIN, command);
+                new SendTerminator(messagingProvider, responseForwarder, TopicPath.Channel.TWIN, thingModifyCommand);
 
         assertThatExceptionOfType(NullPointerException.class)
                 .isThrownBy(underTest::send)
@@ -90,13 +99,30 @@ public final class SendTerminatorTest {
         final ThingCommandResponse commandResponse =
                 DeleteAttributeResponse.of(THING_ID, JsonPointer.of("/foo"), dittoHeaders);
         final SendTerminator<String> underTest =
-                new SendTerminator<>(messagingProvider, responseForwarder, channel, command);
+                new SendTerminator<>(messagingProvider, responseForwarder, channel, thingModifyCommand);
 
         final CompletableFuture<String> promise = underTest.applyModify(ThingCommandResponse::getName);
         final boolean isPromiseDoneBeforeBeingHandled = promise.isDone();
         responseForwarder.handle(commandResponse);
 
-        Mockito.verify(messagingProvider).sendCommand(Mockito.eq(command), Mockito.eq(channel));
+        Mockito.verify(messagingProvider).sendCommand(Mockito.eq(thingModifyCommand), Mockito.eq(channel));
+        assertThat(isPromiseDoneBeforeBeingHandled).isFalse();
+        assertThat(promise).isCompletedWithValue(commandResponse.getName());
+    }
+
+    @Test
+    public void sendPolicyCommandWithResponseRequiredAndHandleResponse() {
+        final TopicPath.Channel channel = TopicPath.Channel.NONE;
+        final PolicyCommandResponse commandResponse =
+                DeletePolicyEntryResponse.of(POLICY_ID, Label.of("DEFAULT"), dittoHeaders);
+        final SendTerminator<String> underTest =
+                new SendTerminator<>(messagingProvider, responseForwarder, policyModifyCommand);
+
+        final CompletableFuture<String> promise = underTest.applyModifyPolicy(PolicyCommandResponse::getName);
+        final boolean isPromiseDoneBeforeBeingHandled = promise.isDone();
+        responseForwarder.handle(commandResponse);
+
+        Mockito.verify(messagingProvider).sendCommand(Mockito.eq(policyModifyCommand), Mockito.eq(channel));
         assertThat(isPromiseDoneBeforeBeingHandled).isFalse();
         assertThat(promise).isCompletedWithValue(commandResponse.getName());
     }
@@ -107,13 +133,13 @@ public final class SendTerminatorTest {
         final DittoHeaders dittoHeadersWithoutResponseRequired = SendTerminatorTest.dittoHeaders.toBuilder()
                 .responseRequired(false)
                 .build();
-        Mockito.when(command.getDittoHeaders()).thenReturn(dittoHeadersWithoutResponseRequired);
+        Mockito.when(thingModifyCommand.getDittoHeaders()).thenReturn(dittoHeadersWithoutResponseRequired);
         final SendTerminator<String> underTest =
-                new SendTerminator<>(messagingProvider, responseForwarder, channel, command);
+                new SendTerminator<>(messagingProvider, responseForwarder, channel, thingModifyCommand);
 
         final CompletableFuture<String> promise = underTest.applyModify(response -> null);
 
-        Mockito.verify(messagingProvider).sendCommand(Mockito.eq(command), Mockito.eq(channel));
+        Mockito.verify(messagingProvider).sendCommand(Mockito.eq(thingModifyCommand), Mockito.eq(channel));
         assertThat(promise).isCompletedWithValue(null);
     }
 
@@ -123,13 +149,13 @@ public final class SendTerminatorTest {
         final ThingCommandResponse commandResponse = Mockito.mock(ThingCommandResponse.class);
         Mockito.when(commandResponse.getDittoHeaders()).thenReturn(dittoHeaders);
         final SendTerminator<String> underTest =
-                new SendTerminator<>(messagingProvider, responseForwarder, channel, command);
+                new SendTerminator<>(messagingProvider, responseForwarder, channel, thingModifyCommand);
 
         final CompletableFuture<Void> promise = underTest.applyVoid();
         final boolean isPromiseDoneBeforeBeingHandled = promise.isDone();
         responseForwarder.handle(commandResponse);
 
-        Mockito.verify(messagingProvider).sendCommand(Mockito.eq(command), Mockito.eq(channel));
+        Mockito.verify(messagingProvider).sendCommand(Mockito.eq(thingModifyCommand), Mockito.eq(channel));
         assertThat(isPromiseDoneBeforeBeingHandled).isFalse();
         assertThat(promise).isCompletedWithValue(null);
     }
