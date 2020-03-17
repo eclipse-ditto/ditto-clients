@@ -12,6 +12,7 @@
  */
 package org.eclipse.ditto.client.twin;
 
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -26,12 +27,12 @@ import org.reactivestreams.Publisher;
 public interface TwinSearchHandle {
 
     /**
-     * Search for things and publish results as a reactive-streams publisher.
+     * Search for things and publish each page of search result as a reactive-streams publisher.
      *
      * @param querySpecifier the consumer to specify the search query.
      * @return a publisher of things matching the query.
      */
-    Publisher<Thing> publisher(Consumer<SearchQueryBuilder> querySpecifier);
+    Publisher<List<Thing>> publisher(Consumer<SearchQueryBuilder> querySpecifier);
 
     /**
      * Search for things and iterate over results with a spliterator.

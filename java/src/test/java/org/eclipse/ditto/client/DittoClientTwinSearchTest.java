@@ -16,12 +16,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Spliterator;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
+import org.eclipse.ditto.client.streaming.SpliteratorSubscriber;
+import org.eclipse.ditto.client.twin.SearchQueryBuilder;
 import org.eclipse.ditto.json.JsonArray;
 import org.eclipse.ditto.json.JsonCollectors;
 import org.eclipse.ditto.json.JsonFieldSelector;
@@ -39,15 +44,27 @@ import org.eclipse.ditto.signals.events.thingsearch.SubscriptionCreated;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionFailed;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionHasNext;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.reactivestreams.Publisher;
 
 /**
  * Test the search interface.
  */
+@RunWith(Parameterized.class)
 public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
+
+    @Parameterized.Parameters(name = "method={0}")
+    public static Method[] methods() {
+        return Method.values();
+    }
+
+    @Parameterized.Parameter
+    public Method method;
 
     @Test
     public void emptyResults() {
-        final Stream<Thing> searchResultStream = client.twin().search().stream(search ->
+        final Stream<Thing> searchResultStream = createStreamUnderTest(search ->
                 search.filter(sf ->
                         sf.nor(Arrays.asList(
                                 sf.existsCriteria(sf.existsByFeatureProperty("f1", "p1")),
@@ -75,7 +92,7 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
 
     @Test
     public void someResults() {
-        final Stream<Thing> searchResults = client.twin().search().stream(q -> q.bufferedPages(2).pagesPerBatch(1));
+        final Stream<Thing> searchResults = createStreamUnderTest(q -> q.bufferedPages(2).pagesPerBatch(1));
         final CreateSubscription createSubscription = expectMsgClass(CreateSubscription.class);
         final String subscriptionId = "my-nonempty-subscription";
         reply(SubscriptionCreated.of(subscriptionId, createSubscription.getDittoHeaders()));
@@ -90,7 +107,7 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
 
     @Test
     public void partialFailure() {
-        final Spliterator<Thing> searchResultSpliterator = client.twin().search().stream(q -> {}).spliterator();
+        final Spliterator<Thing> searchResultSpliterator = createStreamUnderTest(q -> {}).spliterator();
         final CreateSubscription createSubscription = expectMsgClass(CreateSubscription.class);
         final String subscriptionId = "my-failed-subscription";
         reply(SubscriptionCreated.of(subscriptionId, createSubscription.getDittoHeaders()));
@@ -105,10 +122,30 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
                 .isThrownBy(() -> searchResultSpliterator.forEachRemaining(thing -> {}));
     }
 
-    private static SubscriptionHasNext hasNext(final String subscriptionId, final int start, final int end) {
+    private SubscriptionHasNext hasNext(final String subscriptionId, final int start, final int end) {
         final JsonArray things = IntStream.range(start, end)
                 .mapToObj(i -> JsonObject.newBuilder().set("thingId", "x:" + i).build())
                 .collect(JsonCollectors.valuesToArray());
         return SubscriptionHasNext.of(subscriptionId, things, DittoHeaders.empty());
+    }
+
+    private Stream<Thing> createStreamUnderTest(final Consumer<SearchQueryBuilder> querySpecifier) {
+        switch (method) {
+            case PUBLISHER:
+                final Publisher<List<Thing>> listPublisher = client.twin().search().publisher(querySpecifier);
+                final SpliteratorSubscriber<List<Thing>> subscriber =
+                        SpliteratorSubscriber.of(messaging.getMessagingConfiguration().getTimeout(), 2, 1);
+                listPublisher.subscribe(subscriber);
+                return StreamSupport.stream(subscriber, false).flatMap(List::stream);
+            case STREAM:
+                return client.twin().search().stream(querySpecifier);
+            default:
+                throw new IllegalArgumentException("Unknown method: " + method);
+        }
+    }
+
+    enum Method {
+        PUBLISHER,
+        STREAM
     }
 }

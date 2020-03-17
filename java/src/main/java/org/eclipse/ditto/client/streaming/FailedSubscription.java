@@ -15,11 +15,9 @@ package org.eclipse.ditto.client.streaming;
 import org.reactivestreams.Subscription;
 
 /**
- * A subscription that has failed to notify subscribers early.
- *
- * @since 1.1.0
+ * Package-private: A subscription that has failed to notify subscribers early.
  */
-public final class FailedSubscription implements Subscription {
+final class FailedSubscription implements Subscription {
 
     private FailedSubscription() {}
 

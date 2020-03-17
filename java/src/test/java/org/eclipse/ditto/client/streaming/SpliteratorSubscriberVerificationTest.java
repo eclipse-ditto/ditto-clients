@@ -28,7 +28,7 @@ public final class SpliteratorSubscriberVerificationTest extends SubscriberWhite
     private static final Logger LOGGER = LoggerFactory.getLogger(SpliteratorSubscriberVerificationTest.class);
 
     public SpliteratorSubscriberVerificationTest() {
-        super(new TestEnvironment(true));
+        super(new TestEnvironment(false));
     }
 
     @Override

@@ -13,11 +13,14 @@
 package org.eclipse.ditto.client.twin.internal;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.ditto.client.internal.AbstractHandle;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
+import org.eclipse.ditto.client.streaming.MapPublisher;
 import org.eclipse.ditto.client.streaming.SpliteratorSubscriber;
 import org.eclipse.ditto.client.streaming.ThingSearchPublisher;
 import org.eclipse.ditto.client.twin.SearchQueryBuilder;
@@ -40,9 +43,12 @@ final class TwinSearchHandleImpl extends AbstractHandle implements TwinSearchHan
     }
 
     @Override
-    public Publisher<Thing> publisher(final Consumer<SearchQueryBuilder> querySpecifier) {
-        // TODO: Map and Spliterator processors with tests
-        throw new UnsupportedOperationException("TODO: implement");
+    public Publisher<List<Thing>> publisher(final Consumer<SearchQueryBuilder> querySpecifier) {
+        final SearchQueryBuilderImpl builder = new SearchQueryBuilderImpl();
+        querySpecifier.accept(builder);
+        final Publisher<SubscriptionHasNext> thingSearchPublisher =
+                ThingSearchPublisher.of(builder.createSubscription(), PROTOCOL_ADAPTER, messagingProvider);
+        return MapPublisher.of(thingSearchPublisher, TwinSearchHandleImpl::pageToThingList);
     }
 
     @Override
@@ -73,5 +79,13 @@ final class TwinSearchHandleImpl extends AbstractHandle implements TwinSearchHan
                 .stream()
                 .map(JsonValue::asObject)
                 .map(ThingsModelFactory::newThing);
+    }
+
+    private static List<Thing> pageToThingList(final SubscriptionHasNext page) {
+        return page.getItems()
+                .stream()
+                .map(JsonValue::asObject)
+                .map(ThingsModelFactory::newThing)
+                .collect(Collectors.toList());
     }
 }

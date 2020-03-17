@@ -46,7 +46,7 @@ public final class ThingSearchPublisherVerificationTest extends PublisherVerific
     private static final ProtocolAdapter PROTOCOL_ADAPTER = DittoProtocolAdapter.of(HeaderTranslator.empty());
 
     public ThingSearchPublisherVerificationTest() {
-        super(new TestEnvironment(true), 1000L);
+        super(new TestEnvironment(false), 1000L);
     }
 
     @Override
