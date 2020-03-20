@@ -462,8 +462,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         }
     }
 
-    private DittoHeaders adjustHeadersForLive(final WithDittoHeaders<?> withDittoHeaders) {
-
+    private static DittoHeaders adjustHeadersForLive(final WithDittoHeaders<?> withDittoHeaders) {
         return withDittoHeaders.getDittoHeaders().toBuilder()
                 .removeHeader(DittoHeaderDefinition.READ_SUBJECTS.getKey())
                 .removeHeader(DittoHeaderDefinition.AUTHORIZATION_CONTEXT.getKey())
@@ -473,7 +472,6 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     @Override
     public CompletableFuture<Adaptable> sendAdaptable(final Adaptable adaptable) {
-
         DittoHeaders headers = adaptable.getHeaders().orElseGet(DittoHeaders::empty);
         Adaptable adaptableToSend = adaptable;
         if (!headers.getCorrelationId().isPresent()) {
@@ -527,18 +525,25 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
         // connection already opened - finish future:
         if (webSocket != null) {
-            if (TwinImpl.CONSUME_TWIN_EVENTS_HANDLER.equals(name)) {
-                sendMeTwinEvents = true;
-                askBackend(PROTOCOL_CMD_START_SEND_EVENTS, registrationConfig, receiptFuture);
-            } else if (LiveImpl.CONSUME_LIVE_MESSAGES_HANDLER.equals(name)) {
-                sendMeLiveMessages = true;
-                askBackend(PROTOCOL_CMD_START_SEND_MESSAGES, registrationConfig, receiptFuture);
-            } else if (LiveImpl.CONSUME_LIVE_COMMANDS_HANDLER.equals(name)) {
-                sendMeLiveCommands = true;
-                askBackend(PROTOCOL_CMD_START_SEND_LIVE_COMMANDS, registrationConfig, receiptFuture);
-            } else if (LiveImpl.CONSUME_LIVE_EVENTS_HANDLER.equals(name)) {
-                sendMeLiveEvents = true;
-                askBackend(PROTOCOL_CMD_START_SEND_LIVE_EVENTS, registrationConfig, receiptFuture);
+            switch (name) {
+                case TwinImpl.CONSUME_TWIN_EVENTS_HANDLER:
+                    sendMeTwinEvents = true;
+                    askBackend(PROTOCOL_CMD_START_SEND_EVENTS, registrationConfig, receiptFuture);
+                    break;
+                case LiveImpl.CONSUME_LIVE_MESSAGES_HANDLER:
+                    sendMeLiveMessages = true;
+                    askBackend(PROTOCOL_CMD_START_SEND_MESSAGES, registrationConfig, receiptFuture);
+                    break;
+                case LiveImpl.CONSUME_LIVE_COMMANDS_HANDLER:
+                    sendMeLiveCommands = true;
+                    askBackend(PROTOCOL_CMD_START_SEND_LIVE_COMMANDS, registrationConfig, receiptFuture);
+                    break;
+                case LiveImpl.CONSUME_LIVE_EVENTS_HANDLER:
+                    sendMeLiveEvents = true;
+                    askBackend(PROTOCOL_CMD_START_SEND_LIVE_EVENTS, registrationConfig, receiptFuture);
+                    break;
+                default:
+                    break;
             }
         }
 

@@ -15,6 +15,8 @@ package org.eclipse.ditto.client.configuration;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 /**
  * Interface for configuration provider specifying the necessary information for authenticating a client at Eclipse
  * Ditto.
@@ -64,7 +66,7 @@ public interface AuthenticationConfiguration {
          * @param proxyConfiguration the proxy configuration to set.
          * @return this builder.
          */
-        Builder proxyConfiguration(ProxyConfiguration proxyConfiguration);
+        Builder proxyConfiguration(@Nullable ProxyConfiguration proxyConfiguration);
 
         /**
          * Build the authentication configuration.
