@@ -186,7 +186,7 @@ public final class Classifiers {
 
         @Override
         public boolean equals(final Object o) {
-            if (o.getClass() == getClass()) {
+            if (o != null && o.getClass() == getClass()) {
                 return Objects.equals(value, getClass().cast(o).value);
             } else {
                 return false;

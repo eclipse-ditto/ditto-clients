@@ -68,7 +68,7 @@ public final class ThingSearchPublisher implements Publisher<SubscriptionHasNext
 
     // subscriber should not be null but still marked as nullable to it possible to trigger reactive-streams rule 1.9
     @Override
-    public void subscribe(@Nullable final Subscriber<? super SubscriptionHasNext> subscriber) {
+    public void subscribe(final Subscriber<? super SubscriptionHasNext> subscriber) {
         checkNotNull(subscriber, "subscriber");
         if (subscribed.getAndSet(true)) {
             // Subscribed more than once. Deliver dummy subscription per

@@ -29,6 +29,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.Nullable;
 
@@ -76,7 +77,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     private final AtomicBoolean reconnecting = new AtomicBoolean(false);
     private final AtomicBoolean initiallyConnected = new AtomicBoolean(false);
 
-    volatile private WebSocket webSocket;
+    private final AtomicReference<WebSocket> webSocket;
 
     /**
      * Constructs a new {@code WsMessagingProvider}.
@@ -98,6 +99,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         sessionId = authenticationProvider.getConfiguration().getSessionId();
         reconnectExecutor = messagingConfiguration.isReconnectEnabled() ? createReconnectExecutor() : null;
         subscriptionMessages = new ConcurrentHashMap<>();
+        webSocket = new AtomicReference<>();
     }
 
     private static ScheduledThreadPoolExecutor createReconnectExecutor() {
@@ -158,12 +160,13 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     @Override
     public void initialize() {
-        if (webSocket != null && webSocket.isOpen()) {
-            // if wsClient was already initialized, skip another initialization
-            return;
-        }
-
-        initiateConnection(createWebsocket());
+        webSocket.getAndUpdate(ws -> {
+            if (ws != null && ws.isOpen()) {
+                return ws;
+            } else {
+                return initiateConnection(createWebsocket());
+            }
+        });
     }
 
     private WebSocket createWebsocket() {
@@ -281,9 +284,10 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     private void sendToWebsocket(final String stringMessage) {
-        if (webSocket != null && webSocket.isOpen()) {
+        final WebSocket ws = webSocket.get();
+        if (ws != null && ws.isOpen()) {
             LOGGER.debug("Client <{}>: Sending: {}", sessionId, stringMessage);
-            webSocket.sendText(stringMessage);
+            ws.sendText(stringMessage);
         } else {
             LOGGER.error("Client <{}>: WebSocket is not connected - going to discard message '{}'",
                     sessionId, stringMessage);
@@ -301,7 +305,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
             }
 
             authenticationProvider.destroy();
-            webSocket.disconnect();
+            final WebSocket ws = webSocket.get();
+            ws.disconnect();
             LOGGER.debug("Client <{}>: WebSocket destroyed.", sessionId);
         } catch (final Exception e) {
             LOGGER.info("Client <{}>: Exception occurred while trying to shutdown http client.", sessionId, e);
@@ -310,7 +315,16 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     @Override
     public void onConnected(final WebSocket websocket, final Map<String, List<String>> headers) {
-        webSocket = websocket;
+        webSocket.getAndUpdate(ws -> {
+            try {
+                if (ws != null && ws.isOpen()) {
+                    ws.disconnect();
+                }
+            } catch (final Throwable throwable) {
+                LOGGER.error("Client <{}>: Error disconnecting a previous websocket", sessionId, throwable);
+            }
+            return websocket;
+        });
 
         callbackExecutor.execute(() -> {
             LOGGER.info("Client <{}>: WebSocket connection is established", sessionId);
@@ -406,9 +420,14 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     private WebSocket tryToReconnect(final int count) {
         try {
             LOGGER.info("Recreating Websocket..");
-            webSocket.clearHeaders();
-            webSocket.clearListeners();
-            return initiateConnection(webSocket.recreate());
+            final WebSocket ws = webSocket.get();
+            if (ws == null) {
+                LOGGER.error("Client <{}>: attempt to reconnect a null websocket", sessionId);
+                return null;
+            }
+            ws.clearHeaders();
+            ws.clearListeners();
+            return initiateConnection(ws.recreate());
         } catch (final AuthenticationException | IOException e) {
             // log error, but try again (don't end loop)
             final String msgFormat = "Client <{}>: Failed to establish connection ({}): {}";
