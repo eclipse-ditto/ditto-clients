@@ -97,7 +97,7 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
     @Override
     public <T> PendingMessageWithFeatureId<T> message() {
         return PendingMessageImpl.<T>of(LOGGER, outgoingMessageFactory, messageSerializerRegistry, PROTOCOL_ADAPTER,
-                messagingProvider, channel).withThingAndFeatureIds(getThingEntityId(), getFeatureId());
+                messagingProvider).withThingAndFeatureIds(getThingEntityId(), getFeatureId());
     }
 
     @Override

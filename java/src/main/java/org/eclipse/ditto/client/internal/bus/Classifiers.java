@@ -171,7 +171,7 @@ public final class Classifiers {
         }
     }
 
-    private static abstract class Literal<T> implements Classifier.Classification {
+    private abstract static class Literal<T> implements Classifier.Classification {
 
         protected final T value;
 

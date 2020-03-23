@@ -45,31 +45,27 @@ final class PendingMessageImpl<T> implements PendingMessage<T> {
     private final MessageSerializerRegistry messageSerializerRegistry;
     private final ProtocolAdapter protocolAdapter;
     private final MessagingProvider messagingProvider;
-    private final TopicPath.Channel channel;
 
     private PendingMessageImpl(final Logger logger,
             final OutgoingMessageFactory outgoingMessageFactory,
             final MessageSerializerRegistry messageSerializerRegistry,
             final ProtocolAdapter protocolAdapter,
-            final MessagingProvider messagingProvider,
-            final TopicPath.Channel channel) {
+            final MessagingProvider messagingProvider) {
         this.logger = logger;
         this.outgoingMessageFactory = outgoingMessageFactory;
         this.messageSerializerRegistry = messageSerializerRegistry;
         this.protocolAdapter = protocolAdapter;
         this.messagingProvider = messagingProvider;
-        this.channel = channel;
     }
 
     static <T> PendingMessageImpl<T> of(final Logger logger,
             final OutgoingMessageFactory outgoingMessageFactory,
             final MessageSerializerRegistry messageSerializerRegistry,
             final ProtocolAdapter protocolAdapter,
-            final MessagingProvider messagingProvider,
-            final TopicPath.Channel channel) {
+            final MessagingProvider messagingProvider) {
 
         return new PendingMessageImpl<>(logger, outgoingMessageFactory, messageSerializerRegistry, protocolAdapter,
-                messagingProvider, channel);
+                messagingProvider);
     }
 
     PendingMessageWithThingId<T> withThingId(final ThingId thingId) {

@@ -320,8 +320,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                 if (ws != null && ws.isOpen()) {
                     ws.disconnect();
                 }
-            } catch (final Throwable throwable) {
-                LOGGER.error("Client <{}>: Error disconnecting a previous websocket", sessionId, throwable);
+            } catch (final Exception exception) {
+                LOGGER.error("Client <{}>: Error disconnecting a previous websocket", sessionId, exception);
             }
             return websocket;
         });

@@ -66,7 +66,7 @@ public final class MapPublisher<S, T> implements Publisher<T> {
         public void onNext(final S s) {
             try {
                 subscriber.onNext(function.apply(s));
-            } catch (final Throwable error) {
+            } catch (final Exception error) {
                 subscriber.onError(error);
                 final Subscription upstreamSubscription = subscription.get();
                 if (upstreamSubscription != null) {
