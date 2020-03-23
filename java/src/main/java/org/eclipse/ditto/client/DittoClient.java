@@ -15,6 +15,7 @@ package org.eclipse.ditto.client;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.ditto.client.live.Live;
+import org.eclipse.ditto.client.policies.Policies;
 import org.eclipse.ditto.client.twin.Twin;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 
@@ -56,4 +57,12 @@ public interface DittoClient {
      */
     CompletableFuture<Adaptable> sendDittoProtocol(Adaptable dittoProtocolAdaptable);
 
+    /**
+     * Returns the client's {@link Policies} singleton which provides the necessary functionality to manage and monitor
+     * {@link org.eclipse.ditto.model.policies.Policy}s.
+     *
+     * @return the Policy handle
+     * @since 1.1.0
+     */
+    Policies policies();
 }

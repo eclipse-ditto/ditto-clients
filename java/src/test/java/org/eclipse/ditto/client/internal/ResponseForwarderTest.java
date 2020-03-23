@@ -14,6 +14,7 @@ package org.eclipse.ditto.client.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.eclipse.ditto.client.TestConstants.Thing.POLICY_ID;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 
 import java.util.Optional;
@@ -21,7 +22,10 @@ import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.signals.commands.things.ThingCommandResponse;
+import org.eclipse.ditto.model.policies.PolicyId;
+import org.eclipse.ditto.signals.commands.base.CommandResponse;
+import org.eclipse.ditto.signals.commands.policies.PolicyErrorResponse;
+import org.eclipse.ditto.signals.commands.policies.exceptions.PolicyNotAccessibleException;
 import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
 import org.eclipse.ditto.signals.commands.things.exceptions.ThingNotAccessibleException;
 import org.junit.Before;
@@ -43,9 +47,9 @@ public final class ResponseForwarderTest {
     private static DittoHeaders dittoHeaders;
 
     @Mock
-    private ThingCommandResponse commandResponse;
+    private CommandResponse commandResponse;
 
-    private CompletableFuture<ThingCommandResponse> responsePromise;
+    private CompletableFuture<CommandResponse> responsePromise;
     private ResponseForwarder underTest;
 
     @BeforeClass
@@ -98,8 +102,8 @@ public final class ResponseForwarderTest {
 
     @Test
     public void putDifferentResponsePromisesForSameCorrelationIdTriggersConflictHandling() {
-        final CompletableFuture<ThingCommandResponse> initialResponsePromise = responsePromise;
-        final CompletableFuture<ThingCommandResponse> anotherResponsePromise = new CompletableFuture<>();
+        final CompletableFuture<CommandResponse> initialResponsePromise = responsePromise;
+        final CompletableFuture<CommandResponse> anotherResponsePromise = new CompletableFuture<>();
         underTest.put(CORRELATION_ID, initialResponsePromise);
 
         assertThat(underTest.put(CORRELATION_ID, anotherResponsePromise)).isEqualTo(initialResponsePromise);
@@ -119,7 +123,7 @@ public final class ResponseForwarderTest {
 
     @Test
     public void handleCommandResponseWhichHasNoPromiseReturnsEmptyOptional() {
-        final Optional<CompletableFuture<ThingCommandResponse>> handledPromise = underTest.handle(commandResponse);
+        final Optional<CompletableFuture<CommandResponse>> handledPromise = underTest.handle(commandResponse);
 
         assertThat(handledPromise).isEmpty();
     }
@@ -128,7 +132,7 @@ public final class ResponseForwarderTest {
     public void handleCommandResponseWithoutCorrelationIdReturnsEmptyOptional() {
         Mockito.when(commandResponse.getDittoHeaders()).thenReturn(DittoHeaders.empty());
 
-        final Optional<CompletableFuture<ThingCommandResponse>> handledPromise = underTest.handle(commandResponse);
+        final Optional<CompletableFuture<CommandResponse>> handledPromise = underTest.handle(commandResponse);
 
         assertThat(handledPromise).isEmpty();
     }
@@ -137,7 +141,7 @@ public final class ResponseForwarderTest {
     public void handleCommandResponseWithoutException() {
         underTest.put(CORRELATION_ID, responsePromise);
 
-        final Optional<CompletableFuture<ThingCommandResponse>> handledPromise = underTest.handle(commandResponse);
+        final Optional<CompletableFuture<CommandResponse>> handledPromise = underTest.handle(commandResponse);
 
         assertThat(handledPromise).contains(responsePromise);
     }
@@ -148,7 +152,21 @@ public final class ResponseForwarderTest {
         final ThingErrorResponse thingErrorResponse = ThingErrorResponse.of(exception, dittoHeaders);
         underTest.put(CORRELATION_ID, responsePromise);
 
-        final Optional<CompletableFuture<ThingCommandResponse>> handledPromise = underTest.handle(thingErrorResponse);
+        final Optional<CompletableFuture<CommandResponse>> handledPromise = underTest.handle(thingErrorResponse);
+
+        assertThat(handledPromise).contains(responsePromise);
+        assertThat(handledPromise.get())
+                .hasFailedWithThrowableThat()
+                .isEqualTo(exception);
+    }
+
+    @Test
+    public void handlePolicyErrorResponse() {
+        final DittoRuntimeException exception = PolicyNotAccessibleException.newBuilder(PolicyId.of(POLICY_ID)).build();
+        final PolicyErrorResponse policyErrorResponse = PolicyErrorResponse.of(exception, dittoHeaders);
+        underTest.put(CORRELATION_ID, responsePromise);
+
+        final Optional<CompletableFuture<CommandResponse>> handledPromise = underTest.handle(policyErrorResponse);
 
         assertThat(handledPromise).contains(responsePromise);
         assertThat(handledPromise.get())

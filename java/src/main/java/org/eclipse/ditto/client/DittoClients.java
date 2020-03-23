@@ -66,11 +66,28 @@ public final class DittoClients {
     public static DittoClient newInstance(final MessagingProvider twinMessagingProvider,
             final MessagingProvider liveMessagingProvider) {
 
-        final ResponseForwarder responseForwarder = ResponseForwarder.getInstance();
+        return newInstance(twinMessagingProvider, liveMessagingProvider, twinMessagingProvider);
+    }
+
+    /**
+     * Creates a new {@link org.eclipse.ditto.client.DittoClient} with a specific {@code Twin} and {@code Live}
+     * {@link org.eclipse.ditto.client.messaging.MessagingProvider}.
+     *
+     * @param twinMessagingProvider the messaging provider for the {@code Twin} part of the client.
+     * @param liveMessagingProvider the messaging provider for the {@code Live} part of the client.
+     * @param policyMessagingProvider the messaging provider for the {@code Policy} part of the client.
+     * @return the client.
+     * @throws org.eclipse.ditto.client.messaging.AuthenticationException if authentication failed.
+     * @throws org.eclipse.ditto.client.messaging.MessagingException if a connection to the configured endpoint
+     * could not be established
+     * @since 1.1.0
+     */
+    public static DittoClient newInstance(final MessagingProvider twinMessagingProvider,
+            final MessagingProvider liveMessagingProvider, final MessagingProvider policyMessagingProvider) {
+
         final MessageSerializerRegistry messageSerializerRegistry =
                 MessageSerializerFactory.newInstance().getMessageSerializerRegistry();
-        return DefaultDittoClient.newInstance(twinMessagingProvider, liveMessagingProvider, responseForwarder,
-                messageSerializerRegistry);
+        return newInstance(twinMessagingProvider, liveMessagingProvider, policyMessagingProvider, messageSerializerRegistry);
     }
 
     /**
@@ -88,9 +105,30 @@ public final class DittoClients {
     public static DittoClient newInstance(final MessagingProvider twinMessagingProvider,
             final MessagingProvider liveMessagingProvider, final MessageSerializerRegistry messageSerializerRegistry) {
 
+        return newInstance(twinMessagingProvider, liveMessagingProvider, twinMessagingProvider, messageSerializerRegistry);
+    }
+
+    /**
+     * Creates a new {@link org.eclipse.ditto.client.DittoClient} with a specific {@code Twin}, {@code Live} and
+     * {@code Policy} {@link org.eclipse.ditto.client.messaging.MessagingProvider}.
+     *
+     * @param twinMessagingProvider the messaging provider for the {@code Twin} part of the client.
+     * @param liveMessagingProvider the messaging provider for the {@code Live} part of the client.
+     * @param policyMessagingProvider the messaging provider for the {@code Policy} part of the client.
+     * @param messageSerializerRegistry a registry of {@code MessageSerializer}s for the {@code Live} part of the client.
+     * @return the client.
+     * @throws org.eclipse.ditto.client.messaging.AuthenticationException if authentication failed.
+     * @throws org.eclipse.ditto.client.messaging.MessagingException if a connection to the configured endpoint
+     * could not be established
+     * @since 1.1.0
+     */
+    public static DittoClient newInstance(final MessagingProvider twinMessagingProvider,
+            final MessagingProvider liveMessagingProvider, final MessagingProvider policyMessagingProvider,
+            final MessageSerializerRegistry messageSerializerRegistry) {
+
         final ResponseForwarder responseForwarder = ResponseForwarder.getInstance();
-        return DefaultDittoClient.newInstance(twinMessagingProvider, liveMessagingProvider, responseForwarder,
-                messageSerializerRegistry);
+        return DefaultDittoClient.newInstance(twinMessagingProvider, liveMessagingProvider, policyMessagingProvider,
+                responseForwarder, messageSerializerRegistry);
     }
 
 }

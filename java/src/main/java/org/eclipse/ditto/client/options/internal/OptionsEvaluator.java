@@ -18,6 +18,8 @@ import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.json.JsonFieldSelector;
+import org.eclipse.ditto.model.policies.PolicyId;
+import org.eclipse.ditto.model.things.ThingId;
 
 /**
  * This class provides convenient access to the values of known options out of an array of user provided options.
@@ -127,6 +129,25 @@ public final class OptionsEvaluator {
         public Optional<Boolean> exists() {
             return getValue(new ExistsOptionVisitor());
         }
+
+        /**
+         * Returns whether a Policy for a new Thing should be copied for the modify action.
+         * @return an Optional holding the {@link PolicyId} to copy from.
+         * @since 1.1.0
+         */
+        public Optional<PolicyId> copyPolicy() {
+            return getValue(new CopyPolicyOptionVisitor());
+        }
+
+        /**
+         * Returns whether a Policy for a new Thing should be copied from another Thing for the modify action.
+         * @return an Optional holding the {@link ThingId} to copy the Policy from.
+         * @since 1.1.0
+         */
+        public Optional<ThingId> copyPolicyFromThingId() {
+            return getValue(new CopyPolicyFromThingOptionVisitor());
+        }
+
     }
 
     /**
@@ -171,6 +192,7 @@ public final class OptionsEvaluator {
         public Optional<JsonFieldSelector> getExtraFields() {
             return getValue(new ExtraFieldsOptionVisitor());
         }
+
     }
 
 }

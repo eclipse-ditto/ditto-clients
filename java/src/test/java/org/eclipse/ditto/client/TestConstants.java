@@ -21,6 +21,8 @@ import org.eclipse.ditto.model.base.auth.AuthorizationContext;
 import org.eclipse.ditto.model.base.auth.AuthorizationModelFactory;
 import org.eclipse.ditto.model.base.auth.AuthorizationSubject;
 import org.eclipse.ditto.model.base.auth.DittoAuthorizationContextType;
+import org.eclipse.ditto.model.policies.PoliciesModelFactory;
+import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.model.things.AccessControlList;
 import org.eclipse.ditto.model.things.AclEntry;
 import org.eclipse.ditto.model.things.Attributes;
@@ -31,6 +33,7 @@ import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingLifecycle;
 import org.eclipse.ditto.model.things.ThingRevision;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
+import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
 
 /**
  * Defines constants for testing.
@@ -83,6 +86,7 @@ public final class TestConstants {
         private Authorization() {
             throw new AssertionError();
         }
+
     }
 
     /**
@@ -121,6 +125,7 @@ public final class TestConstants {
         private Feature() {
             throw new AssertionError();
         }
+
     }
 
     /**
@@ -137,6 +142,11 @@ public final class TestConstants {
          * A known Thing ID for testing.
          */
         public static final ThingId THING_ID = ThingId.of("example.com:testThing");
+
+        /**
+         * A known Thing ID for testing.
+         */
+        public static final ThingId THING_ID_COPY_POLICY = ThingId.of("example.com:testThingForCopyPolicy");
 
         /**
          * A known Policy ID for testing.
@@ -235,6 +245,78 @@ public final class TestConstants {
         private Thing() {
             throw new AssertionError();
         }
+
+        /**
+         * Known inline Policy JsonObject.
+         */
+        public static final JsonObject INLINE_POLICY_JSON_OBJECT =
+                JsonObject.newBuilder()
+                        .set(CreateThing.JSON_INLINE_POLICY, Policy.POLICY_JSON_OBJECT)
+                        .build();
+
+        public static final JsonObject THING_WITH_INLINE_POLICY = INLINE_POLICY_JSON_OBJECT.toBuilder()
+                .set(org.eclipse.ditto.model.things.Thing.JsonFields.ID, THING_ID.toString())
+                .set(org.eclipse.ditto.model.things.Thing.JsonFields.POLICY_ID, POLICY_ID)
+                .build();
+
+    }
+
+    /**
+     * Policy-related test constants.
+     */
+    public static final class Policy {
+
+        /**
+         * Known PolicyId for testing
+         */
+        public static final PolicyId POLICY_ID = PolicyId.of("policy.namespace:policyName");
+
+        /**
+         * Known Policy in JsonObject.
+         */
+        public static final JsonObject POLICY_JSON_OBJECT = JsonObject.of("{\n" +
+                "    \"policyId\": \"" + POLICY_ID + "\",\n" +
+                "    \"entries\": {\n" +
+                "        \"maker\": {\n" +
+                "            \"subjects\": {\n" +
+                "                \"{{ request:subjectId }}\": {\n" +
+                "                    \"type\": \"suite-auth\"\n" +
+                "                }\n" +
+                "            },\n" +
+                "            \"resources\": {\n" +
+                "                \"policy:/\": {\n" +
+                "                    \"grant\": [\n" +
+                "                        \"READ\",\n" +
+                "                        \"WRITE\"\n" +
+                "                    ],\n" +
+                "                    \"revoke\": []\n" +
+                "                },\n" +
+                "                \"thing:/\": {\n" +
+                "                    \"grant\": [\n" +
+                "                        \"READ\",\n" +
+                "                        \"WRITE\"\n" +
+                "                    ],\n" +
+                "                    \"revoke\": []\n" +
+                "                },\n" +
+                "                \"message:/\": {\n" +
+                "                    \"grant\": [\n" +
+                "                        \"READ\",\n" +
+                "                        \"WRITE\"\n" +
+                "                    ],\n" +
+                "                    \"revoke\": []\n" +
+                "                }\n" +
+                "            }\n" +
+                "        }\n" +
+                "    }\n" +
+                "}");
+
+
+        /**
+         * Known Policy created from known jsonObject.
+         */
+        public static final org.eclipse.ditto.model.policies.Policy POLICY =
+                PoliciesModelFactory.newPolicy(POLICY_JSON_OBJECT);
+
     }
 
 }

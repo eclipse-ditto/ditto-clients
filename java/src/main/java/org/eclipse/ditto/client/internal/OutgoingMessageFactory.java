@@ -21,6 +21,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
 
 import org.eclipse.ditto.client.live.messages.MessageSerializationException;
 import org.eclipse.ditto.client.live.messages.MessageSerializer;
@@ -41,13 +44,19 @@ import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageBuilder;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
+import org.eclipse.ditto.model.policies.Policy;
+import org.eclipse.ditto.model.policies.PolicyId;
+import org.eclipse.ditto.model.policies.PolicyIdInvalidException;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.FeatureDefinition;
 import org.eclipse.ditto.model.things.Features;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
-import org.eclipse.ditto.signals.commands.things.ThingCommand;
+import org.eclipse.ditto.signals.commands.policies.modify.CreatePolicy;
+import org.eclipse.ditto.signals.commands.policies.modify.DeletePolicy;
+import org.eclipse.ditto.signals.commands.policies.modify.ModifyPolicy;
+import org.eclipse.ditto.signals.commands.policies.query.RetrievePolicy;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteAttribute;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributes;
@@ -64,6 +73,7 @@ import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDefinition;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperties;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperty;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatures;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyId;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyThing;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveFeature;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThing;
@@ -72,7 +82,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Creates outgoing ThingCommands sent from the client.
+ * Creates outgoing Commands sent from the client.
  *
  * @since 1.0.0
  */
@@ -101,26 +111,56 @@ public final class OutgoingMessageFactory {
         return new OutgoingMessageFactory(jsonSchemaVersion);
     }
 
-    public ThingCommand createThing(final Thing thing, final Option<?>... options) {
-        logWarningsForAclPolicyUsage(thing);
-        return CreateThing.of(thing, null, buildDittoHeaders(false, options));
-    }
-
     /**
-     * @param thing the thing to be put (which may be created or updated).
+     * @param thing the thing to be created.
+     * @param initialPolicy a custom policy to use for the Thing instead of the default Policy.
      * @param options options to be applied configuring behaviour of this method.
      * @return the ThingCommand
      * @throws NullPointerException if any argument is {@code null}.
      * @throws IllegalArgumentException if {@code thing} has no identifier.
      */
-    public ThingCommand putThing(final Thing thing, final Option<?>... options) {
+    public CreateThing createThing(final Thing thing, @Nullable JsonObject initialPolicy,
+            final Option<?>... options) {
+        logWarningsForAclPolicyUsage(thing);
+
+        validateOptions(initialPolicy, options);
+
+        final DittoHeaders dittoHeaders = buildDittoHeaders(false, options);
+
+        final Optional<String> optionalPolicyIdOrPlaceHolder = getPolicyIdOrPlaceholder(options);
+
+        return optionalPolicyIdOrPlaceHolder
+                .map(policyIdOrPlaceHolder -> CreateThing.withCopiedPolicy(thing, policyIdOrPlaceHolder, dittoHeaders))
+                .orElseGet(() -> CreateThing.of(thing, initialPolicy, dittoHeaders));
+
+    }
+
+    /**
+     * @param thing the thing to be put (which may be created or updated).
+     * @param initialPolicy a custom policy to use for the Thing instead of the default Policy. This will only apply if
+     * the Thing does not already exist.
+     * @param options options to be applied configuring behaviour of this method.
+     * @return the ThingCommand
+     * @throws NullPointerException if any argument is {@code null}.
+     * @throws IllegalArgumentException if {@code thing} has no identifier.
+     */
+    public ModifyThing putThing(final Thing thing, @Nullable final JsonObject initialPolicy,
+            final Option<?>... options) {
         checkNotNull(thing, "thing");
         final ThingId thingId = thing.getEntityId().orElseThrow(() -> new IllegalArgumentException("Thing had no ID!"));
 
         logWarningsForAclPolicyUsage(thing);
 
-        final DittoHeaders headers = buildDittoHeaders(true, options);
-        return ModifyThing.of(thingId, thing, null, headers);
+        validateOptions(initialPolicy, options);
+
+        final DittoHeaders dittoHeaders = buildDittoHeaders(true, options);
+
+        final Optional<String> optionalPolicyIdOrPlaceHolder = getPolicyIdOrPlaceholder(options);
+
+        return optionalPolicyIdOrPlaceHolder
+                .map(policyIdOrPlaceHolder -> ModifyThing.withCopiedPolicy(thingId, thing, policyIdOrPlaceHolder,
+                        dittoHeaders))
+                .orElseGet(() -> ModifyThing.of(thingId, thing, initialPolicy, dittoHeaders));
     }
 
     /**
@@ -131,7 +171,7 @@ public final class OutgoingMessageFactory {
      * @throws IllegalArgumentException if {@code thing} has no identifier.
      * @throws UnsupportedOperationException if an invalid option has been specified.
      */
-    public ThingCommand updateThing(final Thing thing, final Option<?>... options) {
+    public ModifyThing updateThing(final Thing thing, final Option<?>... options) {
         checkNotNull(thing, "thing");
         final ThingId thingId = thing.getEntityId().orElseThrow(() -> new IllegalArgumentException("Thing had no ID!"));
 
@@ -141,6 +181,7 @@ public final class OutgoingMessageFactory {
         final DittoHeaders headers = headersWithoutIfMatch.toBuilder()
                 .ifMatch(ASTERISK)
                 .build();
+
         return ModifyThing.of(thingId, thing, null, headers);
     }
 
@@ -157,17 +198,17 @@ public final class OutgoingMessageFactory {
         }
     }
 
-    public ThingCommand retrieveThing(final CharSequence thingId) {
+    public RetrieveThing retrieveThing(final CharSequence thingId) {
         return RetrieveThing.of(ThingId.of(thingId), buildDittoHeaders(false));
     }
 
-    public ThingCommand retrieveThing(final CharSequence thingId, final Iterable<JsonPointer> fields) {
+    public RetrieveThing retrieveThing(final CharSequence thingId, final Iterable<JsonPointer> fields) {
         return RetrieveThing.getBuilder(ThingId.of(thingId), buildDittoHeaders(false))
                 .withSelectedFields(JsonFactory.newFieldSelector(fields))
                 .build();
     }
 
-    public ThingCommand retrieveThings(final Iterable<ThingId> thingIds) {
+    public RetrieveThings retrieveThings(final Iterable<ThingId> thingIds) {
         return RetrieveThings.getBuilder(makeList(thingIds))
                 .dittoHeaders(buildDittoHeaders(false))
                 .build();
@@ -181,18 +222,91 @@ public final class OutgoingMessageFactory {
         return list;
     }
 
-    public ThingCommand retrieveThings(final Iterable<ThingId> thingIds, final Iterable<JsonPointer> fields) {
+    public RetrieveThings retrieveThings(final Iterable<ThingId> thingIds, final Iterable<JsonPointer> fields) {
         return RetrieveThings.getBuilder(makeList(thingIds))
                 .selectedFields(JsonFactory.newFieldSelector(fields))
                 .dittoHeaders(buildDittoHeaders(false))
                 .build();
     }
 
-    public ThingCommand deleteThing(final ThingId thingId, final Option<?>... options) {
+    public DeleteThing deleteThing(final ThingId thingId, final Option<?>... options) {
         return DeleteThing.of(thingId, buildDittoHeaders(false, options));
     }
 
-    public ThingCommand setAttribute(final ThingId thingId,
+    /**
+     * Build a command for creating a Policy.
+     * @param policy the policy to create.
+     * @param options options to be applied configuring behaviour of this method.
+     * @return The {@link CreatePolicy} command.
+     * @throws NullPointerException if any argument is {@code null}.
+     * @throws PolicyIdInvalidException if the {@link Policy}'s ID is not valid.
+     * @since 1.1.0
+     */
+    public CreatePolicy createPolicy(final Policy policy, final Option<?>... options) {
+        return CreatePolicy.of(policy, buildDittoHeaders(false, options));
+    }
+
+    /**
+     * @param policy the policy to be put (which may be created or updated).
+     * @param options options to be applied configuring behaviour of this method.
+     * @return the PolicyCommand
+     * @throws NullPointerException if any argument is {@code null}.
+     * @throws IllegalArgumentException if {@code policy} has no identifier.
+     * @since 1.1.0
+     */
+    public ModifyPolicy putPolicy(final Policy policy, final Option<?>... options) {
+        checkNotNull(policy, "policy");
+        final PolicyId policyId =
+                policy.getEntityId().orElseThrow(() -> new IllegalArgumentException("Policy had no ID!"));
+
+        final DittoHeaders headers = buildDittoHeaders(true, options);
+        return ModifyPolicy.of(policyId, policy, headers);
+    }
+
+    /**
+     * @param policy the policy to be updated.
+     * @param options options to be applied configuring behaviour of this method.
+     * @return the PolicyCommand
+     * @throws NullPointerException if any argument is {@code null}.
+     * @throws IllegalArgumentException if {@code policy} has no identifier.
+     * @since 1.1.0
+     */
+    public ModifyPolicy updatePolicy(final Policy policy, final Option<?>... options) {
+        checkNotNull(policy, "policy");
+        final PolicyId policyId =
+                policy.getEntityId().orElseThrow(() -> new IllegalArgumentException("Policy had no ID!"));
+
+        final DittoHeaders headersWithoutIfMatch = buildDittoHeaders(false, options);
+        final DittoHeaders headers = headersWithoutIfMatch.toBuilder()
+                .ifMatch(ASTERISK)
+                .build();
+        return ModifyPolicy.of(policyId, policy, headers);
+    }
+
+    /**
+     * Builds a command to retrieve the policy with ID {@code policyId}.
+     * @param policyId the policy to retrieve.
+     * @return the {@link RetrievePolicy} command.
+     * @throws NullPointerException if the policyId is {@code null}.
+     * @since 1.1.0
+     */
+    public RetrievePolicy retrievePolicy(final PolicyId policyId) {
+        return RetrievePolicy.of(policyId, buildDittoHeaders(false));
+    }
+
+    /**
+     * Builds a command to delete the policy with ID {@code policyId}.
+     * @param policyId the policy to delete.
+     * @param options options to be applied configuring behaviour of this method.
+     * @return the {@link DeletePolicy} command.
+     * @throws NullPointerException if the policyId is {@code null}.
+     * @since 1.1.0
+     */
+    public DeletePolicy deletePolicy(final PolicyId policyId, final Option<?>... options) {
+        return DeletePolicy.of(policyId, buildDittoHeaders(false, options));
+    }
+
+    public ModifyAttribute setAttribute(final ThingId thingId,
             final JsonPointer path,
             final JsonValue value,
             final Option<?>... options) {
@@ -200,32 +314,36 @@ public final class OutgoingMessageFactory {
         return ModifyAttribute.of(thingId, path, value, buildDittoHeaders(true, options));
     }
 
-    public ThingCommand setAttributes(final ThingId thingId, final JsonObject attributes, final Option<?>... options) {
+    public ModifyAttributes setAttributes(final ThingId thingId, final JsonObject attributes, final Option<?>... options) {
         return ModifyAttributes.of(thingId, ThingsModelFactory.newAttributes(attributes),
                 buildDittoHeaders(true, options));
     }
 
-    public ThingCommand deleteAttribute(final ThingId thingId, final JsonPointer path, final Option<?>... options) {
+    public DeleteAttribute deleteAttribute(final ThingId thingId, final JsonPointer path, final Option<?>... options) {
         return DeleteAttribute.of(thingId, path, buildDittoHeaders(false, options));
     }
 
-    public ThingCommand deleteAttributes(final ThingId thingId, final Option<?>... options) {
+    public DeleteAttributes deleteAttributes(final ThingId thingId, final Option<?>... options) {
         return DeleteAttributes.of(thingId, buildDittoHeaders(false, options));
     }
 
-    public ThingCommand setFeature(final ThingId thingId, final Feature feature, final Option<?>... options) {
+    public ModifyFeature setFeature(final ThingId thingId, final Feature feature, final Option<?>... options) {
         return ModifyFeature.of(thingId, feature, buildDittoHeaders(true, options));
     }
 
-    public ThingCommand setFeatures(final ThingId thingId, final Features features, final Option<?>... options) {
+    public ModifyFeatures setFeatures(final ThingId thingId, final Features features, final Option<?>... options) {
         return ModifyFeatures.of(thingId, features, buildDittoHeaders(true, options));
     }
 
-    public ThingCommand retrieveFeature(final ThingId thingId, final String featureId, final Option<?>... options) {
+    public ModifyPolicyId setPolicyId(final ThingId thingId, final PolicyId policyId, final Option<?>... options) {
+        return ModifyPolicyId.of(thingId, policyId, buildDittoHeaders(true, options));
+    }
+
+    public RetrieveFeature retrieveFeature(final ThingId thingId, final String featureId, final Option<?>... options) {
         return RetrieveFeature.of(thingId, featureId, buildDittoHeaders(false, options));
     }
 
-    public ThingCommand retrieveFeature(final ThingId thingId,
+    public RetrieveFeature retrieveFeature(final ThingId thingId,
             final String featureId,
             final Iterable<JsonPointer> fields,
             final Option<?>... options) {
@@ -234,11 +352,11 @@ public final class OutgoingMessageFactory {
                 buildDittoHeaders(false, options));
     }
 
-    public ThingCommand deleteFeature(final ThingId thingId, final String featureId, final Option<?>... options) {
+    public DeleteFeature deleteFeature(final ThingId thingId, final String featureId, final Option<?>... options) {
         return DeleteFeature.of(thingId, featureId, buildDittoHeaders(false, options));
     }
 
-    public ThingCommand deleteFeatures(final ThingId thingId, final Option<?>... options) {
+    public DeleteFeatures deleteFeatures(final ThingId thingId, final Option<?>... options) {
         return DeleteFeatures.of(thingId, buildDittoHeaders(false, options));
     }
 
@@ -252,7 +370,7 @@ public final class OutgoingMessageFactory {
      * @return the command object.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    public ThingCommand<ModifyFeatureDefinition> setFeatureDefinition(final ThingId thingId,
+    public ModifyFeatureDefinition setFeatureDefinition(final ThingId thingId,
             final String featureId,
             final FeatureDefinition featureDefinition,
             final Option<?>... options) {
@@ -269,13 +387,13 @@ public final class OutgoingMessageFactory {
      * @return the command object.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    public ThingCommand<DeleteFeatureDefinition> deleteFeatureDefinition(final ThingId thingId, final String featureId,
+    public DeleteFeatureDefinition deleteFeatureDefinition(final ThingId thingId, final String featureId,
             final Option<?>... options) {
 
         return DeleteFeatureDefinition.of(thingId, featureId, buildDittoHeaders(false, options));
     }
 
-    public ThingCommand setFeatureProperty(final ThingId thingId,
+    public ModifyFeatureProperty setFeatureProperty(final ThingId thingId,
             final String featureId,
             final JsonPointer path,
             final JsonValue value,
@@ -284,7 +402,7 @@ public final class OutgoingMessageFactory {
         return ModifyFeatureProperty.of(thingId, featureId, path, value, buildDittoHeaders(true, options));
     }
 
-    public ThingCommand setFeatureProperties(final ThingId thingId,
+    public ModifyFeatureProperties setFeatureProperties(final ThingId thingId,
             final String featureId,
             final JsonObject properties,
             final Option<?>... options) {
@@ -293,7 +411,7 @@ public final class OutgoingMessageFactory {
                 buildDittoHeaders(true, options));
     }
 
-    public ThingCommand deleteFeatureProperty(final ThingId thingId,
+    public DeleteFeatureProperty deleteFeatureProperty(final ThingId thingId,
             final String featureId,
             final JsonPointer path,
             final Option<?>... options) {
@@ -301,7 +419,7 @@ public final class OutgoingMessageFactory {
         return DeleteFeatureProperty.of(thingId, featureId, path, buildDittoHeaders(false, options));
     }
 
-    public ThingCommand deleteFeatureProperties(final ThingId thingId, final String featureId,
+    public DeleteFeatureProperties deleteFeatureProperties(final ThingId thingId, final String featureId,
             final Option<?>... options) {
 
         return DeleteFeatureProperties.of(thingId, featureId, buildDittoHeaders(false, options));
@@ -390,7 +508,7 @@ public final class OutgoingMessageFactory {
             if (!allowExists) {
                 throw new IllegalArgumentException("Option \"exists\" is not allowed for this operation.");
             }
-            if (exists) {
+            if (Boolean.TRUE.equals(exists)) {
                 headersBuilder.ifMatch(ASTERISK);
             } else {
                 headersBuilder.ifNoneMatch(ASTERISK);
@@ -398,6 +516,44 @@ public final class OutgoingMessageFactory {
         });
 
         return headersBuilder.build();
+    }
+
+    /**
+     * Validates the options together with the initial policy and throws an exception if something isn't valid.
+     *
+     * @param initialPolicy The initial policy.
+     * @param options The options to validate.
+     * @throws IllegalArgumentException when the options aren't valid.
+     */
+    private void validateOptions(@Nullable final JsonObject initialPolicy, final Option<?>... options) {
+        final OptionsEvaluator.Modify optionsEvaluator = OptionsEvaluator.forModifyOptions(options);
+        final boolean isCopyPolicy = optionsEvaluator.copyPolicy().isPresent();
+        final boolean isCopyPolicyFromThing = optionsEvaluator.copyPolicyFromThingId().isPresent();
+
+        if (isCopyPolicy && isCopyPolicyFromThing) {
+            throw new IllegalArgumentException(
+                    "It is not allowed to set option \"COPY_POLICY\" and \"COPY_POLICY_FROM_THING\" at the same time");
+        } else if (null != initialPolicy && (isCopyPolicy || isCopyPolicyFromThing)) {
+            throw new IllegalArgumentException(
+                    "It is not allowed to set option \"COPY_POLICY\" or \"COPY_POLICY_FROM_THING\" and a initialPolicy at the same time");
+        }
+    }
+
+    private Optional<String> getPolicyIdOrPlaceholder(final Option<?>... options) {
+        final OptionsEvaluator.Modify optionsEvaluator = OptionsEvaluator.forModifyOptions(options);
+        final Optional<String> copyPolicy = optionsEvaluator.copyPolicy().map(PolicyId::toString);
+
+        return ifPresentOrElse(copyPolicy,
+                () -> optionsEvaluator.copyPolicyFromThingId()
+                        .map(ThingId::toString)
+                        .map(thingId -> "{{ ref:things/" + thingId + "/policyId }}"));
+    }
+
+    private static <T> Optional<T> ifPresentOrElse(final Optional<T> optional, final Supplier<Optional<T>> otherwise) {
+        if (optional.isPresent()) {
+            return optional;
+        }
+        return otherwise.get();
     }
 
 }

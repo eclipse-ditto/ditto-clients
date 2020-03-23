@@ -71,7 +71,7 @@ AuthenticationProvider authenticationProvider =
 ```java
 MessagingProvider messagingProvider = MessagingProviders.webSocket(WebSocketMessagingConfiguration.newBuilder()
     .endpoint("wss://ditto.eclipse.org")
-    .jsonSchemaVersion(JsonSchemaVersion.V_1)
+    .jsonSchemaVersion(JsonSchemaVersion.V_2)
     .proxyConfiguration(proxyConfig) // optionally configure a proxy server
     // optionally configure a truststore containing the trusted CAs for SSL connection establishment
     .trustStoreConfiguration(TrustStoreConfiguration.newBuilder()
@@ -96,6 +96,19 @@ client.twin().create("org.eclipse.ditto:new-thing").handle((createdThing, throwa
     }
     return client.twin().forId(thingId).putAttribute("first-updated-at", OffsetDateTime.now().toString());
 }).get(); // this will block the thread! work asynchronously whenever possible!
+```
+
+#### Manage policies
+
+```java
+        client.policies().create(newPolicy)
+                .thenAccept(createdPolicy -> System.out.println("Created new Policy: " + createdPolicy)).get();
+
+        client.twin()
+                .forId(ThingId.of("org.eclipse.ditto:new-thing"))
+                .setPolicyId(newPolicy.getEntityId().get())
+                .thenAccept(_void -> System.out.println("PolicyId was adapted"))
+                .get();
 ```
 
 #### Subscribe for change notifications

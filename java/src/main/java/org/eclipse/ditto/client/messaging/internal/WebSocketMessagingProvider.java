@@ -92,6 +92,8 @@ import org.eclipse.ditto.signals.commands.messages.SendFeatureMessage;
 import org.eclipse.ditto.signals.commands.messages.SendFeatureMessageResponse;
 import org.eclipse.ditto.signals.commands.messages.SendThingMessage;
 import org.eclipse.ditto.signals.commands.messages.SendThingMessageResponse;
+import org.eclipse.ditto.signals.commands.policies.PolicyCommandResponse;
+import org.eclipse.ditto.signals.commands.policies.PolicyErrorResponse;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
 import org.eclipse.ditto.signals.commands.things.ThingCommandResponse;
 import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
@@ -160,7 +162,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     private final Map<String, Map<String, String>> registrationConfigs;
     private final Map<String, CompletableFuture<Adaptable>> customAdaptableResponseFutures;
 
-    private Consumer<ThingCommandResponse> commandResponseConsumer;
+    private Consumer<CommandResponse<?>> commandResponseConsumer;
     private WebSocket webSocket;
     private boolean sendMeTwinEvents = false;
     private boolean sendMeLiveMessages = false;
@@ -286,15 +288,23 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     private <T> T handleExecutionException(final ExecutionException e) {
         final Throwable cause = e.getCause();
-        if (cause instanceof WebSocketException) {
+        if (cause instanceof AuthenticationException) {
+            // no unneccessary boxing of AuthenticationException
+            throw ((AuthenticationException) cause);
+        } else if (cause instanceof WebSocketException) {
             LOGGER.error("Got exception: {}", cause.getMessage());
 
             if (isAuthenticationException((WebSocketException) cause)) {
                 throw AuthenticationException.unauthorized(sessionId, cause);
             } else if (isForbidden((WebSocketException) cause)) {
                 throw AuthenticationException.forbidden(sessionId, cause);
+            } else if (cause instanceof OpeningHandshakeException) {
+                final StatusLine statusLine = ((OpeningHandshakeException) cause).getStatusLine();
+                throw AuthenticationException.withStatus(sessionId, cause, statusLine.getStatusCode(),
+                        statusLine.getReasonPhrase());
             }
         }
+
         throw AuthenticationException.of(sessionId, e);
     }
 
@@ -364,12 +374,12 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         if (statusCodeOptional.isPresent()) {
             // this is treated as a response message
             final HttpStatusCode statusCode = statusCodeOptional.get();
-            final MessageCommandResponse messageCommandResponse = featureIdOptional.isPresent()
+            final MessageCommandResponse<?, ?> messageCommandResponse = featureIdOptional.isPresent()
                     ? SendFeatureMessageResponse.of(thingId, featureIdOptional.get(), message, statusCode, dittoHeaders)
                     : SendThingMessageResponse.of(thingId, message, statusCode, dittoHeaders);
             adaptable = tryToConvertToAdaptable(messageCommandResponse);
         } else {
-            final MessageCommand messageCommand = featureIdOptional.isPresent()
+            final MessageCommand<?, ?> messageCommand = featureIdOptional.isPresent()
                     ? SendFeatureMessage.of(thingId, featureIdOptional.get(), message, dittoHeaders)
                     : SendThingMessage.of(thingId, message, dittoHeaders);
             adaptable = tryToConvertToAdaptable(messageCommand);
@@ -507,7 +517,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     @Override
-    public void registerReplyHandler(final Consumer<ThingCommandResponse> commandResponseHandler) {
+    public void registerReplyHandler(final Consumer<CommandResponse<?>> commandResponseHandler) {
         commandResponseConsumer = commandResponseHandler;
     }
 
@@ -815,6 +825,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
             handleTwinMessage(message, correlationId, jsonifiableAdaptable);
         } else if (TopicPath.Channel.LIVE == channel) {
             handleLiveMessage(message, correlationId, jsonifiableAdaptable);
+        } else if (TopicPath.Channel.NONE == channel) {
+            handleNoneChannelMessage(message, jsonifiableAdaptable);
         } else {
             final String msgPattern = "Client <{}>: Got Jsonifiable on unknown channel <{}>: <{}>";
             LOGGER.warn(msgPattern, sessionId, channel, jsonifiableAdaptable);
@@ -916,15 +928,15 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         if (signal instanceof ThingCommandResponse) {
             LOGGER.debug("Client <{}>: Received TWIN Response JSON: {}", sessionId, message);
             if (signal instanceof ThingErrorResponse) {
-                final DittoRuntimeException cre = ((ErrorResponse) signal).getDittoRuntimeException();
+                final DittoRuntimeException cre = ((ErrorResponse<?>) signal).getDittoRuntimeException();
                 final String description = cre.getDescription().orElse("");
                 LOGGER.debug("Client <{}>: Got TWIN ThingErrorResponse: <{}: {} - {}>", sessionId,
                         cre.getClass().getSimpleName(), cre.getMessage(), description);
             }
-            commandResponseConsumer.accept((ThingCommandResponse) signal);
+            commandResponseConsumer.accept((ThingCommandResponse<?>) signal);
         } else if (signal instanceof ThingEvent) {
             LOGGER.debug("Client <{}>: Received TWIN Event JSON: {}", sessionId, message);
-            handleThingEvent(correlationId, (ThingEvent) signal, TwinImpl.CONSUME_TWIN_EVENTS_HANDLER,
+            handleThingEvent(correlationId, (ThingEvent<?>) signal, TwinImpl.CONSUME_TWIN_EVENTS_HANDLER,
                     jsonifiableAdaptable);
         } else {
             // if we are at this point we must ask: what the hell is that?
@@ -944,16 +956,16 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         if (signal instanceof MessageCommand) {
             LOGGER.debug("Client <{}>: Received LIVE MessageCommand JSON: {}", sessionId,
                     message);
-            handleLiveMessage((MessageCommand) signal);
+            handleLiveMessage((MessageCommand<?, ?>) signal);
         } else if (signal instanceof MessageCommandResponse) {
             LOGGER.debug("Client <{}>: Received LIVE MessageCommandResponse JSON: {}", sessionId,
                     message);
-            handleLiveMessageResponse((MessageCommandResponse) signal);
+            handleLiveMessageResponse((MessageCommandResponse<?, ?>) signal);
         } else if (signal instanceof ThingCommand) {
             LOGGER.debug("Client <{}>: Received LIVE ThingCommand JSON: {}", sessionId, message);
-            handleLiveCommand(LiveCommandFactory.getInstance().getLiveCommand((Command) signal), jsonifiableAdaptable);
+            handleLiveCommand(LiveCommandFactory.getInstance().getLiveCommand((ThingCommand<?>) signal), jsonifiableAdaptable);
         } else if (signal instanceof ThingErrorResponse) {
-            final DittoRuntimeException cre = ((ErrorResponse) signal).getDittoRuntimeException();
+            final DittoRuntimeException cre = ((ThingErrorResponse) signal).getDittoRuntimeException();
             final String description = cre.getDescription().orElse("");
             LOGGER.warn("Client <{}>: Got LIVE ThingErrorResponse: <{}: {} - {}>", sessionId,
                     cre.getClass().getSimpleName(), cre.getMessage(), description);
@@ -965,10 +977,10 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         } else if (signal instanceof ThingCommandResponse) {
             LOGGER.debug("Client <{}>: Received LIVE ThingCommandResponse JSON: {}", sessionId,
                     message);
-            handleLiveCommandResponse((ThingCommandResponse) signal);
+            handleLiveCommandResponse((ThingCommandResponse<?>) signal);
         } else if (signal instanceof ThingEvent) {
             LOGGER.debug("Client <{}>: Received LIVE ThingEvent JSON: {}", sessionId, message);
-            handleThingEvent(correlationId, (ThingEvent) signal, LiveImpl.CONSUME_LIVE_EVENTS_HANDLER, jsonifiableAdaptable);
+            handleThingEvent(correlationId, (ThingEvent<?>) signal, LiveImpl.CONSUME_LIVE_EVENTS_HANDLER, jsonifiableAdaptable);
         } else {
             // if we are at this point we must ask: what the hell is that?
             LOGGER.warn("Client <{}>: Got unknown message on WebSocket on LIVE channel: {}",
@@ -976,14 +988,38 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         }
     }
 
-    private void handleThingEvent(final CharSequence correlationId, final ThingEvent jsonifiable,
+
+    private void handleNoneChannelMessage(final String message, final JsonifiableAdaptable jsonifiableAdaptable) {
+
+        final Signal<?> signal = tryToAdaptToSignal(jsonifiableAdaptable, message);
+        if (null == signal) {
+            return;
+        }
+
+        if (signal instanceof PolicyCommandResponse) {
+            LOGGER.debug("Client <{}>: Received PolicyCommandResponse JSON: {}", sessionId, message);
+            if (signal instanceof PolicyErrorResponse) {
+                final DittoRuntimeException cre = ((PolicyErrorResponse) signal).getDittoRuntimeException();
+                final String description = cre.getDescription().orElse("");
+                LOGGER.debug("Client <{}>: Got PolicyErrorResponse: <{}: {} - {}>", sessionId,
+                        cre.getClass().getSimpleName(), cre.getMessage(), description);
+            }
+            commandResponseConsumer.accept((PolicyCommandResponse<?>) signal);
+        } else {
+            // if we are at this point we must ask: what the hell is that?
+            LOGGER.warn("Client <{}>: Got unknown message on WebSocket on NONE channel: {}",
+                    sessionId, message);
+        }
+    }
+
+    private void handleThingEvent(final CharSequence correlationId, final ThingEvent<?> jsonifiable,
             final String subscriptionKey, final JsonifiableAdaptable jsonifiableAdaptable) {
 
         final MessageHeaders messageHeaders =
                 MessageHeaders.newBuilder(MessageDirection.FROM, jsonifiable.getEntityId(), jsonifiable.getType())
                         .correlationId(correlationId)
                         .build();
-        final Message<ThingEvent> eventMessage = Message.<ThingEvent>newBuilder(messageHeaders)
+        final Message<ThingEvent<?>> eventMessage = Message.<ThingEvent<?>>newBuilder(messageHeaders)
                 .payload(jsonifiable)
                 .extra(jsonifiableAdaptable.getPayload().getExtra().orElse(null))
                 .build();
@@ -998,9 +1034,9 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         }
     }
 
-    private void handleLiveMessage(final MessageCommand messageCommand) {
+    private void handleLiveMessage(final MessageCommand<?, ?> messageCommand) {
 
-        final Message message = messageCommand.getMessage();
+        final Message<?> message = messageCommand.getMessage();
         final Consumer<Message<?>> messageConsumer = subscriptions.get(LiveImpl.CONSUME_LIVE_MESSAGES_HANDLER);
         if (messageConsumer != null) {
             messageConsumer.accept(message);
@@ -1011,7 +1047,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         }
     }
 
-    private void handleLiveMessageResponse(final MessageCommandResponse messageCommandResponse) {
+    private void handleLiveMessageResponse(final MessageCommandResponse<?, ?> messageCommandResponse) {
 
         final Message message = messageCommandResponse.getMessage();
         LOGGER.debug("Client <{}>: Received response message: {}", sessionId, message);
@@ -1020,7 +1056,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                 .ifPresent(consumer -> consumer.getResponseConsumer().accept(message, null));
     }
 
-    private void handleLiveMessageResponse(final ErrorResponse errorResponse) {
+    private void handleLiveMessageResponse(final ErrorResponse<?> errorResponse) {
 
         final String correlationId = errorResponse.getDittoHeaders().getCorrelationId().orElse("");
         Optional.ofNullable(messageCommandResponseConsumers.remove(correlationId))
@@ -1028,7 +1064,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                         consumer.getResponseConsumer().accept(null, errorResponse.getDittoRuntimeException()));
     }
 
-    private void handleLiveCommand(final LiveCommand liveCommand,
+    private void handleLiveCommand(final LiveCommand<?, ?> liveCommand,
             final JsonifiableAdaptable jsonifiableAdaptable) {
 
         final DittoHeaders dittoHeaders = liveCommand.getDittoHeaders();
@@ -1043,7 +1079,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                             liveCommand.getType())
                             .correlationId(dittoHeaders.getCorrelationId().orElse(null))
                             .build();
-            final Message<LiveCommand> liveCommandMessage = Message.<LiveCommand>newBuilder(messageHeaders)
+            final Message<LiveCommand<?, ?>> liveCommandMessage = Message.<LiveCommand<?, ?>>newBuilder(messageHeaders)
                     .payload(liveCommand)
                     .extra(jsonifiableAdaptable.getPayload().getExtra().orElse(null))
                     .build();
@@ -1066,8 +1102,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         }
     }
 
-    private void handleLiveCommandResponse(final CommandResponse commandResponse) {
-        commandResponseConsumer.accept((ThingCommandResponse) commandResponse);
+    private void handleLiveCommandResponse(final CommandResponse<?> commandResponse) {
+        commandResponseConsumer.accept(commandResponse);
     }
 
     /**

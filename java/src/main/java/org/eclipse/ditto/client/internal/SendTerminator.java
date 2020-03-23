@@ -25,8 +25,12 @@ import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.commands.base.Command;
+import org.eclipse.ditto.signals.commands.base.CommandResponse;
+import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
+import org.eclipse.ditto.signals.commands.policies.modify.PolicyModifyCommandResponse;
+import org.eclipse.ditto.signals.commands.policies.query.PolicyQueryCommandResponse;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
-import org.eclipse.ditto.signals.commands.things.ThingCommandResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ThingModifyCommandResponse;
 import org.eclipse.ditto.signals.commands.things.query.ThingQueryCommandResponse;
 import org.slf4j.Logger;
@@ -42,8 +46,9 @@ import org.slf4j.LoggerFactory;
 public final class SendTerminator<T> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SendTerminator.class);
+    private static final String COMMAND_ARGUMENT_NAME = "command";
 
-    private final ThingCommand command;
+    private final Command<?> command;
     private final Message<T> message;
     private final MessagingProvider messagingProvider;
     private final ResponseForwarder responseForwarder;
@@ -61,9 +66,9 @@ public final class SendTerminator<T> {
     public SendTerminator(final MessagingProvider messagingProvider,
             final ResponseForwarder responseForwarder,
             final TopicPath.Channel channel,
-            final ThingCommand command) {
+            final ThingCommand<?> command) {
 
-        this(messagingProvider, responseForwarder, channel, checkNotNull(command, "command to be sent"), null);
+        this(messagingProvider, responseForwarder, channel, checkNotNull(command, COMMAND_ARGUMENT_NAME), null);
     }
 
     /**
@@ -82,14 +87,32 @@ public final class SendTerminator<T> {
                 checkNotNull(message, "message to be sent"));
     }
 
+    /**
+     * Constructs a new {@code SendTerminator} object.
+     *
+     * @param messagingProvider the messaging provider.
+     * @param responseForwarder the response forwarder.
+     * @param policyCommand the outgoing message.
+     * @throws NullPointerException if any argument is {@code null}.
+     * @since 1.1.0
+     */
+    public SendTerminator(final MessagingProvider messagingProvider, final ResponseForwarder responseForwarder,
+            final PolicyCommand<?> policyCommand) {
+
+        // commands are always sent on "NONE" channel, to modify Policies.
+        this(messagingProvider, responseForwarder, TopicPath.Channel.NONE,
+                checkNotNull(policyCommand, COMMAND_ARGUMENT_NAME), null);
+    }
+
+
     private SendTerminator(final MessagingProvider messagingProvider,
             final ResponseForwarder responseForwarder,
             final TopicPath.Channel channel,
-            @Nullable final ThingCommand command,
+            @Nullable final Command<?> command,
             @Nullable final Message<T> message) {
 
-        this.messagingProvider = checkNotNull(messagingProvider, "messaging provider");
-        this.responseForwarder = checkNotNull(responseForwarder, "response forwarder");
+        this.messagingProvider = checkNotNull(messagingProvider, "messagingProvider");
+        this.responseForwarder = checkNotNull(responseForwarder, "responseForwarder");
         this.channel = checkNotNull(channel, "channel");
         this.command = command;
         this.message = message;
@@ -105,27 +128,45 @@ public final class SendTerminator<T> {
     }
 
     /**
-     * Applies the {@code command} of this SendTerminator with "modify" behavior - expecting a {@code
+     * Applies the {@code command} of this SendTerminator with "modify" behavior - expecting a {@link
      * ThingModifyCommandResponse} as result and returning a Future of the type {@code <T>}.
      *
      * @param function the function to apply to extract an instance of type {@code <T>} from the returned
-     * ThingModifyCommandResponse.
+     * {@link ThingModifyCommandResponse}.
      * @return a CompletableFuture of type {@code <T>}.
      * @throws NullPointerException if {@code function} is {@code null}.
      */
-    public CompletableFuture<T> applyModify(final Function<ThingModifyCommandResponse, T> function) {
-        final CompletableFuture<ThingCommandResponse> intermediaryResult = createIntermediaryResult(function);
+    public CompletableFuture<T> applyModify(final Function<ThingModifyCommandResponse<?>, T> function) {
+        final CompletableFuture<CommandResponse> intermediaryResult = createIntermediaryResult(function);
         LOGGER.trace("Sending modify command <{}>.", command);
         messagingProvider.sendCommand(command, channel);
 
-        return intermediaryResult.thenApply(tcr -> (ThingModifyCommandResponse) tcr).thenApply(function);
+        return intermediaryResult.thenApply(tcr -> (ThingModifyCommandResponse<?>) tcr).thenApply(function);
     }
 
-    private CompletableFuture<ThingCommandResponse> createIntermediaryResult(final Function function) {
-        checkNotNull(command, "command to be sent");
-        checkNotNull(function, "Function to be applied");
+    /**
+     * Applies the {@code command} of this SendTerminator with "modify" behavior - expecting a {@link
+     * PolicyModifyCommandResponse} as result and returning a Future of the type {@code <T>}.
+     *
+     * @param function the function to apply to extract an instance of type {@code <T>} from the returned
+     * {@link PolicyModifyCommandResponse}.
+     * @return a CompletableFuture of type {@code <T>}.
+     * @throws NullPointerException if {@code function} is {@code null}.
+     * @since 1.1.0
+     */
+    public CompletableFuture<T> applyModifyPolicy(final Function<PolicyModifyCommandResponse<?>, T> function) {
+        final CompletableFuture<CommandResponse> intermediaryResult = createIntermediaryResult(function);
+        LOGGER.trace("Sending modify command <{}>.", command);
+        messagingProvider.sendCommand(command, channel);
 
-        final CompletableFuture<ThingCommandResponse> intermediaryResult = new CompletableFuture<>();
+        return intermediaryResult.thenApply(pcr -> (PolicyModifyCommandResponse<?>) pcr).thenApply(function);
+    }
+
+    private CompletableFuture<CommandResponse> createIntermediaryResult(final Function<? extends CommandResponse<?>, ?> function) {
+        checkNotNull(command, COMMAND_ARGUMENT_NAME);
+        checkNotNull(function, "function");
+
+        final CompletableFuture<CommandResponse> intermediaryResult = new CompletableFuture<>();
 
         final DittoHeaders dittoHeaders = command.getDittoHeaders();
         final boolean responseRequired = dittoHeaders.isResponseRequired();
@@ -151,7 +192,7 @@ public final class SendTerminator<T> {
     public CompletableFuture<Void> applyVoid() {
         // The CompletableFuture is used to wait for a response even though the response itself is not regarded in
         // this case.
-        final CompletableFuture<ThingCommandResponse> intermediaryResult = createIntermediaryResult(cr -> null);
+        final CompletableFuture<CommandResponse> intermediaryResult = createIntermediaryResult(cr -> null);
         LOGGER.trace("Sending void command <{}>.", command);
         messagingProvider.sendCommand(command, channel);
 
@@ -167,12 +208,30 @@ public final class SendTerminator<T> {
      * @return a CompletableFuture of type {@code <T>}.
      * @throws NullPointerException if {@code function} is {@code null}.
      */
-    public CompletableFuture<T> applyView(final Function<ThingQueryCommandResponse, T> function) {
-        final CompletableFuture<ThingCommandResponse> result = createIntermediaryResult(function);
+    public CompletableFuture<T> applyView(final Function<ThingQueryCommandResponse<?>, T> function) {
+        final CompletableFuture<CommandResponse> result = createIntermediaryResult(function);
         LOGGER.trace("Sending view command <{}>.", command);
         messagingProvider.sendCommand(command, channel);
 
-        return result.thenApply(tcr -> (ThingQueryCommandResponse) tcr).thenApply(function);
+        return result.thenApply(tcr -> (ThingQueryCommandResponse<?>) tcr).thenApply(function);
+    }
+
+    /**
+     * Applies the {@code command} of this SendTerminator with "view" behavior - expecting a {@link
+     * PolicyQueryCommandResponse} as result and returning a Future of the type {@code <T>}.
+     *
+     * @param function the function to apply to extract an instance of type {@code <T>} from the returned
+     * {@link PolicyQueryCommandResponse}.
+     * @return a CompletableFuture of type {@code <T>}.
+     * @throws NullPointerException if {@code function} is {@code null}.
+     * @since 1.1.0
+     */
+    public CompletableFuture<T> applyViewWithPolicyResponse(final Function<PolicyQueryCommandResponse<?>, T> function) {
+        final CompletableFuture<CommandResponse> result = createIntermediaryResult(function);
+        LOGGER.trace("Sending view command <{}>.", command);
+        messagingProvider.sendCommand(command, channel);
+
+        return result.thenApply(tcr -> (PolicyQueryCommandResponse<?>) tcr).thenApply(function);
     }
 
 }
