@@ -161,7 +161,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     @Override
     public void initialize() {
         webSocket.getAndUpdate(ws -> {
-            if (ws != null && ws.isOpen()) {
+            if (ws != null) {
                 return ws;
             } else {
                 return initiateConnection(createWebsocket());
@@ -317,7 +317,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     public void onConnected(final WebSocket websocket, final Map<String, List<String>> headers) {
         webSocket.getAndUpdate(ws -> {
             try {
-                if (ws != null && ws.isOpen()) {
+                if (ws != websocket && ws != null) {
                     ws.disconnect();
                 }
             } catch (final Exception exception) {
