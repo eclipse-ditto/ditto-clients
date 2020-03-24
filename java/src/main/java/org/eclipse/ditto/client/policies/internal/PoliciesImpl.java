@@ -25,6 +25,7 @@ import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.policies.Policies;
 import org.eclipse.ditto.json.JsonObject;
+import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.policies.PoliciesModelFactory;
 import org.eclipse.ditto.model.policies.Policy;
 import org.eclipse.ditto.model.policies.PolicyId;
@@ -34,6 +35,7 @@ import org.eclipse.ditto.signals.commands.policies.modify.CreatePolicyResponse;
 import org.eclipse.ditto.signals.commands.policies.modify.DeletePolicy;
 import org.eclipse.ditto.signals.commands.policies.modify.DeletePolicyResponse;
 import org.eclipse.ditto.signals.commands.policies.modify.ModifyPolicyResponse;
+import org.eclipse.ditto.signals.commands.policies.modify.PolicyModifyCommandResponse;
 import org.eclipse.ditto.signals.commands.policies.query.RetrievePolicy;
 import org.eclipse.ditto.signals.commands.policies.query.RetrievePolicyResponse;
 
@@ -92,8 +94,13 @@ public final class PoliciesImpl extends AbstractHandle implements Policies {
         argumentNotNull(policy);
         assertThatPolicyHasId(policy);
 
-        return askPolicyCommand(outgoingMessageFactory.putPolicy(policy, options), ModifyPolicyResponse.class,
-                ModifyPolicyResponse::getPolicyCreated).toCompletableFuture();
+        return askPolicyCommand(outgoingMessageFactory.putPolicy(policy, options),
+                // response could be either CreatePolicyResponse or ModifyPolicyResponse.
+                PolicyModifyCommandResponse.class,
+                response -> response.getEntity(response.getImplementedSchemaVersion())
+                        .map(JsonValue::asObject)
+                        .map(PoliciesModelFactory::newPolicy)
+        ).toCompletableFuture();
     }
 
     @Override

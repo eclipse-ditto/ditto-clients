@@ -34,6 +34,7 @@ import org.eclipse.ditto.json.JsonMissingFieldException;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.policies.Policy;
 import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
+import org.eclipse.ditto.signals.commands.policies.PolicyCommandResponse;
 import org.eclipse.ditto.signals.commands.policies.modify.CreatePolicy;
 import org.eclipse.ditto.signals.commands.policies.modify.CreatePolicyResponse;
 import org.eclipse.ditto.signals.commands.policies.modify.DeletePolicy;
@@ -87,11 +88,11 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
 
     @Test
     public void testPutPolicyJsonObject() throws Exception {
-        final LinkedList<Function<PolicyCommand<?>, ModifyPolicyResponse>> responseList =
+        final LinkedList<Function<PolicyCommand<?>, PolicyCommandResponse<?>>> responseList =
                 new LinkedList<>(Arrays.asList(
                         c -> ModifyPolicyResponse.created(POLICY_ID, POLICY, c.getDittoHeaders()),
                         c -> ModifyPolicyResponse.modified(POLICY_ID, c.getDittoHeaders()),
-                        c -> ModifyPolicyResponse.created(POLICY_ID, POLICY, c.getDittoHeaders())
+                        c -> CreatePolicyResponse.of(POLICY_ID, POLICY, c.getDittoHeaders())
                 ));
 
         final CompletableFuture<Optional<Policy>> createdResponse = client.policies().put(POLICY_JSON_OBJECT);
