@@ -32,12 +32,11 @@ import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
 import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.Signal;
+import org.eclipse.ditto.signals.commands.base.ErrorResponse;
 import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
 import org.eclipse.ditto.signals.commands.policies.PolicyCommandResponse;
-import org.eclipse.ditto.signals.commands.policies.PolicyErrorResponse;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
 import org.eclipse.ditto.signals.commands.things.ThingCommandResponse;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
 
 /**
  * Super class of API handles including common methods for request-response handling.
@@ -119,7 +118,7 @@ public abstract class AbstractHandle {
             final T command,
             final Class<S> expectedResponse,
             final Function<S, R> onSuccess) {
-        return sendSignalAndExpectResponse(command, expectedResponse, onSuccess, PolicyErrorResponse.class,
+        return sendSignalAndExpectResponse(command, expectedResponse, onSuccess, ErrorResponse.class,
                 errorResponse -> {
                     throw errorResponse.getDittoRuntimeException();
                 });
@@ -143,7 +142,7 @@ public abstract class AbstractHandle {
             final Class<S> expectedResponse,
             final Function<S, R> onSuccess) {
         final ThingCommand<?> commandWithChannel = setChannel(command, channel);
-        return sendSignalAndExpectResponse(commandWithChannel, expectedResponse, onSuccess, ThingErrorResponse.class,
+        return sendSignalAndExpectResponse(commandWithChannel, expectedResponse, onSuccess, ErrorResponse.class,
                 errorResponse -> {
                     throw errorResponse.getDittoRuntimeException();
                 });

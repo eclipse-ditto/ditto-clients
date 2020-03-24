@@ -32,8 +32,8 @@ import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageResponseConsumer;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
-import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.Signal;
+import org.eclipse.ditto.signals.commands.base.ErrorResponse;
 import org.eclipse.ditto.signals.commands.messages.MessageCommand;
 import org.eclipse.ditto.signals.commands.messages.MessageCommandResponse;
 import org.slf4j.Logger;
@@ -113,6 +113,9 @@ final class PendingMessageImpl<T> implements PendingMessage<T> {
             responseMessage = ((MessageCommand) response).getMessage();
         } else if (response instanceof MessageCommandResponse) {
             responseMessage = ((MessageCommandResponse) response).getMessage();
+        } else if (response instanceof ErrorResponse) {
+            uncheckedResponseConsumer.accept(null, ((ErrorResponse<?>) response).getDittoRuntimeException());
+            return;
         } else {
             uncheckedResponseConsumer.accept(null, classCastException(responseType, response));
             return;
