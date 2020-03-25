@@ -28,7 +28,7 @@ import org.eclipse.ditto.client.internal.CommonManagementImpl;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
-import org.eclipse.ditto.client.internal.bus.Classifiers;
+import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.client.internal.bus.JsonPointerSelector;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
@@ -100,7 +100,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
     private final MessageSerializerRegistry messageSerializerRegistry;
     private final Map<Class<? extends LiveCommand>, Function<? extends LiveCommand, LiveCommandAnswerBuilder.BuildStep>>
             liveCommandsFunctions;
-    private final Map<Classifiers.StreamingType, AdaptableBus.SubscriptionId> subscriptionIds;
+    private final Map<Classification.StreamingType, AdaptableBus.SubscriptionId> subscriptionIds;
 
     private LiveImpl(final MessagingProvider messagingProvider,
             final OutgoingMessageFactory outgoingMessageFactory,
@@ -160,7 +160,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                         completableFutureLiveCommands);
 
         // register message handler which handles live events:
-        subscriptionIds.compute(Classifiers.StreamingType.LIVE_EVENT, (streamingType, previousSubscriptionId) -> {
+        subscriptionIds.compute(Classification.StreamingType.LIVE_EVENT, (streamingType, previousSubscriptionId) -> {
             final String subscriptionMessage = buildProtocolCommand(streamingType.start(), consumptionConfig);
             messagingProvider.registerSubscriptionMessage(streamingType, subscriptionMessage);
             return subscribe(previousSubscriptionId,
@@ -173,7 +173,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
         });
 
         // register message handler which handles incoming messages:
-        subscriptionIds.compute(Classifiers.StreamingType.LIVE_MESSAGE, (streamingType, previousSubscriptionId) -> {
+        subscriptionIds.compute(Classification.StreamingType.LIVE_MESSAGE, (streamingType, previousSubscriptionId) -> {
             final String subscriptionMessage = buildProtocolCommand(streamingType.start(), consumptionConfig);
             messagingProvider.registerSubscriptionMessage(streamingType, subscriptionMessage);
             return subscribeAndPublishMessage(previousSubscriptionId,
@@ -185,7 +185,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
         });
 
         // register message handler which handles live commands:
-        subscriptionIds.compute(Classifiers.StreamingType.LIVE_COMMAND, (streamingType, previousSubscriptionId) -> {
+        subscriptionIds.compute(Classification.StreamingType.LIVE_COMMAND, (streamingType, previousSubscriptionId) -> {
             final String subscriptionMessage = buildProtocolCommand(streamingType.start(), consumptionConfig);
             messagingProvider.registerSubscriptionMessage(streamingType, subscriptionMessage);
             return subscribeAndPublishMessage(previousSubscriptionId,

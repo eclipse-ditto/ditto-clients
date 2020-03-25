@@ -46,6 +46,7 @@ public final class ThingSearchPublisherVerificationTest extends PublisherVerific
     private static final ProtocolAdapter PROTOCOL_ADAPTER = DittoProtocolAdapter.of(HeaderTranslator.empty());
 
     public ThingSearchPublisherVerificationTest() {
+        // use new TestEnvironment(true) to debug
         super(new TestEnvironment(false), 1000L);
     }
 
@@ -61,12 +62,9 @@ public final class ThingSearchPublisherVerificationTest extends PublisherVerific
 
     @Override
     public Publisher<SubscriptionHasNext> createFailedPublisher() {
-        final CreateSubscription createSubscription = CreateSubscription.of(DittoHeaders.empty());
-        final MockMessagingProvider messaging = new MockMessagingProvider();
-        final Publisher<SubscriptionHasNext> underTest =
-                ThingSearchPublisher.of(createSubscription, PROTOCOL_ADAPTER, messaging);
-        mockSearchBackEnd(messaging, -1);
-        return underTest;
+        // ThingSearchPublisher cannot fail before the back-end signals failure,
+        // which only happens after the first Subscription.request.
+        return null;
     }
 
     private static void mockSearchBackEnd(final MockMessagingProvider messaging, final long numberOfElements) {

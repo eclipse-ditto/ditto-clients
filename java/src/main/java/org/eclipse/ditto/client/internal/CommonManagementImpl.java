@@ -40,8 +40,7 @@ import org.eclipse.ditto.client.changes.internal.ImmutableFeatureChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeaturesChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableThingChange;
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
-import org.eclipse.ditto.client.internal.bus.Classifier;
-import org.eclipse.ditto.client.internal.bus.Classifiers;
+import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
 import org.eclipse.ditto.client.management.CommonManagement;
@@ -615,7 +614,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
      */
     protected AdaptableBus.SubscriptionId subscribe(
             @Nullable final AdaptableBus.SubscriptionId previousSubscriptionId,
-            final Classifiers.StreamingType streamingType,
+            final Classification.StreamingType streamingType,
             final String protocolCommand,
             final String protocolCommandAck,
             final CompletableFuture<Void> futureToCompleteOrFailAfterAck,
@@ -630,7 +629,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
 
     protected AdaptableBus.SubscriptionId subscribeAndPublishMessage(
             @Nullable final AdaptableBus.SubscriptionId previousSubscriptionId,
-            final Classifiers.StreamingType streamingType,
+            final Classification.StreamingType streamingType,
             final String protocolCommand,
             final String protocolCommandAck,
             final CompletableFuture<Void> futureToCompleteOrFailAfterAck,
@@ -645,7 +644,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         final AdaptableBus.SubscriptionId subscriptionId =
                 adaptableBus.subscribeForAdaptable(streamingType,
                         adaptable -> adaptableToNotifier.apply(adaptable).accept(getBus()));
-        final Classifier.Classification tag = Classifiers.forString(protocolCommandAck);
+        final Classification tag = Classification.forString(protocolCommandAck);
         adjoin(adaptableBus.subscribeOnceForString(tag, getTimeout()), futureToCompleteOrFailAfterAck);
         messagingProvider.emit(protocolCommand);
         return subscriptionId;
@@ -669,7 +668,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         final AdaptableBus adaptableBus = messagingProvider.getAdaptableBus();
         if (adaptableBus.unsubscribe(subscriptionId)) {
             LOGGER.trace("Sending {} and waiting for {}", protocolCommand, protocolCommandAck);
-            adjoin(adaptableBus.subscribeOnceForString(Classifiers.forString(protocolCommandAck), getTimeout()),
+            adjoin(adaptableBus.subscribeOnceForString(Classification.forString(protocolCommandAck), getTimeout()),
                     futureToCompleteOrFailAfterAck);
             messagingProvider.emit(protocolCommand);
         } else {

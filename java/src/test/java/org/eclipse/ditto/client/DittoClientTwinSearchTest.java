@@ -17,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.util.List;
 import java.util.Spliterator;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
@@ -61,6 +62,8 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
     @Parameterized.Parameter
     public Method method;
 
+    private static final AtomicInteger COUNTER = new AtomicInteger(0);
+
     @Test
     public void emptyResults() {
         final String filter = "not(or(exists(/features/f1/properties/p1),eq(/attributes/a/b/c,5),exists(thingId)))";
@@ -74,8 +77,9 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
                         .pagesPerBatch(22)
         );
         final CreateSubscription createSubscription = expectMsgClass(CreateSubscription.class);
-        final String subscriptionId = "my-empty-subscription";
+        final String subscriptionId = disambiguate("my-empty-subscription");
         reply(SubscriptionCreated.of(subscriptionId, createSubscription.getDittoHeaders()));
+        expectMsgClass(RequestSubscription.class);
         reply(SubscriptionComplete.of(subscriptionId, createSubscription.getDittoHeaders()));
         assertThat(createSubscription.getFilter()).contains(filter);
         assertThat(createSubscription.getOptions()).contains(options);
@@ -88,11 +92,10 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
     public void someResults() {
         final Stream<Thing> searchResults = createStreamUnderTest(q -> q.bufferedPages(2).pagesPerBatch(1));
         final CreateSubscription createSubscription = expectMsgClass(CreateSubscription.class);
-        final String subscriptionId = "my-nonempty-subscription";
+        final String subscriptionId = disambiguate("my-nonempty-subscription");
         reply(SubscriptionCreated.of(subscriptionId, createSubscription.getDittoHeaders()));
-        expectMsgClass(RequestSubscription.class);
+        assertThat(expectMsgClass(RequestSubscription.class).getDemand()).isEqualTo(2L);
         reply(hasNext(subscriptionId, 0, 5));
-        expectMsgClass(RequestSubscription.class);
         reply(hasNext(subscriptionId, 5, 10));
         reply(SubscriptionComplete.of(subscriptionId, DittoHeaders.empty()));
         assertThat(searchResults.map(thing -> thing.getEntityId().orElseThrow(AssertionError::new)))
@@ -103,7 +106,7 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
     public void partialFailure() {
         final Spliterator<Thing> searchResultSpliterator = createStreamUnderTest(q -> {}).spliterator();
         final CreateSubscription createSubscription = expectMsgClass(CreateSubscription.class);
-        final String subscriptionId = "my-failed-subscription";
+        final String subscriptionId = disambiguate("my-failed-subscription");
         reply(SubscriptionCreated.of(subscriptionId, createSubscription.getDittoHeaders()));
         expectMsgClass(RequestSubscription.class);
         reply(hasNext(subscriptionId, 0, 1));
@@ -121,6 +124,10 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
                 .mapToObj(i -> JsonObject.newBuilder().set("thingId", "x:" + i).build())
                 .collect(JsonCollectors.valuesToArray());
         return SubscriptionHasNext.of(subscriptionId, things, DittoHeaders.empty());
+    }
+
+    private String disambiguate(final String prefix) {
+        return prefix + "-" + COUNTER.getAndIncrement();
     }
 
     private Stream<Thing> createStreamUnderTest(final Consumer<SearchQueryBuilder> querySpecifier) {

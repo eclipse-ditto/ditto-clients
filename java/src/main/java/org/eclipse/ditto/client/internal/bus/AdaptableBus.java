@@ -60,7 +60,7 @@ public interface AdaptableBus {
      * @return a future adaptable matching the tag according to the classifiers, or a failed future
      * if no adaptable is matched within the timeout.
      */
-    CompletionStage<String> subscribeOnceForString(Classifier.Classification tag, Duration timeout);
+    CompletionStage<String> subscribeOnceForString(Classification tag, Duration timeout);
 
     /**
      * Add a one-time subscriber for an adaptable message. Only effective if no one-time string subscriber matches.
@@ -70,20 +70,23 @@ public interface AdaptableBus {
      * @return a future adaptable matching the tag according to the classifiers, or a failed future
      * if no adaptable is matched within the timeout.
      */
-    CompletionStage<Adaptable> subscribeOnceForAdaptable(Classifier.Classification tag, Duration timeout);
+    CompletionStage<Adaptable> subscribeOnceForAdaptable(Classification tag, Duration timeout);
 
     /**
      * Add a persistent subscriber for an adaptable message. Only effective if no one-time string or adaptable
      * subscriber matches.
+     * If tag requires sequentialization, take care that the consumer is fast, or the bus will block.
      *
      * @param tag the adaptable classification.
      * @param adaptableConsumer the consumer of the adaptable message.
      * @return the subscription ID.
      */
-    SubscriptionId subscribeForAdaptable(Classifier.Classification tag, Consumer<Adaptable> adaptableConsumer);
+    SubscriptionId subscribeForAdaptable(Classification tag, Consumer<Adaptable> adaptableConsumer);
 
     /**
      * Add a persistent subscriber for an adaptable message that are removed after a timeout.
+     * If tag requires sequentialization, take care that all consumer and predicate parameters are fast,
+     * or the bus will block.
      *
      * @param tag the adaptable classification.
      * @param timeout how long to wait to remove the subscriber after matching messages stopped arriving.
@@ -92,10 +95,11 @@ public interface AdaptableBus {
      * @param onTimeout what to do in case of timeout.
      * @return the subscription ID.
      */
-    SubscriptionId subscribeForAdaptableWithTimeout(Classifier.Classification tag,
+    SubscriptionId subscribeForAdaptableWithTimeout(Classification tag,
             Duration timeout,
             Consumer<Adaptable> adaptableConsumer,
-            Predicate<Adaptable> terminationPredicate, final Consumer<Throwable> onTimeout);
+            Predicate<Adaptable> terminationPredicate,
+            final Consumer<Throwable> onTimeout);
 
     /**
      * Remove a subscription from the bus. Do nothing if the subscription ID is null.

@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
-import org.eclipse.ditto.client.internal.bus.Classifiers;
+import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.ProtocolFactory;
@@ -128,7 +128,7 @@ public interface MessagingProvider {
                 );
         final Duration timeout = getMessagingConfiguration().getTimeout();
         final CompletableFuture<Adaptable> result = getAdaptableBus()
-                .subscribeOnceForAdaptable(Classifiers.forCorrelationId(correlationId), timeout)
+                .subscribeOnceForAdaptable(Classification.forCorrelationId(correlationId), timeout)
                 .toCompletableFuture();
         emitAdaptable(adaptableToSend);
         return result;

@@ -20,7 +20,7 @@ import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
-import org.eclipse.ditto.client.internal.bus.Classifiers;
+import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.client.live.messages.MessageSender;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.live.messages.PendingMessage;
@@ -170,7 +170,7 @@ final class PendingMessageImpl<T> implements PendingMessage<T> {
         logger.trace("Message about to send: {}", toBeSentMessage);
         message.getResponseConsumer().ifPresent(consumer ->
                 messagingProvider.getAdaptableBus().subscribeOnceForAdaptable(
-                        Classifiers.forCorrelationId(correlationId),
+                        Classification.forCorrelationId(correlationId),
                         Duration.ofSeconds(60)
                 ).handle((responseAdaptable, error) -> {
                     typeCheckAndConsume(consumer, protocolAdapter.fromAdaptable(responseAdaptable));

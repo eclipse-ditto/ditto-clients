@@ -16,6 +16,9 @@ import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
@@ -36,10 +39,13 @@ import org.reactivestreams.Publisher;
 public final class ThingSearchPublisherTest extends AbstractDittoClientTest {
 
     @Test
-    public void run() {
+    public void run() throws Exception {
         final Publisher<SubscriptionHasNext> underTest =
                 ThingSearchPublisher.of(CreateSubscription.of(DittoHeaders.empty()), PROTOCOL_ADAPTER, messaging);
         final SpliteratorSubscriber<SubscriptionHasNext> subscriber = SpliteratorSubscriber.of();
+        final CompletableFuture<List<SubscriptionHasNext>> subscriberFuture =
+                CompletableFuture.supplyAsync(() -> subscriber.asStream().collect(Collectors.toList()),
+                        Executors.newSingleThreadExecutor());
         underTest.subscribe(subscriber);
         final CreateSubscription createSubscription = expectMsgClass(CreateSubscription.class);
         final String subscriptionId = "subscription1234";
@@ -55,6 +61,7 @@ public final class ThingSearchPublisherTest extends AbstractDittoClientTest {
         }
         final RequestSubscription futileRequest = expectMsgClass(RequestSubscription.class);
         reply(SubscriptionComplete.of(subscriptionId, futileRequest.getDittoHeaders()));
-        assertThat(subscriber.asStream().collect(Collectors.toList())).isEqualTo(expectedResult);
+        subscriberFuture.get(1L, TimeUnit.SECONDS);
+        assertThat(subscriberFuture).isCompletedWithValue(expectedResult);
     }
 }

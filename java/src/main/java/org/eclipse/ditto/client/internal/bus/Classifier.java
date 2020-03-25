@@ -28,8 +28,4 @@ public interface Classifier<T> {
      */
     Optional<Classification> classify(T message);
 
-    /**
-     * Opaque type of classifications.
-     */
-    interface Classification {}
 }

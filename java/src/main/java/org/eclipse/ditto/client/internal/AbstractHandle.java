@@ -21,7 +21,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.eclipse.ditto.client.internal.bus.Classifiers;
+import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.model.base.headers.WithDittoHeaders;
@@ -168,7 +168,7 @@ public abstract class AbstractHandle {
             final Function<E, R> onError) {
 
         final CompletionStage<Adaptable> responseFuture = messagingProvider.getAdaptableBus()
-                .subscribeOnceForAdaptable(Classifiers.forCorrelationId(signal), getTimeout());
+                .subscribeOnceForAdaptable(Classification.forCorrelationId(signal), getTimeout());
 
         messagingProvider.emit(signalToJsonString(signal));
         return responseFuture.thenApply(responseAdaptable -> {

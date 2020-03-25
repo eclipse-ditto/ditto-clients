@@ -21,6 +21,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -31,6 +32,8 @@ import java.util.stream.StreamSupport;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Lightweight glue-code between {@code org.reactivestreams} and {@code java.util.stream} with buffering to minimize
@@ -41,12 +44,16 @@ import org.reactivestreams.Subscription;
  */
 public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterator<T> {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpliteratorSubscriber.class);
+
     private final BlockingQueue<Element<T>> buffer;
     private final long timeoutMillis;
     private final int capacity;
     private final int batchSize;
     private final AtomicReference<Subscription> subscription;
     private final AtomicInteger splits;
+    private final AtomicInteger quota;
+    private final AtomicBoolean cancelled;
 
     private SpliteratorSubscriber(final long timeoutMillis, final int bufferSize, final int batchSize) {
         // reserve 2*bufferSize+1 space in buffer for <=bufferSize elements and bufferSize+1 EOS markers
@@ -57,6 +64,8 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
         capacity = bufferSize;
         subscription = new AtomicReference<>();
         splits = new AtomicInteger(1);
+        quota = new AtomicInteger(0);
+        cancelled = new AtomicBoolean(false);
     }
 
     /**
@@ -94,31 +103,40 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
 
     @Override
     public void onSubscribe(final Subscription s) {
+        LOGGER.trace("onSubscribe <{}>", s);
         checkNotNull(s);
-        subscription.getAndUpdate(previousSubscription -> {
-            if (previousSubscription != null) {
-                s.cancel();
-                return previousSubscription;
-            } else {
-                s.request(batchSize);
-                return s;
+        final Subscription previousSubscription;
+        synchronized (subscription) {
+            previousSubscription = subscription.get();
+            if (previousSubscription == null) {
+                LOGGER.trace("Initial request: <{}>", capacity);
+                subscription.set(s);
             }
-        });
+        }
+        if (previousSubscription == null) {
+            s.request(capacity);
+        } else {
+            s.cancel();
+        }
     }
 
     @Override
     public void onNext(final T t) {
+        LOGGER.trace("onNext <{}>", t);
         buffer.add(new HasElement<>(checkNotNull(t)));
-        request();
     }
 
     @Override
     public void onError(final Throwable t) {
+        LOGGER.trace("onError", t);
+        cancelled.set(true);
         addErrors(t);
     }
 
     @Override
     public void onComplete() {
+        LOGGER.trace("onComplete");
+        cancelled.set(true);
         addEos();
     }
 
@@ -136,9 +154,14 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
     }
 
     private void request() {
-        final Subscription s = subscription.get();
-        if (s != null && capacity - buffer.size() >= batchSize) {
-            s.request(batchSize);
+        if (!cancelled.get()) {
+            final int previousQuota = quota.getAndUpdate(i -> i >= batchSize ? i - batchSize : i);
+            if (previousQuota >= batchSize) {
+                LOGGER.trace("Request <{}>", batchSize);
+                subscription.get().request(batchSize);
+            } else {
+                LOGGER.trace("Not requesting: not enough quota.");
+            }
         }
     }
 
@@ -153,6 +176,7 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
         if (next == null) {
             throw new IllegalStateException("timed out after " + timeoutMillis + " ms");
         } else {
+            quota.getAndUpdate(i -> Math.min(capacity, i + 1));
             return next.eval(
                     e -> {
                         consumer.accept(e);

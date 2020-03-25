@@ -160,13 +160,11 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     @Override
     public void initialize() {
-        webSocket.getAndUpdate(ws -> {
-            if (ws != null) {
-                return ws;
-            } else {
-                return initiateConnection(createWebsocket());
+        synchronized (webSocket) {
+            if (webSocket.get() == null) {
+                webSocket.set(initiateConnection(createWebsocket()));
             }
-        });
+        }
     }
 
     private WebSocket createWebsocket() {
@@ -177,10 +175,11 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         } catch (final IOException e) {
             throw MessagingException.connectFailed(sessionId, e);
         }
+        // TODO: make these configurable?
         ws.addHeader("User-Agent", DITTO_CLIENT_USER_AGENT);
         ws.setMaxPayloadSize(256 * 1024); // 256 KiB
         ws.setMissingCloseFrameAllowed(true);
-        ws.setFrameQueueSize(1); // allow applied backpressure from backend to block emitting of new messages
+        ws.setFrameQueueSize(0);
         return ws;
     }
 
@@ -315,7 +314,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     @Override
     public void onConnected(final WebSocket websocket, final Map<String, List<String>> headers) {
-        webSocket.getAndUpdate(ws -> {
+        synchronized (webSocket) {
+            final WebSocket ws = webSocket.get();
             try {
                 if (ws != websocket && ws != null) {
                     ws.disconnect();
@@ -323,8 +323,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
             } catch (final Exception exception) {
                 LOGGER.error("Client <{}>: Error disconnecting a previous websocket", sessionId, exception);
             }
-            return websocket;
-        });
+            webSocket.set(websocket);
+        }
 
         callbackExecutor.execute(() -> {
             LOGGER.info("Client <{}>: WebSocket connection is established", sessionId);

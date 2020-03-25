@@ -13,13 +13,13 @@
 package org.eclipse.ditto.client.streaming;
 
 import java.time.Duration;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
-import org.eclipse.ditto.client.internal.bus.Classifier;
-import org.eclipse.ditto.client.internal.bus.Classifiers;
+import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.protocoladapter.Adaptable;
@@ -51,10 +51,8 @@ public final class ThingSearchSubscription implements Subscription {
     private final MessagingProvider messagingProvider;
     private final Subscriber<? super SubscriptionHasNext> subscriber;
     private final AtomicBoolean cancelled;
-    private final AtomicBoolean started;
-    private final ConcurrentLinkedQueue<Adaptable> stash;
-    private final AtomicReference<Throwable> timeoutErrorStash;
-    private final AdaptableBus.SubscriptionId busSubscription;
+    private final AtomicReference<AdaptableBus.SubscriptionId> busSubscription;
+    private final ExecutorService singleThreadedExecutorService;
 
     private ThingSearchSubscription(final String subscriptionId,
             final ProtocolAdapter protocolAdapter,
@@ -65,15 +63,10 @@ public final class ThingSearchSubscription implements Subscription {
         this.messagingProvider = messagingProvider;
         this.subscriber = subscriber;
         cancelled = new AtomicBoolean(false);
-        started = new AtomicBoolean(false);
-        stash = new ConcurrentLinkedQueue<>();
-        timeoutErrorStash = new AtomicReference<>();
+        busSubscription = new AtomicReference<>();
 
-        final AdaptableBus bus = messagingProvider.getAdaptableBus();
-        final Duration timeout = messagingProvider.getMessagingConfiguration().getTimeout();
-        final Classifier.Classification tag = Classifiers.forThingsSearch(subscriptionId);
-        this.busSubscription =
-                bus.subscribeForAdaptableWithTimeout(tag, timeout, this::onNext, this::isTermination, this::onTimeout);
+        // not shutdown to handle queued messages; will be shutdown by garbage collector
+        singleThreadedExecutorService = Executors.newSingleThreadExecutor();
     }
 
     /**
@@ -99,55 +92,61 @@ public final class ThingSearchSubscription implements Subscription {
     // called by subscriber
     @Override
     public void request(final long n) {
-        if (n <= 0) {
-            cancel();
-            subscriber.onError(new IllegalArgumentException("Expect positive demand, got: " + n));
-        } else if (!cancelled.get()) {
-            final Signal<?> requestSubscription = RequestSubscription.of(subscriptionId, n, DittoHeaders.empty());
-            messagingProvider.emitAdaptable(protocolAdapter.toAdaptable(requestSubscription));
-        }
+        singleThreadedExecutorService.submit(() -> {
+            if (n <= 0) {
+                doCancel();
+                subscriber.onError(new IllegalArgumentException("Expect positive demand, got: " + n));
+            } else if (!cancelled.get()) {
+                ensureBusSubscription();
+                final Signal<?> requestSubscription =
+                        RequestSubscription.of(subscriptionId, n, DittoHeaders.newBuilder()
+                                .randomCorrelationId()
+                                .build());
+                messagingProvider.emitAdaptable(protocolAdapter.toAdaptable(requestSubscription));
+            }
+        });
     }
 
-    // called by subscriber and self
+    // called by subscriber
     @Override
     public void cancel() {
-        if (!cancelled.getAndSet(true)) {
-            sendCancelSubscription();
-        }
-        cancelBusSubscriptionAndClearStash();
+        singleThreadedExecutorService.submit(this::doCancel);
     }
 
-    private void sendCancelSubscription() {
-        final Signal<?> cancelSubscription = CancelSubscription.of(subscriptionId, DittoHeaders.empty());
-        messagingProvider.emitAdaptable(protocolAdapter.toAdaptable(cancelSubscription));
-    }
-
-    // called by bus and self
-    private void onTimeout(final Throwable timeoutError) {
+    private void doCancel() {
         if (!cancelled.getAndSet(true)) {
-            // send cancellation to back-end just in case
+            cancelBusSubscription();
             sendCancelSubscription();
-            // bus subscription is already cancelled; call this method anyway so that nowhere else clears the stash
-            cancelBusSubscriptionAndClearStash();
-            if (started.get()) {
-                // notify subscriber of timeout unless already cancelled
-                subscriber.onError(timeoutError);
-            } else {
-                // stash timeout error in case it arrives before subscriber.onSubscribe() returns
-                timeoutErrorStash.set(timeoutError);
-            }
         }
     }
 
     // called by bus
+    private void onTimeout(final Throwable timeoutError) {
+        singleThreadedExecutorService.submit(() -> {
+            if (!cancelled.getAndSet(true)) {
+                // bus subscription already cancelled
+                // trust back-end to free resources on its own
+                subscriber.onError(timeoutError);
+            }
+        });
+    }
+
+    // called by bus
     private void onNext(final Adaptable adaptable) {
-        stash.add(adaptable);
-        handleStashedMessagesIfStarted();
+        singleThreadedExecutorService.submit(() -> {
+            LOGGER.trace("Received from bus: <{}>", adaptable);
+            handleAdaptable(adaptable);
+        });
     }
 
     // called by bus
     private boolean isTermination(final Adaptable adaptable) {
         return adaptable.getTopicPath().getSearchAction().filter(this::isTerminationAction).isPresent();
+    }
+
+    private void sendCancelSubscription() {
+        final Signal<?> cancelSubscription = CancelSubscription.of(subscriptionId, DittoHeaders.empty());
+        messagingProvider.emitAdaptable(protocolAdapter.toAdaptable(cancelSubscription));
     }
 
     private boolean isTerminationAction(final TopicPath.SearchAction searchAction) {
@@ -160,61 +159,52 @@ public final class ThingSearchSubscription implements Subscription {
         }
     }
 
-    private void handleStashedAdaptable(final Adaptable adaptable) {
+    private void handleAdaptable(final Adaptable adaptable) {
         final Signal<?> signal = protocolAdapter.fromAdaptable(adaptable);
+        LOGGER.trace("Notifying subscriber of: <{}>", signal);
         if (signal instanceof SubscriptionHasNext) {
-            LOGGER.trace("Notifying subscriber of: <{}>", signal);
             subscriber.onNext((SubscriptionHasNext) signal);
         } else if (signal instanceof SubscriptionComplete) {
-            LOGGER.trace("Notifying subscriber of: <{}>", signal);
-            cancelBusSubscriptionAndClearStash();
+            cancelDueToUpstreamTermination();
             subscriber.onComplete();
         } else if (signal instanceof SubscriptionFailed) {
-            LOGGER.trace("Notifying subscriber of: <{}>", signal);
-            cancelBusSubscriptionAndClearStash();
+            cancelDueToUpstreamTermination();
             subscriber.onError(((SubscriptionFailed) signal).getError());
         } else {
-            cancel();
+            doCancel();
             subscriber.onError(new ClassCastException("Expect SubscriptionEvent, got " + signal));
         }
     }
 
-    private void cancelBusSubscriptionAndClearStash() {
-        messagingProvider.getAdaptableBus().unsubscribe(busSubscription);
-        stash.clear();
+    private void cancelDueToUpstreamTermination() {
+        cancelled.set(true);
+        cancelBusSubscription();
+        // upstream already considers itself cancelled
     }
 
-    private void handleStashedMessagesIfStarted() {
-        final boolean isStarted = started.get();
-        if (isStarted && !cancelled.get()) {
-            handleStashedAdaptables();
-        } else if (isStarted) {
-            handleStashedTimeoutErrorIfAny();
-        }
-    }
-
-    private void handleStashedAdaptables() {
-        Adaptable nextMessage;
-        boolean hasNextMessage;
-        do {
-            nextMessage = stash.poll();
-            hasNextMessage = nextMessage != null;
-            if (hasNextMessage) {
-                handleStashedAdaptable(nextMessage);
-            }
-        } while (hasNextMessage && !cancelled.get());
-    }
-
-    private void handleStashedTimeoutErrorIfAny() {
-        final Throwable stashedTimeoutError = timeoutErrorStash.getAndSet(null);
-        if (stashedTimeoutError != null) {
-            onTimeout(stashedTimeoutError);
+    private void cancelBusSubscription() {
+        final AdaptableBus.SubscriptionId busSubId = busSubscription.get();
+        if (busSubId != null) {
+            messagingProvider.getAdaptableBus().unsubscribe(busSubId);
         }
     }
 
     private void startForwarding() {
-        LOGGER.trace("Returned from subscriber.onSubscribe(), start forwarding messages");
-        started.set(true);
-        handleStashedMessagesIfStarted();
+        LOGGER.trace("Returned from subscriber.onSubscribe()");
+        ensureBusSubscription();
+    }
+
+    private void ensureBusSubscription() {
+        synchronized (busSubscription) {
+            if (busSubscription.get() == null) {
+                final AdaptableBus bus = messagingProvider.getAdaptableBus();
+                final Duration timeout = messagingProvider.getMessagingConfiguration().getTimeout();
+                final Classification tag = Classification.forThingsSearch(subscriptionId);
+                final AdaptableBus.SubscriptionId busSubscriptionId =
+                        bus.subscribeForAdaptableWithTimeout(tag, timeout, this::onNext, this::isTermination,
+                                this::onTimeout);
+                busSubscription.set(busSubscriptionId);
+            }
+        }
     }
 }

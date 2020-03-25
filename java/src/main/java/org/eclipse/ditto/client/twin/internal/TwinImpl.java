@@ -22,7 +22,7 @@ import org.eclipse.ditto.client.internal.CommonManagementImpl;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
-import org.eclipse.ditto.client.internal.bus.Classifiers;
+import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.twin.Twin;
@@ -92,29 +92,32 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
     @Override
     protected CompletableFuture<Void> doStartConsumption(final Map<String, String> consumptionConfig) {
         final CompletableFuture<Void> ackFuture = new CompletableFuture<>();
-        final Classifiers.StreamingType streamingType = Classifiers.StreamingType.TWIN_EVENT;
+        final Classification.StreamingType streamingType = Classification.StreamingType.TWIN_EVENT;
         final String subscriptionMessage = buildProtocolCommand(streamingType.start(), consumptionConfig);
         messagingProvider.registerSubscriptionMessage(streamingType, subscriptionMessage);
-        twinEventSubscription.getAndUpdate(previousSubscriptionId -> subscribe(
-                previousSubscriptionId,
-                streamingType,
-                subscriptionMessage,
-                streamingType.startAck(),
-                ackFuture,
-                CommonManagementImpl::asThingMessage
-        ));
+        synchronized (twinEventSubscription) {
+            final AdaptableBus.SubscriptionId previousSubscriptionId = twinEventSubscription.get();
+            twinEventSubscription.set(subscribe(
+                    previousSubscriptionId,
+                    streamingType,
+                    subscriptionMessage,
+                    streamingType.startAck(),
+                    ackFuture,
+                    CommonManagementImpl::asThingMessage
+            ));
+        }
         return ackFuture;
     }
 
     @Override
     public CompletableFuture<Void> suspendConsumption() {
-        final Classifiers.StreamingType streamingType = Classifiers.StreamingType.TWIN_EVENT;
+        final Classification.StreamingType streamingType = Classification.StreamingType.TWIN_EVENT;
         messagingProvider.unregisterSubscriptionMessage(streamingType);
         final CompletableFuture<Void> ackFuture = new CompletableFuture<>();
-        twinEventSubscription.getAndUpdate(subscriptionId -> {
-            unsubscribe(subscriptionId, streamingType.stop(), streamingType.stopAck(), ackFuture);
-            return null;
-        });
+        synchronized (twinEventSubscription) {
+            unsubscribe(twinEventSubscription.get(), streamingType.stop(), streamingType.stopAck(), ackFuture);
+            twinEventSubscription.set(null);
+        }
         return ackFuture;
     }
 
