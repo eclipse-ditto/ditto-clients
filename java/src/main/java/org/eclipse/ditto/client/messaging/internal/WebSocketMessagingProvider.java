@@ -455,7 +455,6 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     private void handleIncomingMessage(final String message) {
-        LOGGER.trace("Client <{}>: Got <{}>", sessionId, message);
         adaptableBus.publish(message);
     }
 

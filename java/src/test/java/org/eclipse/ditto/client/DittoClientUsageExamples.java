@@ -51,6 +51,7 @@ import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.KnownMessageSubjects;
 import org.eclipse.ditto.model.policies.Subject;
@@ -590,7 +591,7 @@ public final class DittoClientUsageExamples {
 
         final String rql1 = "like(thingId,\"" + namespace + ":*0\")";
         final String options1 = "sort(-thingId),size(3)";
-        LOGGER.info("Streaming search results for <{}> with <{}>", rql1, options1);
+        LOGGER.info("Streaming search results for <{}> with <{}>...", rql1, options1);
         client.twin()
                 .search()
                 .stream(searchQueryBuilder -> searchQueryBuilder.namespace(namespace)
@@ -602,9 +603,10 @@ public final class DittoClientUsageExamples {
                     // run in main thread
                     LOGGER.info("Received: <{}>", thing.getEntityId().orElse(null));
                 });
+        LOGGER.info("Done.\n");
 
         final String rql2 = "not(exists(thingId))";
-        LOGGER.info("Streaming search results for <{}>", rql2);
+        LOGGER.info("Expecting empty search results for <{}>...", rql2);
         client.twin()
                 .search()
                 .stream(searchQueryBuilder -> searchQueryBuilder.namespace(namespace)
@@ -615,6 +617,27 @@ public final class DittoClientUsageExamples {
                     // run in main thread
                     LOGGER.info("Received: <{}>", thing.getEntityId().orElse(null));
                 });
+        LOGGER.info("Done.\n");
+
+        final String rql3 = "not(exist(thingId";
+        LOGGER.info("Expecting error for <{}>...", rql3);
+        try {
+            client.twin()
+                    .search()
+                    .stream(searchQueryBuilder -> searchQueryBuilder.filter(rql3))
+                    .forEach(thing -> {
+                        // run in main thread
+                        LOGGER.error("Received unexpected: <{}>", thing);
+                    });
+            LOGGER.error("Got no error! Something is wrong.");
+        } catch (final DittoRuntimeException e) {
+            if (e.getErrorCode().equals("rql.expression.invalid")) {
+                LOGGER.info("Got expected error: <{}>", e.toJson());
+            } else {
+                LOGGER.error("Got unexpected error! Something is wrong: <{}>", e.toJson());
+            }
+        }
+        LOGGER.info("Done.\n");
     }
 
     private static double getDuration(final long startTimeStamp) {
