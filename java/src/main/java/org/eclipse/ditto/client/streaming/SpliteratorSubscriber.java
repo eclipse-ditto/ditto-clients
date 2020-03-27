@@ -109,13 +109,14 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
         synchronized (subscription) {
             previousSubscription = subscription.get();
             if (previousSubscription == null) {
-                LOGGER.trace("Initial request: <{}>", capacity);
                 subscription.set(s);
             }
         }
         if (previousSubscription == null) {
+            LOGGER.trace("Initial request: <{}>", capacity);
             s.request(capacity);
         } else {
+            LOGGER.warn("onSubscribe() called a second time; cancelling subscription <{}>.", s);
             s.cancel();
         }
     }
@@ -138,6 +139,23 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
         LOGGER.trace("onComplete");
         cancelled.set(true);
         addEos();
+    }
+
+    // always cancel the stream on error thrown, because user code catching the error is outside
+    // the element handling code and should consider this spliterator "used up."
+    // as a precaution, the error is propagated to all threads reading from this spliterator.
+    private void cancelOnError(final Consumer<? super T> consumer, final T element) {
+        try {
+            consumer.accept(element);
+        } catch (final RuntimeException e) {
+            cancelled.set(true);
+            addErrors(e);
+            final Subscription s = subscription.get();
+            if (s != null) {
+                s.cancel();
+            }
+            throw e;
+        }
     }
 
     private void addEos() {
@@ -179,7 +197,7 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
             quota.getAndUpdate(i -> Math.min(capacity, i + 1));
             return next.eval(
                     e -> {
-                        consumer.accept(e);
+                        cancelOnError(consumer, e);
                         request();
                         return true;
                     },

@@ -37,6 +37,7 @@ import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.signals.commands.base.exceptions.GatewayInternalErrorException;
+import org.eclipse.ditto.signals.commands.thingsearch.subscription.CancelSubscription;
 import org.eclipse.ditto.signals.commands.thingsearch.subscription.CreateSubscription;
 import org.eclipse.ditto.signals.commands.thingsearch.subscription.RequestSubscription;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionComplete;
@@ -100,6 +101,21 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
         reply(SubscriptionComplete.of(subscriptionId, DittoHeaders.empty()));
         assertThat(searchResults.map(thing -> thing.getEntityId().orElseThrow(AssertionError::new)))
                 .contains(IntStream.range(0, 10).mapToObj(i -> ThingId.of("x:" + i)).toArray(ThingId[]::new));
+    }
+
+    @Test
+    public void exceptionInHandlerCancelsStream() {
+        final Stream<Thing> searchResults = createStreamUnderTest(q -> q.bufferedPages(2).pagesPerBatch(2));
+        final CreateSubscription createSubscription = expectMsgClass(CreateSubscription.class);
+        final String subscriptionId = disambiguate("my-cancelled-subscription");
+        reply(SubscriptionCreated.of(subscriptionId, createSubscription.getDittoHeaders()));
+        assertThat(expectMsgClass(RequestSubscription.class).getDemand()).isEqualTo(2L);
+        reply(hasNext(subscriptionId, 0, 1));
+        assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() ->
+                searchResults.forEach(page -> {
+                    throw new IllegalArgumentException("expected exception");
+                }));
+        assertThat(expectMsgClass(CancelSubscription.class).getSubscriptionId()).isEqualTo(subscriptionId);
     }
 
     @Test

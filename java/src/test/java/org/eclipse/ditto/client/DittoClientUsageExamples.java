@@ -166,7 +166,7 @@ public final class DittoClientUsageExamples {
             Thread.sleep(500);
         }
 
-        if (shouldNotSkip("search")) {
+        if (shouldNotSkip("search.examples")) {
             System.out.println("\n\nAbout to continue with search commands:");
             promptEnterKey();
             useSearchCommands(client);
@@ -590,13 +590,15 @@ public final class DittoClientUsageExamples {
                 CONFIG.getProperty("ditto.search.namespace", CONFIG.getProperty("ditto.namespace"));
 
         final String rql1 = "like(thingId,\"" + namespace + ":*0\")";
-        final String options1 = "sort(-thingId),size(3)";
+        final String options1 = "sort(-thingId),size(1)";
         LOGGER.info("Streaming search results for <{}> with <{}>...", rql1, options1);
         client.twin()
                 .search()
                 .stream(searchQueryBuilder -> searchQueryBuilder.namespace(namespace)
                         .filter(rql1)
                         .options(options1)
+                        .bufferedPages(1)
+                        .pagesPerBatch(1)
                         .fields("thingId")
                 )
                 .forEach(thing -> {
