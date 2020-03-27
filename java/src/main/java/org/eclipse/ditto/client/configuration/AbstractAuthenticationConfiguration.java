@@ -24,6 +24,8 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
+import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
+
 /**
  * Abstract implementation for common aspects of
  * {@link org.eclipse.ditto.client.configuration.AuthenticationConfiguration}.
@@ -42,7 +44,14 @@ abstract class AbstractAuthenticationConfiguration implements AuthenticationConf
         checkNotNull(identifier, "identifier");
         checkNotNull(additionalHeaders, "additionalHeaders");
 
-        sessionId = identifier + ":" + UUID.randomUUID().toString();
+        final String connectionCorrelationId;
+        if (additionalHeaders.containsKey(DittoHeaderDefinition.CORRELATION_ID.getKey())) {
+            connectionCorrelationId = additionalHeaders.get(DittoHeaderDefinition.CORRELATION_ID.getKey());
+        } else {
+            connectionCorrelationId = UUID.randomUUID().toString();
+            additionalHeaders.put(DittoHeaderDefinition.CORRELATION_ID.getKey(), connectionCorrelationId);
+        }
+        sessionId = identifier + ":" + connectionCorrelationId;
         this.additionalHeaders = Collections.unmodifiableMap(new HashMap<>(additionalHeaders));
         this.proxyConfiguration = proxyConfiguration;
     }
