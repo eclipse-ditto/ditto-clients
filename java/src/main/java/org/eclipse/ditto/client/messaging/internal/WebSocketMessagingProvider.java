@@ -499,6 +499,17 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         return responseFuture;
     }
 
+    @Override
+    public void sendSignal(final Signal<?> signal) {
+        try {
+            final Signal<?> adjustedSignal = signal.setDittoHeaders(adjustHeadersForLive(signal));
+            final Adaptable adaptable = protocolAdapter.toAdaptable(adjustedSignal);
+            doSendAdaptable(adaptable);
+        } catch (final UnknownCommandException e) {
+            logUnknownType(signal, e);
+        }
+    }
+
     private void doSendAdaptable(@Nullable final Adaptable adaptable) {
         if (null == adaptable) {
             return;

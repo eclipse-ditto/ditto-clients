@@ -22,6 +22,7 @@ import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.base.Command;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.events.base.Event;
@@ -67,6 +68,12 @@ public interface MessagingProvider {
      * @throws UnsupportedOperationException if the MessagingProvider is not able to send Messages
      */
     CompletableFuture<Adaptable> sendAdaptable(Adaptable adaptable);
+
+    /**
+     * TODO TJ remove again after search branch was merged - this should be easier then!
+     * @param signal
+     */
+    void sendSignal(Signal<?> signal);
 
     /**
      * Send message using the underlying connection.

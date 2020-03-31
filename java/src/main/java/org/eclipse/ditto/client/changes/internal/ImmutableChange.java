@@ -12,21 +12,31 @@
  */
 package org.eclipse.ditto.client.changes.internal;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
+import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
 import java.time.Instant;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
+import org.eclipse.ditto.client.changes.AcknowledgementRequestHandle;
 import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.entity.id.EntityId;
+import org.eclipse.ditto.model.base.entity.id.EntityIdWithType;
+import org.eclipse.ditto.model.base.entity.type.EntityType;
+import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 
 /**
  * An immutable holder for an {@link org.eclipse.ditto.model.base.entity.id.EntityId} and a {@link ChangeAction}.
@@ -37,45 +47,59 @@ import org.eclipse.ditto.model.base.entity.id.EntityId;
 @Immutable
 public final class ImmutableChange implements Change {
 
-    private final EntityId entityId;
+    private final EntityIdWithType entityId;
     private final ChangeAction action;
     private final JsonPointer path;
     @Nullable private final JsonValue value;
     private final long revision;
     @Nullable private final Instant timestamp;
     @Nullable private final JsonObject extra;
+    private final DittoHeaders dittoHeaders;
+    private final Consumer<Acknowledgement> acknowledgementPublisher;
 
     /**
      * Constructs a new {@code ImmutableChange} object.
      *
-     * @param entityId ID of the changed entity.
+     * @param entityId ID (with EntityType) of the changed entity.
      * @param changeAction the operation which caused the change.
      * @param path the JsonPointer of the changed json field.
      * @param value the value of the changed json field.
      * @param revision the revision (change counter) of the change.
      * @param timestamp the timestamp of the change.
      * @param extra the extra data to be included in the change.
+     * @param dittoHeaders the DittoHeaders of the event which lead to the change.
+     * @param acknowledgementPublisher the consumer for publishing built acknowledgements to the Ditto backend.
+     * @throws NullPointerException if any required argument is {@code null}.
      */
-    public ImmutableChange(final EntityId entityId,
+    public ImmutableChange(final EntityIdWithType entityId,
             final ChangeAction changeAction,
             final JsonPointer path,
             @Nullable final JsonValue value,
             final long revision,
             @Nullable final Instant timestamp,
-            @Nullable final JsonObject extra) {
+            @Nullable final JsonObject extra,
+            final DittoHeaders dittoHeaders,
+            final Consumer<Acknowledgement> acknowledgementPublisher) {
 
-        this.entityId = argumentNotNull(entityId, "entityId");
-        this.action = argumentNotNull(changeAction, "changeAction");
-        this.path = argumentNotNull(path, "path");
+        this.entityId = checkNotNull(entityId, "entityId");
+        this.action = checkNotNull(changeAction, "changeAction");
+        this.path = checkNotNull(path, "path");
         this.value = value;
         this.revision = revision;
         this.timestamp = timestamp;
         this.extra = extra;
+        this.dittoHeaders = checkNotNull(dittoHeaders, "dittoHeaders");
+        this.acknowledgementPublisher = checkNotNull(acknowledgementPublisher, "acknowledgementPublisher");
     }
 
     @Override
     public EntityId getEntityId() {
         return entityId;
+    }
+
+    @Override
+    public EntityType getEntityType() {
+        return entityId.getEntityType();
     }
 
     @Override
@@ -110,11 +134,54 @@ public final class ImmutableChange implements Change {
 
     @Override
     public Change withExtra(@Nullable final JsonObject extra) {
-        return new ImmutableChange(entityId, action, path, value, revision, timestamp, extra);
+        return new ImmutableChange(entityId, action, path, value, revision, timestamp, extra, dittoHeaders,
+                acknowledgementPublisher);
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public DittoHeaders getDittoHeaders() {
+        return dittoHeaders;
+    }
+
+    @Override
+    public Change setDittoHeaders(final DittoHeaders dittoHeaders) {
+        return new ImmutableChange(entityId, action, path, value, revision, timestamp, extra, dittoHeaders,
+                acknowledgementPublisher);
+    }
+
+    @Override
+    public void handleAcknowledgementRequests(final Consumer<Collection<AcknowledgementRequestHandle>> acknowledgementHandles) {
+
+        checkNotNull(acknowledgementHandles, "handleConsumers");
+        acknowledgementHandles.accept(
+                getDittoHeaders().getAcknowledgementRequests().stream()
+                        .map(request -> new ImmutableAcknowledgementRequestHandle(request.getLabel(), entityId, dittoHeaders,
+                                acknowledgementPublisher))
+                        .collect(Collectors.toCollection(LinkedHashSet::new))
+        );
+    }
+
+    @Override
+    public Change withPathAndValue(final JsonPointer path, @Nullable final JsonValue value) {
+        return new ImmutableChange(entityId, action, path, value, revision, timestamp, extra, dittoHeaders,
+                acknowledgementPublisher);
+    }
+
+    @Override
+    public void handleAcknowledgementRequest(final AcknowledgementLabel acknowledgementLabel,
+            final Consumer<AcknowledgementRequestHandle> acknowledgementHandle) {
+
+        checkNotNull(acknowledgementLabel, "acknowledgementLabel");
+        checkNotNull(acknowledgementHandle, "handleConsumer");
+        getDittoHeaders().getAcknowledgementRequests().stream()
+                .filter(req -> req.getLabel().equals(acknowledgementLabel))
+                .map(request -> new ImmutableAcknowledgementRequestHandle(request.getLabel(), entityId, dittoHeaders,
+                        acknowledgementPublisher))
+                .forEach(acknowledgementHandle);
+    }
+
+    @Override
+    public boolean equals(@Nullable final Object o) {
         if (this == o) {
             return true;
         }
@@ -127,13 +194,14 @@ public final class ImmutableChange implements Change {
                 Objects.equals(path, that.path) &&
                 Objects.equals(value, that.value) &&
                 revision == that.revision &&
-                Objects.equals(timestamp, that.timestamp)&&
-                Objects.equals(extra, that.extra);
+                Objects.equals(timestamp, that.timestamp) &&
+                Objects.equals(extra, that.extra) &&
+                Objects.equals(dittoHeaders, that.dittoHeaders);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(entityId, action, path, value, revision, timestamp, extra);
+        return Objects.hash(entityId, action, path, value, revision, timestamp, extra, dittoHeaders);
     }
 
     @Override
@@ -146,6 +214,7 @@ public final class ImmutableChange implements Change {
                 ", revision=" + revision +
                 ", timestamp=" + timestamp +
                 ", extra=" + extra +
+                ", dittoHeaders=" + dittoHeaders +
                 "]";
     }
 

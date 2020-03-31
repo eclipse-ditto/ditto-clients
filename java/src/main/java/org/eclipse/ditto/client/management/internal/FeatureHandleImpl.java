@@ -19,7 +19,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.changes.Change;
-import org.eclipse.ditto.client.changes.internal.ImmutableChange;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
 import org.eclipse.ditto.client.internal.ResponseForwarder;
@@ -251,9 +250,7 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
         argumentNotNull(handler);
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/{1}/properties", thingId, featureId),
-                Change.class, handler, (change, value, path, params) ->
-                        new ImmutableChange(change.getEntityId(), change.getAction(), path, value, change.getRevision(),
-                                change.getTimestamp().orElse(null), change.getExtra().orElse(null))
+                Change.class, handler, (change, value, path, params) -> change.withPathAndValue(path, value)
         );
     }
 
@@ -264,9 +261,8 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
         argumentNotNull(handler);
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/{1}/properties{2}", thingId, featureId,
-                        propertyPath), Change.class, handler,
-                (change, value, path, params) -> new ImmutableChange(change.getEntityId(), change.getAction(), path,
-                        value, change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null))
+                        propertyPath), Change.class, handler, (change, value, path, params) ->
+                        change.withPathAndValue(path, value)
         );
     }
 

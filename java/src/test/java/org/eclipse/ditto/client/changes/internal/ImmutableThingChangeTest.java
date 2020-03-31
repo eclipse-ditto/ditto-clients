@@ -21,12 +21,15 @@ import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.client.changes.ThingChange;
 import org.eclipse.ditto.json.JsonPointer;
+import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.things.Thing;
+import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -42,12 +45,14 @@ public final class ImmutableThingChangeTest {
     private static final JsonPointer POINTER_MOCK = Mockito.mock(JsonPointer.class);
     private static final long KNOWN_REVISION = 34L;
     private static final Instant KNOWN_TIMESTAMP = Instant.now();
+    private static final DittoHeaders KNOWN_DITTO_HEADERS = DittoHeaders.newBuilder().correlationId("cor-id").build();
+    private static final Consumer<Acknowledgement> ACK_CONSUMER = acknowledgement -> {};
 
     @Test
     public void constructWithValidThingIdAndType() {
         final ThingChange thingChange =
                 new ImmutableThingChange(THING_ID, KNOWN_ACTION, THING_MOCK, POINTER_MOCK, KNOWN_REVISION,
-                        KNOWN_TIMESTAMP, null);
+                        KNOWN_TIMESTAMP, null, KNOWN_DITTO_HEADERS, ACK_CONSUMER);
 
         assertThat(thingChange).isNotNull();
     }
@@ -56,7 +61,7 @@ public final class ImmutableThingChangeTest {
     public void constructWithNullThingId() {
         assertThatNullPointerException()
                 .isThrownBy(() -> new ImmutableThingChange(null, KNOWN_ACTION, THING_MOCK, POINTER_MOCK, KNOWN_REVISION,
-                        KNOWN_TIMESTAMP, null))
+                        KNOWN_TIMESTAMP, null, KNOWN_DITTO_HEADERS, ACK_CONSUMER))
                 .withMessage("The %s must not be null!", "Thing ID")
                 .withNoCause();
     }
@@ -66,7 +71,7 @@ public final class ImmutableThingChangeTest {
         assertThatNullPointerException()
                 .isThrownBy(
                         () -> new ImmutableThingChange(THING_ID, null, THING_MOCK, POINTER_MOCK, KNOWN_REVISION,
-                                KNOWN_TIMESTAMP, null))
+                                KNOWN_TIMESTAMP, null, KNOWN_DITTO_HEADERS, ACK_CONSUMER))
                 .withMessage("The %s must not be null!", "change action")
                 .withNoCause();
     }
@@ -89,7 +94,7 @@ public final class ImmutableThingChangeTest {
     public void getHashCodeForChangeWithNullThing() {
         final ImmutableThingChange underTest =
                 new ImmutableThingChange(THING_ID, KNOWN_ACTION, null, POINTER_MOCK, KNOWN_REVISION,
-                        KNOWN_TIMESTAMP, null);
+                        KNOWN_TIMESTAMP, null, KNOWN_DITTO_HEADERS, ACK_CONSUMER);
 
         final int hashCode = underTest.hashCode();
 
@@ -100,7 +105,7 @@ public final class ImmutableThingChangeTest {
     public void gettersReturnExpected() {
         final ThingChange underTest =
                 new ImmutableThingChange(THING_ID, KNOWN_ACTION, THING_MOCK, POINTER_MOCK, KNOWN_REVISION,
-                        KNOWN_TIMESTAMP, null);
+                        KNOWN_TIMESTAMP, null, KNOWN_DITTO_HEADERS, ACK_CONSUMER);
 
         assertThat((CharSequence) underTest.getEntityId()).isEqualTo(THING_ID);
         assertThat(underTest.getAction()).isSameAs(KNOWN_ACTION);
@@ -111,7 +116,7 @@ public final class ImmutableThingChangeTest {
     public void createEventWithThing() {
         final ThingChange underTest =
                 new ImmutableThingChange(THING_ID, KNOWN_ACTION, THING_MOCK, POINTER_MOCK, KNOWN_REVISION,
-                        KNOWN_TIMESTAMP, null);
+                        KNOWN_TIMESTAMP, null, KNOWN_DITTO_HEADERS, ACK_CONSUMER);
 
         final Optional<Thing> thing = underTest.getThing();
 

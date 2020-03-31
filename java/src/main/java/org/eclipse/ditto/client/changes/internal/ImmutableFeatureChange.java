@@ -12,21 +12,31 @@
  */
 package org.eclipse.ditto.client.changes.internal;
 
+import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
+
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
+import org.eclipse.ditto.client.changes.AcknowledgementRequestHandle;
 import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.client.changes.FeatureChange;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.entity.id.EntityId;
+import org.eclipse.ditto.model.base.entity.id.EntityIdWithType;
+import org.eclipse.ditto.model.base.entity.type.EntityType;
+import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.things.Feature;
+import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 
 /**
  * An immutable implementation of {@link org.eclipse.ditto.client.changes.FeatureChange}.
@@ -49,18 +59,35 @@ public final class ImmutableFeatureChange implements FeatureChange {
      * @param revision the revision (change counter) of the change.
      * @param timestamp the timestamp of the change.
      * @param extra the extra data to be included in the change.
-     * @throws IllegalArgumentException if any argument is {@code null}.
+     * @param dittoHeaders the DittoHeaders of the event which lead to the change.
+     * @param acknowledgementPublisher the consumer for publishing built acknowledgements to the Ditto backend.
+     * @throws NullPointerException if any required argument is {@code null}.
      */
-    public ImmutableFeatureChange(final EntityId entityId,
+    public ImmutableFeatureChange(final EntityIdWithType entityId,
             final ChangeAction changeAction,
             @Nullable final Feature feature,
             final JsonPointer path,
             final long revision,
             @Nullable final Instant timestamp,
-            @Nullable final JsonObject extra) {
+            @Nullable final JsonObject extra,
+            final DittoHeaders dittoHeaders,
+            final Consumer<Acknowledgement> acknowledgementPublisher) {
 
         this(new ImmutableChange(entityId, changeAction, path, getJsonValueForFeature(feature), revision, timestamp,
-                extra), feature);
+                extra, dittoHeaders, acknowledgementPublisher), feature);
+    }
+
+    /**
+     * Constructs a new {@code ImmutableFeatureChange} object.
+     *
+     * @param change the change to use for delegation.
+     * @param feature the additional {@code Feature} this FeatureChange is aware of.
+     * @throws NullPointerException if {@code change} is {@code null}.
+     * @since 1.1.0
+     */
+    public ImmutableFeatureChange(final Change change, @Nullable final Feature feature) {
+        this.change = checkNotNull(change, "change");
+        this.feature = feature;
     }
 
     @Nullable
@@ -68,14 +95,14 @@ public final class ImmutableFeatureChange implements FeatureChange {
         return null != feature ? feature.toJson(feature.getImplementedSchemaVersion()) : null;
     }
 
-    private ImmutableFeatureChange(final Change delegationTarget, @Nullable final Feature feature) {
-        change = delegationTarget;
-        this.feature = feature;
-    }
-
     @Override
     public EntityId getEntityId() {
         return change.getEntityId();
+    }
+
+    @Override
+    public EntityType getEntityType() {
+        return change.getEntityType();
     }
 
     @Override
@@ -119,7 +146,33 @@ public final class ImmutableFeatureChange implements FeatureChange {
     }
 
     @Override
-    public boolean equals(final Object o) {
+    public DittoHeaders getDittoHeaders() {
+        return change.getDittoHeaders();
+    }
+
+    @Override
+    public Change setDittoHeaders(final DittoHeaders dittoHeaders) {
+        return new ImmutableFeatureChange(change.setDittoHeaders(dittoHeaders), feature);
+    }
+
+    @Override
+    public void handleAcknowledgementRequests(final Consumer<Collection<AcknowledgementRequestHandle>> acknowledgementHandles) {
+        change.handleAcknowledgementRequests(acknowledgementHandles);
+    }
+
+    @Override
+    public Change withPathAndValue(final JsonPointer path, @Nullable final JsonValue value) {
+        return new ImmutableFeatureChange(change.withPathAndValue(path, value), feature);
+    }
+
+    @Override
+    public void handleAcknowledgementRequest(final AcknowledgementLabel acknowledgementLabel,
+            final Consumer<AcknowledgementRequestHandle> acknowledgementHandle) {
+        change.handleAcknowledgementRequest(acknowledgementLabel, acknowledgementHandle);
+    }
+
+    @Override
+    public boolean equals(@Nullable final Object o) {
         if (this == o) {
             return true;
         }

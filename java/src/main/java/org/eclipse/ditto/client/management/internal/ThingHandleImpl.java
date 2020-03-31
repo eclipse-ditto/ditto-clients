@@ -22,7 +22,6 @@ import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.FeatureChange;
 import org.eclipse.ditto.client.changes.FeaturesChange;
 import org.eclipse.ditto.client.changes.ThingChange;
-import org.eclipse.ditto.client.changes.internal.ImmutableChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeatureChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeaturesChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableThingChange;
@@ -272,9 +271,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
         argumentNotNull(handler);
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/attributes", thingId),
-                Change.class, handler, (change, value, path, params) ->
-                        new ImmutableChange(change.getEntityId(), change.getAction(), path, value, change.getRevision(),
-                                change.getTimestamp().orElse(null), change.getExtra().orElse(null))
+                Change.class, handler, (change, value, path, params) -> change.withPathAndValue(path, value)
         );
     }
 
@@ -285,9 +282,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
         argumentNotNull(handler);
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/attributes{1}", thingId, attrPath),
-                Change.class, handler, (change, value, path, params) ->
-                        new ImmutableChange(change.getEntityId(), change.getAction(), path, value, change.getRevision(),
-                                change.getTimestamp().orElse(null), change.getExtra().orElse(null))
+                Change.class, handler, (change, value, path, params) -> change.withPathAndValue(path, value)
         );
     }
 
@@ -301,8 +296,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
                             ThingsModelFactory.newFeatureBuilder(value.asObject())
                                     .useId(params.get("{featureId}"))
                                     .build() : null;
-                    return new ImmutableFeatureChange(change.getEntityId(), change.getAction(), feature, path,
-                            change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null));
+                    return new ImmutableFeatureChange(change.withPathAndValue(path, value), feature);
                 });
     }
 
@@ -316,8 +310,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
                 FeatureChange.class, handler, (change, value, path, params) -> {
                     final Feature feature = value != null ?
                             ThingsModelFactory.newFeatureBuilder(value.asObject()).useId(featureId).build() : null;
-                    return new ImmutableFeatureChange(change.getEntityId(), change.getAction(), feature, path,
-                            change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null));
+                    return new ImmutableFeatureChange(change.withPathAndValue(path, value), feature);
                 });
     }
 
@@ -328,8 +321,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features", thingId), FeaturesChange.class, handler,
                 (change, value, path, params) -> {
                     final Features features = value != null ? ThingsModelFactory.newFeatures(value.asObject()) : null;
-                    return new ImmutableFeaturesChange(change.getEntityId(), change.getAction(), features, path,
-                            change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null));
+                    return new ImmutableFeaturesChange(change.withPathAndValue(path, value), features);
                 });
     }
 
@@ -341,8 +333,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
                 (change, value, path, params) -> {
                     final Thing thing =
                             value != null ? ThingsModelFactory.newThingBuilder(value.asObject()).build() : null;
-                    return new ImmutableThingChange(change.getEntityId(), change.getAction(), thing, path,
-                            change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null));
+                    return new ImmutableThingChange(change.withPathAndValue(path, value), thing);
                 });
     }
 
