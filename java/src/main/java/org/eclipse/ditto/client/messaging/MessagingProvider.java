@@ -69,6 +69,8 @@ public interface MessagingProvider {
      * Returns the {@code AdaptableBus} to which all incoming messages are published.
      *
      * @return the adaptable bus.
+     *
+     * @since 1.1.0
      */
     AdaptableBus getAdaptableBus();
 
@@ -98,6 +100,8 @@ public interface MessagingProvider {
      * Send a message into the channel provided by this provider.
      *
      * @param message the message to emit.
+     *
+     * @since 1.1.0
      */
     void emit(String message);
 
@@ -105,6 +109,8 @@ public interface MessagingProvider {
      * Emit an adaptable message in a fire-and-forget manner.
      *
      * @param message the message to emit.
+     *
+     * @since 1.1.0
      */
     default void emitAdaptable(Adaptable message) {
         emit(ProtocolFactory.wrapAsJsonifiableAdaptable(message).toJsonString());
