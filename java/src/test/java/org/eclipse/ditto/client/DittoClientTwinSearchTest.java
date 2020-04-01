@@ -131,7 +131,7 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
         final AtomicReference<Thing> thingBox = new AtomicReference<>();
         assertThat(searchResultSpliterator.tryAdvance(thingBox::set)).isTrue();
         assertThat(thingBox).hasValue(Thing.newBuilder().setId(ThingId.of("x:0")).build());
-        assertThatExceptionOfType(DittoRuntimeException.class)
+        assertThatExceptionOfType(GatewayInternalErrorException.class)
                 .isThrownBy(() -> searchResultSpliterator.forEachRemaining(thing -> {}));
     }
 
