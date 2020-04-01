@@ -52,8 +52,9 @@ public interface TwinSearchHandle {
      * that the stream is "used up."
      * <p>
      * While user code may take advantage of this behavior to terminate a stream early,
-     * it is recommended to use {@link this#publisher(java.util.function.Consumer)} together with a reactive-streams
-     * library instead.
+     * it is recommended to use
+     * {@link org.eclipse.ditto.client.twin.TwinSearchHandle#publisher(java.util.function.Consumer)}
+     * together with a reactive-streams library instead.
      *
      * @param querySpecifier the consumer to specify the search query.
      * @return a stream over things matching the query.

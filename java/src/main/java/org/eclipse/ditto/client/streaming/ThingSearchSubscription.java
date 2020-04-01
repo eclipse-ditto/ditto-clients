@@ -75,6 +75,7 @@ public final class ThingSearchSubscription implements Subscription {
      * @param event the event informing the existence of the subscription on the backend.
      * @param protocolAdapter the protocol adapter.
      * @param messagingProvider the messaging provider.
+     * @param subscriber subscriber for search results.
      */
     public static void start(final SubscriptionCreated event,
             final ProtocolAdapter protocolAdapter,

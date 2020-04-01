@@ -31,6 +31,7 @@ public final class Classifiers {
     /**
      * Create an identity classifier.
      *
+     * @param <T> type of objects being classified.
      * @return classifier that classifies each object as itself.
      */
     public static <T> Classifier<T> identity() {

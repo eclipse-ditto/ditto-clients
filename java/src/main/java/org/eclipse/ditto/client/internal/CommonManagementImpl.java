@@ -610,6 +610,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
      * @param protocolCommandAck the expected acknowledgement.
      * @param futureToCompleteOrFailAfterAck the future to complete or fail after receiving the expected acknowledgement
      * or not.
+     * @param adaptableToMessage function to convert an adaptable into a message.
      * @return the subscription ID.
      */
     protected AdaptableBus.SubscriptionId subscribe(
