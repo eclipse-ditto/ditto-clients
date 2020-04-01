@@ -12,13 +12,13 @@
  */
 package org.eclipse.ditto.client.twin.internal;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
+import org.eclipse.ditto.client.twin.SearchOptionsBuilder;
 import org.eclipse.ditto.client.twin.SearchQueryBuilder;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonFieldSelector;
@@ -28,7 +28,7 @@ import org.eclipse.ditto.signals.commands.thingsearch.subscription.CreateSubscri
 final class SearchQueryBuilderImpl implements SearchQueryBuilder {
 
     @Nullable private String filter;
-    private final List<String> options = new ArrayList<>();
+    @Nullable private String options;
     @Nullable private String fields;
     private final Set<String> namespaces = new HashSet<>();
     private int bufferedPages = 2;
@@ -37,17 +37,22 @@ final class SearchQueryBuilderImpl implements SearchQueryBuilder {
     SearchQueryBuilderImpl() {}
 
     @Override
-    public SearchQueryBuilder filter(@Nullable String filter) {
-        this.filter = filter;
+    public SearchQueryBuilder filter(@Nullable CharSequence filter) {
+        this.filter = filter == null ? null : filter.toString();
         return this;
     }
 
     @Override
     public SearchQueryBuilder options(@Nullable final String options) {
-        this.options.clear();
-        if (options != null) {
-            this.options.add(options);
-        }
+        this.options = options;
+        return this;
+    }
+
+    @Override
+    public SearchQueryBuilder options(final Consumer<SearchOptionsBuilder> settings) {
+        final SearchOptionsBuilderImpl builder = new SearchOptionsBuilderImpl();
+        settings.accept(builder);
+        this.options = builder.build().orElse(null);
         return this;
     }
 
@@ -85,10 +90,9 @@ final class SearchQueryBuilderImpl implements SearchQueryBuilder {
     }
 
     CreateSubscription createSubscription() {
-        final String optionsString = options.isEmpty() ? null : String.join(",", options);
         final JsonFieldSelector fieldSelector = JsonFactory.parseJsonFieldSelector(fields);
         final Set<String> namespaces = this.namespaces.isEmpty() ? null : this.namespaces;
-        return CreateSubscription.of(filter, optionsString, fieldSelector, namespaces, DittoHeaders.empty());
+        return CreateSubscription.of(filter, options, fieldSelector, namespaces, DittoHeaders.empty());
     }
 
     int getBufferedPages() {

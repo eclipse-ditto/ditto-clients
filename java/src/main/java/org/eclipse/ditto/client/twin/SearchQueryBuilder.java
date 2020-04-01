@@ -13,6 +13,7 @@
 package org.eclipse.ditto.client.twin;
 
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
@@ -29,7 +30,7 @@ public interface SearchQueryBuilder {
      * @param filter the filter as string, or null to remove the filter.
      * @return this builder.
      */
-    SearchQueryBuilder filter(@Nullable String filter);
+    SearchQueryBuilder filter(@Nullable CharSequence filter);
 
     /**
      * Set the options as string.
@@ -38,6 +39,14 @@ public interface SearchQueryBuilder {
      * @return this builder.
      */
     SearchQueryBuilder options(@Nullable String options);
+
+    /**
+     * Set the options with a builder consumer.
+     *
+     * @param settings options as comma-separated string, or null to remove all options.
+     * @return this builder.
+     */
+    SearchQueryBuilder options(Consumer<SearchOptionsBuilder> settings);
 
     /**
      * Set the fields to select in search results.
