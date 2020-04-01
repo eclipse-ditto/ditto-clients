@@ -24,7 +24,7 @@ import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.signals.commands.thingsearch.subscription.CancelSubscription;
 import org.eclipse.ditto.signals.commands.thingsearch.subscription.CreateSubscription;
-import org.eclipse.ditto.signals.commands.thingsearch.subscription.RequestSubscription;
+import org.eclipse.ditto.signals.commands.thingsearch.subscription.RequestFromSubscription;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionCreated;
 import org.junit.Test;
 import org.reactivestreams.Publisher;
@@ -47,7 +47,7 @@ public final class DittoClientTwinSearchPublisherTest extends AbstractDittoClien
         testSubscriber.subscriptionLatch.await(TIMEOUT, TIME_UNIT);
         final Subscription subscription = checkNotNull(testSubscriber.subscriptions.peek());
         subscription.request(99L);
-        expectMsgClass(RequestSubscription.class);
+        expectMsgClass(RequestFromSubscription.class);
         subscription.cancel();
         expectMsgClass(CancelSubscription.class);
     }

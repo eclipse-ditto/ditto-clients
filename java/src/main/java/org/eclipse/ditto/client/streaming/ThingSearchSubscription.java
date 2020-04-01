@@ -27,7 +27,7 @@ import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.thingsearch.subscription.CancelSubscription;
-import org.eclipse.ditto.signals.commands.thingsearch.subscription.RequestSubscription;
+import org.eclipse.ditto.signals.commands.thingsearch.subscription.RequestFromSubscription;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionComplete;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionCreated;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionFailed;
@@ -99,7 +99,7 @@ public final class ThingSearchSubscription implements Subscription {
             } else if (!cancelled.get()) {
                 ensureBusSubscription();
                 final Signal<?> requestSubscription =
-                        RequestSubscription.of(subscriptionId, n, DittoHeaders.newBuilder()
+                        RequestFromSubscription.of(subscriptionId, n, DittoHeaders.newBuilder()
                                 .randomCorrelationId()
                                 .build());
                 messagingProvider.emitAdaptable(protocolAdapter.toAdaptable(requestSubscription));

@@ -26,7 +26,7 @@ import org.eclipse.ditto.json.JsonArray;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.signals.commands.thingsearch.subscription.CreateSubscription;
-import org.eclipse.ditto.signals.commands.thingsearch.subscription.RequestSubscription;
+import org.eclipse.ditto.signals.commands.thingsearch.subscription.RequestFromSubscription;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionComplete;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionCreated;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionHasNext;
@@ -50,16 +50,16 @@ public final class ThingSearchPublisherTest extends AbstractDittoClientTest {
         final CreateSubscription createSubscription = expectMsgClass(CreateSubscription.class);
         final String subscriptionId = "subscription1234";
         reply(SubscriptionCreated.of(subscriptionId, createSubscription.getDittoHeaders()));
-        final RequestSubscription requestSubscription = expectMsgClass(RequestSubscription.class);
+        final RequestFromSubscription requestFromSubscription = expectMsgClass(RequestFromSubscription.class);
         final List<SubscriptionHasNext> expectedResult = new ArrayList<>();
-        for (int i = 0; i < requestSubscription.getDemand(); ++i) {
+        for (int i = 0; i < requestFromSubscription.getDemand(); ++i) {
             final SubscriptionHasNext hasNext =
                     SubscriptionHasNext.of(subscriptionId, JsonArray.of(JsonObject.empty()),
-                            requestSubscription.getDittoHeaders());
+                            requestFromSubscription.getDittoHeaders());
             reply(hasNext);
             expectedResult.add(hasNext);
         }
-        final RequestSubscription futileRequest = expectMsgClass(RequestSubscription.class);
+        final RequestFromSubscription futileRequest = expectMsgClass(RequestFromSubscription.class);
         reply(SubscriptionComplete.of(subscriptionId, futileRequest.getDittoHeaders()));
         subscriberFuture.get(1L, TimeUnit.SECONDS);
         assertThat(subscriberFuture).isCompletedWithValue(expectedResult);

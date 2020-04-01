@@ -32,14 +32,13 @@ import org.eclipse.ditto.json.JsonCollectors;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
-import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.signals.commands.base.exceptions.GatewayInternalErrorException;
 import org.eclipse.ditto.signals.commands.thingsearch.subscription.CancelSubscription;
 import org.eclipse.ditto.signals.commands.thingsearch.subscription.CreateSubscription;
-import org.eclipse.ditto.signals.commands.thingsearch.subscription.RequestSubscription;
+import org.eclipse.ditto.signals.commands.thingsearch.subscription.RequestFromSubscription;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionComplete;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionCreated;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionFailed;
@@ -80,7 +79,7 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
         final CreateSubscription createSubscription = expectMsgClass(CreateSubscription.class);
         final String subscriptionId = disambiguate("my-empty-subscription");
         reply(SubscriptionCreated.of(subscriptionId, createSubscription.getDittoHeaders()));
-        expectMsgClass(RequestSubscription.class);
+        expectMsgClass(RequestFromSubscription.class);
         reply(SubscriptionComplete.of(subscriptionId, createSubscription.getDittoHeaders()));
         assertThat(createSubscription.getFilter()).contains(filter);
         assertThat(createSubscription.getOptions()).contains(options);
@@ -95,7 +94,7 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
         final CreateSubscription createSubscription = expectMsgClass(CreateSubscription.class);
         final String subscriptionId = disambiguate("my-nonempty-subscription");
         reply(SubscriptionCreated.of(subscriptionId, createSubscription.getDittoHeaders()));
-        assertThat(expectMsgClass(RequestSubscription.class).getDemand()).isEqualTo(2L);
+        assertThat(expectMsgClass(RequestFromSubscription.class).getDemand()).isEqualTo(2L);
         reply(hasNext(subscriptionId, 0, 5));
         reply(hasNext(subscriptionId, 5, 10));
         reply(SubscriptionComplete.of(subscriptionId, DittoHeaders.empty()));
@@ -109,7 +108,7 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
         final CreateSubscription createSubscription = expectMsgClass(CreateSubscription.class);
         final String subscriptionId = disambiguate("my-cancelled-subscription");
         reply(SubscriptionCreated.of(subscriptionId, createSubscription.getDittoHeaders()));
-        assertThat(expectMsgClass(RequestSubscription.class).getDemand()).isEqualTo(2L);
+        assertThat(expectMsgClass(RequestFromSubscription.class).getDemand()).isEqualTo(2L);
         reply(hasNext(subscriptionId, 0, 1));
         assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() ->
                 searchResults.forEach(page -> {
@@ -124,7 +123,7 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
         final CreateSubscription createSubscription = expectMsgClass(CreateSubscription.class);
         final String subscriptionId = disambiguate("my-failed-subscription");
         reply(SubscriptionCreated.of(subscriptionId, createSubscription.getDittoHeaders()));
-        expectMsgClass(RequestSubscription.class);
+        expectMsgClass(RequestFromSubscription.class);
         reply(hasNext(subscriptionId, 0, 1));
         reply(SubscriptionFailed.of(subscriptionId, GatewayInternalErrorException.newBuilder().message("sorry").build(),
                 DittoHeaders.empty()));

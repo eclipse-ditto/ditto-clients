@@ -29,7 +29,7 @@ import org.eclipse.ditto.signals.commands.thingsearch.ThingSearchCommand;
 import org.eclipse.ditto.signals.commands.thingsearch.exceptions.InvalidOptionException;
 import org.eclipse.ditto.signals.commands.thingsearch.subscription.CancelSubscription;
 import org.eclipse.ditto.signals.commands.thingsearch.subscription.CreateSubscription;
-import org.eclipse.ditto.signals.commands.thingsearch.subscription.RequestSubscription;
+import org.eclipse.ditto.signals.commands.thingsearch.subscription.RequestFromSubscription;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionComplete;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionCreated;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionFailed;
@@ -82,9 +82,9 @@ public final class ThingSearchPublisherVerificationTest extends PublisherVerific
                     final ThingSearchCommand<?> command = awaitUntilSent(messaging, ThingSearchCommand.class);
                     if (command instanceof CancelSubscription) {
                         break;
-                    } else if (command instanceof RequestSubscription) {
-                        final RequestSubscription requestSubscription = (RequestSubscription) command;
-                        long after = Math.min(i + requestSubscription.getDemand(), numberOfElements);
+                    } else if (command instanceof RequestFromSubscription) {
+                        final RequestFromSubscription requestFromSubscription = (RequestFromSubscription) command;
+                        long after = Math.min(i + requestFromSubscription.getDemand(), numberOfElements);
                         // defend against overflow
                         if (after <= 0) {
                             after = numberOfElements;
@@ -97,7 +97,7 @@ public final class ThingSearchPublisherVerificationTest extends PublisherVerific
                             break;
                         } else {
                             for (long j = 0; j < actualDemand; ++j) {
-                                reply(messaging, subscriptionHasNext(requestSubscription, i, j));
+                                reply(messaging, subscriptionHasNext(requestFromSubscription, i, j));
                             }
                             i = after;
                             if (i >= numberOfElements) {
@@ -113,7 +113,7 @@ public final class ThingSearchPublisherVerificationTest extends PublisherVerific
         });
     }
 
-    private static SubscriptionHasNext subscriptionHasNext(final RequestSubscription request,
+    private static SubscriptionHasNext subscriptionHasNext(final RequestFromSubscription request,
             final long i,
             final long j) {
         return SubscriptionHasNext.of(request.getSubscriptionId(),
