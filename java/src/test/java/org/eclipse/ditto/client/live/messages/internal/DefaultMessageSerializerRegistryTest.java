@@ -46,9 +46,6 @@ public final class DefaultMessageSerializerRegistryTest {
         sut = new DefaultMessageSerializerRegistry();
     }
 
-    /**
-     *
-     */
     @Test(expected = MessageSerializationException.class)
     public void registerMessageSerializerTwiceResultsInException() {
         final MessageSerializerKey<String> key = ImmutableMessageSerializerKey.of(TEXT_PLAIN, String.class);
@@ -63,9 +60,6 @@ public final class DefaultMessageSerializerRegistryTest {
         Assert.fail("Registering a messageSerializer for the twice should have failed!");
     }
 
-    /**
-     *
-     */
     @Test
     public void registerMessageSerializerAndUnregisterToNewRegister() {
         final MessageSerializerKey<String> key = ImmutableMessageSerializerKey.of(TEXT_PLAIN, String.class);
@@ -81,9 +75,6 @@ public final class DefaultMessageSerializerRegistryTest {
         sut.registerMessageSerializer(messageSerializer);
     }
 
-    /**
-     *
-     */
     @Test
     public void registerMessageSerializerAndCheckForExistance() {
         final MessageSerializerKey<String> key = ImmutableMessageSerializerKey.of(TEXT_PLAIN, String.class);
@@ -104,9 +95,6 @@ public final class DefaultMessageSerializerRegistryTest {
                 sut.containsMessageSerializerFor(key.getJavaType(), key.getSubject()));
     }
 
-    /**
-     *
-     */
     @Test
     public void findMessageSerializerWithDifferentSubjects() {
         final MessageSerializerKey<String>
@@ -132,9 +120,6 @@ public final class DefaultMessageSerializerRegistryTest {
                 sut.findSerializerFor(key2).get().getDeserializer());
     }
 
-    /**
-     *
-     */
     @Test
     public void findMessageSerializerWithDifferentSubjectsAndFallback() {
         final MessageSerializerKey<String> key0 = ImmutableMessageSerializerKey.of(TEXT_PLAIN, String.class);
@@ -180,9 +165,6 @@ public final class DefaultMessageSerializerRegistryTest {
                 sut.findSerializerFor("foo/bar", String.class).get().getSerializer());
     }
 
-    /**
-     *
-     */
     @Test
     public void findMessageSerializerWithTypeInheritance() {
         final MessageSerializerKey<JsonValue> key0 =
@@ -211,9 +193,6 @@ public final class DefaultMessageSerializerRegistryTest {
                 sut.findSerializerFor(JsonArray.class).get().getSerializer());
     }
 
-    /**
-     *
-     */
     @Test
     public void findMessageSerializerKey() {
         sut.registerMessageSerializer(MessageSerializers.textPlainAsString());
@@ -234,9 +213,6 @@ public final class DefaultMessageSerializerRegistryTest {
                 sut.findKeyFor(ByteBuffer.class).get().getContentType());
     }
 
-    /**
-     *
-     */
     @Test
     public void findUnkownMessageSerializerKey() {
         sut.registerMessageSerializer(MessageSerializers.textPlainAsString());
@@ -247,9 +223,6 @@ public final class DefaultMessageSerializerRegistryTest {
                 sut.findKeyFor(JsonValue.class).isPresent());
     }
 
-    /**
-     *
-     */
     @Test
     public void registerMultipleSerialzersForSameContentType() {
         final MessageSerializerKey<JsonValue> key0 =

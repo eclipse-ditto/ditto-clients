@@ -35,17 +35,12 @@ public final class ImmutableFeatureEventFactoryTest {
 
     private ImmutableFeatureEventFactory underTest = null;
 
-    /**
-     *
-     */
+
     @Before
     public void setUp() {
         underTest = ImmutableFeatureEventFactory.getInstance(SCHEMA_VERSION, THING_ID, FLUX_CAPACITOR_ID);
     }
 
-    /**
-     *
-     */
     @Test
     public void assertImmutability() {
         assertInstancesOf(ImmutableFeatureEventFactory.class,
@@ -53,17 +48,11 @@ public final class ImmutableFeatureEventFactoryTest {
                 provided(ThingEventFactory.class).isAlsoImmutable());
     }
 
-    /**
-     *
-     */
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(ImmutableFeatureEventFactory.class).usingGetClass().verify();
     }
 
-    /**
-     *
-     */
     @Test
     public void toStringReturnsExpected() {
         assertThat(underTest.toString())

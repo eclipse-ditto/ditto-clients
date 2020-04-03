@@ -29,25 +29,17 @@ public final class OptionsValidatorTest {
 
     private OptionsValidator underTest = null;
 
-    /**
-     *
-     */
+
     @Before
     public void setUp() {
         underTest = new OptionsValidator();
     }
 
-    /**
-     *
-     */
     @Test
     public void assertImmutability() {
         assertInstancesOf(OptionsValidator.class, areImmutable());
     }
 
-    /**
-     *
-     */
     @Test
     public void allOptionsHaveDifferentNames() {
         final Option<?> responseRequiredOption = createOptionMock(OptionName.Modify.RESPONSE_REQUIRED, true);
@@ -56,9 +48,6 @@ public final class OptionsValidatorTest {
         underTest.accept(options);
     }
 
-    /**
-     *
-     */
     @Test
     public void twoOptionsHaveSameName() {
         final Option<?> firstOption = createOptionMock(OptionName.Modify.RESPONSE_REQUIRED, false);

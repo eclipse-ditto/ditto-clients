@@ -22,9 +22,6 @@ import org.junit.Test;
  */
 public final class OptionsTest {
 
-    /**
-     *
-     */
     @Test
     public void assertImmutability() {
         assertInstancesOf(Options.class, areImmutable());

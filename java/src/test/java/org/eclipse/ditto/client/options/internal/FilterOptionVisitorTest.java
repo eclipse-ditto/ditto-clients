@@ -27,17 +27,12 @@ public final class FilterOptionVisitorTest {
 
     private FilterOptionVisitor underTest = null;
 
-    /**
-     *
-     */
+
     @Before
     public void setUp() {
         underTest = new FilterOptionVisitor();
     }
 
-    /**
-     *
-     */
     @Test
     public void tryToVisitNullOption() {
         assertThatExceptionOfType(NullPointerException.class)
@@ -46,9 +41,6 @@ public final class FilterOptionVisitorTest {
                 .withMessageContaining("null");
     }
 
-    /**
-     *
-     */
     @Test
     public void getNoValueIfOptionNameIsUnexpected() {
         final String value = "Booh!";
@@ -64,9 +56,6 @@ public final class FilterOptionVisitorTest {
         assertThat(underTest.getValue()).isEmpty();
     }
 
-    /**
-     *
-     */
     @Test
     public void optionValueTypeDiffersFromExpectedType() {
         final boolean value = false;
@@ -77,9 +66,6 @@ public final class FilterOptionVisitorTest {
                 .withCauseInstanceOf(ClassCastException.class);
     }
 
-    /**
-     *
-     */
     @Test
     public void optionValueIsExpected() {
         final CharSequence filter = "gt(attributes/foo,42)";

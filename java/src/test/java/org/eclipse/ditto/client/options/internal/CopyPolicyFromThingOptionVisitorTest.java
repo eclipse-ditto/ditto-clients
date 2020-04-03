@@ -28,17 +28,12 @@ public final class CopyPolicyFromThingOptionVisitorTest {
 
     private CopyPolicyFromThingOptionVisitor underTest = null;
 
-    /**
-     *
-     */
+
     @Before
     public void setUp() {
         underTest = new CopyPolicyFromThingOptionVisitor();
     }
 
-    /**
-     *
-     */
     @Test
     public void tryToVisitNullOption() {
         assertThatExceptionOfType(NullPointerException.class)
@@ -47,9 +42,6 @@ public final class CopyPolicyFromThingOptionVisitorTest {
                 .withMessageContaining("null");
     }
 
-    /**
-     *
-     */
     @Test
     public void getNoValueIfOptionNameIsUnexpected() {
         final String value = "Booh!";
@@ -65,9 +57,6 @@ public final class CopyPolicyFromThingOptionVisitorTest {
         assertThat(underTest.getValue()).isEmpty();
     }
 
-    /**
-     *
-     */
     @Test
     public void optionValueTypeDiffersFromExpectedType() {
         final String value = "Booh!";
@@ -78,9 +67,6 @@ public final class CopyPolicyFromThingOptionVisitorTest {
                 .withCauseInstanceOf(ClassCastException.class);
     }
 
-    /**
-     *
-     */
     @Test
     public void optionValueIsExpected() {
         final ThingId thingId = ThingId.inDefaultNamespace("thing");

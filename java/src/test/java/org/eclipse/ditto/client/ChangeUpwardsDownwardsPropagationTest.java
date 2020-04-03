@@ -227,7 +227,6 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
         assertEquals(0, latch.getCount());
     }
 
-
     @Test
     public void testUpwardsRegisterForThingChangeWhenThingIsDeleted() throws Exception {
         // start consuming changes:

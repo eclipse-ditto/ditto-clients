@@ -28,18 +28,13 @@ import nl.jqno.equalsverifier.EqualsVerifier;
  */
 public class ImmutableRepliableMessageTest {
 
-    /**
-     *
-     */
+
     @Test
     public void assertImmutability() {
         MutabilityAssert.assertInstancesOf(ImmutableRepliableMessage.class, areImmutable(), provided(
                 Message.class, Consumer.class).areAlsoImmutable());
     }
 
-    /**
-     *
-     */
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(ImmutableRepliableMessage.class).verify();

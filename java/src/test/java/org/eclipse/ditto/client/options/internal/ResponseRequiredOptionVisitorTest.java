@@ -27,17 +27,12 @@ public final class ResponseRequiredOptionVisitorTest {
 
     private ResponseRequiredOptionVisitor underTest = null;
 
-    /**
-     *
-     */
+
     @Before
     public void setUp() {
         underTest = new ResponseRequiredOptionVisitor();
     }
 
-    /**
-     *
-     */
     @Test
     public void tryToVisitNullOption() {
         assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> underTest.visit(null))
@@ -45,9 +40,6 @@ public final class ResponseRequiredOptionVisitorTest {
                 .withMessageContaining("null");
     }
 
-    /**
-     *
-     */
     @Test
     public void getNoValueIfOptionNameIsUnexpected() {
         final String value = "Booh!";
@@ -63,9 +55,6 @@ public final class ResponseRequiredOptionVisitorTest {
         assertThat(underTest.getValue()).isEmpty();
     }
 
-    /**
-     *
-     */
     @Test
     public void optionValueTypeDiffersFromExpectedType() {
         final String value = "Booh!";
@@ -76,9 +65,6 @@ public final class ResponseRequiredOptionVisitorTest {
                 .withCauseInstanceOf(ClassCastException.class);
     }
 
-    /**
-     *
-     */
     @Test
     public void optionValueIsExpected() {
         final boolean responseRequired = false;

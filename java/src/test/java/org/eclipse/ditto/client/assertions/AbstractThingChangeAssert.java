@@ -20,9 +20,7 @@ import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.model.things.ThingId;
 
-/**
- *
- */
+
 public abstract class AbstractThingChangeAssert<S extends AbstractAssert<S, T>, T extends Change>
         extends AbstractAssert<S, T> {
 

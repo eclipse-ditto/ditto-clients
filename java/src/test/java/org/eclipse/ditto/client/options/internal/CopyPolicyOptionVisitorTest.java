@@ -28,17 +28,12 @@ public final class CopyPolicyOptionVisitorTest {
 
     private CopyPolicyOptionVisitor underTest = null;
 
-    /**
-     *
-     */
+
     @Before
     public void setUp() {
         underTest = new CopyPolicyOptionVisitor();
     }
 
-    /**
-     *
-     */
     @Test
     public void tryToVisitNullOption() {
         assertThatExceptionOfType(NullPointerException.class)
@@ -47,9 +42,6 @@ public final class CopyPolicyOptionVisitorTest {
                 .withMessageContaining("null");
     }
 
-    /**
-     *
-     */
     @Test
     public void getNoValueIfOptionNameIsUnexpected() {
         final String value = "Booh!";
@@ -65,9 +57,6 @@ public final class CopyPolicyOptionVisitorTest {
         assertThat(underTest.getValue()).isEmpty();
     }
 
-    /**
-     *
-     */
     @Test
     public void optionValueTypeDiffersFromExpectedType() {
         final String value = "Booh!";
@@ -78,9 +67,6 @@ public final class CopyPolicyOptionVisitorTest {
                 .withCauseInstanceOf(ClassCastException.class);
     }
 
-    /**
-     *
-     */
     @Test
     public void optionValueIsExpected() {
         final PolicyId policyId = PolicyId.inNamespaceWithRandomName("org.eclipse.ditto");

@@ -169,9 +169,6 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void attributeDeletedReturnsExpected() {
         final AttributeDeleted attributeDeleted = underTest.attributeDeleted(THING_ID, ATTRIBUTE_JSON_POINTER);
@@ -188,9 +185,6 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void attributeModifiedReturnsExpected() {
         final AttributeModified attributeModified = underTest.attributeModified(THING_ID, ATTRIBUTE_JSON_POINTER,
@@ -208,9 +202,6 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void attributesCreatedReturnsExpected() {
         final AttributesCreated attributesCreated = underTest.attributesCreated(THING_ID, ATTRIBUTES);
@@ -227,9 +218,6 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void attributesDeletedReturnsExpected() {
         final AttributesDeleted attributesDeleted = underTest.attributesDeleted(THING_ID);
@@ -246,9 +234,6 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void attributesModifiedReturnsExpected() {
         final AttributesModified attributesModified = underTest.attributesModified(THING_ID, ATTRIBUTES);
@@ -265,9 +250,6 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void featureCreatedReturnsExpected() {
         final FeatureCreated featureCreated = underTest.featureCreated(THING_ID, FLUX_CAPACITOR);
@@ -284,9 +266,6 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void featureDeletedReturnsExpected() {
         final FeatureDeleted featureDeleted = underTest.featureDeleted(THING_ID, FLUX_CAPACITOR_ID);
@@ -303,9 +282,6 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void featureModifiedReturnsExpected() {
         final FeatureModified featureModified = underTest.featureModified(THING_ID, FLUX_CAPACITOR);
@@ -322,9 +298,6 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void featuresCreatedReturnsExpected() {
         final FeaturesCreated featuresCreated = underTest.featuresCreated(THING_ID, FEATURES);
@@ -341,9 +314,6 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void featuresDeletedReturnsExpected() {
         final FeaturesDeleted featuresDeleted = underTest.featuresDeleted(THING_ID);
@@ -360,9 +330,6 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void featuresModifiedReturnsExpected() {
         final FeaturesModified featuresModified = underTest.featuresModified(THING_ID, FEATURES);
@@ -379,9 +346,6 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void featurePropertiesCreatedReturnsExpected() {
         final FeaturePropertiesCreated featurePropertiesCreated =
@@ -399,9 +363,6 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void featurePropertiesDeletedReturnsExpected() {
         final FeaturePropertiesDeleted featurePropertiesDeleted =
@@ -419,9 +380,6 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void featurePropertiesModifiedReturnsExpected() {
         final FeaturePropertiesModified featurePropertiesModified =
@@ -439,9 +397,6 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void featurePropertyCreatedReturnsExpected() {
         final FeaturePropertyCreated featurePropertyCreated =
@@ -460,9 +415,6 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void featurePropertyDeletedReturnsExpected() {
         final FeaturePropertyDeleted featurePropertyDeleted =
@@ -481,9 +433,6 @@ public final class ImmutableGlobalEventFactoryTest {
                 .hasSchemaVersion(underTest.getSchemaVersion());
     }
 
-    /**
-     *
-     */
     @Test
     public void featurePropertyModifiedReturnsExpected() {
         final FeaturePropertyModified featurePropertyModified =

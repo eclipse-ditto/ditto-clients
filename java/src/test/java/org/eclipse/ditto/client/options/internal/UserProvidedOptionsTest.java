@@ -44,27 +44,19 @@ public final class UserProvidedOptionsTest {
     private Option<?>[] options = null;
     private UserProvidedOptions underTest = null;
 
-    /**
-     *
-     */
+
     @Before
     public void setUp() {
         options = new Option<?>[]{responseRequiredOptionMock};
         underTest = UserProvidedOptions.of(options);
     }
 
-    /**
-     *
-     */
     @Test
     public void assertImmutability() {
         assertInstancesOf(UserProvidedOptions.class, areImmutable(), provided(Option.class).isAlsoImmutable(),
                 assumingFields("options").areSafelyCopiedUnmodifiableCollectionsWithImmutableElements());
     }
 
-    /**
-     *
-     */
     @Test
     public void tryToCreateInstanceWithNullOptionArray() {
         assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> UserProvidedOptions.of(null))
@@ -72,9 +64,6 @@ public final class UserProvidedOptionsTest {
                 .withMessageContaining("null");
     }
 
-    /**
-     *
-     */
     @Test
     public void tryToAcceptNullVisitor() {
         assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> underTest.accept(null))
@@ -82,9 +71,6 @@ public final class UserProvidedOptionsTest {
                 .withMessageContaining("null");
     }
 
-    /**
-     *
-     */
     @Test
     public void visitorIsProvidedWithAllOptions() {
         final OptionVisitor<List<Option<?>>> visitor = new OptionCollectingVisitor();
@@ -93,9 +79,6 @@ public final class UserProvidedOptionsTest {
         assertThat(visitor.getValue()).contains(Arrays.asList(options));
     }
 
-    /**
-     *
-     */
     @Test
     public void visitorIsFinishedAfterFirstOption() {
         final OptionVisitor<List<Option<?>>> visitor = new OptionCollectingVisitor(1);

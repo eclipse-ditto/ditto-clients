@@ -29,17 +29,12 @@ public final class ExtraFieldsOptionVisitorTest {
 
     private ExtraFieldsOptionVisitor underTest = null;
 
-    /**
-     *
-     */
+
     @Before
     public void setUp() {
         underTest = new ExtraFieldsOptionVisitor();
     }
 
-    /**
-     *
-     */
     @Test
     public void tryToVisitNullOption() {
         assertThatExceptionOfType(NullPointerException.class)
@@ -48,9 +43,6 @@ public final class ExtraFieldsOptionVisitorTest {
                 .withMessageContaining("null");
     }
 
-    /**
-     *
-     */
     @Test
     public void getNoValueIfOptionNameIsUnexpected() {
         final String value = "Booh!";
@@ -66,9 +58,6 @@ public final class ExtraFieldsOptionVisitorTest {
         assertThat(underTest.getValue()).isEmpty();
     }
 
-    /**
-     *
-     */
     @Test
     public void optionValueTypeDiffersFromExpectedType() {
         final boolean value = false;
@@ -79,9 +68,6 @@ public final class ExtraFieldsOptionVisitorTest {
                 .withCauseInstanceOf(ClassCastException.class);
     }
 
-    /**
-     *
-     */
     @Test
     public void optionValueIsExpected() {
         final JsonFieldSelector fieldSelector = JsonFactory.newFieldSelector("thingId,attributes,features/foo");

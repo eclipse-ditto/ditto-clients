@@ -35,45 +35,35 @@ public final class ConsumeOptionsEvaluatorTest {
 
     private OptionsEvaluator.Modify underTest = null;
 
-    /**
-     *
-     */
+
     @Before
     public void setUp() {
         final Option<?>[] options = new Option<?>[]{RESPONSE_REQUIRED_OPTION};
         underTest = OptionsEvaluator.forModifyOptions(options);
     }
 
-    /**
-     *
-     */
+
     @Test
     public void assertThatOptionsEvaluatorIsImmutable() {
         assertInstancesOf(OptionsEvaluator.class, areImmutable(),
                 provided(UserProvidedOptions.class).isAlsoImmutable());
     }
 
-    /**
-     *
-     */
+
     @Test
     public void assertImmutability() {
         assertInstancesOf(OptionsEvaluator.Modify.class, areImmutable(),
                 provided(OptionsEvaluator.class).isAlsoImmutable());
     }
 
-    /**
-     *
-     */
+
     @Test
     public void tryToCreateInstanceWithNullOptions() {
         assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> OptionsEvaluator.forModifyOptions(null))
                 .withMessage("The options must not be null!");
     }
 
-    /**
-     *
-     */
+
     @Test
     public void createInstanceWithEmptyOptions() {
         final OptionsEvaluator.Modify underTest = OptionsEvaluator.forModifyOptions(new Option<?>[0]);
@@ -81,17 +71,13 @@ public final class ConsumeOptionsEvaluatorTest {
         assertThat(underTest).isNotNull();
     }
 
-    /**
-     *
-     */
+
     @Test
     public void getResponseTimeoutReturnsExpectedIfProvided() {
         assertThat(underTest.isResponseRequired()).contains(RESPONSE_REQUIRED_OPTION.getValue());
     }
 
-    /**
-     *
-     */
+
     @Test
     public void getResponseTimeoutReturnsEmptyOptionalIfNotProvided() {
         final Option<?>[] options = new Option<?>[]{};

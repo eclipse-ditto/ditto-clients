@@ -35,17 +35,12 @@ public final class ImmutableThingEventFactoryTest {
 
     private ImmutableThingEventFactory underTest = null;
 
-    /**
-     *
-     */
+
     @Before
     public void setUp() {
         underTest = ImmutableThingEventFactory.getInstance(SCHEMA_VERSION, TestConstants.Thing.THING_ID);
     }
 
-    /**
-     *
-     */
     @Test
     public void assertImmutability() {
         assertInstancesOf(ImmutableThingEventFactory.class,
@@ -53,17 +48,11 @@ public final class ImmutableThingEventFactoryTest {
                 provided(GlobalEventFactory.class, ThingId.class).areAlsoImmutable());
     }
 
-    /**
-     *
-     */
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(ImmutableThingEventFactory.class).usingGetClass().verify();
     }
 
-    /**
-     *
-     */
     @Test
     public void toStringReturnsExpected() {
         assertThat(underTest.toString())
