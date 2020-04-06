@@ -17,21 +17,21 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.eclipse.ditto.client.options.internal.MockOptionFactory.createOptionMock;
 
 import org.eclipse.ditto.client.options.OptionName;
-import org.eclipse.ditto.json.JsonFactory;
-import org.eclipse.ditto.json.JsonFieldSelector;
+import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Unit test for {@link ExtraFieldsOptionVisitor}.
+ * Unit test for {@link DittoHeadersOptionVisitor}.
  */
-public final class ExtraFieldsOptionVisitorTest {
+public final class DittoHeadersOptionVisitorTest {
 
-    private ExtraFieldsOptionVisitor underTest = null;
+    private DittoHeadersOptionVisitor underTest = null;
+
 
     @Before
     public void setUp() {
-        underTest = new ExtraFieldsOptionVisitor();
+        underTest = new DittoHeadersOptionVisitor();
     }
 
     @Test
@@ -62,20 +62,20 @@ public final class ExtraFieldsOptionVisitorTest {
         final boolean value = false;
 
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> underTest.visit(createOptionMock(OptionName.Consumption.EXTRA_FIELDS, value)))
+                .isThrownBy(() -> underTest.visit(createOptionMock(OptionName.Global.DITTO_HEADERS, value)))
                 .withMessage(String.format("The option value <%s> is not of expected type!", value))
                 .withCauseInstanceOf(ClassCastException.class);
     }
 
     @Test
     public void optionValueIsExpected() {
-        final JsonFieldSelector fieldSelector = JsonFactory.newFieldSelector("thingId,attributes,features/foo");
+        final DittoHeaders dittoHeaders = DittoHeaders.newBuilder().correlationId("123456").build();
 
         final boolean isFinished =
-                underTest.visit(createOptionMock(OptionName.Consumption.EXTRA_FIELDS, fieldSelector));
+                underTest.visit(createOptionMock(OptionName.Global.DITTO_HEADERS, dittoHeaders));
 
         assertThat(isFinished).isTrue();
-        assertThat(underTest.getValue()).contains(fieldSelector);
+        assertThat(underTest.getValue()).contains(dittoHeaders);
     }
 
 }

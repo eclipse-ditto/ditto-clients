@@ -80,6 +80,7 @@ import org.eclipse.ditto.protocoladapter.JsonifiableAdaptable;
 import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.protocoladapter.UnknownCommandException;
+import org.eclipse.ditto.signals.acks.base.Acknowledgements;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.base.Command;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
@@ -362,7 +363,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     @Override
     public void send(final Message<?> message, final TopicPath.Channel channel) {
-        final DittoHeadersBuilder headersBuilder = DittoHeaders.newBuilder();
+        final DittoHeadersBuilder<?, ?> headersBuilder = DittoHeaders.newBuilder();
         final Optional<String> optionalCorrelationId = message.getCorrelationId();
         optionalCorrelationId.ifPresent(headersBuilder::correlationId);
         final DittoHeaders dittoHeaders = headersBuilder.build();
@@ -500,7 +501,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     @Override
-    public void sendSignal(final Signal<?> signal) {
+    public void emitSignal(final Signal<?> signal) {
         try {
             final Signal<?> adjustedSignal = signal.setDittoHeaders(adjustHeadersForLive(signal));
             final Adaptable adaptable = protocolAdapter.toAdaptable(adjustedSignal);
@@ -950,6 +951,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                         cre.getClass().getSimpleName(), cre.getMessage(), description);
             }
             commandResponseConsumer.accept((ThingCommandResponse<?>) signal);
+        } else if (signal instanceof Acknowledgements) {
+            commandResponseConsumer.accept((Acknowledgements) signal);
         } else if (signal instanceof ThingEvent) {
             LOGGER.debug("Client <{}>: Received TWIN Event JSON: {}", sessionId, message);
             handleThingEvent(correlationId, (ThingEvent<?>) signal, TwinImpl.CONSUME_TWIN_EVENTS_HANDLER,

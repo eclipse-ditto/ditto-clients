@@ -15,9 +15,10 @@ package org.eclipse.ditto.client.options;
 import java.util.Arrays;
 
 import org.eclipse.ditto.client.management.CommonManagement;
+import org.eclipse.ditto.json.JsonFieldSelector;
+import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.model.things.ThingId;
-import org.eclipse.ditto.json.JsonFieldSelector;
 
 /**
  * This utility class allows to create {@link Option}s with custom values the Ditto Client is aware of.
@@ -28,6 +29,21 @@ public final class Options {
 
     private Options() {
         throw new AssertionError();
+    }
+
+    /**
+     * Creates an option for specifying additional/custom DittoHeaders to send along together with any command/message
+     * accepting options.
+     * <p>
+     * DittoHeader passed in here will be overwritten by more specific {@link Options}, when specified.
+     * </p>
+     *
+     * @param dittoHeaders the additional DittoHeaders to send along with an operation.
+     * @return the new option.
+     * @since 1.1.0
+     */
+    public static Option<DittoHeaders> dittoHeaders(final DittoHeaders dittoHeaders) {
+        return DefaultOption.newInstance(OptionName.Global.DITTO_HEADERS, dittoHeaders);
     }
 
     /**

@@ -58,6 +58,7 @@ import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.base.WithOptionalEntity;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThings;
@@ -365,8 +366,9 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
 
         return new SendTerminator<Thing>(messagingProvider, responseForwarder, channel, command)
                 .applyModify(response -> {
-                    if (response != null) {
-                        return ThingsModelFactory.newThing(response.getEntity(response.getImplementedSchemaVersion())
+                    if (response instanceof WithOptionalEntity) {
+                        return ThingsModelFactory.newThing(
+                                ((WithOptionalEntity) response).getEntity(response.getImplementedSchemaVersion())
                                 .orElse(JsonFactory.nullObject()).asObject());
                     } else {
                         return null;
@@ -436,8 +438,8 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
 
         return new SendTerminator<Optional<Thing>>(messagingProvider, responseForwarder, channel,
                 outgoingMessageFactory.putThing(thing, initialPolicy, options)).applyModify(response -> {
-            if (response != null) {
-                return response.getEntity(response.getImplementedSchemaVersion())
+            if (response instanceof WithOptionalEntity) {
+                return ((WithOptionalEntity) response).getEntity(response.getImplementedSchemaVersion())
                         .map(JsonValue::asObject)
                         .map(ThingsModelFactory::newThing);
             } else {

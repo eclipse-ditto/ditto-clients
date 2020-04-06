@@ -70,10 +70,12 @@ public interface MessagingProvider {
     CompletableFuture<Adaptable> sendAdaptable(Adaptable adaptable);
 
     /**
-     * TODO TJ remove again after search branch was merged - this should be easier then!
-     * @param signal
+     * Emit a Signal message in a fire-and-forget manner. The signal is translated to an adaptable before emitting.
+     *
+     * @param signal the Signal to emit.
+     * @since 1.1.0
      */
-    void sendSignal(Signal<?> signal);
+    void emitSignal(Signal<?> signal);
 
     /**
      * Send message using the underlying connection.

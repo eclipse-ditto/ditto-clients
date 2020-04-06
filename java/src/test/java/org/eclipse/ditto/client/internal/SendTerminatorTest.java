@@ -23,6 +23,7 @@ import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.policies.Label;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.policies.PolicyCommandResponse;
 import org.eclipse.ditto.signals.commands.policies.modify.DeletePolicyEntryResponse;
 import org.eclipse.ditto.signals.commands.policies.modify.PolicyModifyCommand;
@@ -101,7 +102,7 @@ public final class SendTerminatorTest {
         final SendTerminator<String> underTest =
                 new SendTerminator<>(messagingProvider, responseForwarder, channel, thingModifyCommand);
 
-        final CompletableFuture<String> promise = underTest.applyModify(ThingCommandResponse::getName);
+        final CompletableFuture<String> promise = underTest.applyModify(Signal::getName);
         final boolean isPromiseDoneBeforeBeingHandled = promise.isDone();
         responseForwarder.handle(commandResponse);
 

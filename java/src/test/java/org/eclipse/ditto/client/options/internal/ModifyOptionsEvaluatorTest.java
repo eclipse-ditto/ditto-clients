@@ -29,7 +29,7 @@ import org.mockito.junit.MockitoJUnitRunner;
  * Unit test for {@link OptionsEvaluator.Modify}.
  */
 @RunWith(MockitoJUnitRunner.class)
-public final class ConsumeOptionsEvaluatorTest {
+public final class ModifyOptionsEvaluatorTest {
 
     private static final Option<Boolean> RESPONSE_REQUIRED_OPTION = Options.Modify.responseRequired(false);
 
@@ -42,13 +42,11 @@ public final class ConsumeOptionsEvaluatorTest {
         underTest = OptionsEvaluator.forModifyOptions(options);
     }
 
-
     @Test
     public void assertThatOptionsEvaluatorIsImmutable() {
         assertInstancesOf(OptionsEvaluator.class, areImmutable(),
                 provided(UserProvidedOptions.class).isAlsoImmutable());
     }
-
 
     @Test
     public void assertImmutability() {
@@ -56,13 +54,11 @@ public final class ConsumeOptionsEvaluatorTest {
                 provided(OptionsEvaluator.class).isAlsoImmutable());
     }
 
-
     @Test
     public void tryToCreateInstanceWithNullOptions() {
         assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> OptionsEvaluator.forModifyOptions(null))
                 .withMessage("The options must not be null!");
     }
-
 
     @Test
     public void createInstanceWithEmptyOptions() {
@@ -71,12 +67,10 @@ public final class ConsumeOptionsEvaluatorTest {
         assertThat(underTest).isNotNull();
     }
 
-
     @Test
     public void getResponseTimeoutReturnsExpectedIfProvided() {
         assertThat(underTest.isResponseRequired()).contains(RESPONSE_REQUIRED_OPTION.getValue());
     }
-
 
     @Test
     public void getResponseTimeoutReturnsEmptyOptionalIfNotProvided() {

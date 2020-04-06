@@ -115,7 +115,7 @@ public class MockMessagingProvider implements MessagingProvider {
     }
 
     @Override
-    public void sendSignal(final Signal<?> signal) {
+    public void emitSignal(final Signal<?> signal) {
         // ignore
     }
 
