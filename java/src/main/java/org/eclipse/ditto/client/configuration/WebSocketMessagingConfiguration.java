@@ -83,7 +83,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
 
         private static final List<String> ALLOWED_URI_SCHEME = Arrays.asList("wss", "ws");
         private static final String WS_PATH = "/ws/";
-        private static final String WS_URL_TEMPLATE = "/ws/%d";
+        private static final String WS_PATH_REGEX = "/ws/(1|2)/?";
 
         private JsonSchemaVersion jsonSchemaVersion = JsonSchemaVersion.LATEST;
         private URI endpointUri;
@@ -137,7 +137,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         }
 
         private static URI appendWsPathIfNecessary(final URI baseUri, final JsonSchemaVersion schemaVersion) {
-            if (needToAppendWsPath(baseUri, schemaVersion)) {
+            if (needToAppendWsPath(baseUri)) {
                 final String pathWithoutTrailingSlashes = baseUri.getPath().replaceFirst("/+$", "");
                 final String newPath = pathWithoutTrailingSlashes + WS_PATH + schemaVersion.toString();
                 return baseUri.resolve(newPath);
@@ -146,8 +146,8 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
             }
         }
 
-        private static boolean needToAppendWsPath(final URI baseUri, final JsonSchemaVersion schemaVersion) {
-            final Pattern pattern = Pattern.compile(String.format(WS_URL_TEMPLATE, schemaVersion.toInt()));
+        private static boolean needToAppendWsPath(final URI baseUri) {
+            final Pattern pattern = Pattern.compile(WS_PATH_REGEX);
             final Matcher matcher = pattern.matcher(baseUri.toString());
             return !matcher.find();
         }
