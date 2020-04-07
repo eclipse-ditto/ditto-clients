@@ -20,6 +20,8 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -81,6 +83,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
 
         private static final List<String> ALLOWED_URI_SCHEME = Arrays.asList("wss", "ws");
         private static final String WS_PATH = "/ws/";
+        private static final String WS_URL_TEMPLATE = "/ws/%d";
 
         private JsonSchemaVersion jsonSchemaVersion = JsonSchemaVersion.LATEST;
         private URI endpointUri;
@@ -128,15 +131,25 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
 
         @Override
         public MessagingConfiguration build() {
-            final URI wsEndpointUri = appendWsPath(this.endpointUri, jsonSchemaVersion);
+            final URI wsEndpointUri= appendWsPathIfNecessary(this.endpointUri, jsonSchemaVersion);
             return new WebSocketMessagingConfiguration(jsonSchemaVersion, wsEndpointUri, reconnectEnabled,
                     proxyConfiguration, trustStoreConfiguration);
         }
 
-        private static URI appendWsPath(final URI baseUri, final JsonSchemaVersion schemaVersion) {
-            final String pathWithoutTrailingSlashes = baseUri.getPath().replaceFirst("/+$", "");
-            final String newPath = pathWithoutTrailingSlashes + WS_PATH + schemaVersion.toString();
-            return baseUri.resolve(newPath);
+        private static URI appendWsPathIfNecessary(final URI baseUri, final JsonSchemaVersion schemaVersion) {
+            if (needToAppendWsPath(baseUri, schemaVersion)) {
+                final String pathWithoutTrailingSlashes = baseUri.getPath().replaceFirst("/+$", "");
+                final String newPath = pathWithoutTrailingSlashes + WS_PATH + schemaVersion.toString();
+                return baseUri.resolve(newPath);
+            } else {
+                return baseUri;
+            }
+        }
+
+        private static boolean needToAppendWsPath(final URI baseUri, final JsonSchemaVersion schemaVersion) {
+            final Pattern pattern = Pattern.compile(String.format(WS_URL_TEMPLATE, schemaVersion.toInt()));
+            final Matcher matcher = pattern.matcher(baseUri.toString());
+            return !matcher.find();
         }
 
     }
