@@ -12,9 +12,9 @@
  */
 package org.eclipse.ditto.client.configuration;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.checkArgument;
-import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
+import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 
+import javax.annotation.Nullable;
 import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -23,9 +23,8 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.Nullable;
-
-import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
+import static org.eclipse.ditto.model.base.common.ConditionChecker.checkArgument;
+import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
 /**
  * Provides Ditto WebSocket messaging specific configuration.
@@ -138,10 +137,11 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
 
         private static URI appendWsPathIfNecessary(final URI baseUri, final JsonSchemaVersion schemaVersion) {
             if (needToAppendWsPath(baseUri)) {
-                final String pathWithoutTrailingSlashes = baseUri.getPath().replaceFirst("/+$", "");
+                final String pathWithoutTrailingSlashes = removeTrailingSlashFromPath(baseUri.getPath());
                 final String newPath = pathWithoutTrailingSlashes + WS_PATH + schemaVersion.toString();
                 return baseUri.resolve(newPath);
             } else {
+                checkIfBaseUriAndSchemaVersionMatch(baseUri, schemaVersion);
                 return baseUri;
             }
         }
@@ -150,6 +150,20 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
             final Pattern pattern = Pattern.compile(WS_PATH_REGEX);
             final Matcher matcher = pattern.matcher(baseUri.toString());
             return !matcher.find();
+        }
+
+        private static void checkIfBaseUriAndSchemaVersionMatch(final URI baseUri, final JsonSchemaVersion schemaVersion) {
+            final String path = removeTrailingSlashFromPath(baseUri.getPath());
+            final String apiVersion = path.substring(path.length() - 1, path.length());
+            if (!schemaVersion.toString().equals(apiVersion)) {
+                throw new IllegalArgumentException("The jsonSchemaVersion and apiVersion of the endpoint do not match. " +
+                        "Either remove the ws path from the endpoint or " +
+                        "use the same jsonSchemaVersion as in the ws path of the endpoint.");
+            }
+        }
+
+        private static String removeTrailingSlashFromPath(final String path) {
+            return path.replaceFirst("/+$", "");
         }
 
     }
