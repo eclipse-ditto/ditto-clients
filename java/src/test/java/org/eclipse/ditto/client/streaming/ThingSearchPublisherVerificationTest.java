@@ -33,7 +33,7 @@ import org.eclipse.ditto.signals.commands.thingsearch.subscription.RequestFromSu
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionComplete;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionCreated;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionFailed;
-import org.eclipse.ditto.signals.events.thingsearch.SubscriptionHasNext;
+import org.eclipse.ditto.signals.events.thingsearch.SubscriptionHasNextPage;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.tck.PublisherVerification;
 import org.reactivestreams.tck.TestEnvironment;
@@ -41,7 +41,7 @@ import org.reactivestreams.tck.TestEnvironment;
 /**
  * Verify reactive-streams compatibility of {@link ThingSearchPublisher}.
  */
-public final class ThingSearchPublisherVerificationTest extends PublisherVerification<SubscriptionHasNext> {
+public final class ThingSearchPublisherVerificationTest extends PublisherVerification<SubscriptionHasNextPage> {
 
     private static final ProtocolAdapter PROTOCOL_ADAPTER = DittoProtocolAdapter.of(HeaderTranslator.empty());
 
@@ -51,17 +51,17 @@ public final class ThingSearchPublisherVerificationTest extends PublisherVerific
     }
 
     @Override
-    public Publisher<SubscriptionHasNext> createPublisher(final long l) {
+    public Publisher<SubscriptionHasNextPage> createPublisher(final long l) {
         final CreateSubscription createSubscription = CreateSubscription.of(DittoHeaders.empty());
         final MockMessagingProvider messaging = new MockMessagingProvider();
-        final Publisher<SubscriptionHasNext> underTest =
+        final Publisher<SubscriptionHasNextPage> underTest =
                 ThingSearchPublisher.of(createSubscription, PROTOCOL_ADAPTER, messaging);
         mockSearchBackEnd(messaging, l);
         return underTest;
     }
 
     @Override
-    public Publisher<SubscriptionHasNext> createFailedPublisher() {
+    public Publisher<SubscriptionHasNextPage> createFailedPublisher() {
         // ThingSearchPublisher cannot fail before the back-end signals failure,
         // which only happens after the first Subscription.request.
         return null;
@@ -113,10 +113,10 @@ public final class ThingSearchPublisherVerificationTest extends PublisherVerific
         });
     }
 
-    private static SubscriptionHasNext subscriptionHasNext(final RequestFromSubscription request,
+    private static SubscriptionHasNextPage subscriptionHasNext(final RequestFromSubscription request,
             final long i,
             final long j) {
-        return SubscriptionHasNext.of(request.getSubscriptionId(),
+        return SubscriptionHasNextPage.of(request.getSubscriptionId(),
                 JsonArray.of(JsonObject.newBuilder()
                         .set("thingId", "x:" + (i + j))
                         .build()),

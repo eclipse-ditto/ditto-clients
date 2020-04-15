@@ -76,21 +76,23 @@ public interface SearchQueryBuilder {
     SearchQueryBuilder namespaces(@Nullable Set<String> namespaces);
 
     /**
-     * Set the number of pages to buffer at the client side to minimize blocking.
+     * Set the number of pages to demand in the first request message to the back-end,
+     * which is equal to the number of pages to buffer at the client side.
+     * A bigger value reduces the risk of blocking at the cost of memory at the client side.
      * Must be 1 or more.
      *
      * @param n the number of pages to buffer at the client side.
      * @return this builder.
      */
-    SearchQueryBuilder bufferedPages(int n);
+    SearchQueryBuilder initialDemand(int n);
 
     /**
-     * Set the number of pages to request in one batch.
-     * A bigger batch size reduces the number of outgoing messages but increases the risk of blocking.
-     * Must be between 1 and buffered pages.
+     * Set the number of pages to demand in one request message to the back-end.
+     * A bigger value reduces the number of outgoing messages but increases the risk of blocking.
+     * Must be between 1 and the initial demand.
      *
-     * @param n the number of pages to request in one batch.
+     * @param n the number of pages to demand in one request message.
      * @return this builder.
      */
-    SearchQueryBuilder pagesPerBatch(int n);
+    SearchQueryBuilder demand(int n);
 }

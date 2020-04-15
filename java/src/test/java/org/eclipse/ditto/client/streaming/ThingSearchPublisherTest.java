@@ -29,7 +29,7 @@ import org.eclipse.ditto.signals.commands.thingsearch.subscription.CreateSubscri
 import org.eclipse.ditto.signals.commands.thingsearch.subscription.RequestFromSubscription;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionComplete;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionCreated;
-import org.eclipse.ditto.signals.events.thingsearch.SubscriptionHasNext;
+import org.eclipse.ditto.signals.events.thingsearch.SubscriptionHasNextPage;
 import org.junit.Test;
 import org.reactivestreams.Publisher;
 
@@ -40,10 +40,10 @@ public final class ThingSearchPublisherTest extends AbstractDittoClientTest {
 
     @Test
     public void run() throws Exception {
-        final Publisher<SubscriptionHasNext> underTest =
+        final Publisher<SubscriptionHasNextPage> underTest =
                 ThingSearchPublisher.of(CreateSubscription.of(DittoHeaders.empty()), PROTOCOL_ADAPTER, messaging);
-        final SpliteratorSubscriber<SubscriptionHasNext> subscriber = SpliteratorSubscriber.of();
-        final CompletableFuture<List<SubscriptionHasNext>> subscriberFuture =
+        final SpliteratorSubscriber<SubscriptionHasNextPage> subscriber = SpliteratorSubscriber.of();
+        final CompletableFuture<List<SubscriptionHasNextPage>> subscriberFuture =
                 CompletableFuture.supplyAsync(() -> subscriber.asStream().collect(Collectors.toList()),
                         Executors.newSingleThreadExecutor());
         underTest.subscribe(subscriber);
@@ -51,10 +51,10 @@ public final class ThingSearchPublisherTest extends AbstractDittoClientTest {
         final String subscriptionId = "subscription1234";
         reply(SubscriptionCreated.of(subscriptionId, createSubscription.getDittoHeaders()));
         final RequestFromSubscription requestFromSubscription = expectMsgClass(RequestFromSubscription.class);
-        final List<SubscriptionHasNext> expectedResult = new ArrayList<>();
+        final List<SubscriptionHasNextPage> expectedResult = new ArrayList<>();
         for (int i = 0; i < requestFromSubscription.getDemand(); ++i) {
-            final SubscriptionHasNext hasNext =
-                    SubscriptionHasNext.of(subscriptionId, JsonArray.of(JsonObject.empty()),
+            final SubscriptionHasNextPage hasNext =
+                    SubscriptionHasNextPage.of(subscriptionId, JsonArray.of(JsonObject.empty()),
                             requestFromSubscription.getDittoHeaders());
             reply(hasNext);
             expectedResult.add(hasNext);

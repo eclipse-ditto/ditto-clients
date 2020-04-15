@@ -597,8 +597,8 @@ public final class DittoClientUsageExamples {
                 .stream(searchQueryBuilder -> searchQueryBuilder.namespace(namespace)
                         .filter(rql1)
                         .options(builder -> builder.sort(s -> s.desc("thingId")).size(1))
-                        .bufferedPages(1)
-                        .pagesPerBatch(1)
+                        .initialDemand(1)
+                        .demand(1)
                         .fields("thingId")
                 )
                 .forEach(thing -> {

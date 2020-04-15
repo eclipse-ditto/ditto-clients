@@ -31,8 +31,8 @@ final class SearchQueryBuilderImpl implements SearchQueryBuilder {
     @Nullable private String options;
     @Nullable private String fields;
     private final Set<String> namespaces = new HashSet<>();
-    private int bufferedPages = 2;
-    private int pagesPerBatch = 1;
+    private int initialDemand = 2;
+    private int demand = 1;
 
     SearchQueryBuilderImpl() {}
 
@@ -78,14 +78,14 @@ final class SearchQueryBuilderImpl implements SearchQueryBuilder {
     }
 
     @Override
-    public SearchQueryBuilder bufferedPages(final int n) {
-        bufferedPages = n;
+    public SearchQueryBuilder initialDemand(final int n) {
+        initialDemand = n;
         return this;
     }
 
     @Override
-    public SearchQueryBuilder pagesPerBatch(final int n) {
-        pagesPerBatch = n;
+    public SearchQueryBuilder demand(final int n) {
+        demand = n;
         return this;
     }
 
@@ -95,11 +95,11 @@ final class SearchQueryBuilderImpl implements SearchQueryBuilder {
         return CreateSubscription.of(filter, options, fieldSelector, namespaces, DittoHeaders.empty());
     }
 
-    int getBufferedPages() {
-        return bufferedPages;
+    int getInitialDemand() {
+        return initialDemand;
     }
 
-    int getPagesPerBatch() {
-        return pagesPerBatch;
+    int getDemand() {
+        return demand;
     }
 }

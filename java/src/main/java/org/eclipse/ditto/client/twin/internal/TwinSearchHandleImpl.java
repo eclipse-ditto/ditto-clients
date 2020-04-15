@@ -30,7 +30,7 @@ import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.commands.thingsearch.subscription.CreateSubscription;
-import org.eclipse.ditto.signals.events.thingsearch.SubscriptionHasNext;
+import org.eclipse.ditto.signals.events.thingsearch.SubscriptionHasNextPage;
 import org.reactivestreams.Publisher;
 
 /**
@@ -46,7 +46,7 @@ final class TwinSearchHandleImpl extends AbstractHandle implements TwinSearchHan
     public Publisher<List<Thing>> publisher(final Consumer<SearchQueryBuilder> querySpecifier) {
         final SearchQueryBuilderImpl builder = new SearchQueryBuilderImpl();
         querySpecifier.accept(builder);
-        final Publisher<SubscriptionHasNext> thingSearchPublisher =
+        final Publisher<SubscriptionHasNextPage> thingSearchPublisher =
                 ThingSearchPublisher.of(builder.createSubscription(), PROTOCOL_ADAPTER, messagingProvider);
         return MapPublisher.of(thingSearchPublisher, TwinSearchHandleImpl::pageToThingList);
     }
@@ -57,31 +57,31 @@ final class TwinSearchHandleImpl extends AbstractHandle implements TwinSearchHan
                 .flatMap(TwinSearchHandleImpl::streamAsThings);
     }
 
-    private SpliteratorSubscriber<SubscriptionHasNext> internalSpliterator(
+    private SpliteratorSubscriber<SubscriptionHasNextPage> internalSpliterator(
             final Consumer<SearchQueryBuilder> querySpecifier) {
 
         final SearchQueryBuilderImpl builder = new SearchQueryBuilderImpl();
         querySpecifier.accept(builder);
         final CreateSubscription createSubscription = builder.createSubscription();
         final Duration timeout = messagingProvider.getMessagingConfiguration().getTimeout();
-        final int bufferedPages = builder.getBufferedPages();
-        final int pagesPerBatch = builder.getPagesPerBatch();
-        final Publisher<SubscriptionHasNext> publisher =
+        final int bufferedPages = builder.getInitialDemand();
+        final int pagesPerBatch = builder.getDemand();
+        final Publisher<SubscriptionHasNextPage> publisher =
                 ThingSearchPublisher.of(createSubscription, PROTOCOL_ADAPTER, messagingProvider);
-        final SpliteratorSubscriber<SubscriptionHasNext> subscriber =
+        final SpliteratorSubscriber<SubscriptionHasNextPage> subscriber =
                 SpliteratorSubscriber.of(timeout, bufferedPages, pagesPerBatch);
         publisher.subscribe(subscriber);
         return subscriber;
     }
 
-    private static Stream<Thing> streamAsThings(final SubscriptionHasNext page) {
+    private static Stream<Thing> streamAsThings(final SubscriptionHasNextPage page) {
         return page.getItems()
                 .stream()
                 .map(JsonValue::asObject)
                 .map(ThingsModelFactory::newThing);
     }
 
-    private static List<Thing> pageToThingList(final SubscriptionHasNext page) {
+    private static List<Thing> pageToThingList(final SubscriptionHasNextPage page) {
         return page.getItems()
                 .stream()
                 .map(JsonValue::asObject)

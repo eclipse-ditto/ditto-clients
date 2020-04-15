@@ -42,7 +42,7 @@ import org.eclipse.ditto.signals.commands.thingsearch.subscription.RequestFromSu
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionComplete;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionCreated;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionFailed;
-import org.eclipse.ditto.signals.events.thingsearch.SubscriptionHasNext;
+import org.eclipse.ditto.signals.events.thingsearch.SubscriptionHasNextPage;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -73,8 +73,8 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
                         .fields("thingId,policyId")
                         .options(options)
                         .namespace("hello.world")
-                        .bufferedPages(55)
-                        .pagesPerBatch(22)
+                        .initialDemand(55)
+                        .demand(22)
         );
         final CreateSubscription createSubscription = expectMsgClass(CreateSubscription.class);
         final String subscriptionId = disambiguate("my-empty-subscription");
@@ -90,7 +90,7 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
 
     @Test
     public void someResults() {
-        final Stream<Thing> searchResults = createStreamUnderTest(q -> q.bufferedPages(2).pagesPerBatch(1));
+        final Stream<Thing> searchResults = createStreamUnderTest(q -> q.initialDemand(2).demand(1));
         final CreateSubscription createSubscription = expectMsgClass(CreateSubscription.class);
         final String subscriptionId = disambiguate("my-nonempty-subscription");
         reply(SubscriptionCreated.of(subscriptionId, createSubscription.getDittoHeaders()));
@@ -104,7 +104,7 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
 
     @Test
     public void exceptionInHandlerCancelsStream() {
-        final Stream<Thing> searchResults = createStreamUnderTest(q -> q.bufferedPages(2).pagesPerBatch(2));
+        final Stream<Thing> searchResults = createStreamUnderTest(q -> q.initialDemand(2).demand(2));
         final CreateSubscription createSubscription = expectMsgClass(CreateSubscription.class);
         final String subscriptionId = disambiguate("my-cancelled-subscription");
         reply(SubscriptionCreated.of(subscriptionId, createSubscription.getDittoHeaders()));
@@ -134,11 +134,11 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
                 .isThrownBy(() -> searchResultSpliterator.forEachRemaining(thing -> {}));
     }
 
-    private SubscriptionHasNext hasNext(final String subscriptionId, final int start, final int end) {
+    private SubscriptionHasNextPage hasNext(final String subscriptionId, final int start, final int end) {
         final JsonArray things = IntStream.range(start, end)
                 .mapToObj(i -> JsonObject.newBuilder().set("thingId", "x:" + i).build())
                 .collect(JsonCollectors.valuesToArray());
-        return SubscriptionHasNext.of(subscriptionId, things, DittoHeaders.empty());
+        return SubscriptionHasNextPage.of(subscriptionId, things, DittoHeaders.empty());
     }
 
     private String disambiguate(final String prefix) {

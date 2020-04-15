@@ -96,7 +96,7 @@ public final class Classifiers {
     private static final class ThingsSearchClassifier implements Classifier<Adaptable> {
 
         private static final EnumSet<TopicPath.SearchAction> SEARCH_EVENTS = EnumSet.of(
-                TopicPath.SearchAction.HAS_NEXT,
+                TopicPath.SearchAction.NEXT,
                 TopicPath.SearchAction.COMPLETE,
                 TopicPath.SearchAction.FAILED
         );

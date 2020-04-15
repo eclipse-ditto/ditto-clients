@@ -31,7 +31,7 @@ import org.eclipse.ditto.signals.commands.thingsearch.subscription.RequestFromSu
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionComplete;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionCreated;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionFailed;
-import org.eclipse.ditto.signals.events.thingsearch.SubscriptionHasNext;
+import org.eclipse.ditto.signals.events.thingsearch.SubscriptionHasNextPage;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 import org.slf4j.Logger;
@@ -49,7 +49,7 @@ public final class ThingSearchSubscription implements Subscription {
     private final String subscriptionId;
     private final ProtocolAdapter protocolAdapter;
     private final MessagingProvider messagingProvider;
-    private final Subscriber<? super SubscriptionHasNext> subscriber;
+    private final Subscriber<? super SubscriptionHasNextPage> subscriber;
     private final AtomicBoolean cancelled;
     private final AtomicReference<AdaptableBus.SubscriptionId> busSubscription;
     private final ExecutorService singleThreadedExecutorService;
@@ -57,7 +57,7 @@ public final class ThingSearchSubscription implements Subscription {
     private ThingSearchSubscription(final String subscriptionId,
             final ProtocolAdapter protocolAdapter,
             final MessagingProvider messagingProvider,
-            final Subscriber<? super SubscriptionHasNext> subscriber) {
+            final Subscriber<? super SubscriptionHasNextPage> subscriber) {
         this.subscriptionId = subscriptionId;
         this.protocolAdapter = protocolAdapter;
         this.messagingProvider = messagingProvider;
@@ -80,7 +80,7 @@ public final class ThingSearchSubscription implements Subscription {
     public static void start(final SubscriptionCreated event,
             final ProtocolAdapter protocolAdapter,
             final MessagingProvider messagingProvider,
-            final Subscriber<? super SubscriptionHasNext> subscriber) {
+            final Subscriber<? super SubscriptionHasNextPage> subscriber) {
         // start getting search events from adaptable bus
         final ThingSearchSubscription thingSearchSubscription =
                 new ThingSearchSubscription(event.getSubscriptionId(), protocolAdapter, messagingProvider, subscriber);
@@ -163,8 +163,8 @@ public final class ThingSearchSubscription implements Subscription {
     private void handleAdaptable(final Adaptable adaptable) {
         final Signal<?> signal = protocolAdapter.fromAdaptable(adaptable);
         LOGGER.trace("Notifying subscriber of: <{}>", signal);
-        if (signal instanceof SubscriptionHasNext) {
-            subscriber.onNext((SubscriptionHasNext) signal);
+        if (signal instanceof SubscriptionHasNextPage) {
+            subscriber.onNext((SubscriptionHasNextPage) signal);
         } else if (signal instanceof SubscriptionComplete) {
             cancelDueToUpstreamTermination();
             subscriber.onComplete();

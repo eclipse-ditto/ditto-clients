@@ -23,7 +23,7 @@ import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.base.ErrorResponse;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionCreated;
-import org.eclipse.ditto.signals.events.thingsearch.SubscriptionHasNext;
+import org.eclipse.ditto.signals.events.thingsearch.SubscriptionHasNextPage;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
@@ -32,7 +32,7 @@ import org.reactivestreams.Subscriber;
  *
  * @since 1.1.0
  */
-public final class ThingSearchPublisher implements Publisher<SubscriptionHasNext> {
+public final class ThingSearchPublisher implements Publisher<SubscriptionHasNextPage> {
 
     private final ProtocolAdapter protocolAdapter;
     private final MessagingProvider messagingProvider;
@@ -57,7 +57,7 @@ public final class ThingSearchPublisher implements Publisher<SubscriptionHasNext
      * @param messagingProvider the messaging provider.
      * @return the single-use publisher.
      */
-    public static Publisher<SubscriptionHasNext> of(final Signal<?> createSubscription,
+    public static Publisher<SubscriptionHasNextPage> of(final Signal<?> createSubscription,
             final ProtocolAdapter protocolAdapter,
             final MessagingProvider messagingProvider) {
 
@@ -66,7 +66,7 @@ public final class ThingSearchPublisher implements Publisher<SubscriptionHasNext
 
     // subscriber should not be null but still marked as nullable to it possible to trigger reactive-streams rule 1.9
     @Override
-    public void subscribe(final Subscriber<? super SubscriptionHasNext> subscriber) {
+    public void subscribe(final Subscriber<? super SubscriptionHasNextPage> subscriber) {
         checkNotNull(subscriber, "subscriber");
         if (subscribed.getAndSet(true)) {
             // Subscribed more than once. Deliver dummy subscription per
