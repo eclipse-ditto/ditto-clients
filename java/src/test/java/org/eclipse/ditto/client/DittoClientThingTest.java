@@ -30,6 +30,7 @@ import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.client.registration.DuplicateRegistrationIdException;
 import org.eclipse.ditto.json.JsonFactory;
+import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.base.auth.AuthorizationModelFactory;
 import org.eclipse.ditto.model.base.auth.AuthorizationSubject;
@@ -37,6 +38,7 @@ import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
+import org.eclipse.ditto.model.policies.Policy;
 import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Thing;
@@ -310,6 +312,30 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
         final ModifyThing command = expectMsgClass(ModifyThing.class);
         reply(ModifyThingResponse.created(THING, command.getDittoHeaders()));
         assertThat(command.getInitialPolicy()).contains(POLICY_JSON_OBJECT);
+    }
+
+    @Test
+    public void testCreateThingWithInitialPolicyJsonNullable() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> getManagement().create(THING_ID, (JsonObject) null));
+    }
+
+    @Test
+    public void testCreateThingWithInitialPolicyNull() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> getManagement().create(THING_ID, (Policy) null));
+    }
+
+    @Test
+    public void testPutThingWithInitialPolicyJsonNull() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> getManagement().put(THING, (JsonObject) null));
+    }
+
+    @Test
+    public void testPutThingWithInitialPolicyNull() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> getManagement().put(THING, (Policy) null));
     }
 
     @Test

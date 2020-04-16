@@ -21,6 +21,8 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -90,6 +92,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
 
         private static final List<String> ALLOWED_URI_SCHEME = Arrays.asList("wss", "ws");
         private static final String WS_PATH = "/ws/";
+        private static final String WS_PATH_REGEX = "/ws/([12])/?";
 
         private Duration timeout = Duration.ofSeconds(60L);
         private JsonSchemaVersion jsonSchemaVersion = JsonSchemaVersion.LATEST;
@@ -144,15 +147,42 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
 
         @Override
         public MessagingConfiguration build() {
-            final URI wsEndpointUri = appendWsPath(this.endpointUri, jsonSchemaVersion);
+            final URI wsEndpointUri = appendWsPathIfNecessary(this.endpointUri, jsonSchemaVersion);
             return new WebSocketMessagingConfiguration(timeout, jsonSchemaVersion, wsEndpointUri, reconnectEnabled,
                     proxyConfiguration, trustStoreConfiguration);
         }
 
-        private static URI appendWsPath(final URI baseUri, final JsonSchemaVersion schemaVersion) {
-            final String pathWithoutTrailingSlashes = baseUri.getPath().replaceFirst("/+$", "");
-            final String newPath = pathWithoutTrailingSlashes + WS_PATH + schemaVersion.toString();
-            return baseUri.resolve(newPath);
+        private static URI appendWsPathIfNecessary(final URI baseUri, final JsonSchemaVersion schemaVersion) {
+            if (needToAppendWsPath(baseUri)) {
+                final String pathWithoutTrailingSlashes = removeTrailingSlashFromPath(baseUri.getPath());
+                final String newPath = pathWithoutTrailingSlashes + WS_PATH + schemaVersion.toString();
+                return baseUri.resolve(newPath);
+            } else {
+                checkIfBaseUriAndSchemaVersionMatch(baseUri, schemaVersion);
+                return baseUri;
+            }
+        }
+
+        private static boolean needToAppendWsPath(final URI baseUri) {
+            final Pattern pattern = Pattern.compile(WS_PATH_REGEX);
+            final Matcher matcher = pattern.matcher(baseUri.toString());
+            return !matcher.find();
+        }
+
+        private static void checkIfBaseUriAndSchemaVersionMatch(final URI baseUri,
+                final JsonSchemaVersion schemaVersion) {
+            final String path = removeTrailingSlashFromPath(baseUri.getPath());
+            final String apiVersion = path.substring(path.length() - 1);
+            if (!schemaVersion.toString().equals(apiVersion)) {
+                throw new IllegalArgumentException(
+                        "The jsonSchemaVersion and apiVersion of the endpoint do not match. " +
+                                "Either remove the ws path from the endpoint or " +
+                                "use the same jsonSchemaVersion as in the ws path of the endpoint.");
+            }
+        }
+
+        private static String removeTrailingSlashFromPath(final String path) {
+            return path.replaceFirst("/+$", "");
         }
 
     }

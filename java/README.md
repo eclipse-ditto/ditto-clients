@@ -71,7 +71,7 @@ AuthenticationProvider authenticationProvider =
 ```java
 MessagingProvider messagingProvider = MessagingProviders.webSocket(WebSocketMessagingConfiguration.newBuilder()
     .endpoint("wss://ditto.eclipse.org")
-    .jsonSchemaVersion(JsonSchemaVersion.V_1)
+    .jsonSchemaVersion(JsonSchemaVersion.V_2)
     .proxyConfiguration(proxyConfig) // optionally configure a proxy server
     // optionally configure a truststore containing the trusted CAs for SSL connection establishment
     .trustStoreConfiguration(TrustStoreConfiguration.newBuilder()

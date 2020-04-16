@@ -215,15 +215,23 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     private <T> T handleExecutionException(final ExecutionException e) {
         final Throwable cause = e.getCause();
-        if (cause instanceof WebSocketException) {
+        if (cause instanceof AuthenticationException) {
+            // no unneccessary boxing of AuthenticationException
+            throw ((AuthenticationException) cause);
+        } else if (cause instanceof WebSocketException) {
             LOGGER.error("Got exception: {}", cause.getMessage());
 
             if (isAuthenticationException((WebSocketException) cause)) {
                 throw AuthenticationException.unauthorized(sessionId, cause);
             } else if (isForbidden((WebSocketException) cause)) {
                 throw AuthenticationException.forbidden(sessionId, cause);
+            } else if (cause instanceof OpeningHandshakeException) {
+                final StatusLine statusLine = ((OpeningHandshakeException) cause).getStatusLine();
+                throw AuthenticationException.withStatus(sessionId, cause, statusLine.getStatusCode(),
+                        statusLine.getReasonPhrase());
             }
         }
+
         throw AuthenticationException.of(sessionId, e);
     }
 
