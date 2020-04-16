@@ -14,14 +14,16 @@ package org.eclipse.ditto.client.internal;
 
 import static java.util.Arrays.asList;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.DittoClients;
-import org.eclipse.ditto.client.messaging.mock.MockMessagingProvider;
+import org.eclipse.ditto.client.messaging.internal.MockMessagingProvider;
 import org.junit.Test;
 
 /**
@@ -35,6 +37,11 @@ public class ClientShutdownTest {
 
     @Test
     public void testNoMoreActiveThreads() throws InterruptedException {
+
+        final Thread[] startingThreads = new Thread[Thread.activeCount()];
+        Thread.enumerate(startingThreads);
+        final Set<String> startingThreadNames =
+                Arrays.stream(startingThreads).map(Thread::getName).collect(Collectors.toSet());
 
         final MockMessagingProvider messaging = new MockMessagingProvider();
         messaging.onSend(m -> {});
@@ -51,18 +58,13 @@ public class ClientShutdownTest {
         // filter out main thread and monitor thread
         final List<String> activeThreads = Stream.of(threads)
                 .map(Thread::getName)
-                .filter(ClientShutdownTest::isForbiddenThread)
+                .filter(name -> !ALLOWED_THREADS.contains(name) && !startingThreadNames.contains(name))
                 .collect(Collectors.toList());
 
         // expect no more active threads
         Assertions.assertThat(activeThreads)
                 .withFailMessage("There are %d threads active: %s", activeThreads.size(), activeThreads)
                 .isEmpty();
-    }
-
-    private static boolean isForbiddenThread(final String threadName) {
-        return ALLOWED_THREADS.stream()
-                .noneMatch(allowedThread -> allowedThread.equals(threadName) || threadName.startsWith(allowedThread));
     }
 
 }

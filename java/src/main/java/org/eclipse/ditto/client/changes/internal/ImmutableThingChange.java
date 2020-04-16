@@ -82,6 +82,7 @@ public final class ImmutableThingChange implements ThingChange {
      * deleted.
      * @param revision the revision (change counter) of the change.
      * @param timestamp the timestamp of the change.
+     * @param extra the extra data to be included in the change.
      * @throws NullPointerException if any required argument is {@code null}.
      */
     public ImmutableThingChange(final ThingId thingId,

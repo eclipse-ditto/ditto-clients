@@ -26,10 +26,9 @@ import org.eclipse.ditto.client.changes.internal.ImmutableChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeatureChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeaturesChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableThingChange;
+import org.eclipse.ditto.client.internal.AbstractHandle;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
-import org.eclipse.ditto.client.internal.ResponseForwarder;
-import org.eclipse.ditto.client.internal.SendTerminator;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
 import org.eclipse.ditto.client.management.FeatureHandle;
 import org.eclipse.ditto.client.management.ThingHandle;
@@ -48,16 +47,27 @@ import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteAttribute;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributeResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributes;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributesResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeature;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatures;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteFeaturesResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyAttribute;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributeResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributes;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributesResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeature;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatures;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyFeaturesResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyId;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyIdResponse;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThing;
+import org.eclipse.ditto.signals.commands.things.query.RetrieveThingResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,28 +78,25 @@ import org.slf4j.LoggerFactory;
  * @param <F> the type of {@link FeatureHandle} for handling {@code Feature}s
  * @since 1.0.0
  */
-public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends FeatureHandle> implements ThingHandle<F> {
+public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends FeatureHandle>
+        extends AbstractHandle
+        implements ThingHandle<F> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ThingHandleImpl.class);
 
-    private final TopicPath.Channel channel;
+    protected final OutgoingMessageFactory outgoingMessageFactory;
+
     private final ThingId thingId;
-    private final MessagingProvider messagingProvider;
-    private final ResponseForwarder responseForwarder;
-    private final OutgoingMessageFactory outgoingMessageFactory;
     private final HandlerRegistry<T, F> handlerRegistry;
 
     protected ThingHandleImpl(
             final TopicPath.Channel channel,
             final ThingId thingId,
             final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final HandlerRegistry<T, F> handlerRegistry) {
-        this.channel = channel;
+        super(messagingProvider, channel);
         this.thingId = thingId;
-        this.messagingProvider = messagingProvider;
-        this.responseForwarder = responseForwarder;
         this.outgoingMessageFactory = outgoingMessageFactory;
         this.handlerRegistry = handlerRegistry;
     }
@@ -101,15 +108,6 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
      */
     protected MessagingProvider getMessagingProvider() {
         return messagingProvider;
-    }
-
-    /**
-     * Returns the ResponseForwarder this ThingHandle uses.
-     *
-     * @return the ResponseForwarder this ThingHandle uses.
-     */
-    protected ResponseForwarder getResponseForwarder() {
-        return responseForwarder;
     }
 
     /**
@@ -155,7 +153,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
     @Override
     public CompletableFuture<Void> delete(final Option<?>[] options) {
         final DeleteThing command = outgoingMessageFactory.deleteThing(thingId, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, DeleteThingResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -189,7 +187,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
                 "If you want to update the whole attributes object, please use the setAttributes(JsonObject) method.");
 
         final ModifyAttribute command = outgoingMessageFactory.setAttribute(thingId, path, value, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, ModifyAttributeResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -199,7 +197,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
                 () -> "The root attributes entry can only be a JSON" + " object or JSON NULL literal!");
 
         final ModifyAttributes command = outgoingMessageFactory.setAttributes(thingId, attributes, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, ModifyAttributesResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -207,7 +205,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
         argumentNotNull(features);
 
         final ModifyFeatures command = outgoingMessageFactory.setFeatures(thingId, features, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, ModifyFeaturesResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -215,7 +213,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
         argumentNotNull(policyId);
 
         final ModifyPolicyId command = outgoingMessageFactory.setPolicyId(thingId, policyId, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, ModifyPolicyIdResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -223,7 +221,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
         argumentNotNull(feature);
 
         final ModifyFeature command = outgoingMessageFactory.setFeature(thingId, feature, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, ModifyFeatureResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -231,13 +229,13 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
         argumentNotNull(featureId);
 
         final DeleteFeature command = outgoingMessageFactory.deleteFeature(thingId, featureId, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, DeleteFeatureResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
     public CompletableFuture<Void> deleteFeatures(final Option<?>... options) {
         final DeleteFeatures command = outgoingMessageFactory.deleteFeatures(thingId, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, DeleteFeaturesResponse.class, this::toVoid).toCompletableFuture();
     }
 
 
@@ -253,13 +251,13 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
         checkArgument(path, p -> !p.isEmpty(), () -> "The root attributes object cannot be deleted!");
 
         final DeleteAttribute command = outgoingMessageFactory.deleteAttribute(thingId, path, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, DeleteAttributeResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
     public CompletableFuture<Void> deleteAttributes(final Option<?>... options) {
         final DeleteAttributes command = outgoingMessageFactory.deleteAttributes(thingId, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, DeleteAttributesResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -349,14 +347,8 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
     @Override
     public CompletableFuture<Thing> retrieve() {
         final RetrieveThing command = outgoingMessageFactory.retrieveThing(thingId);
-        return new SendTerminator<Thing>(messagingProvider, responseForwarder, channel, command).applyView(tvr ->
-        {
-            if (tvr != null) {
-                return ThingsModelFactory.newThing(tvr.getEntity(tvr.getImplementedSchemaVersion()).asObject());
-            } else {
-                return null;
-            }
-        });
+        return askThingCommand(command, RetrieveThingResponse.class, RetrieveThingResponse::getThing)
+                .toCompletableFuture();
     }
 
     @Override
@@ -364,14 +356,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
         argumentNotNull(fieldSelector);
 
         final RetrieveThing command = outgoingMessageFactory.retrieveThing(thingId, fieldSelector.getPointers());
-        return new SendTerminator<Thing>(messagingProvider, responseForwarder, channel, command).applyView(tvr ->
-        {
-            if (tvr != null) {
-                return ThingsModelFactory.newThing(tvr.getEntity(tvr.getImplementedSchemaVersion()).asObject());
-            } else {
-                return null;
-            }
-        });
+        return askThingCommand(command, RetrieveThingResponse.class, RetrieveThingResponse::getThing)
+                .toCompletableFuture();
     }
-
 }

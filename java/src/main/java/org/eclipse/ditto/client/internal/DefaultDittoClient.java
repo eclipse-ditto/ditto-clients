@@ -105,18 +105,16 @@ public final class DefaultDittoClient implements DittoClient {
      * @param twinMessagingProvider the messaging provider to use for the {@code Twin} aspect.
      * @param liveMessagingProvider the messaging provider to use for the {@code Live} aspect.
      * @param policyMessagingProvider the messaging provider for the {@code Policy} part of the client.
-     * @param responseForwarder forwarder used to optimize response performance.
      * @param messageSerializerRegistry registry for all serializers of live messages.
      * @return the client.
      */
     public static DittoClient newInstance(final MessagingProvider twinMessagingProvider,
             final MessagingProvider liveMessagingProvider,
             final MessagingProvider policyMessagingProvider,
-            final ResponseForwarder responseForwarder,
             final MessageSerializerRegistry messageSerializerRegistry) {
-        final TwinImpl twin = configureTwin(twinMessagingProvider, responseForwarder);
-        final LiveImpl live = configureLive(liveMessagingProvider, responseForwarder, messageSerializerRegistry);
-        final PoliciesImpl policy = configurePolicyClient(policyMessagingProvider, responseForwarder);
+        final TwinImpl twin = configureTwin(twinMessagingProvider);
+        final LiveImpl live = configureLive(liveMessagingProvider, messageSerializerRegistry);
+        final PoliciesImpl policy = configurePolicyClient(policyMessagingProvider);
         return new DefaultDittoClient(twin, live, policy);
     }
 
@@ -185,38 +183,36 @@ public final class DefaultDittoClient implements DittoClient {
         LOGGER.info("Ditto Client [{}//{}] initialized successfully", clientVersion, buildTimeStamp);
     }
 
-    private static TwinImpl configureTwin(final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder) {
+    private static TwinImpl configureTwin(final MessagingProvider messagingProvider) {
         final String name = TopicPath.Channel.TWIN.getName();
         final PointerBus bus = BusFactory.createPointerBus(name, messagingProvider.getExecutorService());
-        init(bus, messagingProvider, responseForwarder);
+        init(bus, messagingProvider);
         final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
         final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion);
-        return TwinImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus);
+        return TwinImpl.newInstance(messagingProvider, messageFactory, bus);
     }
 
     private static LiveImpl configureLive(final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder, final MessageSerializerRegistry messageSerializerRegistry) {
+            final MessageSerializerRegistry messageSerializerRegistry) {
         final String name = TopicPath.Channel.LIVE.getName();
         final PointerBus bus = BusFactory.createPointerBus(name, messagingProvider.getExecutorService());
-        init(bus, messagingProvider, responseForwarder);
-        final String sessionId = messagingProvider.getAuthenticationConfiguration().getSessionId();
+        init(bus, messagingProvider);
         final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
         final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion);
-        return LiveImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus, schemaVersion,
-                sessionId, messageSerializerRegistry);
+        return LiveImpl.newInstance(messagingProvider, messageFactory, bus, schemaVersion,
+                messageSerializerRegistry);
     }
 
-    private static PoliciesImpl configurePolicyClient(final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder) {
+    private static PoliciesImpl configurePolicyClient(final MessagingProvider messagingProvider) {
         final String busName = TopicPath.Channel.NONE.getName();
         final PointerBus bus = BusFactory.createPointerBus(busName, messagingProvider.getExecutorService());
-        init(bus, messagingProvider, responseForwarder);
+        init(bus, messagingProvider);
         final OutgoingMessageFactory messageFactory = getOutgoingMessageFactoryForPolicies(messagingProvider);
-        return PoliciesImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus);
+        return PoliciesImpl.newInstance(messagingProvider, messageFactory, bus);
     }
 
-    private static OutgoingMessageFactory getOutgoingMessageFactoryForPolicies(final MessagingProvider messagingProvider) {
+    private static OutgoingMessageFactory getOutgoingMessageFactoryForPolicies(
+            final MessagingProvider messagingProvider) {
         final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
         if (JsonSchemaVersion.V_1.equals(schemaVersion)) {
             LOGGER.warn("The MessagingProvider was configured with JsonSchemaVersion V_1 which is invalid for policy" +
@@ -228,11 +224,9 @@ public final class DefaultDittoClient implements DittoClient {
         return OutgoingMessageFactory.newInstance(schemaVersion);
     }
 
-    private static void init(final PointerBus bus, final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder) {
+    private static void init(final PointerBus bus, final MessagingProvider messagingProvider) {
         registerKeyBasedDistributorForIncomingEvents(bus);
         registerKeyBasedHandlersForIncomingEvents(bus);
-        messagingProvider.registerReplyHandler(responseForwarder::handle);
         messagingProvider.initialize();
     }
 

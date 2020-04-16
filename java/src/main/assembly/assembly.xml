@@ -38,14 +38,17 @@
                 <include>org.eclipse.ditto:ditto-model-policies</include>
                 <include>org.eclipse.ditto:ditto-model-messages</include>
                 <include>org.eclipse.ditto:ditto-model-things</include>
+                <include>org.eclipse.ditto:ditto-model-thingsearch</include>
                 <include>org.eclipse.ditto:ditto-signals-base</include>
                 <include>org.eclipse.ditto:ditto-signals-commands-base</include>
+                <include>org.eclipse.ditto:ditto-signals-commands-thingsearch</include>
                 <include>org.eclipse.ditto:ditto-signals-commands-things</include>
                 <include>org.eclipse.ditto:ditto-signals-commands-policies</include>
                 <include>org.eclipse.ditto:ditto-signals-commands-messages</include>
                 <include>org.eclipse.ditto:ditto-signals-commands-live</include>
                 <include>org.eclipse.ditto:ditto-signals-events-base</include>
                 <include>org.eclipse.ditto:ditto-signals-events-things</include>
+                <include>org.eclipse.ditto:ditto-signals-events-thingsearch</include>
                 <include>org.eclipse.ditto:ditto-protocol-adapter</include>
                 <include>org.eclipse.ditto:ditto-client</include>
             </includes>

@@ -12,19 +12,21 @@
  */
 package org.eclipse.ditto.client.configuration;
 
-import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
+import static org.eclipse.ditto.model.base.common.ConditionChecker.checkArgument;
+import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
-import javax.annotation.Nullable;
 import java.net.URI;
 import java.text.MessageFormat;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.checkArgument;
-import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
+import javax.annotation.Nullable;
+
+import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 
 /**
  * Provides Ditto WebSocket messaging specific configuration.
@@ -33,15 +35,18 @@ import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
  */
 public final class WebSocketMessagingConfiguration implements MessagingConfiguration {
 
+    private final Duration timeout;
     private final JsonSchemaVersion jsonSchemaVersion;
     private final URI endpointUri;
     private final boolean reconnectEnabled;
     @Nullable private final ProxyConfiguration proxyConfiguration;
     @Nullable private final TrustStoreConfiguration trustStoreConfiguration;
 
-    private WebSocketMessagingConfiguration(final JsonSchemaVersion jsonSchemaVersion, final URI endpointUri,
+    private WebSocketMessagingConfiguration(final Duration timeout, final JsonSchemaVersion jsonSchemaVersion,
+            final URI endpointUri,
             final boolean reconnectEnabled, @Nullable final ProxyConfiguration proxyConfiguration,
             @Nullable final TrustStoreConfiguration trustStoreConfiguration) {
+        this.timeout = timeout;
         this.jsonSchemaVersion = jsonSchemaVersion;
         this.endpointUri = endpointUri;
         this.reconnectEnabled = reconnectEnabled;
@@ -51,6 +56,11 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
 
     public static MessagingConfiguration.Builder newBuilder() {
         return new WebSocketMessagingConfigurationBuilder();
+    }
+
+    @Override
+    public Duration getTimeout() {
+        return timeout;
     }
 
     @Override
@@ -82,13 +92,20 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
 
         private static final List<String> ALLOWED_URI_SCHEME = Arrays.asList("wss", "ws");
         private static final String WS_PATH = "/ws/";
-        private static final String WS_PATH_REGEX = "/ws/(1|2)/?";
+        private static final String WS_PATH_REGEX = "/ws/([12])/?";
 
+        private Duration timeout = Duration.ofSeconds(60L);
         private JsonSchemaVersion jsonSchemaVersion = JsonSchemaVersion.LATEST;
         private URI endpointUri;
         private boolean reconnectEnabled = true;
         private ProxyConfiguration proxyConfiguration;
         private TrustStoreConfiguration trustStoreConfiguration;
+
+        @Override
+        public Builder timeout(final Duration timeout) {
+            this.timeout = timeout;
+            return this;
+        }
 
         @Override
         public MessagingConfiguration.Builder jsonSchemaVersion(final JsonSchemaVersion jsonSchemaVersion) {
@@ -130,8 +147,8 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
 
         @Override
         public MessagingConfiguration build() {
-            final URI wsEndpointUri= appendWsPathIfNecessary(this.endpointUri, jsonSchemaVersion);
-            return new WebSocketMessagingConfiguration(jsonSchemaVersion, wsEndpointUri, reconnectEnabled,
+            final URI wsEndpointUri = appendWsPathIfNecessary(this.endpointUri, jsonSchemaVersion);
+            return new WebSocketMessagingConfiguration(timeout, jsonSchemaVersion, wsEndpointUri, reconnectEnabled,
                     proxyConfiguration, trustStoreConfiguration);
         }
 
@@ -152,13 +169,15 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
             return !matcher.find();
         }
 
-        private static void checkIfBaseUriAndSchemaVersionMatch(final URI baseUri, final JsonSchemaVersion schemaVersion) {
+        private static void checkIfBaseUriAndSchemaVersionMatch(final URI baseUri,
+                final JsonSchemaVersion schemaVersion) {
             final String path = removeTrailingSlashFromPath(baseUri.getPath());
-            final String apiVersion = path.substring(path.length() - 1, path.length());
+            final String apiVersion = path.substring(path.length() - 1);
             if (!schemaVersion.toString().equals(apiVersion)) {
-                throw new IllegalArgumentException("The jsonSchemaVersion and apiVersion of the endpoint do not match. " +
-                        "Either remove the ws path from the endpoint or " +
-                        "use the same jsonSchemaVersion as in the ws path of the endpoint.");
+                throw new IllegalArgumentException(
+                        "The jsonSchemaVersion and apiVersion of the endpoint do not match. " +
+                                "Either remove the ws path from the endpoint or " +
+                                "use the same jsonSchemaVersion as in the ws path of the endpoint.");
             }
         }
 
