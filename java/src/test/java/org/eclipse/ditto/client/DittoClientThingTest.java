@@ -20,11 +20,14 @@ import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID_COPY_POLICY;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_WITH_INLINE_POLICY;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
+import static org.eclipse.ditto.model.base.acks.AcknowledgementRequest.parseAcknowledgementRequest;
 
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.Assumptions;
 import org.eclipse.ditto.client.internal.AbstractDittoClientThingsTest;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.Options;
@@ -32,8 +35,12 @@ import org.eclipse.ditto.client.registration.DuplicateRegistrationIdException;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
+import org.eclipse.ditto.model.base.acks.AcknowledgementRequest;
 import org.eclipse.ditto.model.base.auth.AuthorizationModelFactory;
 import org.eclipse.ditto.model.base.auth.AuthorizationSubject;
+import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
@@ -44,6 +51,9 @@ import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
+import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.acks.base.Acknowledgement;
+import org.eclipse.ditto.signals.acks.base.Acknowledgements;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
@@ -84,6 +94,34 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
         assertEventualCompletion(getManagement().create(THING_ID));
         reply(CreateThingResponse.of(Thing.newBuilder().setId(THING_ID).build(),
                 expectMsgClass(CreateThing.class).getDittoHeaders()));
+    }
+
+    @Test
+    public void testCreateThingWith2Acknowledgements() {
+        // skip this test for LIVE - 'twin-persisted' is obligatory
+        Assumptions.assumeThat(channel).isEqualTo(TopicPath.Channel.TWIN);
+
+        final AcknowledgementLabel label1 = AcknowledgementLabel.of("custom-ack-1");
+        final AcknowledgementLabel label2 = AcknowledgementLabel.of("twin-persisted");
+        assertEventualCompletion(getManagement()
+                .create(THING_ID, Options.dittoHeaders(DittoHeaders.newBuilder()
+                        .acknowledgementRequest(
+                                AcknowledgementRequest.of(label1),
+                                AcknowledgementRequest.of(label2))
+                        .build()))
+        );
+
+        final DittoHeaders sentDittoHeaders = expectMsgClass(CreateThing.class).getDittoHeaders();
+        reply(Acknowledgements.of(
+                Arrays.asList(
+                        Acknowledgement.of(label1, THING_ID, HttpStatusCode.OK, DittoHeaders.empty()),
+                        Acknowledgement.of(label2, THING_ID, HttpStatusCode.ACCEPTED, DittoHeaders.empty())
+                ),
+                sentDittoHeaders
+        ));
+
+        assertThat(sentDittoHeaders.getAcknowledgementRequests())
+                .containsExactly(AcknowledgementRequest.of(label1), AcknowledgementRequest.of(label2));
     }
 
     @Test
@@ -397,5 +435,49 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
 
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> getManagement().put(THING, copyPolicy, copyPolicyFromThing));
+    }
+
+    @Test
+    public void testPutThingWithoutPolicy() {
+        assertEventualCompletion(getManagement().put(THING)
+                .thenAccept(result -> assertThat(result).isEmpty())
+        );
+
+        reply(ModifyThingResponse.modified(THING_ID, expectMsgClass(ModifyThing.class).getDittoHeaders()));
+    }
+
+    @Test
+    public void testEventAcknowledgement() {
+        // Acknowledgements are not implemented for live signals yet
+        Assumptions.assumeThat(channel).isEqualTo(TopicPath.Channel.TWIN);
+
+        getManagement().startConsumption();
+        getManagement().registerForThingChanges("Ackermann", change ->
+                change.handleAcknowledgementRequests(handles ->
+                        handles.forEach(handle -> handle.acknowledge(
+                                HttpStatusCode.forInt(Integer.parseInt(handle.getAcknowledgementLabel().toString()))
+                                        .orElse(HttpStatusCode.EXPECTATION_FAILED)
+                        ))
+                )
+        );
+        // expect subscription messages
+        assertThat(expectMsgClass(String.class)).startsWith("START-SEND-");
+        if (channel == TopicPath.Channel.LIVE) {
+            assertThat(expectMsgClass(String.class)).startsWith("START-SEND-");
+            assertThat(expectMsgClass(String.class)).startsWith("START-SEND-");
+        }
+
+        reply(ThingDeleted.of(THING_ID, 1L, DittoHeaders.newBuilder()
+                .channel(channel.name())
+                .acknowledgementRequest(
+                        parseAcknowledgementRequest("100"),
+                        parseAcknowledgementRequest("301"),
+                        parseAcknowledgementRequest("403")
+                )
+                .build())
+        );
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.CONTINUE);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.MOVED_PERMANENTLY);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.FORBIDDEN);
     }
 }

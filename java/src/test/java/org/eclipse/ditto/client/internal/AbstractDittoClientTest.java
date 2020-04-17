@@ -109,12 +109,16 @@ public abstract class AbstractDittoClientTest {
 
     protected <T> T expectMsgClass(final Class<T> clazz) {
         final String nextMessage = messaging.expectEmitted();
-        final Signal<?> signal = PROTOCOL_ADAPTER.fromAdaptable(
-                ProtocolFactory.jsonifiableAdaptableFromJson(JsonObject.of(nextMessage)));
-        if (clazz.isInstance(signal)) {
-            return clazz.cast(signal);
+        if (clazz.isAssignableFrom(String.class)) {
+            return clazz.cast(nextMessage);
         } else {
-            throw new AssertionError("Expect " + clazz + ", got " + signal);
+            final Signal<?> signal = PROTOCOL_ADAPTER.fromAdaptable(
+                    ProtocolFactory.jsonifiableAdaptableFromJson(JsonObject.of(nextMessage)));
+            if (clazz.isInstance(signal)) {
+                return clazz.cast(signal);
+            } else {
+                throw new AssertionError("Expect " + clazz + ", got " + signal);
+            }
         }
     }
 

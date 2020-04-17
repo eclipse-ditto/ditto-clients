@@ -51,7 +51,6 @@ import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.OptionName;
 import org.eclipse.ditto.client.options.internal.OptionsEvaluator;
-import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonField;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
@@ -79,7 +78,6 @@ import org.eclipse.ditto.signals.base.WithOptionalEntity;
 import org.eclipse.ditto.signals.commands.base.Command;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
-import org.eclipse.ditto.signals.commands.things.modify.CreateThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyThing;
@@ -376,7 +374,9 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
 
         final CreateThing command = outgoingMessageFactory.createThing(thing, initialPolicy, options);
 
-        return askThingCommand(command, CreateThingResponse.class,
+        return this.askThingCommand(command,
+                // response could be CreateThingResponse or ModifyThingResponse or Acknowledgements.
+                CommandResponse.class,
                 response -> transformModifyResponse(command, response))
                 .toCompletableFuture();
     }
@@ -443,8 +443,8 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
 
         final ModifyThing command = outgoingMessageFactory.putThing(thing, initialPolicy, options);
         return askThingCommand(command,
-                // response could be either CreateThingResponse or ModifyThingResponse.
-                ThingModifyCommandResponse.class,
+                // response could be CreateThingResponse or ModifyThingResponse or Acknowledgements.
+                CommandResponse.class,
                 response -> Optional.ofNullable(transformModifyResponse(command, response))
         ).toCompletableFuture();
     }
@@ -753,9 +753,11 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         }
 
         if (response instanceof WithOptionalEntity) {
-            return ThingsModelFactory.newThing(
-                    ((WithOptionalEntity) response).getEntity(response.getImplementedSchemaVersion())
-                            .orElse(JsonFactory.nullObject()).asObject());
+            return ((WithOptionalEntity) response).getEntity(response.getImplementedSchemaVersion())
+                    .filter(JsonValue::isObject)
+                    .map(JsonValue::asObject)
+                    .map(ThingsModelFactory::newThing)
+                    .orElse(null);
         } else {
             return null;
         }

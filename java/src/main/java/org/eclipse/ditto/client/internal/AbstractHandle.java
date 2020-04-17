@@ -32,6 +32,7 @@ import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
 import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.Signal;
+import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.commands.base.ErrorResponse;
 import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
 import org.eclipse.ditto.signals.commands.policies.PolicyCommandResponse;
@@ -137,7 +138,7 @@ public abstract class AbstractHandle {
      * @return future of the result if the expected response arrives or a failed future on error.
      * Type is {@code CompletionStage} to signify that the future will complete or fail without caller intervention.
      */
-    protected <T extends ThingCommand<T>, S extends ThingCommandResponse<?>, R> CompletionStage<R> askThingCommand(
+    protected <T extends ThingCommand<T>, S extends CommandResponse<?>, R> CompletionStage<R> askThingCommand(
             final T command,
             final Class<S> expectedResponse,
             final Function<S, R> onSuccess) {
