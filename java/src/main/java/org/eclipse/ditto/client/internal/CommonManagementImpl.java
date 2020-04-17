@@ -25,9 +25,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.eclipse.ditto.client.changes.Change;
@@ -37,6 +40,8 @@ import org.eclipse.ditto.client.changes.ThingChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeatureChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeaturesChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableThingChange;
+import org.eclipse.ditto.client.internal.bus.AdaptableBus;
+import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
 import org.eclipse.ditto.client.management.CommonManagement;
@@ -47,21 +52,41 @@ import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.OptionName;
 import org.eclipse.ditto.client.options.internal.OptionsEvaluator;
 import org.eclipse.ditto.json.JsonFactory;
+import org.eclipse.ditto.json.JsonField;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
+import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
+import org.eclipse.ditto.model.messages.Message;
+import org.eclipse.ditto.model.messages.MessageDirection;
+import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.policies.Policy;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Features;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
+import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.acks.base.Acknowledgement;
+import org.eclipse.ditto.signals.acks.base.Acknowledgements;
+import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.base.WithOptionalEntity;
+import org.eclipse.ditto.signals.commands.base.Command;
+import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
+import org.eclipse.ditto.signals.commands.things.modify.CreateThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteThingResponse;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyThing;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyThingResponse;
+import org.eclipse.ditto.signals.commands.things.modify.ThingModifyCommandResponse;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThings;
+import org.eclipse.ditto.signals.commands.things.query.RetrieveThingsResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,32 +97,28 @@ import org.slf4j.LoggerFactory;
  * @param <F> the type of {@link FeatureHandle} for handling {@code Feature}s
  * @since 1.0.0
  */
-public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends FeatureHandle> implements
-        CommonManagement<T, F> {
+public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends FeatureHandle>
+        extends AbstractHandle
+        implements CommonManagement<T, F> {
 
     private static final String ARGUMENT_THING_ID = "thingId";
     private static final String ARGUMENT_THING = "thing";
     private static final String ARGUMENT_INITIAL_POLICY = "initialPolicy";
     private static final Logger LOGGER = LoggerFactory.getLogger(CommonManagementImpl.class);
 
-    private final TopicPath.Channel channel;
-    private final MessagingProvider messagingProvider;
-    private final ResponseForwarder responseForwarder;
-    private final OutgoingMessageFactory outgoingMessageFactory;
+    protected final OutgoingMessageFactory outgoingMessageFactory;
+
     private final HandlerRegistry<T, F> handlerRegistry;
     private final PointerBus bus;
 
     protected CommonManagementImpl(
             final TopicPath.Channel channel,
             final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final HandlerRegistry<T, F> handlerRegistry,
             final PointerBus bus) {
 
-        this.channel = channel;
-        this.messagingProvider = messagingProvider;
-        this.responseForwarder = responseForwarder;
+        super(messagingProvider, channel);
         this.outgoingMessageFactory = outgoingMessageFactory;
         this.handlerRegistry = handlerRegistry;
         this.bus = bus;
@@ -151,15 +172,6 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
      */
     protected MessagingProvider getMessagingProvider() {
         return messagingProvider;
-    }
-
-    /**
-     * Returns the ResponseForwarder this CommonManagement uses.
-     *
-     * @return the ResponseForwarder this CommonManagement uses.
-     */
-    protected ResponseForwarder getResponseForwarder() {
-        return responseForwarder;
     }
 
     /**
@@ -364,16 +376,9 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
 
         final CreateThing command = outgoingMessageFactory.createThing(thing, initialPolicy, options);
 
-        return new SendTerminator<Thing>(messagingProvider, responseForwarder, channel, command)
-                .applyModify(response -> {
-                    if (response instanceof WithOptionalEntity) {
-                        return ThingsModelFactory.newThing(
-                                ((WithOptionalEntity) response).getEntity(response.getImplementedSchemaVersion())
-                                .orElse(JsonFactory.nullObject()).asObject());
-                    } else {
-                        return null;
-                    }
-                });
+        return askThingCommand(command, CreateThingResponse.class,
+                response -> transformModifyResponse(command, response))
+                .toCompletableFuture();
     }
 
     @Override
@@ -436,16 +441,12 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         argumentNotNull(thing);
         assertThatThingHasId(thing);
 
-        return new SendTerminator<Optional<Thing>>(messagingProvider, responseForwarder, channel,
-                outgoingMessageFactory.putThing(thing, initialPolicy, options)).applyModify(response -> {
-            if (response instanceof WithOptionalEntity) {
-                return ((WithOptionalEntity) response).getEntity(response.getImplementedSchemaVersion())
-                        .map(JsonValue::asObject)
-                        .map(ThingsModelFactory::newThing);
-            } else {
-                throw new IllegalStateException("Response is always expected!");
-            }
-        });
+        final ModifyThing command = outgoingMessageFactory.putThing(thing, initialPolicy, options);
+        return askThingCommand(command,
+                // response could be either CreateThingResponse or ModifyThingResponse.
+                ThingModifyCommandResponse.class,
+                response -> Optional.ofNullable(transformModifyResponse(command, response))
+        ).toCompletableFuture();
     }
 
     @Override
@@ -453,8 +454,8 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         argumentNotNull(thing);
         assertThatThingHasId(thing);
 
-        return new SendTerminator<Void>(messagingProvider, responseForwarder, channel,
-                outgoingMessageFactory.updateThing(thing, options)).applyVoid();
+        return askThingCommand(outgoingMessageFactory.updateThing(thing, options), ModifyThingResponse.class,
+                this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -470,7 +471,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         argumentNotNull(thingId);
 
         final DeleteThing command = outgoingMessageFactory.deleteThing(thingId, options);
-        return new SendTerminator<Void>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, DeleteThingResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -616,6 +617,104 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
                 });
     }
 
+    /**
+     * Request a subscription for a streaming type.
+     *
+     * @param previousSubscriptionId the previous subscription ID if any exists.
+     * @param streamingType the streaming type.
+     * @param protocolCommand the command to start the subscription.
+     * @param protocolCommandAck the expected acknowledgement.
+     * @param futureToCompleteOrFailAfterAck the future to complete or fail after receiving the expected acknowledgement
+     * or not.
+     * @param adaptableToMessage function to convert an adaptable into a message.
+     * @return the subscription ID.
+     */
+    protected AdaptableBus.SubscriptionId subscribe(
+            @Nullable final AdaptableBus.SubscriptionId previousSubscriptionId,
+            final Classification.StreamingType streamingType,
+            final String protocolCommand,
+            final String protocolCommandAck,
+            final CompletableFuture<Void> futureToCompleteOrFailAfterAck,
+            final Function<Adaptable, Message<?>> adaptableToMessage) {
+
+        return subscribeAndPublishMessage(previousSubscriptionId, streamingType, protocolCommand, protocolCommandAck,
+                futureToCompleteOrFailAfterAck, adaptable -> bus -> {
+                    final Message<?> message = adaptableToMessage.apply(adaptable);
+                    bus.notify(message.getSubject(), message);
+                });
+    }
+
+    protected AdaptableBus.SubscriptionId subscribeAndPublishMessage(
+            @Nullable final AdaptableBus.SubscriptionId previousSubscriptionId,
+            final Classification.StreamingType streamingType,
+            final String protocolCommand,
+            final String protocolCommandAck,
+            final CompletableFuture<Void> futureToCompleteOrFailAfterAck,
+            final Function<Adaptable, NotifyMessage> adaptableToNotifier) {
+
+        LOGGER.trace("Sending {} and waiting for {}", protocolCommand, protocolCommandAck);
+        final AdaptableBus adaptableBus = messagingProvider.getAdaptableBus();
+        if (previousSubscriptionId != null) {
+            // remove previous subscription without going through back-end because subscription will be replaced
+            adaptableBus.unsubscribe(previousSubscriptionId);
+        }
+        final AdaptableBus.SubscriptionId subscriptionId =
+                adaptableBus.subscribeForAdaptable(streamingType,
+                        adaptable -> adaptableToNotifier.apply(adaptable).accept(getBus()));
+        final Classification tag = Classification.forString(protocolCommandAck);
+        adjoin(adaptableBus.subscribeOnceForString(tag, getTimeout()), futureToCompleteOrFailAfterAck);
+        messagingProvider.emit(protocolCommand);
+        return subscriptionId;
+    }
+
+    /**
+     * Remove a subscription.
+     *
+     * @param subscriptionId the subscription ID.
+     * @param protocolCommand the command to stop the subscription.
+     * @param protocolCommandAck the expected acknowledgement.
+     * @param futureToCompleteOrFailAfterAck the future to complete or fail after receiving the expected acknowledgement
+     * or not.
+     */
+    protected void unsubscribe(
+            @Nullable final AdaptableBus.SubscriptionId subscriptionId,
+            final String protocolCommand,
+            final String protocolCommandAck,
+            final CompletableFuture<Void> futureToCompleteOrFailAfterAck) {
+
+        final AdaptableBus adaptableBus = messagingProvider.getAdaptableBus();
+        if (adaptableBus.unsubscribe(subscriptionId)) {
+            LOGGER.trace("Sending {} and waiting for {}", protocolCommand, protocolCommandAck);
+            adjoin(adaptableBus.subscribeOnceForString(Classification.forString(protocolCommandAck), getTimeout()),
+                    futureToCompleteOrFailAfterAck);
+            messagingProvider.emit(protocolCommand);
+        } else {
+            LOGGER.trace("Requested to {} but won't because already stopped", protocolCommand);
+            futureToCompleteOrFailAfterAck.complete(null);
+        }
+    }
+
+    protected static Message<?> asThingMessage(final Adaptable adaptable) {
+        final Signal<?> signal = PROTOCOL_ADAPTER.fromAdaptable(adaptable);
+        final ThingId thingId = ThingId.of(signal.getEntityId());
+        final MessageHeaders messageHeaders =
+                MessageHeaders.newBuilder(MessageDirection.FROM, thingId, signal.getType())
+                        .correlationId(signal.getDittoHeaders().getCorrelationId().orElse(null))
+                        .build();
+        return Message.newBuilder(messageHeaders)
+                .payload(signal)
+                .extra(adaptable.getPayload().getExtra().orElse(null))
+                .build();
+    }
+
+    private static void adjoin(final CompletionStage<?> stage, final CompletableFuture<Void> future) {
+        stage.thenAccept(ignored -> future.complete(null))
+                .exceptionally(error -> {
+                    future.completeExceptionally(error);
+                    return null;
+                });
+    }
+
     private static Optional<JsonObject> getInlinePolicyFromThingJson(final JsonObject jsonObject) {
         return jsonObject.getValue(CreateThing.JSON_INLINE_POLICY.getPointer())
                 .filter(JsonValue::isObject)
@@ -630,19 +729,94 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     private CompletableFuture<List<Thing>> sendRetrieveThingsMessage(final RetrieveThings command) {
-        return new SendTerminator<List<Thing>>(messagingProvider, responseForwarder, channel, command)
-                .applyView(tvr -> {
-                    if (tvr != null) {
-                        return tvr.getEntity(tvr.getImplementedSchemaVersion())
-                                .asArray()
-                                .stream()
-                                .map(JsonValue::asObject)
-                                .map(ThingsModelFactory::newThing)
-                                .collect(Collectors.toList());
-                    } else {
-                        return null;
-                    }
-                });
+        return askThingCommand(command, RetrieveThingsResponse.class, RetrieveThingsResponse::getThings)
+                .toCompletableFuture();
     }
 
+    @Nullable
+    private Thing transformModifyResponse(final Command<?> command, final CommandResponse<?> result) {
+        final CommandResponse<?> response;
+        // also handle Acknowledgements which are a CommandResponse as well:
+        if (result instanceof Acknowledgements) {
+            // from the "twin-persisted" acknowledgement, create the actual CommandResponse and feed it back
+            response = ((Acknowledgements) result).stream()
+                    .filter(ack -> ack.getLabel().equals(DittoAcknowledgementLabel.PERSISTED))
+                    .findFirst()
+                    .map(ack -> createThingModifyCommandResponseFromAcknowledgement(command, ack))
+                    .map(signal -> (CommandResponse<?>) signal)
+                    .orElseThrow(() -> new IllegalStateException("Didn't receive an Acknowledgement for label '" +
+                            DittoAcknowledgementLabel.PERSISTED + "'. Please make sure to always request the '" +
+                            DittoAcknowledgementLabel.PERSISTED + "' Acknowledgement if you need to process the " +
+                            "response in the client."));
+        } else {
+            response = result;
+        }
+
+        if (response instanceof WithOptionalEntity) {
+            return ThingsModelFactory.newThing(
+                    ((WithOptionalEntity) response).getEntity(response.getImplementedSchemaVersion())
+                            .orElse(JsonFactory.nullObject()).asObject());
+        } else {
+            return null;
+        }
+    }
+
+    private ThingModifyCommandResponse<ThingModifyCommandResponse<?>>
+    createThingModifyCommandResponseFromAcknowledgement(
+            final Command<?> command,
+            final Acknowledgement ack) {
+        return new ThingModifyCommandResponse<ThingModifyCommandResponse<?>>() {
+            @Override
+            public JsonPointer getResourcePath() {
+                return command.getResourcePath();
+            }
+
+            @Override
+            public String getType() {
+                return command.getType().replace(".commands", ".responses");
+            }
+
+            @Nonnull
+            @Override
+            public String getManifest() {
+                return getType();
+            }
+
+            @Override
+            public ThingId getThingEntityId() {
+                return (ThingId) ack.getEntityId();
+            }
+
+            @Override
+            public DittoHeaders getDittoHeaders() {
+                return ack.getDittoHeaders();
+            }
+
+            @Override
+            public Optional<JsonValue> getEntity(final JsonSchemaVersion schemaVersion) {
+                return ack.getEntity(schemaVersion);
+            }
+
+            @Override
+            public ThingModifyCommandResponse<?> setDittoHeaders(final DittoHeaders dittoHeaders) {
+                return this;
+            }
+
+            @Override
+            public HttpStatusCode getStatusCode() {
+                return ack.getStatusCode();
+            }
+
+            @Override
+            public JsonObject toJson(final JsonSchemaVersion schemaVersion, final Predicate<JsonField> predicate) {
+                return JsonObject.empty();
+            }
+        };
+    }
+
+    @FunctionalInterface
+    protected interface NotifyMessage {
+
+        void accept(final PointerBus pointerBus);
+    }
 }

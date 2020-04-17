@@ -14,17 +14,20 @@ package org.eclipse.ditto.client.twin.internal;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.eclipse.ditto.client.internal.CommonManagementImpl;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
-import org.eclipse.ditto.client.internal.ResponseForwarder;
+import org.eclipse.ditto.client.internal.bus.AdaptableBus;
+import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.twin.Twin;
 import org.eclipse.ditto.client.twin.TwinFeatureHandle;
+import org.eclipse.ditto.client.twin.TwinSearchHandle;
 import org.eclipse.ditto.client.twin.TwinThingHandle;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.TopicPath;
@@ -37,37 +40,32 @@ import org.eclipse.ditto.protocoladapter.TopicPath;
 @ParametersAreNonnullByDefault
 public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFeatureHandle> implements Twin {
 
-    /**
-     * Handler name for consuming twin events.
-     */
-    public static final String CONSUME_TWIN_EVENTS_HANDLER = "consume-twin-events";
+    private final AtomicReference<AdaptableBus.SubscriptionId> twinEventSubscription = new AtomicReference<>();
+    private final TwinSearchHandle search;
 
     private TwinImpl(final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final PointerBus bus) {
         super(TopicPath.Channel.TWIN,
                 messagingProvider,
-                responseForwarder,
                 outgoingMessageFactory,
                 new HandlerRegistry<>(bus),
                 bus);
+        search = new TwinSearchHandleImpl(messagingProvider);
     }
 
     /**
      * Creates a new {@code TwinImpl} instance.
      *
      * @param messagingProvider implementation of underlying messaging provider.
-     * @param responseForwarder fast cache of response addresses.
      * @param outgoingMessageFactory a factory for messages.
      * @param bus the bus for message routing.
      * @return the new {@code TwinImpl} instance.
      */
     public static TwinImpl newInstance(final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final PointerBus bus) {
-        return new TwinImpl(messagingProvider, responseForwarder, outgoingMessageFactory, bus);
+        return new TwinImpl(messagingProvider, outgoingMessageFactory, bus);
     }
 
     @Override
@@ -76,7 +74,6 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
         return new TwinThingHandleImpl(
                 thingId,
                 getMessagingProvider(),
-                getResponseForwarder(),
                 getOutgoingMessageFactory(),
                 getHandlerRegistry());
     }
@@ -88,27 +85,44 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
                 thingId,
                 featureId,
                 getMessagingProvider(),
-                getResponseForwarder(),
                 getOutgoingMessageFactory(),
                 getHandlerRegistry());
     }
 
     @Override
     protected CompletableFuture<Void> doStartConsumption(final Map<String, String> consumptionConfig) {
-        final CompletableFuture<Void> completableFutureEvents = new CompletableFuture<>();
-
-        // register message handler which handles twin events:
-        getMessagingProvider().registerMessageHandler(CONSUME_TWIN_EVENTS_HANDLER, consumptionConfig,
-                m -> getBus().notify(m.getSubject(), m), completableFutureEvents);
-
-        return completableFutureEvents;
+        final CompletableFuture<Void> ackFuture = new CompletableFuture<>();
+        final Classification.StreamingType streamingType = Classification.StreamingType.TWIN_EVENT;
+        final String subscriptionMessage = buildProtocolCommand(streamingType.start(), consumptionConfig);
+        messagingProvider.registerSubscriptionMessage(streamingType, subscriptionMessage);
+        synchronized (twinEventSubscription) {
+            final AdaptableBus.SubscriptionId previousSubscriptionId = twinEventSubscription.get();
+            twinEventSubscription.set(subscribe(
+                    previousSubscriptionId,
+                    streamingType,
+                    subscriptionMessage,
+                    streamingType.startAck(),
+                    ackFuture,
+                    CommonManagementImpl::asThingMessage
+            ));
+        }
+        return ackFuture;
     }
 
     @Override
     public CompletableFuture<Void> suspendConsumption() {
-        final CompletableFuture<Void> completableFutureEvents = new CompletableFuture<>();
-        getMessagingProvider().deregisterMessageHandler(CONSUME_TWIN_EVENTS_HANDLER, completableFutureEvents);
-        return completableFutureEvents;
+        final Classification.StreamingType streamingType = Classification.StreamingType.TWIN_EVENT;
+        messagingProvider.unregisterSubscriptionMessage(streamingType);
+        final CompletableFuture<Void> ackFuture = new CompletableFuture<>();
+        synchronized (twinEventSubscription) {
+            unsubscribe(twinEventSubscription.get(), streamingType.stop(), streamingType.stopAck(), ackFuture);
+            twinEventSubscription.set(null);
+        }
+        return ackFuture;
     }
 
+    @Override
+    public TwinSearchHandle search() {
+        return search;
+    }
 }

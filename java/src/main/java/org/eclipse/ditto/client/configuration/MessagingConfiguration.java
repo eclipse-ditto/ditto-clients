@@ -13,6 +13,7 @@
 package org.eclipse.ditto.client.configuration;
 
 import java.net.URI;
+import java.time.Duration;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -25,6 +26,13 @@ import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
  * @since 1.0.0
  */
 public interface MessagingConfiguration {
+
+    /**
+     * Returns how long to wait for a response before giving up.
+     *
+     * @return the timeout.
+     */
+    Duration getTimeout();
 
     /**
      * Returns the JSON schema version to use for messaging.
@@ -64,6 +72,14 @@ public interface MessagingConfiguration {
      * Chaining.
      */
     interface Builder {
+
+        /**
+         * Set the timeout waiting for a response.
+         *
+         * @param timeout the timeout.
+         * @return this builder.
+         */
+        Builder timeout(Duration timeout);
 
         /**
          * Sets the {@code JSON schema version}.

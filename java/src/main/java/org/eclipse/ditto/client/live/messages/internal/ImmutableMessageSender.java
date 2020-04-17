@@ -156,8 +156,9 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
         }
 
         final MessageBuilder<T> messageBuilder =
-                MessagesModelFactory.<T>newMessageBuilder(messageHeadersBuilder.build()).responseConsumer(
-                        responseConsumer).payload(payload);
+                MessagesModelFactory.<T>newMessageBuilder(messageHeadersBuilder.build())
+                        .responseConsumer(responseConsumer)
+                        .payload(payload);
 
         sendConsumer.accept(messageBuilder.build());
     }

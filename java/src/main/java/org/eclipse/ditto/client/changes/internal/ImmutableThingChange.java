@@ -77,7 +77,8 @@ public final class ImmutableThingChange implements ThingChange {
             final Consumer<Acknowledgement> acknowledgementPublisher) {
 
         this(new ImmutableChange(checkNotNull(entityId, "Thing ID"), checkNotNull(changeAction, "change action"), path,
-                getJsonValueForThing(thing), revision, timestamp, extra, dittoHeaders, acknowledgementPublisher), thing);
+                        getJsonValueForThing(thing), revision, timestamp, extra, dittoHeaders, acknowledgementPublisher),
+                thing);
     }
 
     @Nullable
@@ -96,6 +97,7 @@ public final class ImmutableThingChange implements ThingChange {
      * @param timestamp the timestamp of the change.
      * @param dittoHeaders the DittoHeaders of the event which lead to the change.
      * @param acknowledgementPublisher the consumer for publishing built acknowledgements to the Ditto backend.
+     * @param extra the extra data to be included in the change.
      * @throws NullPointerException if any required argument is {@code null}.
      */
     public ImmutableThingChange(final ThingId thingId,
@@ -190,7 +192,8 @@ public final class ImmutableThingChange implements ThingChange {
     }
 
     @Override
-    public void handleAcknowledgementRequests(final Consumer<Collection<AcknowledgementRequestHandle>> acknowledgementHandles) {
+    public void handleAcknowledgementRequests(
+            final Consumer<Collection<AcknowledgementRequestHandle>> acknowledgementHandles) {
         change.handleAcknowledgementRequests(acknowledgementHandles);
     }
 

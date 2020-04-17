@@ -14,6 +14,7 @@ package org.eclipse.ditto.client.internal;
 
 import java.text.MessageFormat;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.DittoClient;
 import org.eclipse.ditto.client.changes.ChangeAction;
@@ -34,12 +35,19 @@ import org.eclipse.ditto.client.policies.internal.PoliciesImpl;
 import org.eclipse.ditto.client.twin.Twin;
 import org.eclipse.ditto.client.twin.internal.TwinImpl;
 import org.eclipse.ditto.json.JsonPointer;
+import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
+import org.eclipse.ditto.model.base.headers.DittoHeadersBuilder;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.Adaptable;
+import org.eclipse.ditto.protocoladapter.DittoProtocolAdapter;
+import org.eclipse.ditto.protocoladapter.HeaderTranslator;
+import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.acks.base.Acknowledgement;
+import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.events.things.AclEntryCreated;
 import org.eclipse.ditto.signals.events.things.AclEntryDeleted;
 import org.eclipse.ditto.signals.events.things.AclEntryModified;
@@ -105,18 +113,16 @@ public final class DefaultDittoClient implements DittoClient {
      * @param twinMessagingProvider the messaging provider to use for the {@code Twin} aspect.
      * @param liveMessagingProvider the messaging provider to use for the {@code Live} aspect.
      * @param policyMessagingProvider the messaging provider for the {@code Policy} part of the client.
-     * @param responseForwarder forwarder used to optimize response performance.
      * @param messageSerializerRegistry registry for all serializers of live messages.
      * @return the client.
      */
     public static DittoClient newInstance(final MessagingProvider twinMessagingProvider,
             final MessagingProvider liveMessagingProvider,
             final MessagingProvider policyMessagingProvider,
-            final ResponseForwarder responseForwarder,
             final MessageSerializerRegistry messageSerializerRegistry) {
-        final TwinImpl twin = configureTwin(twinMessagingProvider, responseForwarder);
-        final LiveImpl live = configureLive(liveMessagingProvider, responseForwarder, messageSerializerRegistry);
-        final PoliciesImpl policy = configurePolicyClient(policyMessagingProvider, responseForwarder);
+        final TwinImpl twin = configureTwin(twinMessagingProvider);
+        final LiveImpl live = configureLive(liveMessagingProvider, messageSerializerRegistry);
+        final PoliciesImpl policy = configurePolicyClient(policyMessagingProvider);
         return new DefaultDittoClient(twin, live, policy);
     }
 
@@ -185,35 +191,32 @@ public final class DefaultDittoClient implements DittoClient {
         LOGGER.info("Ditto Client [{}//{}] initialized successfully", clientVersion, buildTimeStamp);
     }
 
-    private static TwinImpl configureTwin(final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder) {
+    private static TwinImpl configureTwin(final MessagingProvider messagingProvider) {
         final String name = TopicPath.Channel.TWIN.getName();
         final PointerBus bus = BusFactory.createPointerBus(name, messagingProvider.getExecutorService());
-        init(bus, messagingProvider, responseForwarder);
+        init(bus, messagingProvider);
         final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
         final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion);
-        return TwinImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus);
+        return TwinImpl.newInstance(messagingProvider, messageFactory, bus);
     }
 
     private static LiveImpl configureLive(final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder, final MessageSerializerRegistry messageSerializerRegistry) {
+            final MessageSerializerRegistry messageSerializerRegistry) {
         final String name = TopicPath.Channel.LIVE.getName();
         final PointerBus bus = BusFactory.createPointerBus(name, messagingProvider.getExecutorService());
-        init(bus, messagingProvider, responseForwarder);
-        final String sessionId = messagingProvider.getAuthenticationConfiguration().getSessionId();
+        init(bus, messagingProvider);
         final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
         final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion);
-        return LiveImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus, schemaVersion,
-                sessionId, messageSerializerRegistry);
+        return LiveImpl.newInstance(messagingProvider, messageFactory, bus, schemaVersion,
+                messageSerializerRegistry);
     }
 
-    private static PoliciesImpl configurePolicyClient(final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder) {
+    private static PoliciesImpl configurePolicyClient(final MessagingProvider messagingProvider) {
         final String busName = TopicPath.Channel.NONE.getName();
         final PointerBus bus = BusFactory.createPointerBus(busName, messagingProvider.getExecutorService());
-        init(bus, messagingProvider, responseForwarder);
+        init(bus, messagingProvider);
         final OutgoingMessageFactory messageFactory = getOutgoingMessageFactoryForPolicies(messagingProvider);
-        return PoliciesImpl.newInstance(messagingProvider, responseForwarder, messageFactory, bus);
+        return PoliciesImpl.newInstance(messagingProvider, messageFactory, bus);
     }
 
     private static OutgoingMessageFactory getOutgoingMessageFactoryForPolicies(
@@ -229,11 +232,10 @@ public final class DefaultDittoClient implements DittoClient {
         return OutgoingMessageFactory.newInstance(schemaVersion);
     }
 
-    private static void init(final PointerBus bus, final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder) {
+    private static void init(final PointerBus bus, final MessagingProvider messagingProvider) {
         registerKeyBasedDistributorForIncomingEvents(bus);
-        registerKeyBasedHandlersForIncomingEvents(bus, messagingProvider);
-        messagingProvider.registerReplyHandler(responseForwarder::handle);
+        registerKeyBasedHandlersForIncomingEvents(bus, messagingProvider,
+                DittoProtocolAdapter.of(HeaderTranslator.empty()));
         messagingProvider.initialize();
     }
 
@@ -262,8 +264,31 @@ public final class DefaultDittoClient implements DittoClient {
         });
     }
 
+    private static <T extends Signal<?>> Consumer<T> emitSignal(final MessagingProvider messagingProvider,
+            final ProtocolAdapter protocolAdapter,
+            final DittoHeaderDefinition... headersToRemove) {
+
+        return signal -> {
+            final DittoHeadersBuilder<?, ?> headersBuilder = signal.getDittoHeaders().toBuilder();
+            for (final DittoHeaderDefinition definition : headersToRemove) {
+                headersBuilder.removeHeader(definition.getKey());
+            }
+            final Signal<?> signalToEmit = signal.setDittoHeaders(headersBuilder.build());
+            messagingProvider.emitAdaptable(protocolAdapter.toAdaptable(signalToEmit));
+        };
+    }
+
     private static void registerKeyBasedHandlersForIncomingEvents(final PointerBus bus,
-            final MessagingProvider messagingProvider) {
+            final MessagingProvider messagingProvider,
+            final ProtocolAdapter protocolAdapter) {
+
+        final Consumer<Acknowledgement> emitAcknowledgement = emitSignal(
+                messagingProvider,
+                protocolAdapter,
+                DittoHeaderDefinition.READ_SUBJECTS,
+                DittoHeaderDefinition.AUTHORIZATION_CONTEXT,
+                DittoHeaderDefinition.RESPONSE_REQUIRED
+        );
 
         /*
          * Thing
@@ -272,21 +297,21 @@ public final class DefaultDittoClient implements DittoClient {
                 e -> MessageFormat.format(THING_PATTERN, e.getThingEntityId()),
                 (e, extra) -> new ImmutableThingChange(e.getThingEntityId(), ChangeAction.CREATED, e.getThing(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, ThingModified.TYPE, ThingModified.class,
                 e -> MessageFormat.format(THING_PATTERN, e.getThingEntityId()),
                 (e, extra) -> new ImmutableThingChange(e.getThingEntityId(), ChangeAction.UPDATED, e.getThing(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, ThingDeleted.TYPE, ThingDeleted.class,
                 e -> MessageFormat.format(THING_PATTERN, e.getThingEntityId()),
                 (e, extra) -> new ImmutableThingChange(e.getThingEntityId(), ChangeAction.DELETED, null,
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         /*
@@ -299,7 +324,7 @@ public final class DefaultDittoClient implements DittoClient {
                         JsonPointer.empty(),
                         e.getAccessControlList().toJson(e.getImplementedSchemaVersion()),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AclEntryCreated.TYPE, AclEntryCreated.class,
@@ -309,7 +334,7 @@ public final class DefaultDittoClient implements DittoClient {
                         JsonPointer.empty(),
                         e.getAclEntry().toJson(e.getImplementedSchemaVersion()),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AclEntryModified.TYPE, AclEntryModified.class,
@@ -319,7 +344,7 @@ public final class DefaultDittoClient implements DittoClient {
                         JsonPointer.empty(),
                         e.getAclEntry().toJson(e.getImplementedSchemaVersion()),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AclEntryDeleted.TYPE, AclEntryDeleted.class,
@@ -329,7 +354,7 @@ public final class DefaultDittoClient implements DittoClient {
                         JsonPointer.empty(),
                         null,
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         /*
@@ -341,7 +366,7 @@ public final class DefaultDittoClient implements DittoClient {
                         JsonPointer.empty(),
                         e.getCreatedAttributes(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributesModified.TYPE, AttributesModified.class,
@@ -350,7 +375,7 @@ public final class DefaultDittoClient implements DittoClient {
                         JsonPointer.empty(),
                         e.getModifiedAttributes(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributesDeleted.TYPE, AttributesDeleted.class,
@@ -359,7 +384,7 @@ public final class DefaultDittoClient implements DittoClient {
                         JsonPointer.empty(),
                         null,
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         /*
@@ -372,7 +397,7 @@ public final class DefaultDittoClient implements DittoClient {
                         e.getAttributePointer(),
                         e.getAttributeValue(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal));
+                        emitAcknowledgement));
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributeModified.TYPE, AttributeModified.class,
                 e -> MessageFormat.format(ATTRIBUTE_PATTERN, e.getThingEntityId(),
@@ -381,7 +406,7 @@ public final class DefaultDittoClient implements DittoClient {
                         e.getAttributePointer(),
                         e.getAttributeValue(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal));
+                        emitAcknowledgement));
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributeDeleted.TYPE, AttributeDeleted.class,
                 e -> MessageFormat.format(ATTRIBUTE_PATTERN, e.getThingEntityId(),
@@ -390,7 +415,7 @@ public final class DefaultDittoClient implements DittoClient {
                         e.getAttributePointer(),
                         null,
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal));
+                        emitAcknowledgement));
 
         /*
          * Features
@@ -401,7 +426,7 @@ public final class DefaultDittoClient implements DittoClient {
                         e.getFeatures(),
                         JsonPointer.empty(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturesModified.TYPE, FeaturesModified.class,
@@ -410,7 +435,7 @@ public final class DefaultDittoClient implements DittoClient {
                         e.getFeatures(),
                         JsonPointer.empty(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturesDeleted.TYPE, FeaturesDeleted.class,
@@ -419,7 +444,7 @@ public final class DefaultDittoClient implements DittoClient {
                         null,
                         JsonPointer.empty(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         /*
@@ -431,7 +456,7 @@ public final class DefaultDittoClient implements DittoClient {
                         e.getFeature(),
                         JsonPointer.empty(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureModified.TYPE, FeatureModified.class,
@@ -440,7 +465,7 @@ public final class DefaultDittoClient implements DittoClient {
                         e.getFeature(),
                         JsonPointer.empty(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureDeleted.TYPE, FeatureDeleted.class,
@@ -449,7 +474,7 @@ public final class DefaultDittoClient implements DittoClient {
                         null,
                         JsonPointer.empty(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         /*
@@ -463,7 +488,7 @@ public final class DefaultDittoClient implements DittoClient {
                         JsonPointer.empty(),
                         e.getProperties().toJson(e.getImplementedSchemaVersion()),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertiesModified.TYPE,
@@ -474,7 +499,7 @@ public final class DefaultDittoClient implements DittoClient {
                         JsonPointer.empty(),
                         e.getProperties().toJson(e.getImplementedSchemaVersion()),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertiesDeleted.TYPE,
@@ -485,7 +510,7 @@ public final class DefaultDittoClient implements DittoClient {
                         JsonPointer.empty(),
                         null,
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         /*
@@ -499,7 +524,7 @@ public final class DefaultDittoClient implements DittoClient {
                         e.getPropertyPointer(),
                         e.getPropertyValue(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertyModified.TYPE,
@@ -510,7 +535,7 @@ public final class DefaultDittoClient implements DittoClient {
                         e.getPropertyPointer(),
                         e.getPropertyValue(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertyDeleted.TYPE,
@@ -521,7 +546,7 @@ public final class DefaultDittoClient implements DittoClient {
                         e.getPropertyPointer(),
                         null,
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        messagingProvider::emitSignal)
+                        emitAcknowledgement)
         );
     }
 

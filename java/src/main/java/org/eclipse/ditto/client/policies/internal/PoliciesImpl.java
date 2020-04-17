@@ -18,41 +18,41 @@ import java.text.MessageFormat;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.ditto.client.internal.AbstractHandle;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
-import org.eclipse.ditto.client.internal.ResponseForwarder;
-import org.eclipse.ditto.client.internal.SendTerminator;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.policies.Policies;
-import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.policies.PoliciesModelFactory;
 import org.eclipse.ditto.model.policies.Policy;
 import org.eclipse.ditto.model.policies.PolicyId;
+import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.commands.policies.modify.CreatePolicy;
+import org.eclipse.ditto.signals.commands.policies.modify.CreatePolicyResponse;
 import org.eclipse.ditto.signals.commands.policies.modify.DeletePolicy;
+import org.eclipse.ditto.signals.commands.policies.modify.DeletePolicyResponse;
+import org.eclipse.ditto.signals.commands.policies.modify.ModifyPolicyResponse;
+import org.eclipse.ditto.signals.commands.policies.modify.PolicyModifyCommandResponse;
 import org.eclipse.ditto.signals.commands.policies.query.RetrievePolicy;
+import org.eclipse.ditto.signals.commands.policies.query.RetrievePolicyResponse;
 
 /**
  * Default implementation for {@link Policies}.
  *
  * @since 1.1.0
  */
-public final class PoliciesImpl implements Policies {
+public final class PoliciesImpl extends AbstractHandle implements Policies {
 
-    private final MessagingProvider messagingProvider;
-    private final ResponseForwarder responseForwarder;
     private final OutgoingMessageFactory outgoingMessageFactory;
     private final PointerBus bus;
 
     public PoliciesImpl(final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final PointerBus bus) {
-        this.messagingProvider = messagingProvider;
-        this.responseForwarder = responseForwarder;
+        super(messagingProvider, TopicPath.Channel.NONE);
         this.outgoingMessageFactory = outgoingMessageFactory;
         this.bus = bus;
     }
@@ -61,16 +61,14 @@ public final class PoliciesImpl implements Policies {
      * Creates a new {@code PoliciesImpl} instance.
      *
      * @param messagingProvider implementation of underlying messaging provider.
-     * @param responseForwarder response forwarder.
      * @param outgoingMessageFactory a factory for messages.
      * @param bus the bus for message routing.
      * @return the new {@code PoliciesImpl} instance.
      */
     public static PoliciesImpl newInstance(final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final PointerBus bus) {
-        return new PoliciesImpl(messagingProvider, responseForwarder, outgoingMessageFactory, bus);
+        return new PoliciesImpl(messagingProvider, outgoingMessageFactory, bus);
     }
 
     @Override
@@ -79,18 +77,8 @@ public final class PoliciesImpl implements Policies {
         assertThatPolicyHasId(policy);
 
         final CreatePolicy command = outgoingMessageFactory.createPolicy(policy, options);
-
-        return new SendTerminator<Policy>(messagingProvider, responseForwarder, command)
-                .applyModifyPolicy(response -> {
-                    if (response != null) {
-                        return PoliciesModelFactory.newPolicy(
-                                response.getEntity(response.getImplementedSchemaVersion())
-                                        .orElse(JsonFactory.nullObject())
-                                        .asObject());
-                    } else {
-                        return null;
-                    }
-                });
+        return askPolicyCommand(command, CreatePolicyResponse.class,
+                response -> response.getPolicyCreated().orElse(null)).toCompletableFuture();
     }
 
     @Override
@@ -106,17 +94,13 @@ public final class PoliciesImpl implements Policies {
         argumentNotNull(policy);
         assertThatPolicyHasId(policy);
 
-        return new SendTerminator<Optional<Policy>>(messagingProvider, responseForwarder,
-                outgoingMessageFactory.putPolicy(policy, options))
-                .applyModifyPolicy(response -> {
-                    if (response != null) {
-                        return response.getEntity(response.getImplementedSchemaVersion())
-                                .map(JsonValue::asObject)
-                                .map(PoliciesModelFactory::newPolicy);
-                    } else {
-                        throw new IllegalStateException("Response is always expected!");
-                    }
-                });
+        return askPolicyCommand(outgoingMessageFactory.putPolicy(policy, options),
+                // response could be either CreatePolicyResponse or ModifyPolicyResponse.
+                PolicyModifyCommandResponse.class,
+                response -> response.getEntity(response.getImplementedSchemaVersion())
+                        .map(JsonValue::asObject)
+                        .map(PoliciesModelFactory::newPolicy)
+        ).toCompletableFuture();
     }
 
     @Override
@@ -132,8 +116,8 @@ public final class PoliciesImpl implements Policies {
         argumentNotNull(policy);
         assertThatPolicyHasId(policy);
 
-        return new SendTerminator<Void>(messagingProvider, responseForwarder,
-                outgoingMessageFactory.updatePolicy(policy, options)).applyVoid();
+        return askPolicyCommand(outgoingMessageFactory.updatePolicy(policy, options), ModifyPolicyResponse.class,
+                this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -149,21 +133,14 @@ public final class PoliciesImpl implements Policies {
         argumentNotNull(policyId);
 
         final DeletePolicy command = outgoingMessageFactory.deletePolicy(policyId, options);
-        return new SendTerminator<Void>(messagingProvider, responseForwarder, command).applyVoid();
+        return askPolicyCommand(command, DeletePolicyResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
     public CompletableFuture<Policy> retrieve(PolicyId policyId) {
         final RetrievePolicy command = outgoingMessageFactory.retrievePolicy(policyId);
-        return new SendTerminator<Policy>(messagingProvider, responseForwarder, command)
-                .applyViewWithPolicyResponse(response -> {
-                    if (response != null) {
-                        return PoliciesModelFactory.newPolicy(
-                                response.getEntity(response.getImplementedSchemaVersion()).asObject());
-                    } else {
-                        return null;
-                    }
-                });
+        return askPolicyCommand(command, RetrievePolicyResponse.class, RetrievePolicyResponse::getPolicy)
+                .toCompletableFuture();
     }
 
     private static void assertThatPolicyHasId(final Policy policy) {

@@ -51,6 +51,7 @@ import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.KnownMessageSubjects;
 import org.eclipse.ditto.model.policies.Subject;
@@ -93,83 +94,104 @@ public final class DittoClientUsageExamples {
     private static final Collection<String> DITTO_OAUTH_SCOPES;
     private static final String DITTO_OAUTH_TOKEN_ENDPOINT;
     private static final String NAMESPACE;
+    private static final Properties CONFIG;
 
     public static void main(final String... args) throws ExecutionException, InterruptedException {
         final DittoClient client = DittoClients.newInstance(createMessagingProvider());
         final DittoClient client2 = DittoClients.newInstance(createMessagingProvider());
 
-        final JsonifiableAdaptable jsonifiableAdaptable = ProtocolFactory.jsonifiableAdaptableFromJson(
-                JsonFactory.readFrom("{\n" +
-                        "  \"topic\": \"org.eclipse.ditto/xdk_53/things/twin/commands/modify\",\n" +
-                        "  \"headers\": {},\n" +
-                        "  \"path\": \"/\",\n" +
-                        "  \"value\": {\n" +
-                        "    \"thingId\": \"org.eclipse.ditto:xdk_53\",\n" +
-                        "    \"attributes\": {\n" +
-                        "      \"location\": {\n" +
-                        "        \"latitude\": 44.673856,\n" +
-                        "        \"longitude\": 8.261719\n" +
-                        "      }\n" +
-                        "    },\n" +
-                        "    \"features\": {\n" +
-                        "      \"accelerometer\": {\n" +
-                        "        \"properties\": {\n" +
-                        "          \"x\": 3.141,\n" +
-                        "          \"y\": 2.718,\n" +
-                        "          \"z\": 1,\n" +
-                        "          \"unit\": \"g\"\n" +
-                        "        }\n" +
-                        "      }\n" +
-                        "    }\n" +
-                        "  }\n" +
-                        "}").asObject());
-        client.sendDittoProtocol(jsonifiableAdaptable).whenComplete((a, t) -> {
-            if (a != null) {
-                LOGGER.info("sendDittoProtocol: Received adaptable as response: {}", a);
-            }
-            if (t != null) {
-                LOGGER.warn("sendDittoProtocol: Received throwable as response", t);
-            }
-        });
+        if (shouldNotSkip("twin.examples")) {
+            final JsonifiableAdaptable jsonifiableAdaptable = ProtocolFactory.jsonifiableAdaptableFromJson(
+                    JsonFactory.readFrom("{\n" +
+                            "  \"topic\": \"org.eclipse.ditto/xdk_53/things/twin/commands/modify\",\n" +
+                            "  \"headers\": {},\n" +
+                            "  \"path\": \"/\",\n" +
+                            "  \"value\": {\n" +
+                            "    \"thingId\": \"org.eclipse.ditto:xdk_53\",\n" +
+                            "    \"attributes\": {\n" +
+                            "      \"location\": {\n" +
+                            "        \"latitude\": 44.673856,\n" +
+                            "        \"longitude\": 8.261719\n" +
+                            "      }\n" +
+                            "    },\n" +
+                            "    \"features\": {\n" +
+                            "      \"accelerometer\": {\n" +
+                            "        \"properties\": {\n" +
+                            "          \"x\": 3.141,\n" +
+                            "          \"y\": 2.718,\n" +
+                            "          \"z\": 1,\n" +
+                            "          \"unit\": \"g\"\n" +
+                            "        }\n" +
+                            "      }\n" +
+                            "    }\n" +
+                            "  }\n" +
+                            "}").asObject());
+            client.sendDittoProtocol(jsonifiableAdaptable).whenComplete((a, t) -> {
+                if (a != null) {
+                    LOGGER.info("sendDittoProtocol: Received adaptable as response: {}", a);
+                }
+                if (t != null) {
+                    LOGGER.warn("sendDittoProtocol: Received throwable as response", t);
+                }
+            });
 
-        client.twin().startConsumption().get();
-        client2.twin().startConsumption().get();
-        LOGGER.info("Subscribed for Twin events");
+            client.twin().startConsumption().get();
+            client2.twin().startConsumption().get();
+            LOGGER.info("Subscribed for Twin events");
 
-        client.live().startConsumption().get();
-        client2.live().startConsumption().get();
-        LOGGER.info("Subscribed for Live events/commands/messages");
+            client.live().startConsumption().get();
+            client2.live().startConsumption().get();
+            LOGGER.info("Subscribed for Live events/commands/messages");
 
-        System.out.println("\n\nContinuing with TWIN commands/events demo:");
-        useTwinCommandsAndEvents(client, client2);
-        System.out.println("\n\nFinished with TWIN commands/events demo");
+            System.out.println("\n\nContinuing with TWIN commands/events demo:");
+            useTwinCommandsAndEvents(client, client2);
+            System.out.println("\n\nFinished with TWIN commands/events demo");
+        }
 
-        System.out.println("\n\nAbout to continue with LIVE commands/events demo:");
-        promptEnterKey();
+        if (shouldNotSkip("live.examples")) {
+            client.live().startConsumption().get();
+            client2.live().startConsumption().get();
 
-        useLiveCommands(client, client2);
-        System.out.println("\n\nFinished with LIVE commands/events demo");
+            System.out.println("\n\nAbout to continue with LIVE commands/events demo:");
+            promptEnterKey();
 
-        System.out.println("\n\nAbout to continue with LIVE messages demo:");
-        promptEnterKey();
+            useLiveCommands(client, client2);
+            System.out.println("\n\nFinished with LIVE commands/events demo");
 
-        useLiveMessages(client, client2);
-        System.out.println("\n\nFinished with LIVE messages demo");
-        Thread.sleep(500);
+            System.out.println("\n\nAbout to continue with LIVE messages demo:");
+            promptEnterKey();
 
-        System.out.println("\n\nAbout to continue with small load test:");
-        promptEnterKey();
+            useLiveMessages(client, client2);
+            System.out.println("\n\nFinished with LIVE messages demo");
+            Thread.sleep(500);
+        }
 
-        final int loadTestThings = 100;
-        final int loadTestCount = 10;
-        subscribeForLoadTestUpdateChanges(client2, loadTestCount * loadTestThings, false);
-        performLoadTestUpdate(client, loadTestCount, loadTestThings, false);
-        performLoadTestRead(client, loadTestCount, true);
-        Thread.sleep(1000);
+        if (shouldNotSkip("search.examples")) {
+            System.out.println("\n\nAbout to continue with search commands:");
+            promptEnterKey();
+            useSearchCommands(client);
+            System.out.println("\n\nFinished with SEARCH commands demo");
+            Thread.sleep(500);
+        }
 
-        System.out.println("\n\nAbout to continue with policy example:");
-        promptEnterKey();
-        addNewSubjectToExistingPolicy(client);
+        if (shouldNotSkip("load.test")) {
+            System.out.println("\n\nAbout to continue with small load test:");
+            promptEnterKey();
+
+            final int loadTestThings = 100;
+            final int loadTestCount = 10;
+            subscribeForLoadTestUpdateChanges(client2, loadTestCount * loadTestThings, false);
+            performLoadTestUpdate(client, loadTestCount, loadTestThings, false);
+            performLoadTestRead(client, loadTestCount, true);
+            Thread.sleep(1000);
+        }
+
+        if (shouldNotSkip("policies.examples")) {
+            System.out.println("\n\nAbout to continue with policy example:");
+            promptEnterKey();
+            addNewSubjectToExistingPolicy(client);
+            System.out.println("\n\nFinished with policy example");
+        }
 
         client.destroy();
         client2.destroy();
@@ -562,6 +584,64 @@ public final class DittoClientUsageExamples {
         });
     }
 
+    private static void useSearchCommands(final DittoClient client) {
+
+        final String namespace =
+                CONFIG.getProperty("ditto.search.namespace", CONFIG.getProperty("ditto.namespace"));
+
+        final String rql1 = "like(thingId,\"" + namespace + ":*0\")";
+        final String options1 = "sort(-thingId),size(1)";
+        LOGGER.info("Streaming search results for <{}> with <{}>...", rql1, options1);
+        client.twin()
+                .search()
+                .stream(searchQueryBuilder -> searchQueryBuilder.namespace(namespace)
+                        .filter(rql1)
+                        .options(builder -> builder.sort(s -> s.desc("thingId")).size(1))
+                        .initialDemand(1)
+                        .demand(1)
+                        .fields("thingId")
+                )
+                .forEach(thing -> {
+                    // run in main thread
+                    LOGGER.info("Received: <{}>", thing.getEntityId().orElse(null));
+                });
+        LOGGER.info("Done.\n");
+
+        final String rql2 = "not(exists(thingId))";
+        LOGGER.info("Expecting empty search results for <{}>...", rql2);
+        client.twin()
+                .search()
+                .stream(searchQueryBuilder -> searchQueryBuilder.namespace(namespace)
+                        .filter(rql2)
+                        .fields("thingId")
+                )
+                .forEach(thing -> {
+                    // run in main thread
+                    LOGGER.info("Received: <{}>", thing.getEntityId().orElse(null));
+                });
+        LOGGER.info("Done.\n");
+
+        final String rql3 = "not(exist(thingId";
+        LOGGER.info("Expecting error for <{}>...", rql3);
+        try {
+            client.twin()
+                    .search()
+                    .stream(searchQueryBuilder -> searchQueryBuilder.filter(rql3))
+                    .forEach(thing -> {
+                        // run in main thread
+                        LOGGER.error("Received unexpected: <{}>", thing);
+                    });
+            LOGGER.error("Got no error! Something is wrong.");
+        } catch (final DittoRuntimeException e) {
+            if (e.getErrorCode().equals("rql.expression.invalid")) {
+                LOGGER.info("Got expected error: <{}>", e.toJson());
+            } else {
+                LOGGER.error("Got unexpected error! Something is wrong: <{}>", e.toJson());
+            }
+        }
+        LOGGER.info("Done.\n");
+    }
+
     private static double getDuration(final long startTimeStamp) {
         final int nanosecondsToMillisecondsFactor = 1_000_000;
         return (double) (System.nanoTime() - startTimeStamp) / nanosecondsToMillisecondsFactor;
@@ -603,16 +683,19 @@ public final class DittoClientUsageExamples {
     }
 
     private static void promptEnterKey() throws InterruptedException {
-        Thread.sleep(500);
-        System.out.println("Press \"ENTER\" to continue...");
-        final Scanner scanner = new Scanner(System.in);
-        scanner.nextLine();
+        if (promptToContinue()) {
+            Thread.sleep(500);
+            System.out.println("Press \"ENTER\" to continue...");
+            final Scanner scanner = new Scanner(System.in);
+            scanner.nextLine();
+        }
     }
 
     private static MessagingProvider createMessagingProvider() {
         final MessagingConfiguration.Builder builder = WebSocketMessagingConfiguration.newBuilder()
                 .endpoint(DITTO_ENDPOINT_URL)
-                .jsonSchemaVersion(JsonSchemaVersion.V_2);
+                .jsonSchemaVersion(JsonSchemaVersion.V_2)
+                .reconnectEnabled(false);
 
         final ProxyConfiguration proxyConfiguration;
         if (PROXY_HOST != null && !PROXY_HOST.isEmpty()) {
@@ -662,6 +745,14 @@ public final class DittoClientUsageExamples {
         return MessagingProviders.webSocket(builder.build(), authenticationProvider);
     }
 
+    private static boolean shouldNotSkip(final String propertyName) {
+        return !Boolean.parseBoolean(CONFIG.getProperty("skip." + propertyName, "false"));
+    }
+
+    private static boolean promptToContinue() {
+        return Boolean.parseBoolean(CONFIG.getProperty("prompt.to.continue", "true"));
+    }
+
     static {
         try {
             final Properties config = new Properties();
@@ -695,6 +786,7 @@ public final class DittoClientUsageExamples {
                     Arrays.stream(config.getProperty("ditto.oauth.scope").split(" ")).collect(Collectors.toSet());
             DITTO_OAUTH_TOKEN_ENDPOINT = config.getProperty("ditto.oauth.token-endpoint");
             NAMESPACE = config.getProperty("ditto.namespace");
+            CONFIG = config;
         } catch (final IOException e) {
             throw new IllegalStateException(e);
         }

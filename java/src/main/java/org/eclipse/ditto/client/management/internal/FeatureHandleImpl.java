@@ -19,10 +19,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.changes.Change;
+import org.eclipse.ditto.client.internal.AbstractHandle;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
-import org.eclipse.ditto.client.internal.ResponseForwarder;
-import org.eclipse.ditto.client.internal.SendTerminator;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
 import org.eclipse.ditto.client.management.FeatureHandle;
 import org.eclipse.ditto.client.management.ThingHandle;
@@ -36,16 +35,23 @@ import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.FeatureDefinition;
 import org.eclipse.ditto.model.things.ThingId;
-import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeature;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureDefinition;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureDefinitionResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperties;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteFeaturePropertiesResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperty;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteFeaturePropertyResponse;
+import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDefinition;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDefinitionResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperties;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyFeaturePropertiesResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperty;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyFeaturePropertyResponse;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveFeature;
+import org.eclipse.ditto.signals.commands.things.query.RetrieveFeatureResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,31 +62,27 @@ import org.slf4j.LoggerFactory;
  * @param <F> the type of {@link FeatureHandle} for handling {@code Feature}s
  * @since 1.0.0
  */
-public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends FeatureHandle> implements FeatureHandle {
+public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends FeatureHandle>
+        extends AbstractHandle implements FeatureHandle {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FeatureHandleImpl.class);
 
-    private final TopicPath.Channel channel;
+    protected final OutgoingMessageFactory outgoingMessageFactory;
+
     private final ThingId thingId;
     private final String featureId;
-    private final MessagingProvider messagingProvider;
-    private final ResponseForwarder responseForwarder;
-    private final OutgoingMessageFactory outgoingMessageFactory;
     private final HandlerRegistry<T, F> handlerRegistry;
 
     protected FeatureHandleImpl(final TopicPath.Channel channel,
             final ThingId thingId,
             final String featureId,
             final MessagingProvider messagingProvider,
-            final ResponseForwarder responseForwarder,
             final OutgoingMessageFactory outgoingMessageFactory,
             final HandlerRegistry<T, F> handlerRegistry) {
 
-        this.channel = channel;
+        super(messagingProvider, channel);
         this.thingId = thingId;
         this.featureId = featureId;
-        this.messagingProvider = messagingProvider;
-        this.responseForwarder = responseForwarder;
         this.outgoingMessageFactory = outgoingMessageFactory;
         this.handlerRegistry = handlerRegistry;
     }
@@ -92,15 +94,6 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
      */
     protected MessagingProvider getMessagingProvider() {
         return messagingProvider;
-    }
-
-    /**
-     * Returns the ResponseForwarder this FeatureHandle uses.
-     *
-     * @return the ResponseForwarder this FeatureHandle uses.
-     */
-    protected ResponseForwarder getResponseForwarder() {
-        return responseForwarder;
     }
 
     /**
@@ -134,54 +127,37 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
     @Override
     public CompletableFuture<Void> delete(final Option<?>... options) {
         final DeleteFeature command = outgoingMessageFactory.deleteFeature(thingId, featureId, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, DeleteFeatureResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
     public CompletableFuture<Feature> retrieve() {
         final RetrieveFeature command = outgoingMessageFactory.retrieveFeature(thingId, featureId);
-        return new SendTerminator<Feature>(messagingProvider, responseForwarder, channel, command).applyView(tvr -> {
-            if (tvr != null) {
-                return ThingsModelFactory.newFeatureBuilder(tvr.getEntity(tvr.getImplementedSchemaVersion()).asObject())
-                        .useId(featureId)
-                        .build();
-            } else {
-                return null;
-            }
-        });
+        return askThingCommand(command, RetrieveFeatureResponse.class, RetrieveFeatureResponse::getFeature)
+                .toCompletableFuture();
     }
 
     @Override
     public CompletableFuture<Feature> retrieve(final JsonFieldSelector fieldSelector) {
         final RetrieveFeature command =
                 outgoingMessageFactory.retrieveFeature(thingId, featureId, fieldSelector.getPointers());
-
-        return new SendTerminator<Feature>(messagingProvider, responseForwarder, channel, command).applyView(tvr -> {
-            if (tvr != null) {
-                return ThingsModelFactory.newFeatureBuilder(tvr.getEntity(tvr.getImplementedSchemaVersion()).asObject())
-                        .useId(featureId)
-                        .build();
-            } else {
-                return null;
-            }
-        });
+        return askThingCommand(command, RetrieveFeatureResponse.class, RetrieveFeatureResponse::getFeature)
+                .toCompletableFuture();
     }
 
     @Override
     public CompletableFuture<Void> setDefinition(final FeatureDefinition featureDefinition,
             final Option<?>... options) {
-
         final ModifyFeatureDefinition command =
                 outgoingMessageFactory.setFeatureDefinition(thingId, featureId, featureDefinition, options);
-
-        return new SendTerminator<Void>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, ModifyFeatureDefinitionResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
     public CompletableFuture<Void> deleteDefinition(final Option<?>... options) {
         final DeleteFeatureDefinition
                 command = outgoingMessageFactory.deleteFeatureDefinition(thingId, featureId, options);
-        return new SendTerminator<Void>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, DeleteFeatureDefinitionResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -221,28 +197,28 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
 
         final ModifyFeatureProperty command =
                 outgoingMessageFactory.setFeatureProperty(thingId, featureId, path, value, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, ModifyFeaturePropertyResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
     public CompletableFuture<Void> setProperties(final JsonObject value, final Option<?>... options) {
         final ModifyFeatureProperties
                 command = outgoingMessageFactory.setFeatureProperties(thingId, featureId, value, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, ModifyFeaturePropertiesResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
     public CompletableFuture<Void> deleteProperty(final JsonPointer path, final Option<?>... options) {
         final DeleteFeatureProperty
                 command = outgoingMessageFactory.deleteFeatureProperty(thingId, featureId, path, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, DeleteFeaturePropertyResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
     public CompletableFuture<Void> deleteProperties(final Option<?>... options) {
         final DeleteFeatureProperties
                 command = outgoingMessageFactory.deleteFeatureProperties(thingId, featureId, options);
-        return new SendTerminator<>(messagingProvider, responseForwarder, channel, command).applyVoid();
+        return askThingCommand(command, DeleteFeaturePropertiesResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -270,5 +246,4 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
     public boolean deregister(final String registrationId) {
         return handlerRegistry.deregister(registrationId);
     }
-
 }

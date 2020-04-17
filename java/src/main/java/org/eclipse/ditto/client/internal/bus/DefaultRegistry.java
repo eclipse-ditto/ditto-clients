@@ -26,10 +26,9 @@ import org.eclipse.ditto.json.JsonPointer;
  */
 final class DefaultRegistry<T> implements Registry<T> {
 
-    private final ConcurrentHashMap<JsonPointer, List<Registration<T>>> pointerCache = new
-            ConcurrentHashMap<>();
-    private final ConcurrentHashMap<JsonPointerSelector, List<Registration<T>>> registrationMap = new
-            ConcurrentHashMap<>();
+    private final ConcurrentHashMap<JsonPointer, List<Registration<T>>> pointerCache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<JsonPointerSelector, List<Registration<T>>> registrationMap =
+            new ConcurrentHashMap<>();
 
     private final boolean useCache;
 
