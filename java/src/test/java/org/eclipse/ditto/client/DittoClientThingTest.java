@@ -40,6 +40,7 @@ import org.eclipse.ditto.model.base.acks.AcknowledgementRequest;
 import org.eclipse.ditto.model.base.auth.AuthorizationModelFactory;
 import org.eclipse.ditto.model.base.auth.AuthorizationSubject;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
@@ -54,6 +55,8 @@ import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 import org.eclipse.ditto.signals.acks.base.Acknowledgements;
+import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
+import org.eclipse.ditto.signals.commands.things.exceptions.ThingPreconditionFailedException;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
@@ -145,6 +148,22 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
         final ModifyThing command = expectMsgClass(ModifyThing.class);
         reply(ModifyThingResponse.modified(THING_ID, command.getDittoHeaders()));
         assertOnlyIfMatchHeader(command);
+    }
+
+    @Test
+    public void testPutThingWithUnsatisfiedPrecondition() {
+        assertEventualCompletion(getManagement().put(THING, Options.Modify.exists(true))
+                .handle((response, error) -> {
+                    assertThat(error)
+                            .describedAs("Expect failure with %s, got response=%s, error=%s",
+                                    ThingPreconditionFailedException.class.getSimpleName(), response, error)
+                            .isInstanceOf(ThingPreconditionFailedException.class);
+                    return null;
+                }));
+        final ModifyThing command = expectMsgClass(ModifyThing.class);
+        final DittoRuntimeException error =
+                ThingPreconditionFailedException.newBuilder("if-match", "\"*\"", "").build();
+        reply(ThingErrorResponse.of(error, command.getDittoHeaders()));
     }
 
     @Test

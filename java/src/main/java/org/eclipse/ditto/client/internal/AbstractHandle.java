@@ -17,6 +17,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -37,7 +38,6 @@ import org.eclipse.ditto.signals.commands.base.ErrorResponse;
 import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
 import org.eclipse.ditto.signals.commands.policies.PolicyCommandResponse;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
-import org.eclipse.ditto.signals.commands.things.ThingCommandResponse;
 
 /**
  * Super class of API handles including common methods for request-response handling.
@@ -120,9 +120,7 @@ public abstract class AbstractHandle {
             final Class<S> expectedResponse,
             final Function<S, R> onSuccess) {
         return sendSignalAndExpectResponse(command, expectedResponse, onSuccess, ErrorResponse.class,
-                errorResponse -> {
-                    throw errorResponse.getDittoRuntimeException();
-                });
+                ErrorResponse::getDittoRuntimeException);
     }
 
     /**
@@ -144,9 +142,7 @@ public abstract class AbstractHandle {
             final Function<S, R> onSuccess) {
         final ThingCommand<?> commandWithChannel = setChannel(command, channel);
         return sendSignalAndExpectResponse(commandWithChannel, expectedResponse, onSuccess, ErrorResponse.class,
-                errorResponse -> {
-                    throw errorResponse.getDittoRuntimeException();
-                });
+                ErrorResponse::getDittoRuntimeException);
     }
 
     /**
@@ -166,22 +162,25 @@ public abstract class AbstractHandle {
             final Class<S> expectedResponseClass,
             final Function<S, R> onSuccess,
             final Class<E> expectedErrorResponseClass,
-            final Function<E, R> onError) {
+            final Function<E, ? extends RuntimeException> onError) {
 
         final CompletionStage<Adaptable> responseFuture = messagingProvider.getAdaptableBus()
                 .subscribeOnceForAdaptable(Classification.forCorrelationId(signal), getTimeout());
 
         messagingProvider.emit(signalToJsonString(signal));
-        return responseFuture.thenApply(responseAdaptable -> {
+        final CompletableFuture<R> future = new CompletableFuture<>();
+        responseFuture.thenAccept(responseAdaptable -> {
             final Signal<?> response = signalFromAdaptable(responseAdaptable);
-            if (expectedResponseClass.isInstance(response)) {
-                return onSuccess.apply(expectedResponseClass.cast(response));
-            } else if (expectedErrorResponseClass.isInstance(response)) {
-                return onError.apply(expectedErrorResponseClass.cast(response));
+            if (expectedErrorResponseClass.isInstance(response)) {
+                future.completeExceptionally(onError.apply(expectedErrorResponseClass.cast(response)));
+            } else if (expectedResponseClass.isInstance(response)) {
+                future.complete(onSuccess.apply(expectedResponseClass.cast(response)));
             } else {
-                throw new ClassCastException("Expect " + expectedResponseClass.getSimpleName() + ", got: " + response);
+                future.completeExceptionally(new ClassCastException(
+                        "Expect " + expectedResponseClass.getSimpleName() + ", got: " + response));
             }
         });
+        return future;
     }
 
     /**

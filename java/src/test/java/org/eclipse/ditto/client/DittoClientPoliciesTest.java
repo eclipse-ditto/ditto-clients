@@ -35,6 +35,8 @@ import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.policies.Policy;
 import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
 import org.eclipse.ditto.signals.commands.policies.PolicyCommandResponse;
+import org.eclipse.ditto.signals.commands.policies.PolicyErrorResponse;
+import org.eclipse.ditto.signals.commands.policies.exceptions.PolicyNotAccessibleException;
 import org.eclipse.ditto.signals.commands.policies.modify.CreatePolicy;
 import org.eclipse.ditto.signals.commands.policies.modify.CreatePolicyResponse;
 import org.eclipse.ditto.signals.commands.policies.modify.DeletePolicy;
@@ -179,6 +181,21 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
         reply(RetrievePolicyResponse.of(POLICY_ID, POLICY, expectMsgClass(RetrievePolicy.class).getDittoHeaders()));
         retrievePolicyResponse.get(TIMEOUT, TIME_UNIT);
         Assertions.assertThat(retrievePolicyResponse).isCompletedWithValue(POLICY);
+    }
+
+    @Test
+    public void testRetrievePolicyFails() {
+        assertEventualCompletion(client.policies().retrieve(POLICY_ID).handle((response, error) -> {
+            assertThat(error)
+                    .describedAs("Expect failure with %s, got response=%s, error=%s",
+                            PolicyNotAccessibleException.class.getSimpleName(), response, error)
+                    .isInstanceOf(PolicyNotAccessibleException.class);
+            return null;
+        }));
+        final RetrievePolicy retrievePolicy = expectMsgClass(RetrievePolicy.class);
+        reply(PolicyErrorResponse.of(PolicyNotAccessibleException.newBuilder(POLICY_ID)
+                .dittoHeaders(retrievePolicy.getDittoHeaders())
+                .build()));
     }
 
     @Test(expected = JsonMissingFieldException.class)
