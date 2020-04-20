@@ -79,9 +79,7 @@ import org.eclipse.ditto.signals.commands.base.Command;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyThing;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ThingModifyCommandResponse;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThings;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThingsResponse;
@@ -454,7 +452,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         argumentNotNull(thing);
         assertThatThingHasId(thing);
 
-        return askThingCommand(outgoingMessageFactory.updateThing(thing, options), ModifyThingResponse.class,
+        return askThingCommand(outgoingMessageFactory.updateThing(thing, options), CommandResponse.class,
                 this::toVoid).toCompletableFuture();
     }
 
@@ -471,7 +469,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         argumentNotNull(thingId);
 
         final DeleteThing command = outgoingMessageFactory.deleteThing(thingId, options);
-        return askThingCommand(command, DeleteThingResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -739,15 +737,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         // also handle Acknowledgements which are a CommandResponse as well:
         if (result instanceof Acknowledgements) {
             // from the "twin-persisted" acknowledgement, create the actual CommandResponse and feed it back
-            response = ((Acknowledgements) result).stream()
-                    .filter(ack -> ack.getLabel().equals(DittoAcknowledgementLabel.PERSISTED))
-                    .findFirst()
-                    .map(ack -> createThingModifyCommandResponseFromAcknowledgement(command, ack))
-                    .map(signal -> (CommandResponse<?>) signal)
-                    .orElseThrow(() -> new IllegalStateException("Didn't receive an Acknowledgement for label '" +
-                            DittoAcknowledgementLabel.PERSISTED + "'. Please make sure to always request the '" +
-                            DittoAcknowledgementLabel.PERSISTED + "' Acknowledgement if you need to process the " +
-                            "response in the client."));
+            response = extractCommandResponseFromAcknowledgements(command, (Acknowledgements) result);
         } else {
             response = result;
         }
@@ -763,19 +753,33 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         }
     }
 
-    private ThingModifyCommandResponse<ThingModifyCommandResponse<?>>
+    static CommandResponse<?> extractCommandResponseFromAcknowledgements(final Signal<?> signal,
+            final Acknowledgements result) {
+        final CommandResponse<?> response;
+        response = result.stream()
+                .filter(ack -> ack.getLabel().equals(DittoAcknowledgementLabel.PERSISTED))
+                .findFirst()
+                .map(ack -> createThingModifyCommandResponseFromAcknowledgement(signal, ack))
+                .orElseThrow(() -> new IllegalStateException("Didn't receive an Acknowledgement for label '" +
+                        DittoAcknowledgementLabel.PERSISTED + "'. Please make sure to always request the '" +
+                        DittoAcknowledgementLabel.PERSISTED + "' Acknowledgement if you need to process the " +
+                        "response in the client."));
+        return response;
+    }
+
+    private static ThingModifyCommandResponse<ThingModifyCommandResponse<?>>
     createThingModifyCommandResponseFromAcknowledgement(
-            final Command<?> command,
+            final Signal<?> signal,
             final Acknowledgement ack) {
         return new ThingModifyCommandResponse<ThingModifyCommandResponse<?>>() {
             @Override
             public JsonPointer getResourcePath() {
-                return command.getResourcePath();
+                return signal.getResourcePath();
             }
 
             @Override
             public String getType() {
-                return command.getType().replace(".commands", ".responses");
+                return signal.getType().replace(".commands", ".responses");
             }
 
             @Nonnull

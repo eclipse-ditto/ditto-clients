@@ -31,6 +31,7 @@ import org.eclipse.ditto.protocoladapter.HeaderTranslator;
 import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
 import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.acks.base.Acknowledgements;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.commands.base.ErrorResponse;
@@ -157,7 +158,7 @@ public abstract class AbstractHandle {
      * @param <R> type of the result.
      * @return future of the result.
      */
-    protected <S, E, R> CompletionStage<R> sendSignalAndExpectResponse(final Signal signal,
+    protected <S, E, R> CompletionStage<R> sendSignalAndExpectResponse(final Signal<?> signal,
             final Class<S> expectedResponseClass,
             final Function<S, R> onSuccess,
             final Class<E> expectedErrorResponseClass,
@@ -174,6 +175,10 @@ public abstract class AbstractHandle {
                 throw onError.apply(expectedErrorResponseClass.cast(response));
             } else if (expectedResponseClass.isInstance(response)) {
                 return onSuccess.apply(expectedResponseClass.cast(response));
+            } else if (response instanceof Acknowledgements) {
+                final CommandResponse<?> commandResponse = CommonManagementImpl
+                        .extractCommandResponseFromAcknowledgements(signal, (Acknowledgements) response);
+                return onSuccess.apply(expectedResponseClass.cast(commandResponse));
             } else {
                 throw new ClassCastException("Expect " + expectedResponseClass.getSimpleName() + ", got: " + response);
             }
