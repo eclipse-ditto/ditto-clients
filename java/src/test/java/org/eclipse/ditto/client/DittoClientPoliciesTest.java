@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 
 import org.assertj.core.api.Assertions;
@@ -189,7 +190,8 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
             assertThat(error)
                     .describedAs("Expect failure with %s, got response=%s, error=%s",
                             PolicyNotAccessibleException.class.getSimpleName(), response, error)
-                    .isInstanceOf(PolicyNotAccessibleException.class);
+                    .isInstanceOf(CompletionException.class)
+                    .hasCauseInstanceOf(PolicyNotAccessibleException.class);
             return null;
         }));
         final RetrievePolicy retrievePolicy = expectMsgClass(RetrievePolicy.class);

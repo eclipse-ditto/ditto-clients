@@ -17,7 +17,6 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -168,19 +167,17 @@ public abstract class AbstractHandle {
                 .subscribeOnceForAdaptable(Classification.forCorrelationId(signal), getTimeout());
 
         messagingProvider.emit(signalToJsonString(signal));
-        final CompletableFuture<R> future = new CompletableFuture<>();
-        responseFuture.thenAccept(responseAdaptable -> {
+        return responseFuture.thenApply(responseAdaptable -> {
             final Signal<?> response = signalFromAdaptable(responseAdaptable);
             if (expectedErrorResponseClass.isInstance(response)) {
-                future.completeExceptionally(onError.apply(expectedErrorResponseClass.cast(response)));
+                // extracted runtime exception will be wrapped in CompletionException.
+                throw onError.apply(expectedErrorResponseClass.cast(response));
             } else if (expectedResponseClass.isInstance(response)) {
-                future.complete(onSuccess.apply(expectedResponseClass.cast(response)));
+                return onSuccess.apply(expectedResponseClass.cast(response));
             } else {
-                future.completeExceptionally(new ClassCastException(
-                        "Expect " + expectedResponseClass.getSimpleName() + ", got: " + response));
+                throw new ClassCastException("Expect " + expectedResponseClass.getSimpleName() + ", got: " + response);
             }
         });
-        return future;
     }
 
     /**

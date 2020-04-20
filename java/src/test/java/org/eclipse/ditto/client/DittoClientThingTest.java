@@ -23,6 +23,7 @@ import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 import static org.eclipse.ditto.model.base.acks.AcknowledgementRequest.parseAcknowledgementRequest;
 
 import java.util.Arrays;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 
@@ -157,7 +158,8 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
                     assertThat(error)
                             .describedAs("Expect failure with %s, got response=%s, error=%s",
                                     ThingPreconditionFailedException.class.getSimpleName(), response, error)
-                            .isInstanceOf(ThingPreconditionFailedException.class);
+                            .isInstanceOf(CompletionException.class)
+                            .hasCauseInstanceOf(ThingPreconditionFailedException.class);
                     return null;
                 }));
         final ModifyThing command = expectMsgClass(ModifyThing.class);
