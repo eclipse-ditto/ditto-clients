@@ -483,10 +483,6 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
         );
         // expect subscription messages
         assertThat(expectMsgClass(String.class)).startsWith("START-SEND-");
-        if (channel == TopicPath.Channel.LIVE) {
-            assertThat(expectMsgClass(String.class)).startsWith("START-SEND-");
-            assertThat(expectMsgClass(String.class)).startsWith("START-SEND-");
-        }
 
         reply(ThingDeleted.of(THING_ID, 1L, DittoHeaders.newBuilder()
                 .channel(channel.name())
