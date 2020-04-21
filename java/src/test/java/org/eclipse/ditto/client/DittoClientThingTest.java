@@ -30,6 +30,7 @@ import java.util.concurrent.Semaphore;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.Assumptions;
 import org.eclipse.ditto.client.internal.AbstractDittoClientThingsTest;
+import org.eclipse.ditto.client.management.AcknowledgementsFailedException;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.client.registration.DuplicateRegistrationIdException;
@@ -123,6 +124,43 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
                 ),
                 sentDittoHeaders
         ));
+
+        assertThat(sentDittoHeaders.getAcknowledgementRequests())
+                .containsExactly(AcknowledgementRequest.of(label1), AcknowledgementRequest.of(label2));
+    }
+
+    @Test
+    public void testUpdateThingWithFailedAcknowledgements() {
+        // skip this test for LIVE - 'twin-persisted' is obligatory
+        Assumptions.assumeThat(channel).isEqualTo(TopicPath.Channel.TWIN);
+
+        final AcknowledgementLabel label1 = AcknowledgementLabel.of("custom-ack-1");
+        final AcknowledgementLabel label2 = AcknowledgementLabel.of("twin-persisted");
+        final Acknowledgements expectedAcknowledgements = Acknowledgements.of(
+                Arrays.asList(
+                        Acknowledgement.of(label1, THING_ID, HttpStatusCode.FORBIDDEN, DittoHeaders.empty()),
+                        Acknowledgement.of(label2, THING_ID, HttpStatusCode.ACCEPTED, DittoHeaders.empty())
+                ),
+                DittoHeaders.empty()
+        );
+        assertEventualCompletion(getManagement()
+                .update(THING, Options.dittoHeaders(DittoHeaders.newBuilder()
+                        .acknowledgementRequest(
+                                AcknowledgementRequest.of(label1),
+                                AcknowledgementRequest.of(label2))
+                        .build()))
+                .exceptionally(error -> {
+                    assertThat(error).isInstanceOf(CompletionException.class)
+                            .hasCauseInstanceOf(AcknowledgementsFailedException.class);
+                    final AcknowledgementsFailedException cause = (AcknowledgementsFailedException) error.getCause();
+                    assertThat(cause.getAcknowledgements().setDittoHeaders(DittoHeaders.empty()))
+                            .isEqualTo(expectedAcknowledgements);
+                    return null;
+                })
+        );
+
+        final DittoHeaders sentDittoHeaders = expectMsgClass(ModifyThing.class).getDittoHeaders();
+        reply(expectedAcknowledgements.setDittoHeaders(sentDittoHeaders));
 
         assertThat(sentDittoHeaders.getAcknowledgementRequests())
                 .containsExactly(AcknowledgementRequest.of(label1), AcknowledgementRequest.of(label2));

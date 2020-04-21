@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
 import org.eclipse.ditto.client.internal.bus.Classification;
+import org.eclipse.ditto.client.management.AcknowledgementsFailedException;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.json.JsonField;
 import org.eclipse.ditto.json.JsonObject;
@@ -251,17 +252,23 @@ public abstract class AbstractHandle {
     }
 
     static CommandResponse<?> extractCommandResponseFromAcknowledgements(final Signal<?> signal,
-            final Acknowledgements result) {
-        final CommandResponse<?> response;
-        response = result.stream()
-                .filter(ack -> ack.getLabel().equals(DittoAcknowledgementLabel.PERSISTED))
-                .findFirst()
-                .map(ack -> createThingModifyCommandResponseFromAcknowledgement(signal, ack))
-                .orElseThrow(() -> new IllegalStateException("Didn't receive an Acknowledgement for label '" +
-                        DittoAcknowledgementLabel.PERSISTED + "'. Please make sure to always request the '" +
-                        DittoAcknowledgementLabel.PERSISTED + "' Acknowledgement if you need to process the " +
-                        "response in the client."));
-        return response;
+            final Acknowledgements acknowledgements) {
+        if (areFailedAcknowledgements(acknowledgements.getStatusCode())) {
+            throw AcknowledgementsFailedException.of(acknowledgements);
+        } else {
+            return acknowledgements.stream()
+                    .filter(ack -> ack.getLabel().equals(DittoAcknowledgementLabel.PERSISTED))
+                    .findFirst()
+                    .map(ack -> createThingModifyCommandResponseFromAcknowledgement(signal, ack))
+                    .orElseThrow(() -> new IllegalStateException("Didn't receive an Acknowledgement for label '" +
+                            DittoAcknowledgementLabel.PERSISTED + "'. Please make sure to always request the '" +
+                            DittoAcknowledgementLabel.PERSISTED + "' Acknowledgement if you need to process the " +
+                            "response in the client."));
+        }
+    }
+
+    private static boolean areFailedAcknowledgements(final HttpStatusCode statusCode) {
+        return statusCode.isClientError() || statusCode.isInternalError();
     }
 
     private static ThingModifyCommandResponse<ThingModifyCommandResponse<?>>
