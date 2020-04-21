@@ -277,6 +277,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
                 .isEqualTo(HttpStatusCode.OK);
         Assertions.assertThat(expectMsgClass(Acknowledgement.class).getStatusCode())
                 .isEqualTo(HttpStatusCode.FORBIDDEN);
-        Assertions.assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.INTERNAL_SERVER_ERROR);
+        Assertions.assertThat(expectMsgClass(Acknowledgement.class).getStatusCode())
+                .isEqualTo(HttpStatusCode.INTERNAL_SERVER_ERROR);
     }
 }

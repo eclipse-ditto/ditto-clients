@@ -16,6 +16,7 @@ import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 import static org.eclipse.ditto.model.base.acks.AcknowledgementRequest.parseAcknowledgementRequest;
 
+import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -27,6 +28,8 @@ import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
+import org.eclipse.ditto.model.base.acks.AcknowledgementRequest;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.things.Feature;
@@ -34,6 +37,7 @@ import org.eclipse.ditto.model.things.FeatureDefinition;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
+import org.eclipse.ditto.signals.acks.base.Acknowledgements;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeature;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureDefinition;
@@ -186,6 +190,32 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
     }
 
     @Test
+    public void testDeleteFeatureWith2Acknowledgements() {
+        // skip this test for LIVE - 'twin-persisted' is obligatory
+        Assumptions.assumeThat(channel).isEqualTo(TopicPath.Channel.TWIN);
+
+        final AcknowledgementLabel label1 = AcknowledgementLabel.of("custom-ack-1");
+        final AcknowledgementLabel label2 = AcknowledgementLabel.of("twin-persisted");
+        assertEventualCompletion(getManagement().forId(THING_ID).forFeature(FEATURE_ID)
+                .delete(Options.dittoHeaders(DittoHeaders.newBuilder()
+                        .acknowledgementRequest(AcknowledgementRequest.of(label1), AcknowledgementRequest.of(label2))
+                        .build())
+                ));
+
+        final DittoHeaders sentDittoHeaders = expectMsgClass(DeleteFeature.class).getDittoHeaders();
+        reply(Acknowledgements.of(
+                Arrays.asList(
+                        Acknowledgement.of(label1, THING_ID, HttpStatusCode.OK, DittoHeaders.empty()),
+                        Acknowledgement.of(label2, THING_ID, HttpStatusCode.ACCEPTED, DittoHeaders.empty())
+                ),
+                sentDittoHeaders
+        ));
+
+        assertThat(sentDittoHeaders.getAcknowledgementRequests())
+                .containsExactly(AcknowledgementRequest.of(label1), AcknowledgementRequest.of(label2));
+    }
+
+    @Test
     public void testEventAcknowledgement() {
         // Acknowledgements are not implemented for live signals yet
         Assumptions.assumeThat(channel).isEqualTo(TopicPath.Channel.TWIN);
@@ -214,7 +244,8 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
         );
         Assertions.assertThat(expectMsgClass(Acknowledgement.class).getStatusCode())
                 .isEqualTo(HttpStatusCode.CONFLICT);
-        Assertions.assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.CREATED);
+        Assertions.assertThat(expectMsgClass(Acknowledgement.class).getStatusCode())
+                .isEqualTo(HttpStatusCode.CREATED);
         Assertions.assertThat(expectMsgClass(Acknowledgement.class).getStatusCode())
                 .isEqualTo(HttpStatusCode.FORBIDDEN);
     }

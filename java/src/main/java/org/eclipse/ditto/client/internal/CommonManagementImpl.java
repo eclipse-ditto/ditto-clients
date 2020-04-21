@@ -28,9 +28,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import org.eclipse.ditto.client.changes.Change;
@@ -51,15 +49,10 @@ import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.OptionName;
 import org.eclipse.ditto.client.options.internal.OptionsEvaluator;
-import org.eclipse.ditto.json.JsonField;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
-import org.eclipse.ditto.model.base.common.HttpStatusCode;
-import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
@@ -71,16 +64,12 @@ import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
-import org.eclipse.ditto.signals.acks.base.Acknowledgement;
-import org.eclipse.ditto.signals.acks.base.Acknowledgements;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.base.WithOptionalEntity;
-import org.eclipse.ditto.signals.commands.base.Command;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyThing;
-import org.eclipse.ditto.signals.commands.things.modify.ThingModifyCommandResponse;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThings;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThingsResponse;
 import org.slf4j.Logger;
@@ -375,7 +364,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         return this.askThingCommand(command,
                 // response could be CreateThingResponse or ModifyThingResponse or Acknowledgements.
                 CommandResponse.class,
-                response -> transformModifyResponse(command, response))
+                this::transformModifyResponse)
                 .toCompletableFuture();
     }
 
@@ -443,7 +432,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         return askThingCommand(command,
                 // response could be CreateThingResponse or ModifyThingResponse or Acknowledgements.
                 CommandResponse.class,
-                response -> Optional.ofNullable(transformModifyResponse(command, response))
+                response -> Optional.ofNullable(transformModifyResponse(response))
         ).toCompletableFuture();
     }
 
@@ -732,16 +721,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Nullable
-    private Thing transformModifyResponse(final Command<?> command, final CommandResponse<?> result) {
-        final CommandResponse<?> response;
-        // also handle Acknowledgements which are a CommandResponse as well:
-        if (result instanceof Acknowledgements) {
-            // from the "twin-persisted" acknowledgement, create the actual CommandResponse and feed it back
-            response = extractCommandResponseFromAcknowledgements(command, (Acknowledgements) result);
-        } else {
-            response = result;
-        }
-
+    private Thing transformModifyResponse(final CommandResponse<?> response) {
         if (response instanceof WithOptionalEntity) {
             return ((WithOptionalEntity) response).getEntity(response.getImplementedSchemaVersion())
                     .filter(JsonValue::isObject)
@@ -751,73 +731,6 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         } else {
             return null;
         }
-    }
-
-    static CommandResponse<?> extractCommandResponseFromAcknowledgements(final Signal<?> signal,
-            final Acknowledgements result) {
-        final CommandResponse<?> response;
-        response = result.stream()
-                .filter(ack -> ack.getLabel().equals(DittoAcknowledgementLabel.PERSISTED))
-                .findFirst()
-                .map(ack -> createThingModifyCommandResponseFromAcknowledgement(signal, ack))
-                .orElseThrow(() -> new IllegalStateException("Didn't receive an Acknowledgement for label '" +
-                        DittoAcknowledgementLabel.PERSISTED + "'. Please make sure to always request the '" +
-                        DittoAcknowledgementLabel.PERSISTED + "' Acknowledgement if you need to process the " +
-                        "response in the client."));
-        return response;
-    }
-
-    private static ThingModifyCommandResponse<ThingModifyCommandResponse<?>>
-    createThingModifyCommandResponseFromAcknowledgement(
-            final Signal<?> signal,
-            final Acknowledgement ack) {
-        return new ThingModifyCommandResponse<ThingModifyCommandResponse<?>>() {
-            @Override
-            public JsonPointer getResourcePath() {
-                return signal.getResourcePath();
-            }
-
-            @Override
-            public String getType() {
-                return signal.getType().replace(".commands", ".responses");
-            }
-
-            @Nonnull
-            @Override
-            public String getManifest() {
-                return getType();
-            }
-
-            @Override
-            public ThingId getThingEntityId() {
-                return (ThingId) ack.getEntityId();
-            }
-
-            @Override
-            public DittoHeaders getDittoHeaders() {
-                return ack.getDittoHeaders();
-            }
-
-            @Override
-            public Optional<JsonValue> getEntity(final JsonSchemaVersion schemaVersion) {
-                return ack.getEntity(schemaVersion);
-            }
-
-            @Override
-            public ThingModifyCommandResponse<?> setDittoHeaders(final DittoHeaders dittoHeaders) {
-                return this;
-            }
-
-            @Override
-            public HttpStatusCode getStatusCode() {
-                return ack.getStatusCode();
-            }
-
-            @Override
-            public JsonObject toJson(final JsonSchemaVersion schemaVersion, final Predicate<JsonField> predicate) {
-                return JsonObject.empty();
-            }
-        };
     }
 
     @FunctionalInterface

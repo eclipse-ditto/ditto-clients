@@ -17,20 +17,34 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
 
 import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
+import org.eclipse.ditto.json.JsonField;
+import org.eclipse.ditto.json.JsonObject;
+import org.eclipse.ditto.json.JsonPointer;
+import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
+import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
+import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.base.headers.WithDittoHeaders;
+import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
+import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.DittoProtocolAdapter;
 import org.eclipse.ditto.protocoladapter.HeaderTranslator;
 import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
 import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 import org.eclipse.ditto.signals.acks.base.Acknowledgements;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
@@ -38,6 +52,7 @@ import org.eclipse.ditto.signals.commands.base.ErrorResponse;
 import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
 import org.eclipse.ditto.signals.commands.policies.PolicyCommandResponse;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
+import org.eclipse.ditto.signals.commands.things.modify.ThingModifyCommandResponse;
 
 /**
  * Super class of API handles including common methods for request-response handling.
@@ -173,12 +188,12 @@ public abstract class AbstractHandle {
             if (expectedErrorResponseClass.isInstance(response)) {
                 // extracted runtime exception will be wrapped in CompletionException.
                 throw onError.apply(expectedErrorResponseClass.cast(response));
+            } else if (response instanceof Acknowledgements) {
+                final CommandResponse<?> commandResponse =
+                        extractCommandResponseFromAcknowledgements(signal, (Acknowledgements) response);
+                return onSuccess.apply(expectedResponseClass.cast(commandResponse));
             } else if (expectedResponseClass.isInstance(response)) {
                 return onSuccess.apply(expectedResponseClass.cast(response));
-            } else if (response instanceof Acknowledgements) {
-                final CommandResponse<?> commandResponse = CommonManagementImpl
-                        .extractCommandResponseFromAcknowledgements(signal, (Acknowledgements) response);
-                return onSuccess.apply(expectedResponseClass.cast(commandResponse));
             } else {
                 throw new ClassCastException("Expect " + expectedResponseClass.getSimpleName() + ", got: " + response);
             }
@@ -233,6 +248,73 @@ public abstract class AbstractHandle {
     @SuppressWarnings("unchecked")
     protected static Signal<?> adjustHeadersForLiveSignal(final Signal<?> signal) {
         return adjustHeadersForLive((Signal) signal);
+    }
+
+    static CommandResponse<?> extractCommandResponseFromAcknowledgements(final Signal<?> signal,
+            final Acknowledgements result) {
+        final CommandResponse<?> response;
+        response = result.stream()
+                .filter(ack -> ack.getLabel().equals(DittoAcknowledgementLabel.PERSISTED))
+                .findFirst()
+                .map(ack -> createThingModifyCommandResponseFromAcknowledgement(signal, ack))
+                .orElseThrow(() -> new IllegalStateException("Didn't receive an Acknowledgement for label '" +
+                        DittoAcknowledgementLabel.PERSISTED + "'. Please make sure to always request the '" +
+                        DittoAcknowledgementLabel.PERSISTED + "' Acknowledgement if you need to process the " +
+                        "response in the client."));
+        return response;
+    }
+
+    private static ThingModifyCommandResponse<ThingModifyCommandResponse<?>>
+    createThingModifyCommandResponseFromAcknowledgement(
+            final Signal<?> signal,
+            final Acknowledgement ack) {
+        return new ThingModifyCommandResponse<ThingModifyCommandResponse<?>>() {
+            @Override
+            public JsonPointer getResourcePath() {
+                return signal.getResourcePath();
+            }
+
+            @Override
+            public String getType() {
+                return signal.getType().replace(".commands", ".responses");
+            }
+
+            @Nonnull
+            @Override
+            public String getManifest() {
+                return getType();
+            }
+
+            @Override
+            public ThingId getThingEntityId() {
+                return (ThingId) ack.getEntityId();
+            }
+
+            @Override
+            public DittoHeaders getDittoHeaders() {
+                return ack.getDittoHeaders();
+            }
+
+            @Override
+            public Optional<JsonValue> getEntity(final JsonSchemaVersion schemaVersion) {
+                return ack.getEntity(schemaVersion);
+            }
+
+            @Override
+            public ThingModifyCommandResponse<?> setDittoHeaders(final DittoHeaders dittoHeaders) {
+                return this;
+            }
+
+            @Override
+            public HttpStatusCode getStatusCode() {
+                return ack.getStatusCode();
+            }
+
+            @Override
+            public JsonObject toJson(final JsonSchemaVersion schemaVersion, final Predicate<JsonField> predicate) {
+                return JsonObject.empty();
+            }
+        };
     }
 
     private static <T extends WithDittoHeaders<T>> T adjustHeadersForLive(final T signal) {
