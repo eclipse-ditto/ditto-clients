@@ -19,12 +19,14 @@ import javax.annotation.concurrent.Immutable;
 import org.eclipse.ditto.signals.acks.base.Acknowledgements;
 
 /**
- * This exception is thrown if the requested acknowledgements failed.
+ * This exception is thrown in the Ditto client if the requested acknowledgements failed.
  *
  * @since 1.1.0
  */
 @Immutable
 public class AcknowledgementsFailedException extends RuntimeException {
+
+    private static final long serialVersionUID = -4578923424099138760L;
 
     private static final String MESSAGE_TEMPLATE = "Requested acknowledgements failed with status code %d.";
 
