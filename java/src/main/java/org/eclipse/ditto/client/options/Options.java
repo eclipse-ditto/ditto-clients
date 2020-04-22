@@ -42,7 +42,7 @@ public final class Options {
      * @return the new option.
      * @since 1.1.0
      */
-    public static Option<DittoHeaders> dittoHeaders(final DittoHeaders dittoHeaders) {
+    public static Option<DittoHeaders> headers(final DittoHeaders dittoHeaders) {
         return DefaultOption.newInstance(OptionName.Global.DITTO_HEADERS, dittoHeaders);
     }
 

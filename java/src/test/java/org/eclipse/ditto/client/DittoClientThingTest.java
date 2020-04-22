@@ -109,7 +109,7 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
         final AcknowledgementLabel label1 = AcknowledgementLabel.of("custom-ack-1");
         final AcknowledgementLabel label2 = AcknowledgementLabel.of("twin-persisted");
         assertEventualCompletion(getManagement()
-                .create(THING_ID, Options.dittoHeaders(DittoHeaders.newBuilder()
+                .create(THING_ID, Options.headers(DittoHeaders.newBuilder()
                         .acknowledgementRequest(
                                 AcknowledgementRequest.of(label1),
                                 AcknowledgementRequest.of(label2))
@@ -144,7 +144,7 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
                 DittoHeaders.empty()
         );
         assertEventualCompletion(getManagement()
-                .update(THING, Options.dittoHeaders(DittoHeaders.newBuilder()
+                .update(THING, Options.headers(DittoHeaders.newBuilder()
                         .acknowledgementRequest(
                                 AcknowledgementRequest.of(label1),
                                 AcknowledgementRequest.of(label2))

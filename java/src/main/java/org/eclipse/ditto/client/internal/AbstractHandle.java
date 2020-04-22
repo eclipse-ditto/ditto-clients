@@ -257,12 +257,12 @@ public abstract class AbstractHandle {
             throw AcknowledgementsFailedException.of(acknowledgements);
         } else {
             return acknowledgements.stream()
-                    .filter(ack -> ack.getLabel().equals(DittoAcknowledgementLabel.PERSISTED))
+                    .filter(ack -> ack.getLabel().equals(DittoAcknowledgementLabel.TWIN_PERSISTED))
                     .findFirst()
                     .map(ack -> createThingModifyCommandResponseFromAcknowledgement(signal, ack))
                     .orElseThrow(() -> new IllegalStateException("Didn't receive an Acknowledgement for label '" +
-                            DittoAcknowledgementLabel.PERSISTED + "'. Please make sure to always request the '" +
-                            DittoAcknowledgementLabel.PERSISTED + "' Acknowledgement if you need to process the " +
+                            DittoAcknowledgementLabel.TWIN_PERSISTED + "'. Please make sure to always request the '" +
+                            DittoAcknowledgementLabel.TWIN_PERSISTED + "' Acknowledgement if you need to process the " +
                             "response in the client."));
         }
     }

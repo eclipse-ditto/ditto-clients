@@ -50,6 +50,7 @@ import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
@@ -61,8 +62,6 @@ import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingBuilder;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
-import org.eclipse.ditto.protocoladapter.JsonifiableAdaptable;
-import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommandAnswerBuilder;
 import org.eclipse.ditto.signals.commands.live.modify.ModifyFeaturePropertyLiveCommandAnswerBuilder;
 import org.slf4j.Logger;
@@ -78,7 +77,8 @@ public final class DittoClientUsageExamples {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DittoClientUsageExamples.class);
 
-    private static final String PROPERTIES_FILE = "ditto-client-starter-local.properties"; // for local development
+    private static final String PROPERTIES_FILE = "ditto-client-starter-aws-dev.properties";
+//    private static final String PROPERTIES_FILE = "ditto-client-starter-local.properties"; // for local development
     //    private static final String PROPERTIES_FILE = "ditto-client-starter-sandbox.properties";
     private static final String PROXY_HOST;
     private static final String PROXY_PORT;
@@ -98,105 +98,154 @@ public final class DittoClientUsageExamples {
 
     public static void main(final String... args) throws ExecutionException, InterruptedException {
         final DittoClient client = DittoClients.newInstance(createMessagingProvider());
-        final DittoClient client2 = DittoClients.newInstance(createMessagingProvider());
+//        final DittoClient client2 = DittoClients.newInstance(createMessagingProvider());
 
         if (shouldNotSkip("twin.examples")) {
-            final JsonifiableAdaptable jsonifiableAdaptable = ProtocolFactory.jsonifiableAdaptableFromJson(
-                    JsonFactory.readFrom("{\n" +
-                            "  \"topic\": \"org.eclipse.ditto/xdk_53/things/twin/commands/modify\",\n" +
-                            "  \"headers\": {},\n" +
-                            "  \"path\": \"/\",\n" +
-                            "  \"value\": {\n" +
-                            "    \"thingId\": \"org.eclipse.ditto:xdk_53\",\n" +
-                            "    \"attributes\": {\n" +
-                            "      \"location\": {\n" +
-                            "        \"latitude\": 44.673856,\n" +
-                            "        \"longitude\": 8.261719\n" +
-                            "      }\n" +
-                            "    },\n" +
-                            "    \"features\": {\n" +
-                            "      \"accelerometer\": {\n" +
-                            "        \"properties\": {\n" +
-                            "          \"x\": 3.141,\n" +
-                            "          \"y\": 2.718,\n" +
-                            "          \"z\": 1,\n" +
-                            "          \"unit\": \"g\"\n" +
-                            "        }\n" +
-                            "      }\n" +
-                            "    }\n" +
-                            "  }\n" +
-                            "}").asObject());
-            client.sendDittoProtocol(jsonifiableAdaptable).whenComplete((a, t) -> {
-                if (a != null) {
-                    LOGGER.info("sendDittoProtocol: Received adaptable as response: {}", a);
-                }
-                if (t != null) {
-                    LOGGER.warn("sendDittoProtocol: Received throwable as response", t);
-                }
-            });
+//            final JsonifiableAdaptable jsonifiableAdaptable = ProtocolFactory.jsonifiableAdaptableFromJson(
+//                    JsonFactory.readFrom("{\n" +
+//                            "  \"topic\": \"org.eclipse.ditto/xdk_53/things/twin/commands/modify\",\n" +
+//                            "  \"headers\": {},\n" +
+//                            "  \"path\": \"/\",\n" +
+//                            "  \"value\": {\n" +
+//                            "    \"thingId\": \"org.eclipse.ditto:xdk_53\",\n" +
+//                            "    \"attributes\": {\n" +
+//                            "      \"location\": {\n" +
+//                            "        \"latitude\": 44.673856,\n" +
+//                            "        \"longitude\": 8.261719\n" +
+//                            "      }\n" +
+//                            "    },\n" +
+//                            "    \"features\": {\n" +
+//                            "      \"accelerometer\": {\n" +
+//                            "        \"properties\": {\n" +
+//                            "          \"x\": 3.141,\n" +
+//                            "          \"y\": 2.718,\n" +
+//                            "          \"z\": 1,\n" +
+//                            "          \"unit\": \"g\"\n" +
+//                            "        }\n" +
+//                            "      }\n" +
+//                            "    }\n" +
+//                            "  }\n" +
+//                            "}").asObject());
+//            client.sendDittoProtocol(jsonifiableAdaptable).whenComplete((a, t) -> {
+//                if (a != null) {
+//                    LOGGER.info("sendDittoProtocol: Received adaptable as response: {}", a);
+//                }
+//                if (t != null) {
+//                    LOGGER.warn("sendDittoProtocol: Received throwable as response", t);
+//                }
+//            });
 
             client.twin().startConsumption().get();
-            client2.twin().startConsumption().get();
+//            client2.twin().startConsumption().get();
             LOGGER.info("Subscribed for Twin events");
 
             client.live().startConsumption().get();
-            client2.live().startConsumption().get();
+//            client2.live().startConsumption().get();
             LOGGER.info("Subscribed for Live events/commands/messages");
 
-            System.out.println("\n\nContinuing with TWIN commands/events demo:");
-            useTwinCommandsAndEvents(client, client2);
-            System.out.println("\n\nFinished with TWIN commands/events demo");
+            client.twin().registerForThingChanges("th", change -> {
+                LOGGER.info("Got thing change: {}", change);
+                change.handleAcknowledgementRequest(AcknowledgementLabel.of("my-custom-ack"), handle ->
+                        handle.acknowledge(HttpStatusCode.OK, JsonObject.newBuilder()
+                                .set("outcome", JsonValue.of("thing"))
+                                .build()
+                        )
+                );
+                change.handleAcknowledgementRequest(AcknowledgementLabel.of("websocket"), handle ->
+                        handle.acknowledge(HttpStatusCode.OK, JsonObject.newBuilder()
+                                .set("outcome", JsonValue.of("I am WebSocket!"))
+                                .build()
+                        )
+                );
+            });
+
+            client.twin().registerForFeatureChanges("fo", change -> {
+                LOGGER.info("Got feature change: {}", change);
+                change.handleAcknowledgementRequest(AcknowledgementLabel.of("my-custom-feature"), handle ->
+                        handle.acknowledge(HttpStatusCode.OK, JsonObject.newBuilder()
+                                .set("outcome", JsonValue.of("feature"))
+                                .build()
+                        )
+                );
+            });
+
+            client.twin().registerForAttributesChanges("at", change -> {
+                LOGGER.info("Got attribute change: {}", change);
+                change.handleAcknowledgementRequest(AcknowledgementLabel.of("my-custom-attribute"), handle ->
+                        handle.acknowledge(HttpStatusCode.CREATED, JsonObject.newBuilder()
+                                .set("outcome", JsonValue.of("attribute"))
+                                .build()
+                        )
+                );
+            });
+
+//            final ThingId thingId = ThingId.inDefaultNamespace(UUID.randomUUID().toString());
+//            client2.twin().create(thingId).get();
+//            client2.twin().forId(thingId).putAttribute("test", 42, Options.dittoHeaders(
+//                    DittoHeaders.newBuilder()
+//                    .acknowledgementRequest(AcknowledgementRequest.of(DittoAcknowledgementLabel.PERSISTED),
+//                            AcknowledgementRequest.of(AcknowledgementLabel.of("my-custom-attribute"))
+//                    )
+//                    .build()
+//            )).whenComplete((v, t) -> {
+//                System.out.println("V: " + v);
+//                System.out.println("t: " + t);
+//            });
+
+//            System.out.println("\n\nContinuing with TWIN commands/events demo:");
+//            useTwinCommandsAndEvents(client, client2);
+//            System.out.println("\n\nFinished with TWIN commands/events demo");
         }
 
-        if (shouldNotSkip("live.examples")) {
-            client.live().startConsumption().get();
-            client2.live().startConsumption().get();
+//        if (shouldNotSkip("live.examples")) {
+//            client.live().startConsumption().get();
+//            client2.live().startConsumption().get();
+//
+//            System.out.println("\n\nAbout to continue with LIVE commands/events demo:");
+//            promptEnterKey();
+//
+//            useLiveCommands(client, client2);
+//            System.out.println("\n\nFinished with LIVE commands/events demo");
+//
+//            System.out.println("\n\nAbout to continue with LIVE messages demo:");
+//            promptEnterKey();
+//
+//            useLiveMessages(client, client2);
+//            System.out.println("\n\nFinished with LIVE messages demo");
+//            Thread.sleep(500);
+//        }
+//
+//        if (shouldNotSkip("search.examples")) {
+//            System.out.println("\n\nAbout to continue with search commands:");
+//            promptEnterKey();
+//            useSearchCommands(client);
+//            System.out.println("\n\nFinished with SEARCH commands demo");
+//            Thread.sleep(500);
+//        }
+//
+//        if (shouldNotSkip("load.test")) {
+//            System.out.println("\n\nAbout to continue with small load test:");
+//            promptEnterKey();
+//
+//            final int loadTestThings = 100;
+//            final int loadTestCount = 10;
+//            subscribeForLoadTestUpdateChanges(client2, loadTestCount * loadTestThings, false);
+//            performLoadTestUpdate(client, loadTestCount, loadTestThings, false);
+//            performLoadTestRead(client, loadTestCount, true);
+//            Thread.sleep(1000);
+//        }
+//
+//        if (shouldNotSkip("policies.examples")) {
+//            System.out.println("\n\nAbout to continue with policy example:");
+//            promptEnterKey();
+//            addNewSubjectToExistingPolicy(client);
+//            System.out.println("\n\nFinished with policy example");
+//        }
 
-            System.out.println("\n\nAbout to continue with LIVE commands/events demo:");
-            promptEnterKey();
-
-            useLiveCommands(client, client2);
-            System.out.println("\n\nFinished with LIVE commands/events demo");
-
-            System.out.println("\n\nAbout to continue with LIVE messages demo:");
-            promptEnterKey();
-
-            useLiveMessages(client, client2);
-            System.out.println("\n\nFinished with LIVE messages demo");
-            Thread.sleep(500);
-        }
-
-        if (shouldNotSkip("search.examples")) {
-            System.out.println("\n\nAbout to continue with search commands:");
-            promptEnterKey();
-            useSearchCommands(client);
-            System.out.println("\n\nFinished with SEARCH commands demo");
-            Thread.sleep(500);
-        }
-
-        if (shouldNotSkip("load.test")) {
-            System.out.println("\n\nAbout to continue with small load test:");
-            promptEnterKey();
-
-            final int loadTestThings = 100;
-            final int loadTestCount = 10;
-            subscribeForLoadTestUpdateChanges(client2, loadTestCount * loadTestThings, false);
-            performLoadTestUpdate(client, loadTestCount, loadTestThings, false);
-            performLoadTestRead(client, loadTestCount, true);
-            Thread.sleep(1000);
-        }
-
-        if (shouldNotSkip("policies.examples")) {
-            System.out.println("\n\nAbout to continue with policy example:");
-            promptEnterKey();
-            addNewSubjectToExistingPolicy(client);
-            System.out.println("\n\nFinished with policy example");
-        }
-
-        client.destroy();
-        client2.destroy();
-        System.out.println("\n\nDittoClientUsageExamples successfully completed!");
-        System.exit(0);
+//        client.destroy();
+//        client2.destroy();
+//        System.out.println("\n\nDittoClientUsageExamples successfully completed!");
+//        System.exit(0);
     }
 
     private static void addNewSubjectToExistingPolicy(final DittoClient client)
@@ -721,7 +770,7 @@ public final class DittoClientUsageExamples {
                     AuthenticationProviders.dummy(DummyAuthenticationConfiguration.newBuilder()
                             .dummyUsername(DITTO_DUMMY_AUTH_USER)
                             .build());
-        } else if (DITTO_OAUTH_CLIENT_ID != null) {
+        } else if (DITTO_OAUTH_CLIENT_ID != null && !DITTO_OAUTH_CLIENT_ID.isEmpty()) {
             final ClientCredentialsAuthenticationConfiguration.ClientCredentialsAuthenticationConfigurationBuilder
                     authenticationConfigurationBuilder =
                     ClientCredentialsAuthenticationConfiguration.newBuilder()

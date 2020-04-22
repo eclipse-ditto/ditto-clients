@@ -37,7 +37,7 @@ public final class GlobalOptionsEvaluatorTest {
     private static final DittoHeaders KNOWN_DITTO_HEADERS = DittoHeaders.newBuilder()
             .correlationId(UUID.randomUUID().toString())
             .build();
-    private static final Option<DittoHeaders> DITTO_HEADERS_OPTION = Options.dittoHeaders(KNOWN_DITTO_HEADERS);
+    private static final Option<DittoHeaders> DITTO_HEADERS_OPTION = Options.headers(KNOWN_DITTO_HEADERS);
 
     private OptionsEvaluator.Global underTest = null;
 
