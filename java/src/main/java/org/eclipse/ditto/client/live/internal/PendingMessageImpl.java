@@ -107,37 +107,41 @@ final class PendingMessageImpl<T> implements PendingMessage<T> {
         final BiConsumer uncheckedResponseConsumer = responseConsumer.getResponseConsumer();
         final Class<?> responseType = responseConsumer.getResponseType();
 
-        // throw ClassCastException if response has incorrect type
-        final Message<?> responseMessage;
-        if (response instanceof MessageCommand) {
-            responseMessage = ((MessageCommand) response).getMessage();
-        } else if (response instanceof MessageCommandResponse) {
-            responseMessage = ((MessageCommandResponse) response).getMessage();
-        } else if (response instanceof ErrorResponse) {
-            uncheckedResponseConsumer.accept(null, ((ErrorResponse<?>) response).getDittoRuntimeException());
-            return;
-        } else {
-            uncheckedResponseConsumer.accept(null, classCastException(responseType, response));
-            return;
-        }
-
-        if (responseConsumer.getResponseType().isAssignableFrom(ByteBuffer.class)) {
-            uncheckedResponseConsumer.accept(asByteBufferMessage(responseMessage), null);
-        } else {
-            final Optional<?> payloadOptional = responseMessage.getPayload();
-            if (payloadOptional.isPresent()) {
-                final Object payload = payloadOptional.get();
-                if (responseConsumer.getResponseType().isInstance(payload)) {
-                    uncheckedResponseConsumer.accept(payload, null);
-                } else {
-                    // response has unexpected type
-                    uncheckedResponseConsumer.accept(setMessagePayload(responseMessage, null),
-                            classCastException(responseType, payload));
-                }
+        try {
+            // throw ClassCastException if response has incorrect type
+            final Message<?> responseMessage;
+            if (response instanceof MessageCommand) {
+                responseMessage = ((MessageCommand) response).getMessage();
+            } else if (response instanceof MessageCommandResponse) {
+                responseMessage = ((MessageCommandResponse) response).getMessage();
+            } else if (response instanceof ErrorResponse) {
+                uncheckedResponseConsumer.accept(null, ((ErrorResponse<?>) response).getDittoRuntimeException());
+                return;
             } else {
-                // response has no payload; regard it as any message type
-                uncheckedResponseConsumer.accept(responseMessage, null);
+                uncheckedResponseConsumer.accept(null, classCastException(responseType, response));
+                return;
             }
+
+            if (responseConsumer.getResponseType().isAssignableFrom(ByteBuffer.class)) {
+                uncheckedResponseConsumer.accept(asByteBufferMessage(responseMessage), null);
+            } else {
+                final Optional<?> payloadOptional = responseMessage.getPayload();
+                if (payloadOptional.isPresent()) {
+                    final Object payload = payloadOptional.get();
+                    if (responseConsumer.getResponseType().isInstance(payload)) {
+                        uncheckedResponseConsumer.accept(setMessagePayload(responseMessage, payload), null);
+                    } else {
+                        // response has unexpected type
+                        uncheckedResponseConsumer.accept(setMessagePayload(responseMessage, null),
+                                classCastException(responseType, payload));
+                    }
+                } else {
+                    // response has no payload; regard it as any message type
+                    uncheckedResponseConsumer.accept(responseMessage, null);
+                }
+            }
+        } catch (final RuntimeException e) {
+            uncheckedResponseConsumer.accept(null, e);
         }
     }
 
