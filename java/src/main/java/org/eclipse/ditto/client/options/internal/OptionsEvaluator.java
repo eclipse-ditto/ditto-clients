@@ -18,6 +18,7 @@ import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.json.JsonFieldSelector;
+import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.model.things.ThingId;
 
@@ -99,6 +100,15 @@ public final class OptionsEvaluator {
             super();
         }
 
+        /**
+         * Returns the DittoHeaders to send along for commands/messages to the backend.
+         *
+         * @return the DittoHeaders to send along for commands/messages to the backend.
+         * @since 1.1.0
+         */
+        public Optional<DittoHeaders> getDittoHeaders() {
+            return getValue(new DittoHeadersOptionVisitor());
+        }
     }
 
     /**

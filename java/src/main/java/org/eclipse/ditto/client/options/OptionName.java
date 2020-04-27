@@ -35,7 +35,11 @@ public interface OptionName extends Predicate<Object> {
      * @since 1.0.0
      */
     enum Global implements OptionName {
-        // currently empty
+        /**
+         * Name of the option for defining the DittoHeaders to send along with a command/message to the Ditto backend.
+         * @since 1.1.0
+         */
+        DITTO_HEADERS
     }
 
     /**

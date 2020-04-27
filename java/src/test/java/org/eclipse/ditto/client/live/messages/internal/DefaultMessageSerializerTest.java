@@ -21,9 +21,7 @@ import nl.jqno.equalsverifier.EqualsVerifier;
  */
 public class DefaultMessageSerializerTest {
 
-    /**
-     *
-     */
+
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(DefaultMessageSerializer.class).verify();

@@ -29,17 +29,12 @@ public final class NamespacesOptionVisitorTest {
 
     private NamespacesOptionVisitor underTest = null;
 
-    /**
-     *
-     */
+
     @Before
     public void setUp() {
         underTest = new NamespacesOptionVisitor();
     }
 
-    /**
-     *
-     */
     @Test
     public void tryToVisitNullOption() {
         assertThatExceptionOfType(NullPointerException.class)
@@ -48,9 +43,6 @@ public final class NamespacesOptionVisitorTest {
                 .withMessageContaining("null");
     }
 
-    /**
-     *
-     */
     @Test
     public void getNoValueIfOptionNameIsUnexpected() {
         final String value = "Booh!";
@@ -66,9 +58,6 @@ public final class NamespacesOptionVisitorTest {
         assertThat(underTest.getValue()).isEmpty();
     }
 
-    /**
-     *
-     */
     @Test
     public void optionValueTypeDiffersFromExpectedType() {
         final String value = "Booh!";
@@ -79,9 +68,6 @@ public final class NamespacesOptionVisitorTest {
                 .withCauseInstanceOf(ClassCastException.class);
     }
 
-    /**
-     *
-     */
     @Test
     public void optionValueIsExpected() {
         final Iterable<CharSequence> namespaces = Arrays.asList("one", "two", "three");

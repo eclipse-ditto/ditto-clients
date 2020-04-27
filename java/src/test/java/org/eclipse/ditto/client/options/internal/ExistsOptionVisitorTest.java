@@ -27,17 +27,12 @@ public final class ExistsOptionVisitorTest {
 
     private ExistsOptionVisitor underTest = null;
 
-    /**
-     *
-     */
+
     @Before
     public void setUp() {
         underTest = new ExistsOptionVisitor();
     }
 
-    /**
-     *
-     */
     @Test
     public void tryToVisitNullOption() {
         assertThatExceptionOfType(NullPointerException.class)
@@ -46,9 +41,6 @@ public final class ExistsOptionVisitorTest {
                 .withMessageContaining("null");
     }
 
-    /**
-     *
-     */
     @Test
     public void getNoValueIfOptionNameIsUnexpected() {
         final String value = "Booh!";
@@ -64,9 +56,6 @@ public final class ExistsOptionVisitorTest {
         assertThat(underTest.getValue()).isEmpty();
     }
 
-    /**
-     *
-     */
     @Test
     public void optionValueTypeDiffersFromExpectedType() {
         final String value = "Booh!";
@@ -77,9 +66,6 @@ public final class ExistsOptionVisitorTest {
                 .withCauseInstanceOf(ClassCastException.class);
     }
 
-    /**
-     *
-     */
     @Test
     public void optionValueIsExpected() {
         final boolean responseRequired = false;

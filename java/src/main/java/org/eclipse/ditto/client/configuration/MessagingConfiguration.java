@@ -16,6 +16,8 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 
 /**
@@ -113,7 +115,7 @@ public interface MessagingConfiguration {
          * @param proxyConfiguration the proxy configuration to set.
          * @return this builder.
          */
-        Builder proxyConfiguration(ProxyConfiguration proxyConfiguration);
+        Builder proxyConfiguration(@Nullable ProxyConfiguration proxyConfiguration);
 
         /**
          * Sets the {@code trustStoreConfiguration}.

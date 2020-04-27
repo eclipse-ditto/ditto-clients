@@ -24,6 +24,7 @@ import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.client.live.messages.MessageSender;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageBuilder;
 import org.eclipse.ditto.model.messages.MessageDirection;
@@ -56,6 +57,7 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
     private String messageCorrelationId;
     private String messageContentType;
     private HttpStatusCode messageStatusCode;
+    private DittoHeaders messageAdditionalHeaders;
     private Consumer<Message<T>> sendConsumer;
 
     private ImmutableMessageSender(final boolean isResponse) {
@@ -69,6 +71,7 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
         messageTimestamp = null;
         messageCorrelationId = null;
         messageStatusCode = null;
+        messageAdditionalHeaders = null;
     }
 
     /**
@@ -128,12 +131,19 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
 
     private <R> void buildAndSendMessage(final T payload, final MessageResponseConsumer<R> responseConsumer) {
         final MessageHeadersBuilder messageHeadersBuilder =
-                MessageHeaders.newBuilder(messageDirection, messageThingId, messageSubject)
-                        .contentType(messageContentType)
-                        .featureId(messageFeatureId)
-                        .timeout(messageTimeout)
-                        .timestamp(messageTimestamp)
-                        .correlationId(messageCorrelationId);
+                MessageHeaders.newBuilder(messageDirection, messageThingId, messageSubject);
+
+        if (null != messageAdditionalHeaders) {
+            // put additionalHeaders first, so that custom "contentType", "timeout", etc. still overwrites the values:
+            messageHeadersBuilder.putHeaders(messageAdditionalHeaders);
+        }
+
+        messageHeadersBuilder
+                .contentType(messageContentType)
+                .featureId(messageFeatureId)
+                .timeout(messageTimeout)
+                .timestamp(messageTimestamp)
+                .correlationId(messageCorrelationId);
 
         if (responseConsumer == null) {
             messageHeadersBuilder.responseRequired(false);
@@ -219,6 +229,12 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
         @Override
         public SetPayloadOrSend<T> statusCode(final HttpStatusCode statusCode) {
             messageStatusCode = statusCode;
+            return this;
+        }
+
+        @Override
+        public SetPayloadOrSend<T> headers(final DittoHeaders additionalHeaders) {
+            messageAdditionalHeaders = additionalHeaders;
             return this;
         }
 

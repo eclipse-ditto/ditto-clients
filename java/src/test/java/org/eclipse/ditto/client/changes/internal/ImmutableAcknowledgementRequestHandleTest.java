@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -18,9 +18,7 @@ import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable
 
 import java.util.function.Consumer;
 
-import org.eclipse.ditto.json.JsonObject;
-import org.eclipse.ditto.json.JsonPointer;
-import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.entity.id.EntityIdWithType;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.junit.Test;
@@ -28,22 +26,21 @@ import org.junit.Test;
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 /**
- * Unit test for {@link ImmutableChange}.
+ * Unit tests for {@link ImmutableAcknowledgementRequestHandle}.
  */
-public final class ImmutableChangeTest {
+public class ImmutableAcknowledgementRequestHandleTest {
 
     @Test
     public void assertImmutability() {
-        assertInstancesOf(ImmutableChange.class, areImmutable(),
-                provided(JsonValue.class, JsonPointer.class, EntityIdWithType.class, JsonObject.class,
-                        DittoHeaders.class, Consumer.class).isAlsoImmutable());
+        assertInstancesOf(ImmutableAcknowledgementRequestHandle.class, areImmutable(),
+                provided(AcknowledgementLabel.class, EntityIdWithType.class, DittoHeaders.class, Consumer.class)
+                        .isAlsoImmutable());
     }
 
     @Test
     public void testHashCodeAndEquals() {
-        EqualsVerifier.forClass(ImmutableChange.class)
+        EqualsVerifier.forClass(ImmutableAcknowledgementRequestHandle.class)
                 .withIgnoredFields("acknowledgementPublisher")
                 .verify();
     }
-
 }

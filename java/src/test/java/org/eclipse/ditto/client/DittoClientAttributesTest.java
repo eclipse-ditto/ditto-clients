@@ -14,22 +14,28 @@ package org.eclipse.ditto.client;
 
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
+import static org.eclipse.ditto.model.base.acks.AcknowledgementRequest.parseAcknowledgementRequest;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.Assumptions;
 import org.eclipse.ditto.client.internal.AbstractDittoClientThingsTest;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
+import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
 import org.eclipse.ditto.signals.commands.things.exceptions.ThingNotAccessibleException;
@@ -238,5 +244,40 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
         getManagement()
                 .forId(THING_ID)
                 .putAttribute(JsonFactory.emptyPointer(), "it should fail");
+    }
+
+    @Test
+    public void testEventAcknowledgement() {
+        // Acknowledgements are not implemented for live signals yet
+        Assumptions.assumeThat(channel).isEqualTo(TopicPath.Channel.TWIN);
+
+        getManagement().startConsumption();
+        getManagement().registerForAttributesChanges("Attributes", change ->
+                change.handleAcknowledgementRequests(handles ->
+                        handles.forEach(handle -> handle.acknowledge(
+                                HttpStatusCode.forInt(Integer.parseInt(handle.getAcknowledgementLabel().toString()))
+                                        .orElse(HttpStatusCode.EXPECTATION_FAILED)
+                        ))
+                )
+        );
+        // expect subscription messages
+        assertThat(expectMsgClass(String.class)).startsWith("START-SEND-");
+
+        reply(AttributeCreated.of(THING_ID, JsonPointer.of("hello"), JsonValue.of("World"), 5L,
+                DittoHeaders.newBuilder()
+                        .channel(channel.name())
+                        .acknowledgementRequest(
+                                parseAcknowledgementRequest("200"),
+                                parseAcknowledgementRequest("403"),
+                                parseAcknowledgementRequest("500")
+                        )
+                        .build())
+        );
+        Assertions.assertThat(expectMsgClass(Acknowledgement.class).getStatusCode())
+                .isEqualTo(HttpStatusCode.OK);
+        Assertions.assertThat(expectMsgClass(Acknowledgement.class).getStatusCode())
+                .isEqualTo(HttpStatusCode.FORBIDDEN);
+        Assertions.assertThat(expectMsgClass(Acknowledgement.class).getStatusCode())
+                .isEqualTo(HttpStatusCode.INTERNAL_SERVER_ERROR);
     }
 }

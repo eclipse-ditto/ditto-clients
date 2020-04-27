@@ -19,7 +19,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.changes.Change;
-import org.eclipse.ditto.client.changes.internal.ImmutableChange;
 import org.eclipse.ditto.client.internal.AbstractHandle;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
@@ -37,20 +36,14 @@ import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.FeatureDefinition;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeature;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureDefinition;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureDefinitionResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperties;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeaturePropertiesResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperty;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeaturePropertyResponse;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDefinition;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDefinitionResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperties;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeaturePropertiesResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperty;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeaturePropertyResponse;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveFeature;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveFeatureResponse;
 import org.slf4j.Logger;
@@ -128,7 +121,7 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
     @Override
     public CompletableFuture<Void> delete(final Option<?>... options) {
         final DeleteFeature command = outgoingMessageFactory.deleteFeature(thingId, featureId, options);
-        return askThingCommand(command, DeleteFeatureResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -151,14 +144,14 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
             final Option<?>... options) {
         final ModifyFeatureDefinition command =
                 outgoingMessageFactory.setFeatureDefinition(thingId, featureId, featureDefinition, options);
-        return askThingCommand(command, ModifyFeatureDefinitionResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
     public CompletableFuture<Void> deleteDefinition(final Option<?>... options) {
         final DeleteFeatureDefinition
                 command = outgoingMessageFactory.deleteFeatureDefinition(thingId, featureId, options);
-        return askThingCommand(command, DeleteFeatureDefinitionResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -198,28 +191,28 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
 
         final ModifyFeatureProperty command =
                 outgoingMessageFactory.setFeatureProperty(thingId, featureId, path, value, options);
-        return askThingCommand(command, ModifyFeaturePropertyResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
     public CompletableFuture<Void> setProperties(final JsonObject value, final Option<?>... options) {
         final ModifyFeatureProperties
                 command = outgoingMessageFactory.setFeatureProperties(thingId, featureId, value, options);
-        return askThingCommand(command, ModifyFeaturePropertiesResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
     public CompletableFuture<Void> deleteProperty(final JsonPointer path, final Option<?>... options) {
         final DeleteFeatureProperty
                 command = outgoingMessageFactory.deleteFeatureProperty(thingId, featureId, path, options);
-        return askThingCommand(command, DeleteFeaturePropertyResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
     public CompletableFuture<Void> deleteProperties(final Option<?>... options) {
         final DeleteFeatureProperties
                 command = outgoingMessageFactory.deleteFeatureProperties(thingId, featureId, options);
-        return askThingCommand(command, DeleteFeaturePropertiesResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -227,9 +220,7 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
         argumentNotNull(handler);
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/{1}/properties", thingId, featureId),
-                Change.class, handler, (change, value, path, params) ->
-                        new ImmutableChange(change.getEntityId(), change.getAction(), path, value, change.getRevision(),
-                                change.getTimestamp().orElse(null), change.getExtra().orElse(null))
+                Change.class, handler, (change, value, path, params) -> change.withPathAndValue(path, value)
         );
     }
 
@@ -240,9 +231,8 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
         argumentNotNull(handler);
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/{1}/properties{2}", thingId, featureId,
-                        propertyPath), Change.class, handler,
-                (change, value, path, params) -> new ImmutableChange(change.getEntityId(), change.getAction(), path,
-                        value, change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null))
+                        propertyPath), Change.class, handler, (change, value, path, params) ->
+                        change.withPathAndValue(path, value)
         );
     }
 

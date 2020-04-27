@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.configuration;
 
-import static java.util.Objects.requireNonNull;
+import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
 import java.util.Optional;
 
@@ -30,12 +30,11 @@ public final class ProxyConfiguration {
     @Nullable private final String username;
     @Nullable private final String password;
 
-    private ProxyConfiguration(final String host, final int port, @Nullable final String username,
-            @Nullable final String password) {
-        this.host = host;
-        this.port = port;
-        this.username = username;
-        this.password = password;
+    public ProxyConfiguration(final Builder builder) {
+        host = checkNotNull(builder.host, "host");
+        port = checkNotNull(builder.port, "port");
+        username = builder.username;
+        password = builder.password;
     }
 
     /**
@@ -112,7 +111,7 @@ public final class ProxyConfiguration {
          * @param username the username for proxy authentication.
          * @return a builder object to set the password.
          */
-        ProxyPasswordSettable proxyUsername(String username);
+        ProxyPasswordSettable proxyUsername(@Nullable String username);
 
     }
 
@@ -125,7 +124,7 @@ public final class ProxyConfiguration {
          * @param password the password for proxy authentication.
          * @return a builder object for optional proxy settings.
          */
-        ProxyOptionalSettable proxyPassword(String password);
+        ProxyOptionalSettable proxyPassword(@Nullable String password);
     }
 
     public interface ProxyConfigurationBuildable {
@@ -136,8 +135,8 @@ public final class ProxyConfiguration {
         ProxyConfiguration build();
     }
 
-    private static final class Builder implements ProxyConfigurationBuilder, ProxyHostSettable,
-            ProxyPortSettable, ProxyOptionalSettable, ProxyPasswordSettable, ProxyConfigurationBuildable {
+    private static final class Builder implements ProxyConfigurationBuilder, ProxyHostSettable, ProxyPortSettable,
+            ProxyOptionalSettable, ProxyPasswordSettable, ProxyConfigurationBuildable {
 
         private String host;
         private int port;
@@ -145,16 +144,15 @@ public final class ProxyConfiguration {
         private String password;
 
         private Builder() {
-        }
-
-        @Override
-        public ProxyConfiguration build() {
-            return new ProxyConfiguration(host, port, username, password);
+            host = null;
+            port = 0;
+            username = null;
+            password = null;
         }
 
         @Override
         public ProxyPortSettable proxyHost(final String host) {
-            this.host = requireNonNull(host, "Proxy host must not be null.");
+            this.host = checkNotNull(host, "Proxy host must not be null.");
             return this;
         }
 
@@ -168,16 +166,22 @@ public final class ProxyConfiguration {
         }
 
         @Override
-        public ProxyPasswordSettable proxyUsername(final String username) {
-            this.username = requireNonNull(username, "Proxy username must not be null.");
+        public ProxyPasswordSettable proxyUsername(@Nullable final String username) {
+            this.username = username;
             return this;
         }
 
         @Override
-        public ProxyOptionalSettable proxyPassword(final String password) {
-            this.password = requireNonNull(password, "Proxy password must not be null.");
+        public ProxyOptionalSettable proxyPassword(@Nullable final String password) {
+            this.password = password;
             return this;
         }
+
+        @Override
+        public ProxyConfiguration build() {
+            return new ProxyConfiguration(this);
+        }
+
     }
 
 }

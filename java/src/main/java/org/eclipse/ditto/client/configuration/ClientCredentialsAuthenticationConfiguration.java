@@ -42,16 +42,15 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
     private final List<String> scopes;
     private final Duration expiryGracePeriod;
 
-    private ClientCredentialsAuthenticationConfiguration(final String tokenEndpoint, final String clientId,
-            final String clientSecret, final Collection<String> scopes, final Duration expiryGracePeriod,
-            final Map<String, String> additionalHeaders,
-            @Nullable final ProxyConfiguration proxyConfiguration) {
-        super(clientId, additionalHeaders, proxyConfiguration);
-        this.tokenEndpoint = checkNotNull(tokenEndpoint, "tokenEndpoint");
-        this.clientId = checkNotNull(clientId, "clientId");
-        this.clientSecret = checkNotNull(clientSecret, "clientSecret");
-        this.scopes = Collections.unmodifiableList(new ArrayList<>(scopes));
-        this.expiryGracePeriod = checkNotNull(expiryGracePeriod, "expiryGracePeriod");
+    public ClientCredentialsAuthenticationConfiguration(
+            final ClientCredentialsAuthenticationConfigurationBuilder builder) {
+
+        super(builder.clientId, builder.additionalHeaders, builder.proxyConfiguration);
+        tokenEndpoint = checkNotNull(builder.tokenEndpoint, "tokenEndpoint");
+        clientId = checkNotNull(builder.clientId, "clientId");
+        clientSecret = checkNotNull(builder.clientSecret, "clientSecret");
+        scopes = Collections.unmodifiableList(new ArrayList<>(builder.scopes));
+        expiryGracePeriod = checkNotNull(builder.expiryGracePeriod, "expiryGracePeriod");
     }
 
     /**
@@ -143,19 +142,25 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
     }
 
     @NotThreadSafe
-    public static class ClientCredentialsAuthenticationConfigurationBuilder
+    public static final class ClientCredentialsAuthenticationConfigurationBuilder
             implements AuthenticationConfiguration.Builder {
 
         private static final Duration DEFAULT_EXPIRY_GRACE_PERIOD = Duration.ofSeconds(5);
-
-        private final Map<String, String> additionalHeaders = new HashMap<>();
 
         private String tokenEndpoint;
         private String clientId;
         private String clientSecret;
         private Collection<String> scopes;
-        private Duration expiryGracePeriod = DEFAULT_EXPIRY_GRACE_PERIOD;
-        private ProxyConfiguration proxyConfiguration;
+        private Duration expiryGracePeriod;
+        @Nullable private ProxyConfiguration proxyConfiguration;
+        private final Map<String, String> additionalHeaders;
+
+        private ClientCredentialsAuthenticationConfigurationBuilder() {
+            scopes = Collections.emptyList();
+            expiryGracePeriod = DEFAULT_EXPIRY_GRACE_PERIOD;
+            proxyConfiguration = null;
+            additionalHeaders = new HashMap<>();
+        }
 
         /**
          * Sets the endpoint to retrieve tokens.
@@ -164,18 +169,18 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
          * @return this builder.
          */
         public ClientCredentialsAuthenticationConfigurationBuilder tokenEndpoint(final String tokenEndpoint) {
-            this.tokenEndpoint = tokenEndpoint;
+            this.tokenEndpoint = checkNotNull(tokenEndpoint, "tokenEndpoint");
             return this;
         }
 
         /**
-         * Sets the client id to authenticate.
+         * Sets the client ID to authenticate.
          *
-         * @param clientId the client id.
+         * @param clientId the client ID.
          * @return this builder.
          */
         public ClientCredentialsAuthenticationConfigurationBuilder clientId(final String clientId) {
-            this.clientId = clientId;
+            this.clientId = checkNotNull(clientId, "clientId");
             return this;
         }
 
@@ -187,7 +192,7 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
          * @return this builder.
          */
         public ClientCredentialsAuthenticationConfigurationBuilder clientSecret(final String clientSecret) {
-            this.clientSecret = clientSecret;
+            this.clientSecret = checkNotNull(clientSecret, "clientSecret");
             return this;
         }
 
@@ -198,7 +203,7 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
          * @return this builder.
          */
         public ClientCredentialsAuthenticationConfigurationBuilder scopes(final Collection<String> scopes) {
-            this.scopes = scopes;
+            this.scopes = new ArrayList<>(checkNotNull(scopes, "scopes"));
             return this;
         }
 
@@ -209,28 +214,29 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
          * @return this builder.
          */
         public ClientCredentialsAuthenticationConfigurationBuilder expiryGracePeriod(final Duration expiryGracePeriod) {
-            this.expiryGracePeriod = expiryGracePeriod;
+            this.expiryGracePeriod = checkNotNull(expiryGracePeriod, "expiryGracePeriod");
             return this;
         }
 
         @Override
         public ClientCredentialsAuthenticationConfigurationBuilder withAdditionalHeader(final String key,
                 final String value) {
+
             additionalHeaders.put(checkNotNull(key, "key"), value);
             return this;
         }
 
         @Override
         public ClientCredentialsAuthenticationConfigurationBuilder proxyConfiguration(
-                final ProxyConfiguration proxyConfiguration) {
-            this.proxyConfiguration = checkNotNull(proxyConfiguration, "proxyConfiguration");
+                @Nullable final ProxyConfiguration proxyConfiguration) {
+
+            this.proxyConfiguration = proxyConfiguration;
             return this;
         }
 
         @Override
         public ClientCredentialsAuthenticationConfiguration build() {
-            return new ClientCredentialsAuthenticationConfiguration(tokenEndpoint, clientId, clientSecret, scopes,
-                    expiryGracePeriod, additionalHeaders, proxyConfiguration);
+            return new ClientCredentialsAuthenticationConfiguration(this);
         }
 
     }

@@ -35,7 +35,6 @@ import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.FeatureChange;
 import org.eclipse.ditto.client.changes.FeaturesChange;
 import org.eclipse.ditto.client.changes.ThingChange;
-import org.eclipse.ditto.client.changes.internal.ImmutableChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeatureChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeaturesChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableThingChange;
@@ -50,7 +49,6 @@ import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.OptionName;
 import org.eclipse.ditto.client.options.internal.OptionsEvaluator;
-import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
@@ -67,12 +65,11 @@ import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.Signal;
+import org.eclipse.ditto.signals.base.WithOptionalEntity;
+import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
-import org.eclipse.ditto.signals.commands.things.modify.CreateThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteThingResponse;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyThingResponse;
-import org.eclipse.ditto.signals.commands.things.modify.ThingModifyCommandResponse;
+import org.eclipse.ditto.signals.commands.things.modify.ModifyThing;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThings;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThingsResponse;
 import org.slf4j.Logger;
@@ -363,8 +360,11 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         assertThatThingHasId(thing);
 
         final CreateThing command = outgoingMessageFactory.createThing(thing, initialPolicy, options);
-        return askThingCommand(command, CreateThingResponse.class, response ->
-                response.getThingCreated().orElseGet(() -> ThingsModelFactory.newThing(JsonFactory.nullObject())))
+
+        return this.askThingCommand(command,
+                // response could be CreateThingResponse or ModifyThingResponse or Acknowledgements.
+                CommandResponse.class,
+                this::transformModifyResponse)
                 .toCompletableFuture();
     }
 
@@ -427,12 +427,12 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
             final Option<?>... options) {
         argumentNotNull(thing);
         assertThatThingHasId(thing);
-        return askThingCommand(outgoingMessageFactory.putThing(thing, initialPolicy, options),
-                // response could be either CreateThingResponse or ModifyThingResponse.
-                ThingModifyCommandResponse.class,
-                response -> response.getEntity(response.getImplementedSchemaVersion())
-                        .map(JsonValue::asObject)
-                        .map(ThingsModelFactory::newThing)
+
+        final ModifyThing command = outgoingMessageFactory.putThing(thing, initialPolicy, options);
+        return askThingCommand(command,
+                // response could be CreateThingResponse or ModifyThingResponse or Acknowledgements.
+                CommandResponse.class,
+                response -> Optional.ofNullable(transformModifyResponse(response))
         ).toCompletableFuture();
     }
 
@@ -441,7 +441,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         argumentNotNull(thing);
         assertThatThingHasId(thing);
 
-        return askThingCommand(outgoingMessageFactory.updateThing(thing, options), ModifyThingResponse.class,
+        return askThingCommand(outgoingMessageFactory.updateThing(thing, options), CommandResponse.class,
                 this::toVoid).toCompletableFuture();
     }
 
@@ -458,7 +458,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         argumentNotNull(thingId);
 
         final DeleteThing command = outgoingMessageFactory.deleteThing(thingId, options);
-        return askThingCommand(command, DeleteThingResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -509,9 +509,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         argumentNotNull(handler);
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/attributes"),
-                Change.class, handler,
-                (change, value, path, params) -> new ImmutableChange(change.getEntityId(), change.getAction(), path,
-                        value, change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null))
+                Change.class, handler, (change, value, path, params) -> change.withPathAndValue(path, value)
         );
     }
 
@@ -523,9 +521,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         argumentNotNull(handler);
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/attributes{0}", attrPath), Change.class,
-                handler,
-                (change, value, path, params) -> new ImmutableChange(change.getEntityId(), change.getAction(), path,
-                        value, change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null))
+                handler, (change, value, path, params) -> change.withPathAndValue(path, value)
         );
     }
 
@@ -534,14 +530,12 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         argumentNotNull(handler);
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/features/'{featureId}'"),
-                FeatureChange.class, handler,
-                (change, value, path, params) -> {
+                FeatureChange.class, handler, (change, value, path, params) -> {
                     final Feature feature = value != null ?
                             ThingsModelFactory.newFeatureBuilder(value.asObject())
                                     .useId(params.get("{featureId}"))
                                     .build() : null;
-                    return new ImmutableFeatureChange(change.getEntityId(), change.getAction(), feature, path,
-                            change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null));
+                    return new ImmutableFeatureChange(change.withPathAndValue(path, value), feature);
                 });
     }
 
@@ -556,8 +550,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
                 FeatureChange.class, handler, (change, value, path, params) -> {
                     final Feature feature = value != null ?
                             ThingsModelFactory.newFeatureBuilder(value.asObject()).useId(featureId).build() : null;
-                    return new ImmutableFeatureChange(change.getEntityId(), change.getAction(), feature, path,
-                            change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null));
+                    return new ImmutableFeatureChange(change.withPathAndValue(path, value), feature);
                 });
     }
 
@@ -568,8 +561,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/features"),
                 FeaturesChange.class, handler, (change, value, path, params) -> {
                     final Features features = value != null ? ThingsModelFactory.newFeatures(value.asObject()) : null;
-                    return new ImmutableFeaturesChange(change.getEntityId(), change.getAction(), features, path,
-                            change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null));
+                    return new ImmutableFeaturesChange(change.withPathAndValue(path, value), features);
                 });
     }
 
@@ -581,10 +573,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         argumentNotNull(handler);
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/features/{0}/properties", featureId),
-                Change.class,
-                handler,
-                (change, value, path, params) -> new ImmutableChange(change.getEntityId(), change.getAction(), path,
-                        value, change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null))
+                Change.class, handler, (change, value, path, params) -> change.withPathAndValue(path, value)
         );
     }
 
@@ -600,9 +589,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/features/{0}/properties{1}", featureId,
                         propertyPath),
-                Change.class, handler,
-                (change, value, path, params) -> new ImmutableChange(change.getEntityId(), change.getAction(), path,
-                        value, change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null))
+                Change.class, handler, (change, value, path, params) -> change.withPathAndValue(path, value)
         );
     }
 
@@ -613,8 +600,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'"),
                 ThingChange.class, handler, (change, value, path, params) -> {
                     final Thing thing = null != value ? ThingsModelFactory.newThing(value.asObject()) : null;
-                    return new ImmutableThingChange(change.getEntityId(), change.getAction(), thing, path,
-                            change.getRevision(), change.getTimestamp().orElse(null), change.getExtra().orElse(null));
+                    return new ImmutableThingChange(change.withPathAndValue(path, value), thing);
                 });
     }
 
@@ -732,6 +718,19 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     private CompletableFuture<List<Thing>> sendRetrieveThingsMessage(final RetrieveThings command) {
         return askThingCommand(command, RetrieveThingsResponse.class, RetrieveThingsResponse::getThings)
                 .toCompletableFuture();
+    }
+
+    @Nullable
+    private Thing transformModifyResponse(final CommandResponse<?> response) {
+        if (response instanceof WithOptionalEntity) {
+            return ((WithOptionalEntity) response).getEntity(response.getImplementedSchemaVersion())
+                    .filter(JsonValue::isObject)
+                    .map(JsonValue::asObject)
+                    .map(ThingsModelFactory::newThing)
+                    .orElse(null);
+        } else {
+            return null;
+        }
     }
 
     @FunctionalInterface

@@ -24,17 +24,12 @@ import nl.jqno.equalsverifier.EqualsVerifier;
  */
 public class ImmutableMessageSerializerKeyTest {
 
-    /**
-     *
-     */
+
     @Test
     public void assertImmutability() {
         MutabilityAssert.assertInstancesOf(ImmutableMessageSerializerKey.class, areImmutable());
     }
 
-    /**
-     *
-     */
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(ImmutableMessageSerializerKey.class).verify();

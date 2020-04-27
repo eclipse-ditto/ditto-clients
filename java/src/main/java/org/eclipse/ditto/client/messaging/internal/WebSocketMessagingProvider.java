@@ -457,7 +457,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     @Override
     public void onTextMessage(final WebSocket websocket, final String text) {
         callbackExecutor.execute(() -> {
-            LOGGER.trace("Client <{}>: Received WebSocket string message <{}>", sessionId, text);
+            LOGGER.debug("Client <{}>: Received WebSocket string message <{}>", sessionId, text);
             handleIncomingMessage(text);
         });
     }

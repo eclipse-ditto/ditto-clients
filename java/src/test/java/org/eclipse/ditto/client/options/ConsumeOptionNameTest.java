@@ -21,9 +21,6 @@ import org.junit.Test;
  */
 public final class ConsumeOptionNameTest {
 
-    /**
-     *
-     */
     @Test
     public void testAgainstValidStringValueReturnsTrue() {
         final String optionNameValue = OptionName.Modify.RESPONSE_REQUIRED.toString();
@@ -31,17 +28,11 @@ public final class ConsumeOptionNameTest {
         assertThat(OptionName.Modify.RESPONSE_REQUIRED.test(optionNameValue)).isTrue();
     }
 
-    /**
-     *
-     */
     @Test
     public void testAgainstInvalidStringValueReturnsFalse() {
         assertThat(OptionName.Modify.RESPONSE_REQUIRED.test("Fnord")).isFalse();
     }
 
-    /**
-     *
-     */
     @Test
     public void testAgainstSameOptionNameReturnsTrue() {
         final OptionName optionName = OptionName.Modify.RESPONSE_REQUIRED;

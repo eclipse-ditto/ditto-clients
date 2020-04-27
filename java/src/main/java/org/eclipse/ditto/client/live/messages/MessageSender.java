@@ -19,6 +19,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.things.ThingId;
 
@@ -151,6 +152,16 @@ public interface MessageSender<T> {
          * or send the message.
          */
         SetPayloadOrSend<T> statusCode(HttpStatusCode statusCode);
+
+        /**
+         * Sets additional headers to send in the message.
+         *
+         * @param additionalHeaders the headers.
+         * @return fluent api builder that provides the functionality to set <em>optionally</em> fields of the message
+         * or send the message.
+         * @since 1.1.0
+         */
+        SetPayloadOrSend<T> headers(DittoHeaders additionalHeaders);
 
         /**
          * Sets the payload of the message. NOTE: The maximum payload size is restricted to 10MB.

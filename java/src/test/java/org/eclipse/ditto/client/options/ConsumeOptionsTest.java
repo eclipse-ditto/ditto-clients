@@ -23,17 +23,11 @@ import org.junit.Test;
  */
 public final class ConsumeOptionsTest {
 
-    /**
-     *
-     */
     @Test
     public void assertImmutability() {
         assertInstancesOf(Options.Modify.class, areImmutable());
     }
 
-    /**
-     *
-     */
     @Test
     public void responseTimeoutWithDurationReturnsExpectedOption() {
         final boolean responseRequired = false;

@@ -42,16 +42,15 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
     @Nullable private final ProxyConfiguration proxyConfiguration;
     @Nullable private final TrustStoreConfiguration trustStoreConfiguration;
 
-    private WebSocketMessagingConfiguration(final Duration timeout, final JsonSchemaVersion jsonSchemaVersion,
-            final URI endpointUri,
-            final boolean reconnectEnabled, @Nullable final ProxyConfiguration proxyConfiguration,
-            @Nullable final TrustStoreConfiguration trustStoreConfiguration) {
-        this.timeout = timeout;
-        this.jsonSchemaVersion = jsonSchemaVersion;
+    public WebSocketMessagingConfiguration(final WebSocketMessagingConfigurationBuilder builder,
+            final URI endpointUri) {
+
+        jsonSchemaVersion = builder.jsonSchemaVersion;
+        reconnectEnabled = builder.reconnectEnabled;
+        proxyConfiguration = builder.proxyConfiguration;
+        trustStoreConfiguration = builder.trustStoreConfiguration;
+        this.timeout = builder.timeout;
         this.endpointUri = endpointUri;
-        this.reconnectEnabled = reconnectEnabled;
-        this.proxyConfiguration = proxyConfiguration;
-        this.trustStoreConfiguration = trustStoreConfiguration;
     }
 
     public static MessagingConfiguration.Builder newBuilder() {
@@ -94,12 +93,18 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         private static final String WS_PATH = "/ws/";
         private static final String WS_PATH_REGEX = "/ws/([12])/?";
 
+        private JsonSchemaVersion jsonSchemaVersion;
         private Duration timeout = Duration.ofSeconds(60L);
-        private JsonSchemaVersion jsonSchemaVersion = JsonSchemaVersion.LATEST;
         private URI endpointUri;
-        private boolean reconnectEnabled = true;
-        private ProxyConfiguration proxyConfiguration;
+        private boolean reconnectEnabled;
+        @Nullable private ProxyConfiguration proxyConfiguration;
         private TrustStoreConfiguration trustStoreConfiguration;
+
+        private WebSocketMessagingConfigurationBuilder() {
+            jsonSchemaVersion = JsonSchemaVersion.LATEST;
+            reconnectEnabled = true;
+            proxyConfiguration = null;
+        }
 
         @Override
         public Builder timeout(final Duration timeout) {
@@ -122,7 +127,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
                 return MessageFormat.format(msgTemplate, uriScheme, ALLOWED_URI_SCHEME);
             });
 
-            this.endpointUri = uri;
+            endpointUri = uri;
             return this;
         }
 
@@ -133,8 +138,9 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         }
 
         @Override
-        public MessagingConfiguration.Builder proxyConfiguration(final ProxyConfiguration proxyConfiguration) {
-            this.proxyConfiguration = checkNotNull(proxyConfiguration, "proxyConfiguration");
+        public MessagingConfiguration.Builder proxyConfiguration(
+                @Nullable final ProxyConfiguration proxyConfiguration) {
+            this.proxyConfiguration = proxyConfiguration;
             return this;
         }
 
@@ -148,8 +154,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         @Override
         public MessagingConfiguration build() {
             final URI wsEndpointUri = appendWsPathIfNecessary(this.endpointUri, jsonSchemaVersion);
-            return new WebSocketMessagingConfiguration(timeout, jsonSchemaVersion, wsEndpointUri, reconnectEnabled,
-                    proxyConfiguration, trustStoreConfiguration);
+            return new WebSocketMessagingConfiguration(this, wsEndpointUri);
         }
 
         private static URI appendWsPathIfNecessary(final URI baseUri, final JsonSchemaVersion schemaVersion) {

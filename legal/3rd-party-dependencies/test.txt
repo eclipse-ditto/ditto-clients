@@ -1,41 +1,47 @@
-   biz.aQute.bnd:bndlib:jar:2.4.0:test
-   ch.qos.logback:logback-classic:jar:1.2.3:test
-   ch.qos.logback:logback-core:jar:1.2.3:test
-   junit:junit:jar:4.12:test
-   net.bytebuddy:byte-buddy-agent:jar:1.7.0:test
-   net.bytebuddy:byte-buddy:jar:1.7.0:test
-   net.javacrumbs.json-unit:json-unit-core:jar:1.28.1:test
-   net.javacrumbs.json-unit:json-unit:jar:1.28.1:test
-   nl.jqno.equalsverifier:equalsverifier:jar:3.0.3:test
-   org.apache.felix:org.apache.felix.framework:jar:5.4.0:test
-   org.apache.servicemix.bundles:org.apache.servicemix.bundles.javax-inject:jar:1_2:test
-   org.assertj:assertj-core:jar:3.11.1:test
-   org.hamcrest:hamcrest-core:jar:1.3:test
-   org.json:json:jar:20090211:test
-   org.mockito:mockito-core:jar:2.9.0:test
-   org.mutabilitydetector:MutabilityDetector:jar:0.9.6:test
-   org.objenesis:objenesis:jar:2.6:test
-   org.ops4j.base:ops4j-base-io:jar:1.5.0:test
-   org.ops4j.base:ops4j-base-lang:jar:1.5.0:test
-   org.ops4j.base:ops4j-base-monitors:jar:1.5.0:test
-   org.ops4j.base:ops4j-base-net:jar:1.5.0:test
-   org.ops4j.base:ops4j-base-spi:jar:1.5.0:test
-   org.ops4j.base:ops4j-base-store:jar:1.5.0:test
-   org.ops4j.base:ops4j-base-util-property:jar:1.5.0:test
-   org.ops4j.pax.exam:pax-exam-container-native:jar:4.8.0:test
-   org.ops4j.pax.exam:pax-exam:jar:4.8.0:test
-   org.ops4j.pax.exam:pax-exam-junit4:jar:4.8.0:test
-   org.ops4j.pax.exam:pax-exam-link-mvn:jar:4.8.0:test
-   org.ops4j.pax.exam:pax-exam-spi:jar:4.8.0:test
-   org.ops4j.pax.swissbox:pax-swissbox-core:jar:1.8.2:test
-   org.ops4j.pax.swissbox:pax-swissbox-lifecycle:jar:1.8.2:test
-   org.ops4j.pax.swissbox:pax-swissbox-optional-jcl:jar:1.8.2:test
-   org.ops4j.pax.swissbox:pax-swissbox-property:jar:1.8.2:test
-   org.ops4j.pax.swissbox:pax-swissbox-tracker:jar:1.8.2:test
-   org.ops4j.pax.tinybundles:tinybundles:jar:2.1.1:test
-   org.ops4j.pax.url:pax-url-aether:jar:2.4.2:test
-   org.ops4j.pax.url:pax-url-classpath:jar:2.4.2:test
-   org.ops4j.pax.url:pax-url-commons:jar:2.4.2:test
-   org.ops4j.pax.url:pax-url-link:jar:2.4.2:test
-   org.skyscreamer:jsonassert:jar:1.2.3:test
-   org.slf4j:jcl-over-slf4j:jar:1.6.6:test
+biz.aQute.bnd:bndlib:jar:2.4.0:test
+ch.qos.logback:logback-classic:jar:1.2.3:test
+ch.qos.logback:logback-core:jar:1.2.3:test
+com.beust:jcommander:jar:1.72:test
+junit:junit:jar:4.12:test
+net.bytebuddy:byte-buddy-agent:jar:1.9.10:test
+net.bytebuddy:byte-buddy:jar:1.9.10:test
+net.javacrumbs.json-unit:json-unit-core:jar:1.28.1:test
+net.javacrumbs.json-unit:json-unit:jar:1.28.1:test
+nl.jqno.equalsverifier:equalsverifier:jar:3.0.3:test
+org.apache-extras.beanshell:bsh:jar:2.0b6:test
+org.apache.felix:org.apache.felix.framework:jar:6.0.3:test
+org.apache.servicemix.bundles:org.apache.servicemix.bundles.javax-inject:jar:1_2:test
+org.assertj:assertj-core:jar:3.12.0:test
+org.codehaus.mojo:animal-sniffer-annotations:jar:1.9:test
+org.hamcrest:hamcrest-core:jar:1.3:test
+org.json:json:jar:20090211:test
+org.mockito:mockito-core:jar:3.1.0:test
+org.mutabilitydetector:MutabilityDetector:jar:0.10.2:test
+org.objenesis:objenesis:jar:2.6:test
+org.ops4j.base:ops4j-base-io:jar:1.5.0:test
+org.ops4j.base:ops4j-base-lang:jar:1.5.0:test
+org.ops4j.base:ops4j-base-monitors:jar:1.5.0:test
+org.ops4j.base:ops4j-base-net:jar:1.5.0:test
+org.ops4j.base:ops4j-base-spi:jar:1.5.0:test
+org.ops4j.base:ops4j-base-store:jar:1.5.0:test
+org.ops4j.base:ops4j-base-util-property:jar:1.5.0:test
+org.ops4j.pax.exam:pax-exam-container-native:jar:4.13.0:test
+org.ops4j.pax.exam:pax-exam:jar:4.13.0:test
+org.ops4j.pax.exam:pax-exam-junit4:jar:4.13.0:test
+org.ops4j.pax.exam:pax-exam-link-mvn:jar:4.13.0:test
+org.ops4j.pax.exam:pax-exam-spi:jar:4.13.0:test
+org.ops4j.pax.swissbox:pax-swissbox-core:jar:1.8.2:test
+org.ops4j.pax.swissbox:pax-swissbox-lifecycle:jar:1.8.2:test
+org.ops4j.pax.swissbox:pax-swissbox-optional-jcl:jar:1.8.2:test
+org.ops4j.pax.swissbox:pax-swissbox-property:jar:1.8.2:test
+org.ops4j.pax.swissbox:pax-swissbox-tracker:jar:1.8.2:test
+org.ops4j.pax.tinybundles:tinybundles:jar:2.1.1:test
+org.ops4j.pax.url:pax-url-aether:jar:2.4.5:test
+org.ops4j.pax.url:pax-url-classpath:jar:2.4.5:test
+org.ops4j.pax.url:pax-url-commons:jar:2.4.5:test
+org.ops4j.pax.url:pax-url-link:jar:2.4.5:test
+org.reactivestreams:reactive-streams-examples:jar:1.0.3:test
+org.reactivestreams:reactive-streams-tck:jar:1.0.3:test
+org.skyscreamer:jsonassert:jar:1.2.3:test
+org.slf4j:jcl-over-slf4j:jar:1.6.6:test
+org.testng:test

@@ -330,7 +330,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M1</version>
+                    <version>3.0.0-M4</version>
                     <configuration>
                         <systemProperties>
                             <kamon.auto-start>true</kamon.auto-start>
@@ -345,7 +345,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>3.0.0-M1</version>
+                    <version>3.0.0-M4</version>
                     <executions>
                         <execution>
                             <id>integration-test</id>
@@ -445,6 +445,8 @@
                                 <exclude>org.eclipse.ditto.client.messaging.internal</exclude>
                                 <exclude>org.eclipse.ditto.client.options.internal</exclude>
                                 <exclude>org.eclipse.ditto.client.twin.internal</exclude>
+                                <!-- this builder is an internal implementation of a builder interface and should not be handled as API: -->
+                                <exclude>org.eclipse.ditto.client.configuration.ClientCredentialsAuthenticationConfiguration$ClientCredentialsAuthenticationConfigurationBuilder</exclude>
                             </excludes>
                         </parameter>
                     </configuration>
@@ -823,6 +825,11 @@
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-signals-base</artifactId>
+            <version>${ditto.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.ditto</groupId>
+            <artifactId>ditto-signals-acks-things</artifactId>
             <version>${ditto.version}</version>
         </dependency>
         <dependency>

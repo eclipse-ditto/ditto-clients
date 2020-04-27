@@ -498,10 +498,13 @@ public final class OutgoingMessageFactory {
     }
 
     private DittoHeaders buildDittoHeaders(final boolean allowExists, final Option<?>... options) {
+        final OptionsEvaluator.Global global = OptionsEvaluator.forGlobalOptions(options);
         final OptionsEvaluator.Modify modify = OptionsEvaluator.forModifyOptions(options);
 
-        final DittoHeadersBuilder headersBuilder = DittoHeaders.newBuilder()
-                .correlationId(UUID.randomUUID().toString())
+        final DittoHeaders additionalHeaders = global.getDittoHeaders().orElse(DittoHeaders.empty());
+        final DittoHeadersBuilder<?, ?> headersBuilder = DittoHeaders.newBuilder(additionalHeaders)
+                .correlationId(additionalHeaders.getCorrelationId()
+                        .orElseGet(() -> UUID.randomUUID().toString()))
                 .schemaVersion(jsonSchemaVersion)
                 .responseRequired(modify.isResponseRequired().orElse(true));
         modify.exists().ifPresent(exists -> {

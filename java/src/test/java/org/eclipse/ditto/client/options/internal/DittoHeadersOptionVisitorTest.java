@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,25 +17,27 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.eclipse.ditto.client.options.internal.MockOptionFactory.createOptionMock;
 
 import org.eclipse.ditto.client.options.OptionName;
+import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Unit test for {@link ResponseRequiredOptionVisitor}.
+ * Unit test for {@link DittoHeadersOptionVisitor}.
  */
-public final class ResponseRequiredOptionVisitorTest {
+public final class DittoHeadersOptionVisitorTest {
 
-    private ResponseRequiredOptionVisitor underTest = null;
+    private DittoHeadersOptionVisitor underTest = null;
 
 
     @Before
     public void setUp() {
-        underTest = new ResponseRequiredOptionVisitor();
+        underTest = new DittoHeadersOptionVisitor();
     }
 
     @Test
     public void tryToVisitNullOption() {
-        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> underTest.visit(null))
+        assertThatExceptionOfType(NullPointerException.class)
+                .isThrownBy(() -> underTest.visit(null))
                 .withMessageContaining("option to be visited")
                 .withMessageContaining("null");
     }
@@ -57,23 +59,23 @@ public final class ResponseRequiredOptionVisitorTest {
 
     @Test
     public void optionValueTypeDiffersFromExpectedType() {
-        final String value = "Booh!";
+        final boolean value = false;
 
-        assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(
-                () -> underTest.visit(createOptionMock(OptionName.Modify.RESPONSE_REQUIRED, value)))
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> underTest.visit(createOptionMock(OptionName.Global.DITTO_HEADERS, value)))
                 .withMessage(String.format("The option value <%s> is not of expected type!", value))
                 .withCauseInstanceOf(ClassCastException.class);
     }
 
     @Test
     public void optionValueIsExpected() {
-        final boolean responseRequired = false;
+        final DittoHeaders dittoHeaders = DittoHeaders.newBuilder().correlationId("123456").build();
 
         final boolean isFinished =
-                underTest.visit(createOptionMock(OptionName.Modify.RESPONSE_REQUIRED, responseRequired));
+                underTest.visit(createOptionMock(OptionName.Global.DITTO_HEADERS, dittoHeaders));
 
         assertThat(isFinished).isTrue();
-        assertThat(underTest.getValue()).contains(responseRequired);
+        assertThat(underTest.getValue()).contains(dittoHeaders);
     }
 
 }

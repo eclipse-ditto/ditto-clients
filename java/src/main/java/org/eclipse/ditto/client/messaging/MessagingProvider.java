@@ -27,6 +27,7 @@ import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.base.Command;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.events.base.Event;
@@ -141,6 +142,7 @@ public interface MessagingProvider {
     }
 
     /**
+     * Send message using the underlying connection.
      * Throw {@code UnsupportedOperationException}.
      * Protocol-relevant concerns are moved away from messaging providers into API handles.
      *

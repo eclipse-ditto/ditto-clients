@@ -18,86 +18,66 @@ import static org.mutabilitydetector.unittesting.AllowedReason.provided;
 import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
 import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
+import java.util.UUID;
+
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.Options;
+import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 /**
- * Unit test for {@link OptionsEvaluator.Modify}.
+ * Unit test for {@link OptionsEvaluator.Global}.
  */
 @RunWith(MockitoJUnitRunner.class)
-public final class ConsumeOptionsEvaluatorTest {
+public final class GlobalOptionsEvaluatorTest {
 
-    private static final Option<Boolean> RESPONSE_REQUIRED_OPTION = Options.Modify.responseRequired(false);
+    private static final DittoHeaders KNOWN_DITTO_HEADERS = DittoHeaders.newBuilder()
+            .correlationId(UUID.randomUUID().toString())
+            .build();
+    private static final Option<DittoHeaders> DITTO_HEADERS_OPTION = Options.headers(KNOWN_DITTO_HEADERS);
 
-    private OptionsEvaluator.Modify underTest = null;
+    private OptionsEvaluator.Global underTest = null;
 
-    /**
-     *
-     */
+
     @Before
     public void setUp() {
-        final Option<?>[] options = new Option<?>[]{RESPONSE_REQUIRED_OPTION};
-        underTest = OptionsEvaluator.forModifyOptions(options);
+        final Option<?>[] options = new Option<?>[]{DITTO_HEADERS_OPTION};
+        underTest = OptionsEvaluator.forGlobalOptions(options);
     }
 
-    /**
-     *
-     */
-    @Test
-    public void assertThatOptionsEvaluatorIsImmutable() {
-        assertInstancesOf(OptionsEvaluator.class, areImmutable(),
-                provided(UserProvidedOptions.class).isAlsoImmutable());
-    }
-
-    /**
-     *
-     */
     @Test
     public void assertImmutability() {
-        assertInstancesOf(OptionsEvaluator.Modify.class, areImmutable(),
+        assertInstancesOf(OptionsEvaluator.Global.class, areImmutable(),
                 provided(OptionsEvaluator.class).isAlsoImmutable());
     }
 
-    /**
-     *
-     */
     @Test
     public void tryToCreateInstanceWithNullOptions() {
-        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> OptionsEvaluator.forModifyOptions(null))
+        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> OptionsEvaluator.forGlobalOptions(null))
                 .withMessage("The options must not be null!");
     }
 
-    /**
-     *
-     */
     @Test
     public void createInstanceWithEmptyOptions() {
-        final OptionsEvaluator.Modify underTest = OptionsEvaluator.forModifyOptions(new Option<?>[0]);
+        final OptionsEvaluator.Global underTest = OptionsEvaluator.forGlobalOptions(new Option<?>[0]);
 
         assertThat(underTest).isNotNull();
     }
 
-    /**
-     *
-     */
     @Test
     public void getResponseTimeoutReturnsExpectedIfProvided() {
-        assertThat(underTest.isResponseRequired()).contains(RESPONSE_REQUIRED_OPTION.getValue());
+        assertThat(underTest.getDittoHeaders()).contains(DITTO_HEADERS_OPTION.getValue());
     }
 
-    /**
-     *
-     */
     @Test
     public void getResponseTimeoutReturnsEmptyOptionalIfNotProvided() {
         final Option<?>[] options = new Option<?>[]{};
-        underTest = OptionsEvaluator.forModifyOptions(options);
+        underTest = OptionsEvaluator.forGlobalOptions(options);
 
-        assertThat(underTest.isResponseRequired()).isEmpty();
+        assertThat(underTest.getDittoHeaders()).isEmpty();
     }
 
 }

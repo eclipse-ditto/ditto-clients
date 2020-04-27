@@ -52,9 +52,7 @@ public class HandlerRegistryTest {
     private Registration<Consumer<? extends PointerWithData>> registrationMock;
     private HandlerRegistry registry;
 
-    /**
-     *
-     */
+
     @Before
     public void before() {
         registry = new HandlerRegistry(busMock);
@@ -62,17 +60,11 @@ public class HandlerRegistryTest {
         when(busMock.on(any(JsonPointerSelector.class), any(Consumer.class))).thenReturn(registrationMock);
     }
 
-    /**
-     *
-     */
     @Test(expected = NullPointerException.class)
     public void constructorWithNullBus() {
         new HandlerRegistry(null);
     }
 
-    /**
-     *
-     */
     @Test
     public void registerWithNewRegistrationId() {
         // test
@@ -82,9 +74,6 @@ public class HandlerRegistryTest {
         verify(busMock).on(selectorMock, consumerMock);
     }
 
-    /**
-     *
-     */
     @Test
     public void registerWithAlreadyExistingRegistrationId() {
         // prepare
@@ -103,10 +92,6 @@ public class HandlerRegistryTest {
         verify(busMock, never()).on(selectorMock, consumerMock);
     }
 
-
-    /**
-     *
-     */
     @Test
     public void registerTwoConsumersWithDifferentRegistrationId() {
         // test
@@ -117,9 +102,6 @@ public class HandlerRegistryTest {
         verify(busMock, times(2)).on(selectorMock, consumerMock);
     }
 
-    /**
-     *
-     */
     @Test
     public void deregisterWithKnownRegistrationId() {
         // prepare
@@ -133,9 +115,6 @@ public class HandlerRegistryTest {
         verify(registrationMock).cancel();
     }
 
-    /**
-     *
-     */
     @Test
     public void deregisterWithUnknownRegistrationId() {
         // test
@@ -145,9 +124,6 @@ public class HandlerRegistryTest {
         assertFalse(deregistered);
     }
 
-    /**
-     *
-     */
     @Test
     public void deregisterAndRegisterAgain() {
         // prepare
