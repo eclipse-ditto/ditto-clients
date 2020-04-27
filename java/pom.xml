@@ -829,7 +829,7 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-signals-acks</artifactId>
+            <artifactId>ditto-signals-acks-things</artifactId>
             <version>${ditto.version}</version>
         </dependency>
         <dependency>
