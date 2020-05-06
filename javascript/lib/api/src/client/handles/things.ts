@@ -14,7 +14,7 @@
 /* tslint:disable:no-duplicate-string */
 import { GenericResponse, PutResponse } from '../../model/response';
 import { Acl, AclEntry, Thing } from '../../model/things.model';
-import { FieldsOptions, GetThingsOptions, MatchOptions } from '../../options/request.options';
+import { FieldsOptions, GetThingsOptions, MatchOptions, DefaultGetThingsOptions } from '../../options/request.options';
 import { RequestSender, RequestSenderFactory } from '../request-factory/request-sender';
 import { HttpThingsHandleV1, HttpThingsHandleV2, WebSocketThingsHandle } from './things.interfaces';
 
@@ -134,7 +134,7 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
   public getThings(thingIds: string[], options?: GetThingsOptions): Promise<Thing[]> {
     let actualOptions: GetThingsOptions;
     if (options === undefined) {
-      actualOptions = GetThingsOptions.getInstance().setThingIds(thingIds);
+      actualOptions = DefaultGetThingsOptions.getInstance().setThingIds(thingIds);
     } else {
       actualOptions = options.setThingIds(thingIds);
     }

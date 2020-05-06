@@ -13,7 +13,7 @@
 
 /* tslint:disable:no-duplicate-string */
 import { PutResponse } from '../../../src/model/response';
-import { FieldsOptions } from '../../../src/options/request.options';
+import {  DefaultFieldsOptions } from '../../../src/options/request.options';
 import { WebSocketHelper, WebSocketHelper as H } from './websocket.helper';
 
 describe('WebSocket Things Handle', () => {
@@ -23,7 +23,7 @@ describe('WebSocket Things Handle', () => {
 
   it('retrieves a Thing', () => {
     return H.test({
-      toTest: () => handle.getThing(H.thing.thingId, FieldsOptions.getInstance().ifMatch('a')),
+      toTest: () => handle.getThing(H.thing.thingId, DefaultFieldsOptions.getInstance().ifMatch('a')),
       topic: `${baseTopic}/retrieve`,
       status: 200,
       requestHeaders: Object.assign(H.standardHeaders, { 'If-Match': 'a' }),

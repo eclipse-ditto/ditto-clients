@@ -29,10 +29,29 @@ export interface RequestOptions {
   getHeaders(): Map<string, string>;
 }
 
+export interface AddRequestOptions<T extends AddRequestOptions<T>> extends RequestOptions {
+
+  /**
+   * Adds a URl option.
+   *
+   * @param id - The ID of the option to add.
+   * @param value - The body of the option to add.
+   */
+  addRequestParameter(id: string, value: string): T;
+
+  /**
+   * Adds a header option.
+   *
+   * @param name - The name of the header to add.
+   * @param value - The body of the header to add.
+   */
+  addHeader(name: string, value: string): T;
+}
+
 /**
  * Option provider for options. Options will be replaced if methods are called multiple times.
  */
-abstract class AbstractRequestOptions<T extends AbstractRequestOptions<T>> implements RequestOptions {
+export abstract class AbstractRequestOptions<T extends AbstractRequestOptions<T>> implements AddRequestOptions<T> {
 
   private readonly options: Map<string, string>;
   private readonly headers: Map<string, string>;
@@ -50,30 +69,18 @@ abstract class AbstractRequestOptions<T extends AbstractRequestOptions<T>> imple
     return new Map(this.headers);
   }
 
-  /**
-   * Adds a URl option.
-   *
-   * @param id - The ID of the option to add.
-   * @param value - The body of the option to add.
-   */
   addRequestParameter(id: string, value: string): T {
     this.options.set(id, value);
     return this as unknown as T;
   }
 
-  /**
-   * Adds a header option.
-   *
-   * @param name - The name of the header to add.
-   * @param value - The body of the header to add.
-   */
   addHeader(name: string, value: string): T {
     this.headers.set(name, value);
     return this as unknown as T;
   }
 }
 
-interface HasMatch<T extends HasMatch<T>> {
+export interface HasMatch<T extends HasMatch<T>> {
   /**
    * Sets an If-Match option.
    *
@@ -103,7 +110,7 @@ interface HasMatch<T extends HasMatch<T>> {
   ifNoneMatchAny(): T;
 }
 
-interface HasFields<T extends HasFields<T>> {
+export interface HasFields<T extends HasFields<T>> {
   /**
    * Sets a fields option.
    *
@@ -113,7 +120,7 @@ interface HasFields<T extends HasFields<T>> {
   withFields(...fields: string[]): T;
 }
 
-interface HasFilterAndNamespace<T extends HasFilterAndNamespace<T>> {
+export interface HasFilterAndNamespace<T extends HasFilterAndNamespace<T>> {
   /**
    * Sets a filter option.
    *
@@ -139,7 +146,12 @@ interface HasFilterAndNamespace<T extends HasFilterAndNamespace<T>> {
   withNamespaces(...namespaces: string[]): T;
 }
 
-abstract class AbstractRequestOptionsWithMatchOptions<T extends AbstractRequestOptionsWithMatchOptions<T>>
+export interface RequestOptionsWithMatchOptions<T extends RequestOptionsWithMatchOptions<T>>
+  extends AddRequestOptions<RequestOptionsWithMatchOptions<T>>,
+  HasMatch<RequestOptionsWithMatchOptions<T>> { }
+
+
+export abstract class AbstractRequestOptionsWithMatchOptions<T extends AbstractRequestOptionsWithMatchOptions<T>>
   extends AbstractRequestOptions<AbstractRequestOptionsWithMatchOptions<T>>
   implements HasMatch<AbstractRequestOptionsWithMatchOptions<T>> {
   public ifMatch(...tags: string[]): T {
@@ -166,7 +178,9 @@ abstract class AbstractRequestOptionsWithMatchOptions<T extends AbstractRequestO
 /**
  * Option provider for If-Match / If-None-Match headers
  */
-export class MatchOptions extends AbstractRequestOptionsWithMatchOptions<MatchOptions> {
+export interface MatchOptions extends RequestOptionsWithMatchOptions<MatchOptions> {}
+
+export class DefaultMatchOptions extends AbstractRequestOptionsWithMatchOptions<DefaultMatchOptions> implements MatchOptions {
 
   private constructor() {
     super();
@@ -177,15 +191,19 @@ export class MatchOptions extends AbstractRequestOptionsWithMatchOptions<MatchOp
    *
    * @returns The MatchOptions
    */
-  public static getInstance(): MatchOptions {
-    return new MatchOptions();
+  public static getInstance(): DefaultMatchOptions {
+    return new DefaultMatchOptions();
   }
 }
 
 /**
  * Option provider for some get requests
  */
-export class FieldsOptions extends AbstractRequestOptionsWithMatchOptions<FieldsOptions> implements HasFields<FieldsOptions> {
+export interface FieldsOptions extends RequestOptionsWithMatchOptions<FieldsOptions>, HasFields<FieldsOptions> {
+  withFields(...fields: string[]): FieldsOptions;
+}
+
+export class DefaultFieldsOptions extends AbstractRequestOptionsWithMatchOptions<DefaultFieldsOptions> implements FieldsOptions {
 
   private constructor() {
     super();
@@ -196,46 +214,48 @@ export class FieldsOptions extends AbstractRequestOptionsWithMatchOptions<Fields
    *
    * @returns The FieldsOptions
    */
-  public static getInstance(): FieldsOptions {
-    return new FieldsOptions();
+  public static getInstance(): DefaultFieldsOptions {
+    return new DefaultFieldsOptions();
   }
 
-  public withFields(...fields: string[]): FieldsOptions {
+  public withFields(...fields: string[]): DefaultFieldsOptions {
     super.addRequestParameter('fields', encodeURIComponent(fields.join()));
     return this;
   }
-
 }
 
 /**
  * Option provider for count requests
  */
-export class CountOptions extends AbstractRequestOptions<CountOptions> implements HasFilterAndNamespace<CountOptions> {
+export interface CountOptions extends AddRequestOptions<CountOptions>, HasFilterAndNamespace<CountOptions> {
+}
+
+export class DefaultCountOptions extends AbstractRequestOptions<DefaultCountOptions> implements CountOptions {
 
   protected constructor() {
     super();
   }
 
   /**
-   * Provides an instance of CountOptions.
+   * Provides an instance of DefaultCountOptions.
    *
-   * @returns The CountOptions
+   * @returns The DefaultCountOptions
    */
-  public static getInstance(): CountOptions {
-    return new CountOptions();
+  public static getInstance(): DefaultCountOptions {
+    return new DefaultCountOptions();
   }
 
-  public withRawFilter(rawFilterString: string): CountOptions {
+  public withRawFilter(rawFilterString: string): DefaultCountOptions {
     this.addRequestParameter('filter', encodeURIComponent(rawFilterString));
     return this;
   }
 
-  public withFilter(filter: Filter): CountOptions {
+  public withFilter(filter: Filter): DefaultCountOptions {
     this.addRequestParameter('filter', encodeURIComponent(filter.toString()));
     return this;
   }
 
-  public withNamespaces(...namespaces: string[]): CountOptions {
+  public withNamespaces(...namespaces: string[]): DefaultCountOptions {
     this.addRequestParameter('namespaces', encodeURIComponent(namespaces.join()));
     return this;
   }
@@ -245,8 +265,29 @@ export class CountOptions extends AbstractRequestOptions<CountOptions> implement
 /**
  * Option provider for search requests
  */
-export class SearchOptions extends AbstractRequestOptions<SearchOptions>
-  implements HasFilterAndNamespace<SearchOptions>, HasFields<SearchOptions> {
+export interface SearchOptions extends AddRequestOptions<SearchOptions>, HasFilterAndNamespace<SearchOptions>, HasFields<SearchOptions> {
+  /**
+   * Sets a limit option.
+   *
+   * @param offset - The index to start at.
+   * @param count - The number of things to return.
+   * @returns The instance of SearchOptions with the added option
+   */
+  withLimit(offset: number, count: number): SearchOptions;
+
+  /**
+   * Sets a sort option.
+   *
+   * @param sortOperation - The string to sort by.
+   * @returns The instance of SearchOptions with the added option
+   */
+  withSort(sortOperation: string): SearchOptions;
+
+}
+
+
+export class DefaultSearchOptions extends AbstractRequestOptions<DefaultSearchOptions>
+  implements SearchOptions {
   private sort: string;
   private limit: string;
 
@@ -257,53 +298,40 @@ export class SearchOptions extends AbstractRequestOptions<SearchOptions>
   }
 
   /**
-   * Provides an instance of SearchOptions.
+   * Provides an instance of DefaultSearchOptions.
    *
-   * @returns The SearchOptions
+   * @returns The DefaultSearchOptions
    */
-  public static getInstance(): SearchOptions {
-    return new SearchOptions();
+  public static getInstance(): DefaultSearchOptions {
+    return new DefaultSearchOptions();
   }
 
-  public withNamespaces(...namespaces: string[]): SearchOptions {
+  public withNamespaces(...namespaces: string[]): DefaultSearchOptions {
     this.addRequestParameter('namespaces', encodeURIComponent(namespaces.join()));
     return this;
   }
 
-  public withFields(...fields: string[]): SearchOptions {
+  public withFields(...fields: string[]): DefaultSearchOptions {
     this.addRequestParameter('fields', encodeURIComponent(fields.join()));
     return this;
   }
 
-  public withRawFilter(rawFilterString: string): SearchOptions {
+  public withRawFilter(rawFilterString: string): DefaultSearchOptions {
     this.addRequestParameter('filter', encodeURIComponent(rawFilterString));
     return this;
   }
 
-  public withFilter(filter: Filter): SearchOptions {
+  public withFilter(filter: Filter): DefaultSearchOptions {
     this.addRequestParameter('filter', encodeURIComponent(filter.toString()));
     return this;
   }
 
-  /**
-   * Sets a limit option.
-   *
-   * @param offset - The index to start at.
-   * @param count - The number of things to return.
-   * @returns The instance of SearchOptions with the added option
-   */
-  public withLimit(offset: number, count: number): SearchOptions {
+  public withLimit(offset: number, count: number): DefaultSearchOptions {
     this.limit = `limit(${offset},${count})`;
     return this.setOption();
   }
 
-  /**
-   * Sets a sort option.
-   *
-   * @param sortOperation - The string to sort by.
-   * @returns The instance of SearchOptions with the added option
-   */
-  public withSort(sortOperation: string): SearchOptions {
+  public withSort(sortOperation: string): DefaultSearchOptions {
     this.sort = `sort(${encodeURIComponent(sortOperation)})`;
     return this.setOption();
   }
@@ -311,9 +339,9 @@ export class SearchOptions extends AbstractRequestOptions<SearchOptions>
   /**
    * Constructs the 'option' option out of the values of limit and sort.
    *
-   * @returns The instance of SearchOptions with the constructed option
+   * @returns The instance of DefaultSearchOptions with the constructed option
    */
-  private setOption(): SearchOptions {
+  private setOption(): DefaultSearchOptions {
     let parameter: string;
     if (this.sort === '') {
       parameter = this.limit;
@@ -330,7 +358,11 @@ export class SearchOptions extends AbstractRequestOptions<SearchOptions>
 /**
  * Option provider for get Things requests
  */
-export class GetThingsOptions extends AbstractRequestOptions<GetThingsOptions> implements HasFields<GetThingsOptions> {
+export interface GetThingsOptions extends AddRequestOptions<GetThingsOptions>, HasFields<GetThingsOptions> {
+  setThingIds(ids: string[]): GetThingsOptions;
+}
+
+export class DefaultGetThingsOptions extends AbstractRequestOptions<DefaultGetThingsOptions> implements GetThingsOptions {
 
   private constructor() {
     super();
@@ -341,22 +373,16 @@ export class GetThingsOptions extends AbstractRequestOptions<GetThingsOptions> i
    *
    * @returns The GetThingsOptions
    */
-  public static getInstance(): GetThingsOptions {
-    return new GetThingsOptions();
+  public static getInstance(): DefaultGetThingsOptions {
+    return new DefaultGetThingsOptions();
   }
 
-  public withFields(...fields: string[]): GetThingsOptions {
+  public withFields(...fields: string[]): DefaultGetThingsOptions {
     super.addRequestParameter('fields', encodeURIComponent(fields.join()));
     return this;
   }
 
-  /**
-   * Sets the ids for a get Things request.
-   *
-   * @param ids - The ids to get.
-   * @returns The instance of GetThingsOptions with the ids set
-   */
-  public setThingIds(ids: string[]): GetThingsOptions {
+  public setThingIds(ids: string[]): DefaultGetThingsOptions {
     super.addRequestParameter('ids', encodeURIComponent(ids.join()));
     return this;
   }
@@ -365,7 +391,17 @@ export class GetThingsOptions extends AbstractRequestOptions<GetThingsOptions> i
 /**
  * Option provider for Messages requests
  */
-export class MessagesOptions extends AbstractRequestOptions<MessagesOptions> {
+export interface MessagesOptions extends AddRequestOptions<MessagesOptions> {
+  /**
+   * Sets a timeout option.
+   *
+   * @param timeout - The timeout to use.
+   * @returns The instance of MessagesOptions with the added option
+   */
+  withTimeout(timeout: number): MessagesOptions;
+}
+
+export class DefaultMessagesOptions extends AbstractRequestOptions<DefaultMessagesOptions> implements MessagesOptions {
 
   private constructor() {
     super();
@@ -376,17 +412,12 @@ export class MessagesOptions extends AbstractRequestOptions<MessagesOptions> {
    *
    * @returns The MessagesOptions
    */
-  public static getInstance(): MessagesOptions {
-    return new MessagesOptions();
+  public static getInstance(): DefaultMessagesOptions {
+    return new DefaultMessagesOptions();
   }
 
-  /**
-   * Sets a timeout option.
-   *
-   * @param timeout - The timeout to use.
-   * @returns The instance of MessagesOptions with the added option
-   */
-  public withTimeout(timeout: number): MessagesOptions {
+
+  public withTimeout(timeout: number): DefaultMessagesOptions {
     this.addRequestParameter('timeout', timeout.toString());
     return this;
   }
@@ -395,37 +426,43 @@ export class MessagesOptions extends AbstractRequestOptions<MessagesOptions> {
 /**
  * Option provider for post Connection requests
  */
-export class PostConnectionOptions extends AbstractRequestOptions<PostConnectionOptions> {
+export interface PostConnectionOptions extends AddRequestOptions<PostConnectionOptions> {
+
+  /**
+   * Sets a dry-run option to test a Connection.
+   *
+   * @param dryRun - If the connection should only be tested, but not already created.
+   * @returns The instance of DefaultPostConnectionOptions with the added option
+   */
+  asDryRun(dryRun: boolean): DefaultPostConnectionOptions;
+}
+
+
+export class DefaultPostConnectionOptions extends AbstractRequestOptions<DefaultPostConnectionOptions> implements PostConnectionOptions {
 
   private constructor() {
     super();
   }
 
   /**
-   * Provides an instance of PostConnectionOptions.
+   * Provides an instance of DefaultPostConnectionOptions.
    *
-   * @returns The PostConnectionOptions
+   * @returns The DefaultPostConnectionOptions
    */
-  public static getInstance(): PostConnectionOptions {
-    return new PostConnectionOptions();
+  public static getInstance(): DefaultPostConnectionOptions {
+    return new DefaultPostConnectionOptions();
   }
 
   /**
-   * Gets an instance of PostConnectionOptions with the dry-run parameter set to true to test Connections.
+   * Gets an instance of DefaultPostConnectionOptions with the dry-run parameter set to true to test Connections.
    *
    * @returns The instance of MessagesOptions
    */
-  public static getDryRunInstance(): PostConnectionOptions {
-    return new PostConnectionOptions().asDryRun(true);
+  public static getDryRunInstance(): DefaultPostConnectionOptions {
+    return new DefaultPostConnectionOptions().asDryRun(true);
   }
 
-  /**
-   * Sets a dry-run option to test a Connection.
-   *
-   * @param dryRun - If the connection should only be tested, but not already created.
-   * @returns The instance of PostConnectionOptions with the added option
-   */
-  public asDryRun(dryRun: boolean): PostConnectionOptions {
+  public asDryRun(dryRun: boolean): DefaultPostConnectionOptions {
     this.addRequestParameter('dry-run', String(dryRun));
     return this;
   }
