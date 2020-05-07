@@ -153,7 +153,7 @@ export interface RequestOptionsWithMatchOptions<T extends RequestOptionsWithMatc
 
 export abstract class AbstractRequestOptionsWithMatchOptions<T extends AbstractRequestOptionsWithMatchOptions<T>>
   extends AbstractRequestOptions<AbstractRequestOptionsWithMatchOptions<T>>
-  implements HasMatch<AbstractRequestOptionsWithMatchOptions<T>> {
+  implements RequestOptionsWithMatchOptions<AbstractRequestOptionsWithMatchOptions<T>> {
   public ifMatch(...tags: string[]): T {
     this.addHeader('If-Match', tags.join(', '));
     return this as unknown as T;
