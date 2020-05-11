@@ -40,7 +40,7 @@ The client provides different handles to handle requests for specific parts of t
 const thingsHandle = client.getThingsHandle();
 ```
 
-The handles' methods will send requests and return their responses asynchronously. 
+The handles' methods will send requests and return their responses asynchronously.
 For example the code to update a Thing would look like this:
 ```
 const thing = new Thing('the:thing');
@@ -50,7 +50,7 @@ thingsHandle.putThing(thing)
 
 Additionally options for requests can be specified and passed on to the methods:
 ```
-const options = FieldsOptions.getInstance();
+const options = DefaultFieldsOptions.getInstance();
 options.ifMatch('A Tag').withFields('thingId', 'policyId', '_modified');
 thingsHandle.getThing('Testthing:TestId', options)
   .then(returnedThing => {

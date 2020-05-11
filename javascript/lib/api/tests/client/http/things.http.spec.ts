@@ -15,7 +15,7 @@
 import { HttpThingsHandleV1, HttpThingsHandleV2 } from '../../../src/client/handles/things.interfaces';
 import { PutResponse } from '../../../src/model/response';
 import { Acl, AclEntry } from '../../../src/model/things.model';
-import { FieldsOptions, GetThingsOptions, MatchOptions } from '../../../src/options/request.options';
+import { DefaultFieldsOptions, DefaultGetThingsOptions, DefaultMatchOptions } from '../../../src/options/request.options';
 import { HttpHelper as H } from './http.helper';
 
 describe('Http Things Handle', () => {
@@ -30,7 +30,7 @@ describe('Http Things Handle', () => {
   const acl = new Acl({ [anAclEntry.id]: anAclEntry, [anotherAclEntry.id]: anotherAclEntry });
 
   it('sends options and gets a Thing', () => {
-    const options = FieldsOptions.getInstance().withFields('A', 'B').ifMatch('C').ifNoneMatch('D');
+    const options = DefaultFieldsOptions.getInstance().withFields('A', 'B').ifMatch('C').ifNoneMatch('D');
     const headers: Map<string, string> = new Map();
     headers.set('If-Match', 'C');
     headers.set('If-None-Match', 'D');
@@ -57,7 +57,7 @@ describe('Http Things Handle', () => {
   });
 
   it('gets Things with options', () => {
-    const options = GetThingsOptions.getInstance().withFields('A,B');
+    const options = DefaultGetThingsOptions.getInstance().withFields('A,B');
     return H.test({
       toTest: () => handleV2.getThings([H.thing.thingId], options),
       testBody: [H.thing.toObject()],
@@ -69,7 +69,7 @@ describe('Http Things Handle', () => {
   });
 
   it('sends empty options and gets a PolicyId', () => {
-    const options = MatchOptions.getInstance();
+    const options = DefaultMatchOptions.getInstance();
     return H.test({
       toTest: () => handleV2.getPolicyId(H.thing.thingId, options),
       testBody: 'ID',

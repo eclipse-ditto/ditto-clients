@@ -16,11 +16,15 @@
 import { And, Eq, Ne, Not } from '../../src/options/filter.options';
 import {
   CountOptions,
+  DefaultCountOptions,
+  DefaultFieldsOptions,
+  DefaultGetThingsOptions,
+  DefaultMatchOptions,
+  DefaultMessagesOptions,
+  DefaultPostConnectionOptions,
+  DefaultSearchOptions,
   FieldsOptions,
-  GetThingsOptions,
   MatchOptions,
-  MessagesOptions,
-  PostConnectionOptions,
   SearchOptions
 } from '../../src/options/request.options';
 
@@ -29,7 +33,7 @@ describe('Match Options', () => {
   const noneMatch = 'If-None-Match';
   let matchOptions: MatchOptions;
   beforeEach(() => {
-    matchOptions = MatchOptions.getInstance();
+    matchOptions = DefaultMatchOptions.getInstance();
   });
   it('sets If-Match header', () => {
     matchOptions.ifMatch('A');
@@ -75,7 +79,7 @@ describe('Match Options', () => {
 describe('Get Options', () => {
   let getOptions: FieldsOptions;
   beforeEach(() => {
-    getOptions = FieldsOptions.getInstance();
+    getOptions = DefaultFieldsOptions.getInstance();
   });
   it('returns empty options', () => {
     expect(getOptions.getOptions().size).toEqual(0);
@@ -94,7 +98,7 @@ describe('Get Options', () => {
 describe('Count Options', () => {
   let countOptions: CountOptions;
   beforeEach(() => {
-    countOptions = CountOptions.getInstance();
+    countOptions = DefaultCountOptions.getInstance();
   });
   it('sets raw filter', () => {
     countOptions.withRawFilter('test');
@@ -143,7 +147,7 @@ describe('Count Options', () => {
 describe('Search Options', () => {
   let searchOptions: SearchOptions;
   beforeEach(() => {
-    searchOptions = SearchOptions.getInstance();
+    searchOptions = DefaultSearchOptions.getInstance();
   });
   it('sets fields', () => {
     searchOptions.withFields('A', 'B');
@@ -211,7 +215,7 @@ describe('Search Options', () => {
 });
 
 describe('Get Things Options', () => {
-  const getThingsOptions = GetThingsOptions.getInstance();
+  const getThingsOptions = DefaultGetThingsOptions.getInstance();
   it('sets fields', () => {
     getThingsOptions.withFields('A', 'B');
     expect(getThingsOptions.getOptions().get('fields')).toEqual(encodeURIComponent('A,B'));
@@ -224,7 +228,7 @@ describe('Get Things Options', () => {
 });
 
 describe('Messages Options', () => {
-  const messagesOptions = MessagesOptions.getInstance();
+  const messagesOptions = DefaultMessagesOptions.getInstance();
   it('sets timeout', () => {
     messagesOptions.withTimeout(1);
     expect(messagesOptions.getOptions().get('timeout')).toEqual('1');
@@ -236,7 +240,7 @@ describe('Messages Options', () => {
 });
 
 describe('Post Connection Options', () => {
-  const postConnectionOptions = PostConnectionOptions.getInstance();
+  const postConnectionOptions = DefaultPostConnectionOptions.getInstance();
   it('sets dry-run', () => {
     postConnectionOptions.asDryRun(false);
     expect(postConnectionOptions.getOptions().get('dry-run')).toEqual('false');
