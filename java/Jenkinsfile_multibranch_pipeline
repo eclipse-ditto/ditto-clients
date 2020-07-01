@@ -57,7 +57,9 @@ pipeline {
                 }
             }
         }
-        sonarQubeStageDittoClientJava()
+        stage ('SonarQube') {
+            sonarQubeStageDittoClientJava()
+        }
     }
 }
 
