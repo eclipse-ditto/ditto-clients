@@ -15,7 +15,7 @@
   ],
   "dependencies": {
     "@eclipse-ditto/ditto-javascript-client-api_1.0": "^2.0.0",
-    "https-proxy-agent": "2.2.2",
+    "https-proxy-agent": "2.2.3",
     "url": "0.11.0",
     "ws": "7.1.2"
   },
