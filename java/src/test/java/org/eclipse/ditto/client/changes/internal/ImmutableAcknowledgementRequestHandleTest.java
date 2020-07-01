@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.entity.id.EntityIdWithType;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.model.things.ThingId;
 import org.junit.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
@@ -28,7 +29,7 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 /**
  * Unit tests for {@link ImmutableAcknowledgementRequestHandle}.
  */
-public class ImmutableAcknowledgementRequestHandleTest {
+public final class ImmutableAcknowledgementRequestHandleTest {
 
     @Test
     public void assertImmutability() {
@@ -39,8 +40,14 @@ public class ImmutableAcknowledgementRequestHandleTest {
 
     @Test
     public void testHashCodeAndEquals() {
+        final ThingId red = ThingId.generateRandom();
+        final ThingId black = ThingId.generateRandom();
+
         EqualsVerifier.forClass(ImmutableAcknowledgementRequestHandle.class)
+                .usingGetClass()
                 .withIgnoredFields("acknowledgementPublisher")
+                .withPrefabValues(EntityIdWithType.class, red, black)
                 .verify();
     }
+
 }
