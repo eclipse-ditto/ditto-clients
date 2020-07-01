@@ -24,7 +24,7 @@ pipeline {
         }
         stage('Checkout scm') {
             agent {
-                label 'docker-slave'
+                label "$DITTO_BUILD_NODE"
             }
             steps {
                 echo 'Checkout scm'
