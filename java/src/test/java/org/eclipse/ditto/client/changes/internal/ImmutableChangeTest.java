@@ -23,6 +23,7 @@ import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.entity.id.EntityIdWithType;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.model.things.ThingId;
 import org.junit.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
@@ -41,8 +42,13 @@ public final class ImmutableChangeTest {
 
     @Test
     public void testHashCodeAndEquals() {
+        final ThingId red = ThingId.generateRandom();
+        final ThingId black = ThingId.generateRandom();
+
         EqualsVerifier.forClass(ImmutableChange.class)
+                .usingGetClass()
                 .withIgnoredFields("acknowledgementPublisher")
+                .withPrefabValues(EntityIdWithType.class, red, black)
                 .verify();
     }
 
