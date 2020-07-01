@@ -1,4 +1,5 @@
 #!groovy
+@Library("iot-things/jenkins-shared-pipeline-libraries") _
 pipeline {
     agent none
     environment {
@@ -56,25 +57,7 @@ pipeline {
                 }
             }
         }
-        stage('SonarQube Scan') {
-            agent {
-                docker {
-                    args "$DOCKER_ARGS_FOR_BUILD"
-                    image "$DOCKER_IMAGE_MAVEN_JDK_8"
-                }
-            }
-            steps {
-                dir("$WORKSPACE/java") {
-                    configFileProvider([configFile(fileId: 'mvn-bdc-settings', variable: 'MVN_SETTINGS')]) {
-                        withSonarQubeEnv(installationName: "$SONAR_QUBE_ENV", credentialsId: 'sonarqube') {
-                            sh "mvn -s $MVN_SETTINGS --batch-mode --errors sonar:sonar -Dsonar.branch.name=${theBranch} " +
-                                    " -Drevision=${theVersion}" +
-                                    " -Dditto.version=${dittoVersion}"
-                        }
-                    }
-                }
-            }
-        }
+        sonarQubeStageDittoClientJava()
     }
 }
 
