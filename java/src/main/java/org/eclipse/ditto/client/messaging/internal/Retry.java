@@ -12,13 +12,16 @@
  */
 package org.eclipse.ditto.client.messaging.internal;
 
+import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
+
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,13 +41,13 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
     private final String sessionId;
     private final String nameOfAction;
     private final Supplier<T> retriedSupplier;
-    private final ExecutorService executorService;
+    private final ScheduledExecutorService executorService;
 
 
     private Retry(final String nameOfAction,
             final String sessionId,
             final Supplier<T> retriedSupplier,
-            final ExecutorService executorService) {
+            final ScheduledExecutorService executorService) {
 
         this.sessionId = sessionId;
         this.nameOfAction = nameOfAction;
@@ -69,35 +72,30 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
      */
     @Override
     public CompletionStage<T> get() {
-        return CompletableFuture.supplyAsync(() -> this.doGet(1), executorService);
+        final CompletableFuture<T> result = new CompletableFuture<>();
+        executorService.submit(() -> this.completeFutureEventually(1, result));
+        return result;
     }
 
-    private T doGet(int attempt) {
+    private void completeFutureEventually(int attempt, final CompletableFuture<T> resultToComplete) {
         try {
-            return retriedSupplier.get();
+            resultToComplete.complete(retriedSupplier.get());
         } catch (final RuntimeException e) {
             // log error, but try again (don't end loop)
             LOGGER.error("Client <{}>: Failed to <{}>: {}.", sessionId, nameOfAction, e.getMessage());
-            waitFor(getTimeToWaitForAttempt(attempt));
-            return doGet(attempt + 1);
-        }
-    }
 
-    private Duration getTimeToWaitForAttempt(int attempt) {
-        final int attemptIndex = ensureIndexIntoTimeToWaitBounds(attempt - 1);
-        return Duration.ofSeconds(TIME_TO_WAIT_BETWEEN_RETRIES_IN_SECONDS[attemptIndex]);
-    }
-
-    private void waitFor(final Duration timeToWait) {
-        try {
+            final int timeToWaitInSeconds = getTimeToWaitInSecondsForAttempt(attempt);
             LOGGER.info("Client <{}>: Waiting for <{}> second(s) before retrying to <{}>.",
-                    sessionId, timeToWait.getSeconds(), nameOfAction);
-            TimeUnit.SECONDS.sleep(timeToWait.getSeconds());
-        } catch (final InterruptedException ie) {
-            LOGGER.error("Client <{}>: Interrupted while waiting for the next try to <{}>.",
-                    sessionId, nameOfAction, ie);
-            Thread.currentThread().interrupt();
+                    sessionId, timeToWaitInSeconds, nameOfAction);
+            executorService.schedule(() -> this.completeFutureEventually(attempt + 1, resultToComplete),
+                    timeToWaitInSeconds,
+                    TimeUnit.SECONDS);
         }
+    }
+
+    private int getTimeToWaitInSecondsForAttempt(int attempt) {
+        final int attemptIndex = ensureIndexIntoTimeToWaitBounds(attempt - 1);
+        return TIME_TO_WAIT_BETWEEN_RETRIES_IN_SECONDS[attemptIndex];
     }
 
     /**
@@ -143,7 +141,7 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
          * @param executorService the executor service.
          * @return a new instance of this builder step.
          */
-        RetryBuilderFinal<T> withExecutor(final ExecutorService executorService);
+        RetryBuilderFinal<T> withExecutor(final ScheduledExecutorService executorService);
 
         /**
          * Executes the provided supplier unit the supplier returns a result.
@@ -165,16 +163,16 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
         private final String nameOfAction;
         private final Supplier<T> retriedSupplier;
         private final String sessionId;
-        private final ExecutorService executorService;
+        @Nullable private final ScheduledExecutorService executorService;
 
         private RetryBuilder(final String nameOfAction, final Supplier<T> retriedSupplier) {
-            this(nameOfAction, retriedSupplier, "", ForkJoinPool.commonPool());
+            this(nameOfAction, retriedSupplier, "", null);
         }
 
         private RetryBuilder(final String nameOfAction,
                 final Supplier<T> retriedSupplier,
                 final String sessionId,
-                final ExecutorService executorService) {
+                @Nullable final ScheduledExecutorService executorService) {
 
             this.nameOfAction = nameOfAction;
             this.retriedSupplier = retriedSupplier;
@@ -188,12 +186,13 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
         }
 
         @Override
-        public RetryBuilderFinal<T> withExecutor(final ExecutorService executorService) {
+        public RetryBuilderFinal<T> withExecutor(final ScheduledExecutorService executorService) {
             return new RetryBuilder<>(nameOfAction, retriedSupplier, sessionId, executorService);
         }
 
         @Override
         public CompletionStage<T> get() {
+            checkNotNull(executorService, "executorService");
             return new Retry<>(nameOfAction, sessionId, retriedSupplier, executorService).get();
         }
 
