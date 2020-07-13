@@ -16,8 +16,10 @@ import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -30,8 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-
-import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
@@ -66,6 +67,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketMessagingProvider.class);
     private static final int CONNECTION_TIMEOUT_MS = 5000;
     private static final int RECONNECTION_TIMEOUT_SECONDS = 5;
+    private static final Duration TIME_BETWEEN_CONNECTION_TRIES = Duration.ofSeconds(1);
 
     private final AdaptableBus adaptableBus;
     private final MessagingConfiguration messagingConfiguration;
@@ -162,7 +164,15 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     public void initialize() {
         synchronized (webSocket) {
             if (webSocket.get() == null) {
-                webSocket.set(initiateConnection(createWebsocket()));
+                final ExecutorService connectionExecutor = createConnectionExecutor();
+                try {
+                    final WebSocket connectedWebSocket = connectWithRetries(this::createWebsocket, connectionExecutor)
+                            .toCompletableFuture()
+                            .join();
+                    this.webSocket.set(connectedWebSocket);
+                } finally {
+                    connectionExecutor.shutdown();
+                }
             }
         }
     }
@@ -251,8 +261,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
      * webSocketListener} for web socket handling and incoming messages.
      *
      * @param ws the WebSocket instance to use for connecting.
-     * @return a promise for the web socket which should be available after successful establishment of a connection.
-     * This promise may be completed exceptionally if the connection upgrade attempt to web socket failed.
+     * @return An Optional holding a websocket, in case a connection could be established, otherwise the Optional will
+     * be empty.
      * @throws NullPointerException if any argument is {@code null}.
      */
     private WebSocket initiateConnection(final WebSocket ws) {
@@ -267,9 +277,9 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         authenticationProvider.prepareAuthentication(ws);
         ws.addListener(this);
 
-        LOGGER.info("Connecting WebSocket on endpoint <{}>", ws.getURI());
         final ExecutorService connectionExecutor = createConnectionExecutor();
         try {
+            LOGGER.info("Connecting WebSocket on endpoint <{}>.", ws.getURI());
             return safeGet(ws.connect(connectionExecutor));
         } finally {
             // right after the connection was established, the connectionExecutor may release its threads:
@@ -385,6 +395,17 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         });
     }
 
+    private CompletionStage<WebSocket> connectWithRetries(final Supplier<WebSocket> webSocket,
+            final ExecutorService executorService) {
+
+        return Retry
+                .retryTo("initialize WebSocket connection", () -> initiateConnection(webSocket.get()))
+                .inClientSession(sessionId)
+                .withExecutor(executorService)
+                .andWaitBetweenRetriesFor(TIME_BETWEEN_CONNECTION_TRIES)
+                .get();
+    }
+
     private void handleReconnectionIfEnabled() {
 
         if (messagingConfiguration.isReconnectEnabled()) {
@@ -392,8 +413,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
             if (initiallyConnected.get() && reconnecting.compareAndSet(false, true) && null != reconnectExecutor) {
                 LOGGER.info("Client <{}>: Reconnection is enabled. Reconnecting in <{}> seconds ...",
                         sessionId, RECONNECTION_TIMEOUT_SECONDS);
-                reconnectExecutor.schedule(this::initWebSocketConnectionWithReconnect, RECONNECTION_TIMEOUT_SECONDS,
-                        TimeUnit.SECONDS);
+                reconnectExecutor.schedule(this::reconnectWithRetries, RECONNECTION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
             }
         } else {
             LOGGER.info("Client <{}>: Reconnection is NOT enabled. Closing client ...", sessionId);
@@ -401,47 +421,29 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         }
     }
 
-    private void initWebSocketConnectionWithReconnect() {
-        int count = 0;
-        WebSocket newWebSocket = null;
-        while (null == newWebSocket) {
-            if (0 < count) {
-                waitUntilNextReconnectionAttempt();
-            }
-            ++count;
-            newWebSocket = tryToReconnect(count);
-        }
-        reconnecting.set(false);
+    private void reconnectWithRetries() {
+        this.connectWithRetries(this::recreateWebSocket, reconnectExecutor)
+                .thenAccept(reconnectedWebSocket -> {
+                    this.webSocket.set(reconnectedWebSocket);
+                    reconnecting.set(false);
+                });
     }
 
-    private void waitUntilNextReconnectionAttempt() {
-        try {
-            LOGGER.info("Client <{}>: Retrying connection initiation again in <{}> seconds ...", sessionId,
-                    RECONNECTION_TIMEOUT_SECONDS);
-            TimeUnit.SECONDS.sleep(RECONNECTION_TIMEOUT_SECONDS);
-        } catch (final InterruptedException ie) {
-            LOGGER.error("Client <{}>: Interrupted while waiting for reconnection.", sessionId, ie);
-            Thread.currentThread().interrupt();
+    private WebSocket recreateWebSocket() {
+        LOGGER.info("Recreating Websocket..");
+        final WebSocket ws = webSocket.get();
+        if (ws == null) {
+            LOGGER.error("Client <{}>: attempt to recreate a null websocket", sessionId);
+            throw new IllegalStateException("Cannot recreate a null websocket. This method should not have been " +
+                    "called without having created a WebSocket before.");
         }
-    }
+        ws.clearHeaders();
+        ws.clearListeners();
 
-    @Nullable
-    private WebSocket tryToReconnect(final int count) {
         try {
-            LOGGER.info("Recreating Websocket..");
-            final WebSocket ws = webSocket.get();
-            if (ws == null) {
-                LOGGER.error("Client <{}>: attempt to reconnect a null websocket", sessionId);
-                return null;
-            }
-            ws.clearHeaders();
-            ws.clearListeners();
-            return initiateConnection(ws.recreate());
-        } catch (final AuthenticationException | IOException e) {
-            // log error, but try again (don't end loop)
-            final String msgFormat = "Client <{}>: Failed to establish connection ({}): {}";
-            LOGGER.error(msgFormat, sessionId, count, e.getMessage());
-            return null;
+            return ws.recreate(CONNECTION_TIMEOUT_MS);
+        } catch (IOException e) {
+            throw MessagingException.recreateFailed(sessionId, e);
         }
     }
 
