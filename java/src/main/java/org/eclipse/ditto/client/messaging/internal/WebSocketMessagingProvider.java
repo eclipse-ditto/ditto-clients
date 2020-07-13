@@ -22,6 +22,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -102,8 +103,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         webSocket = new AtomicReference<>();
     }
 
-    private static ScheduledThreadPoolExecutor createReconnectExecutor() {
-        return new ScheduledThreadPoolExecutor(1, new DefaultThreadFactory("ditto-client-reconnect"));
+    private static ScheduledExecutorService createReconnectExecutor() {
+        return Executors.newScheduledThreadPool(1, new DefaultThreadFactory("ditto-client-reconnect"));
     }
 
     /**
@@ -162,7 +163,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     public void initialize() {
         synchronized (webSocket) {
             if (webSocket.get() == null) {
-                final ExecutorService connectionExecutor = createConnectionExecutor();
+                final ScheduledExecutorService connectionExecutor = createConnectionExecutor();
                 try {
                     final WebSocket connectedWebSocket = connectWithRetries(this::createWebsocket, connectionExecutor)
                             .toCompletableFuture()
@@ -285,13 +286,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         }
     }
 
-    private static ExecutorService createConnectionExecutor() {
-        final ThreadPoolExecutor connectionExecutor = new ThreadPoolExecutor(
-                1, 2, 60L, TimeUnit.SECONDS, new SynchronousQueue<>(),
-                new DefaultThreadFactory("ditto-client-connect"),
-                new ThreadPoolExecutor.CallerRunsPolicy());
-        connectionExecutor.allowCoreThreadTimeOut(true);
-        return connectionExecutor;
+    private static ScheduledExecutorService createConnectionExecutor() {
+        return Executors.newScheduledThreadPool(1, new DefaultThreadFactory("ditto-client-connect"));
     }
 
     @Override
@@ -394,7 +390,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     private CompletionStage<WebSocket> connectWithRetries(final Supplier<WebSocket> webSocket,
-            final ExecutorService executorService) {
+            final ScheduledExecutorService executorService) {
 
         return Retry
                 .retryTo("initialize WebSocket connection", () -> initiateConnection(webSocket.get()))
