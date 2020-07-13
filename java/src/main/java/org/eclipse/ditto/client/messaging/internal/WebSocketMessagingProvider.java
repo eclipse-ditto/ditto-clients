@@ -16,7 +16,6 @@ import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletionStage;
@@ -67,7 +66,6 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketMessagingProvider.class);
     private static final int CONNECTION_TIMEOUT_MS = 5000;
     private static final int RECONNECTION_TIMEOUT_SECONDS = 5;
-    private static final Duration TIME_BETWEEN_CONNECTION_TRIES = Duration.ofSeconds(1);
 
     private final AdaptableBus adaptableBus;
     private final MessagingConfiguration messagingConfiguration;
@@ -402,7 +400,6 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                 .retryTo("initialize WebSocket connection", () -> initiateConnection(webSocket.get()))
                 .inClientSession(sessionId)
                 .withExecutor(executorService)
-                .andWaitBetweenRetriesFor(TIME_BETWEEN_CONNECTION_TRIES)
                 .get();
     }
 
