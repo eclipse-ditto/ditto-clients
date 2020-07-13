@@ -175,11 +175,6 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         } catch (final IOException e) {
             throw MessagingException.connectFailed(sessionId, e);
         }
-        // TODO: make these configurable?
-        ws.addHeader("User-Agent", DITTO_CLIENT_USER_AGENT);
-        ws.setMaxPayloadSize(256 * 1024); // 256 KiB
-        ws.setMissingCloseFrameAllowed(true);
-        ws.setFrameQueueSize(0);
         return ws;
     }
 
@@ -263,6 +258,12 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     private WebSocket initiateConnection(final WebSocket ws) {
         checkNotNull(ws, "ws");
 
+        // TODO: make these configurable?
+        ws.addHeader("User-Agent", DITTO_CLIENT_USER_AGENT);
+        ws.setMaxPayloadSize(256 * 1024); // 256 KiB
+        ws.setMissingCloseFrameAllowed(true);
+        ws.setFrameQueueSize(0);
+        ws.setPingInterval(CONNECTION_TIMEOUT_MS);
         authenticationProvider.prepareAuthentication(ws);
         ws.addListener(this);
 
