@@ -14,20 +14,38 @@ package org.eclipse.ditto.client.messaging.internal;/*
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Supplier;
 
+import org.eclipse.ditto.client.internal.DefaultThreadFactory;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public final class RetryTest {
+
+    private static ScheduledExecutorService scheduledExecutorService;
+
+    @BeforeClass
+    public static void setup() {
+        scheduledExecutorService = Executors.newScheduledThreadPool(1, new DefaultThreadFactory("test"));
+    }
+
+    @AfterClass
+    public static void tearDown() {
+        scheduledExecutorService.shutdown();
+    }
+
 
     @Test
     public void getsResultOfRetryableSupplier() {
         final Supplier<String> retryableSupplier = () -> "foo";
         final String actualResult = Retry.retryTo("test the result", retryableSupplier)
                 .inClientSession(UUID.randomUUID().toString())
+                .withExecutor(scheduledExecutorService)
                 .get()
                 .toCompletableFuture()
                 .join();
@@ -48,6 +66,7 @@ public final class RetryTest {
         };
         final String actualResult = Retry.retryTo("test the result", retryableSupplier)
                 .inClientSession(UUID.randomUUID().toString())
+                .withExecutor(scheduledExecutorService)
                 .get()
                 .toCompletableFuture()
                 .join();
