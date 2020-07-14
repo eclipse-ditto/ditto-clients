@@ -125,15 +125,17 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
          * @param sessionId the session ID of the client for which the action is performed.
          * @return the next builder step as a new instance.
          */
-        RetryBuilderFinal<T> inClientSession(String sessionId);
+        RetryBuilderStep2<T> inClientSession(String sessionId);
     }
 
+
     /**
-     * Final builder steps which are optionally required for the retry logic.
+     * Second step which requires the scheduled executor service to be configured. This executor service is used
+     * to schedule the supplier to be executed.
      *
      * @param <T> The return type of the supplier.
      */
-    interface RetryBuilderFinal<T> extends Supplier<CompletionStage<T>> {
+    interface RetryBuilderStep2<T> {
 
         /**
          * Specifies the executor to use when performing the action and its potential retries.
@@ -142,6 +144,14 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
          * @return a new instance of this builder step.
          */
         RetryBuilderFinal<T> withExecutor(final ScheduledExecutorService executorService);
+    }
+
+    /**
+     * Final builder steps which are optionally required for the retry logic.
+     *
+     * @param <T> The return type of the supplier.
+     */
+    interface RetryBuilderFinal<T> extends Supplier<CompletionStage<T>> {
 
         /**
          * Executes the provided supplier unit the supplier returns a result.
@@ -158,7 +168,7 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
      *
      * @param <T> the return type of the supplier.
      */
-    static class RetryBuilder<T> implements RetryBuilderStep1<T>, RetryBuilderFinal<T> {
+    static class RetryBuilder<T> implements RetryBuilderStep1<T>, RetryBuilderStep2<T>, RetryBuilderFinal<T> {
 
         private final String nameOfAction;
         private final Supplier<T> retriedSupplier;
@@ -181,7 +191,7 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
         }
 
         @Override
-        public RetryBuilderFinal<T> inClientSession(final String sessionId) {
+        public RetryBuilderStep2<T> inClientSession(final String sessionId) {
             return new RetryBuilder<>(nameOfAction, retriedSupplier, sessionId, executorService);
         }
 
