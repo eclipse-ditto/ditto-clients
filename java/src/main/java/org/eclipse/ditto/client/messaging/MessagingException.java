@@ -30,6 +30,8 @@ public class MessagingException extends RuntimeException {
     private static final String TIMEOUT_MESSAGE_TEMPLATE =
             "Connect of session <%s> failed because it timed out.";
 
+    private static final String RECREATE_FAILED_TEMPLATE = "Recreating WebSocket of session <%s> failed.";
+
     private static final long serialVersionUID = 6930767503633213674L;
 
     private MessagingException(final String message, final Throwable cause) {
@@ -46,6 +48,10 @@ public class MessagingException extends RuntimeException {
 
     public static MessagingException connectTimeout(final String sessionId, final Throwable cause) {
         return new MessagingException(String.format(TIMEOUT_MESSAGE_TEMPLATE, sessionId), cause);
+    }
+
+    public static MessagingException recreateFailed(final String sessionId, final Throwable cause) {
+        return new MessagingException(String.format(RECREATE_FAILED_TEMPLATE, sessionId), cause);
     }
 
 }
