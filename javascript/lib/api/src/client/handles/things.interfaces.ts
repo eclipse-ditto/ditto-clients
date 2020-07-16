@@ -53,7 +53,7 @@ export interface ThingsHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the response
    */
-  putAttributes(thingId: string, attributes: object, options?: MatchOptions): Promise<PutResponse<object>>;
+  putAttributes(thingId: string, attributes: object, options?: MatchOptions): Promise<PutResponse<object> | GenericResponse>;
 
   /**
    * Adds or updates an Attribute of a Thing.
@@ -173,7 +173,7 @@ export interface HttpThingsHandleV1 extends HttpThingsHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new AclEntry if provided by the response
    */
-  putAclEntry(thingId: string, aclEntry: AclEntry, options?: MatchOptions): Promise<PutResponse<AclEntry>>;
+  putAclEntry(thingId: string, aclEntry: AclEntry, options?: MatchOptions): Promise<PutResponse<AclEntry> | GenericResponse>;
 }
 
 export interface HttpThingsHandleV2 extends HttpThingsHandle {
@@ -195,7 +195,7 @@ export interface HttpThingsHandleV2 extends HttpThingsHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the new PolicyId provided in the response
    */
-  putPolicyId(thingId: string, policyId: string, options?: MatchOptions): Promise<PutResponse<string>>;
+  putPolicyId(thingId: string, policyId: string, options?: MatchOptions): Promise<PutResponse<string> | GenericResponse>;
 }
 
 export interface WebSocketThingsHandle extends ThingsHandle {

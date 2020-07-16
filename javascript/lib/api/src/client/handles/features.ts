@@ -133,7 +133,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
     });
   }
 
-  public putFeatures(features: Features, options?: MatchOptions): Promise<PutResponse<Features>> {
+  public putFeatures(features: Features, options?: MatchOptions): Promise<PutResponse<Features> | GenericResponse> {
     return this.requestFactory.fetchPutRequest({
       verb: 'PUT',
       parser: Features.fromObject,
@@ -144,7 +144,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
     });
   }
 
-  public putFeature(feature: Feature, options?: MatchOptions): Promise<PutResponse<Feature>> {
+  public putFeature(feature: Feature, options?: MatchOptions): Promise<PutResponse<Feature> | GenericResponse> {
     return this.requestFactory.fetchPutRequest({
       verb: 'PUT',
       parser: o => Feature.fromObject(o, feature.id),
@@ -155,7 +155,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
     });
   }
 
-  public putDefinition(featureId: string, definition: string[], options?: MatchOptions): Promise<PutResponse<string[]>> {
+  public putDefinition(featureId: string, definition: string[], options?: MatchOptions): Promise<PutResponse<string[]> | GenericResponse> {
     return this.requestFactory.fetchPutRequest({
       verb: 'PUT',
       parser: o => o !== undefined ? Object.values(o).map((obj: any) => String(obj)) : [],
@@ -166,7 +166,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
     }); // `[${String(definition.map(s => `"${s}"`))}]`
   }
 
-  public putProperties(featureId: string, properties: object, options?: MatchOptions): Promise<PutResponse<Object>> {
+  public putProperties(featureId: string, properties: object, options?: MatchOptions): Promise<PutResponse<Object> | GenericResponse> {
     return this.requestFactory.fetchPutRequest({
       verb: 'PUT',
       parser: o => o,
@@ -178,7 +178,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
   }
 
   public putProperty(featureId: string, propertyPath: string,
-                      property: any, options?: MatchOptions): Promise<PutResponse<any>> {
+                      property: any, options?: MatchOptions): Promise<PutResponse<any>| GenericResponse> {
     return this.requestFactory.fetchPutRequest({
       verb: 'PUT',
       parser: o => o,

@@ -68,7 +68,7 @@ export interface FeaturesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Features if provided by the response
    */
-  putFeatures(features: Features, options?: MatchOptions): Promise<PutResponse<Features>>;
+  putFeatures(features: Features, options?: MatchOptions): Promise<PutResponse<Features> | GenericResponse>;
 
   /**
    * Adds or updates a Feature of this handle's Thing.
@@ -87,7 +87,7 @@ export interface FeaturesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Definition if provided by the response
    */
-  putDefinition(featureId: string, definition: string[], options?: MatchOptions): Promise<PutResponse<string[]>>;
+  putDefinition(featureId: string, definition: string[], options?: MatchOptions): Promise<PutResponse<string[]> | GenericResponse>;
 
   /**
    * Adds or updates the properties of the specified Feature.
@@ -109,7 +109,7 @@ export interface FeaturesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Property if provided by the response
    */
-  putProperty(featureId: string, propertyPath: string, property: any, options?: MatchOptions): Promise<PutResponse<any>>;
+  putProperty(featureId: string, propertyPath: string, property: any, options?: MatchOptions): Promise<PutResponse<any> | GenericResponse>;
 
   /**
    * Deletes all Features of this handle's Thing.
