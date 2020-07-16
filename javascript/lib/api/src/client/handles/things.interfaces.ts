@@ -121,7 +121,7 @@ export interface HttpThingsHandle extends ThingsHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Thing if provided by the response
    */
-  putThing(thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>>;
+  putThing(thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing> | GenericResponse>;
 }
 
 export interface HttpThingsHandleV1 extends HttpThingsHandle {

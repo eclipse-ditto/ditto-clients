@@ -154,12 +154,12 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
       ;
   }
 
-  public putThing(thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>> {
+  public putThing(thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing> | GenericResponse> {
     return this.changeThing('PUT', thing, options);
   }
 
   public createThing(thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>> {
-    return this.changeThing('create', thing, options);
+    return this.changeThing('create', thing, options) as Promise<PutResponse<Thing>>;
   }
 
   public putAttributes(thingId: string, attributes: object, options?: MatchOptions): Promise<PutResponse<object>> {
@@ -216,10 +216,10 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
     });
   }
 
-  private changeThing(verb: string, thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>> {
+  private changeThing(verb: string, thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing> | GenericResponse> {
     return this.requestFactory.fetchPutRequest({
       verb,
-      parser: Thing.fromObject,
+      parser: o => o ? Thing.fromObject : o,
       id: thing.thingId,
       requestOptions: options,
       payload: thing.toObject()
