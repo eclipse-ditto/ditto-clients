@@ -35,9 +35,9 @@ import { EventsHandle } from './handles/events';
 import { FeaturesHandle } from './handles/features.interfaces';
 import { AuthProvider, ImmutableURL } from '../auth/auth-provider';
 import { ApiVersion, Channel } from '../model/ditto-protocol';
+import { BuildStep } from '../model/model';
 import {
   AbstractBuilder,
-  BuildStep,
   CustomBuilderContext,
   CustomCommandsHandleStep,
   CustomEventsHandleStep,

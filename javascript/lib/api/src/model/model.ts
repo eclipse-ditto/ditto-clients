@@ -12,6 +12,13 @@
  */
 
 /**
+ * Default interface for builder steps.
+ */
+// tslint:disable-next-line:no-empty-interface
+export interface BuildStep {
+}
+
+/**
  * Model to represent an Entity in Ditto.
  */
 export abstract class EntityModel<T extends EntityModel<T>> {

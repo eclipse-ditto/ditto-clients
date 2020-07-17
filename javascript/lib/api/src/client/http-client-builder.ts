@@ -20,11 +20,11 @@ import { SearchHandle } from './handles/search';
 import { FeaturesHandle } from './handles/features.interfaces';
 import { AuthProvider, DittoURL, ImmutableURL } from '../auth/auth-provider';
 import { ApiVersion } from '../model/ditto-protocol';
+import { BuildStep } from '../model/model';
 import {
   AbstractBuilder,
   ApiVersionStep,
   AuthenticationStep,
-  BuildStep,
   CustomBuilderContext,
   CustomFeaturesHandleStep,
   CustomMessagesHandleStep,

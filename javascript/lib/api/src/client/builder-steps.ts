@@ -20,12 +20,12 @@ import { SearchHandle } from './handles/search';
 import { EventsHandle } from './handles/events';
 import { CommandsHandle } from './handles/commands';
 import { ApiVersion } from '../model/ditto-protocol';
+import { BuildStep } from '../model/model';
 
 export {
   AbstractBuilder,
   ApiVersionStep,
   AuthenticationStep,
-  BuildStep,
   CustomBuilderContext,
   CustomCommandsHandleStep,
   CustomEventsHandleStep,
@@ -37,13 +37,6 @@ export {
   EnvironmentStep,
   ProtocolStep
 };
-
-/**
- * Default interface for builder steps.
- */
-// tslint:disable-next-line:no-empty-interface
-interface BuildStep {
-}
 
 /**
  * Interface to choose which protocol to use.
