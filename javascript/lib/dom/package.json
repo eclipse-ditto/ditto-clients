@@ -16,9 +16,12 @@
     "dist"
   ],
   "dependencies": {
-    "@eclipse-ditto/ditto-javascript-client-api_1.0": "^2.0.0"
+    "@eclipse-ditto/ditto-javascript-client-api_1.0": "^2.0.0",
+    "datastore-idb": "^1.1.0",
+    "interface-datastore": "^1.0.4"
   },
   "devDependencies": {
+    "@types/interface-datastore": "^0.8.0",
     "@types/jest": "^24.0.18",
     "barrelsby": "^2.1.1",
     "jest": "^24.9.0",

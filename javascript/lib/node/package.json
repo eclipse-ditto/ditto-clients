@@ -16,11 +16,13 @@
   "dependencies": {
     "@eclipse-ditto/ditto-javascript-client-api_1.0": "^2.0.0",
     "https-proxy-agent": "2.2.2",
+    "interface-datastore": "^1.0.4",
     "url": "0.11.0",
     "ws": "7.1.2"
   },
   "devDependencies": {
     "@types/http-proxy-agent": "^2.0.1",
+    "@types/interface-datastore": "^0.8.0",
     "@types/jest": "^24.0.18",
     "@types/node": "^12.0.4",
     "@types/ws": "^6.0.1",
