@@ -32,6 +32,7 @@
                 <include>com.neovisionaries:nv-websocket-client</include>
                 <include>com.eclipsesource.minimal-json:minimal-json</include>
                 <include>org.atteo.classindex:classindex</include>
+                <include>org.reactivestreams:reactive-streams</include>
                 <include>org.eclipse.ditto:ditto-json</include>
                 <include>org.eclipse.ditto:ditto-model-base</include>
                 <include>org.eclipse.ditto:ditto-model-jwt</include>
