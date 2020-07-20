@@ -260,7 +260,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
      * webSocketListener} for web socket handling and incoming messages.
      *
      * @param ws the WebSocket instance to use for connecting.
-     * @return An Optional holding a websocket, in case a connection could be established, otherwise the Optional will
+     * @return The connected websocket.
      * be empty.
      * @throws NullPointerException if any argument is {@code null}.
      */
