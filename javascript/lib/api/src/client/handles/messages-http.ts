@@ -12,7 +12,7 @@
  */
 
 /* tslint:disable:no-duplicate-string */
-import { MessagesOptions } from '../../options/request.options';
+import { MessagesOptions, DefaultMessagesOptions } from '../../options/request.options';
 import { RequestSender, RequestSenderFactory } from '../request-factory/request-sender';
 import { MessagesHandle } from './messages';
 import { GenericResponse } from '../../model/response';
@@ -107,7 +107,7 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
    * @returns A Promise for the server response
    */
   claim(thingId: string, claimMessage: any, options?: MessagesOptions): Promise<GenericResponse> {
-    const messageOptions = options === undefined ? MessagesOptions.getInstance() : options;
+    const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
     messageOptions.addHeader('Content-Type', 'application/json');
     return this.requestFactory.fetchRequest({
       verb: 'POST',
@@ -130,7 +130,7 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
    */
   messageToThing(thingId: string, messageSubject: string, message: string,
                  contentType: string = 'application/json', options?: MessagesOptions): Promise<GenericResponse> {
-    const messageOptions = options === undefined ? MessagesOptions.getInstance() : options;
+    const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
     messageOptions.addHeader('Content-Type', contentType);
     return this.requestFactory.fetchRequest({
       verb: 'POST',
@@ -153,7 +153,7 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
    */
   messageFromThing(thingId: string, messageSubject: string, message: string,
                    contentType: string = 'application/json', options?: MessagesOptions): Promise<GenericResponse> {
-    const messageOptions = options === undefined ? MessagesOptions.getInstance() : options;
+    const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
     messageOptions.addHeader('Content-Type', contentType);
     return this.requestFactory.fetchRequest({
       verb: 'POST',
@@ -178,7 +178,7 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
   messageToFeature(thingId: string, featureId: string, messageSubject: string, message: string,
                    contentType: string = 'application/json', options?: MessagesOptions):
     Promise<GenericResponse> {
-    const messageOptions = options === undefined ? MessagesOptions.getInstance() : options;
+    const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
     messageOptions.addHeader('Content-Type', contentType);
     return this.requestFactory.fetchRequest({
       verb: 'POST',
@@ -203,7 +203,7 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
   messageFromFeature(thingId: string, featureId: string, messageSubject: string, message: string,
                      contentType: string = 'application/json', options?: MessagesOptions):
     Promise<GenericResponse> {
-    const messageOptions = options === undefined ? MessagesOptions.getInstance() : options;
+    const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
     messageOptions.addHeader('Content-Type', contentType);
     return this.requestFactory.fetchRequest({
       verb: 'POST',
