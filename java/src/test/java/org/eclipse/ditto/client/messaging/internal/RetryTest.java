@@ -1,4 +1,4 @@
-package org.eclipse.ditto.client.messaging.internal;/*
+/*
  * Copyright (c) 2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -10,7 +10,7 @@ package org.eclipse.ditto.client.messaging.internal;/*
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-
+package org.eclipse.ditto.client.messaging.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

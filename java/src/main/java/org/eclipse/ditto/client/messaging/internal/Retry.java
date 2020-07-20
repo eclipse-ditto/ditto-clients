@@ -14,7 +14,6 @@ package org.eclipse.ditto.client.messaging.internal;
 
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
-import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ScheduledExecutorService;
@@ -77,7 +76,7 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
         return result;
     }
 
-    private void completeFutureEventually(int attempt, final CompletableFuture<T> resultToComplete) {
+    private void completeFutureEventually(final int attempt, final CompletableFuture<T> resultToComplete) {
         try {
             resultToComplete.complete(retriedSupplier.get());
         } catch (final RuntimeException e) {
@@ -93,7 +92,7 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
         }
     }
 
-    private int getTimeToWaitInSecondsForAttempt(int attempt) {
+    private int getTimeToWaitInSecondsForAttempt(final int attempt) {
         final int attemptIndex = ensureIndexIntoTimeToWaitBounds(attempt - 1);
         return TIME_TO_WAIT_BETWEEN_RETRIES_IN_SECONDS[attemptIndex];
     }
@@ -106,7 +105,7 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
      * @param <T> The type of the expected result.
      * @return The result of the supplier after it finally succeeds.
      */
-    static <T> RetryBuilderStep1<T> retryTo(final String nameOfAction, Supplier<T> supplierToRetry) {
+    static <T> RetryBuilderStep1<T> retryTo(final String nameOfAction, final Supplier<T> supplierToRetry) {
         return new RetryBuilder<>(nameOfAction, supplierToRetry);
     }
 
