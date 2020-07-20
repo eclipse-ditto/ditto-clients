@@ -145,10 +145,6 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
                 .timestamp(messageTimestamp)
                 .correlationId(messageCorrelationId);
 
-        if (responseConsumer == null) {
-            messageHeadersBuilder.responseRequired(false);
-        }
-
         if (null != messageStatusCode) {
             if (messageStatusCode == HttpStatusCode.NO_CONTENT && payload != null) {
                 final String warnMessage = "StatusCode '" + HttpStatusCode.NO_CONTENT + "' cannot be used in "
