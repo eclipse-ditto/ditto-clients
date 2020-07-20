@@ -590,6 +590,7 @@
                             !org.eclipse.ditto.utils.jsr305.annotations,
                             org.eclipse.ditto.*,
                             org.slf4j.*,
+                            org.reactivestreams,
                             com.neovisionaries.ws.client
                         </Import-Package>
                         <_noee>true</_noee>
