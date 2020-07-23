@@ -138,6 +138,7 @@ public interface MessagingConfiguration {
          * Register a consumer of errors which occur during opening the connection initially and on reconnects.
          *
          * @param handler the handler that will be called with the cause of the connection error.
+         * @since 1.2.0
          */
         Builder connectionErrorHandler(final Consumer<Throwable> handler);
 

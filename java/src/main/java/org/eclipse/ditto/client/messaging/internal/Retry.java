@@ -95,8 +95,8 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
                                     "wanted to handle in your application.\n" +
                                     "Keep in mind that this operation runs in a separate thread and therefore the " +
                                     "exception does not reach your application thread.\n" +
-                                    "If this is the case, please try to move the logic for handling the exception" +
-                                    "tho the error consumer.",
+                                    "If this is the case, please try to move the logic for handling the exception " +
+                                    "to the error consumer.",
                             errorFromConsumer.getMessage(), errorFromConsumer);
                 }
             }
