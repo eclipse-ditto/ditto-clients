@@ -25,13 +25,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
@@ -396,6 +394,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                 .retryTo("initialize WebSocket connection", () -> initiateConnection(webSocket.get()))
                 .inClientSession(sessionId)
                 .withExecutor(executorService)
+                .notifyOnError(messagingConfiguration.getConnectionErrorHandler().orElse(null))
                 .get();
     }
 

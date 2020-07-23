@@ -15,6 +15,7 @@ package org.eclipse.ditto.client.configuration;
 import java.net.URI;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
@@ -66,6 +67,13 @@ public interface MessagingConfiguration {
      * @return the configuration or an empty optional.
      */
     Optional<TrustStoreConfiguration> getTrustStoreConfiguration();
+
+    /**
+     * Returns the connection error handler.
+     *
+     * @return the connection error handler or an empty optional.
+     */
+    Optional<Consumer<Throwable>> getConnectionErrorHandler();
 
     /**
      * Builder for creating an instance of {@code MessagingConfiguration} by utilizing Object Scoping and Method
@@ -124,6 +132,14 @@ public interface MessagingConfiguration {
          * @return this builder.
          */
         Builder trustStoreConfiguration(TrustStoreConfiguration trustStoreConfiguration);
+
+
+        /**
+         * Register a consumer of errors which occur during opening the connection initially and on reconnects.
+         *
+         * @param handler the handler that will be called with the cause of the connection error.
+         */
+        Builder connectionErrorHandler(final Consumer<Throwable> handler);
 
         /**
          * Creates a new instance of {@code MessagingConfiguration}.

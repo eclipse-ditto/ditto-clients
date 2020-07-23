@@ -13,6 +13,7 @@
 package org.eclipse.ditto.client.messaging.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
@@ -73,6 +74,36 @@ public final class RetryTest {
 
         assertThat(actualResult).isEqualTo("bar");
         assertThat(latch.getCount()).isZero();
+    }
+
+    @Test
+    public void errorConsumerCalledOnError() {
+        final int numberOfRetries = 2;
+        final CountDownLatch errorConsumerLatch = new CountDownLatch(numberOfRetries);
+        final CountDownLatch totalTriesLatch = new CountDownLatch(numberOfRetries + 1);
+        final Supplier<String> retryableSupplier = () -> {
+            totalTriesLatch.countDown();
+            if (totalTriesLatch.getCount() > 0) {
+                throw new RuntimeException("Expected exception in first iteration.");
+            } else {
+                return "bar";
+            }
+        };
+        final String actualResult = Retry.retryTo("test the result", retryableSupplier)
+                .inClientSession(UUID.randomUUID().toString())
+                .withExecutor(scheduledExecutorService)
+                .notifyOnError(error -> {
+                    assertThat(error).isInstanceOf(RuntimeException.class);
+                    assertThat(error.getMessage()).isEqualTo("Expected exception in first iteration.");
+                    errorConsumerLatch.countDown();
+                })
+                .get()
+                .toCompletableFuture()
+                .join();
+
+        assertThat(actualResult).isEqualTo("bar");
+        assertThat(totalTriesLatch.getCount()).isZero();
+        assertThat(errorConsumerLatch.getCount()).isZero();
     }
 
 }

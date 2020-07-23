@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,6 +42,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
     private final boolean reconnectEnabled;
     @Nullable private final ProxyConfiguration proxyConfiguration;
     @Nullable private final TrustStoreConfiguration trustStoreConfiguration;
+    @Nullable private final Consumer<Throwable> connectionErrorHandler;
 
     public WebSocketMessagingConfiguration(final WebSocketMessagingConfigurationBuilder builder,
             final URI endpointUri) {
@@ -49,6 +51,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         reconnectEnabled = builder.reconnectEnabled;
         proxyConfiguration = builder.proxyConfiguration;
         trustStoreConfiguration = builder.trustStoreConfiguration;
+        connectionErrorHandler = builder.connectionErrorHandler;
         this.timeout = builder.timeout;
         this.endpointUri = endpointUri;
     }
@@ -87,6 +90,11 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         return Optional.ofNullable(trustStoreConfiguration);
     }
 
+    @Override
+    public Optional<Consumer<Throwable>> getConnectionErrorHandler() {
+        return Optional.ofNullable(connectionErrorHandler);
+    }
+
     private static final class WebSocketMessagingConfigurationBuilder implements MessagingConfiguration.Builder {
 
         private static final List<String> ALLOWED_URI_SCHEME = Arrays.asList("wss", "ws");
@@ -99,11 +107,13 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         private boolean reconnectEnabled;
         @Nullable private ProxyConfiguration proxyConfiguration;
         private TrustStoreConfiguration trustStoreConfiguration;
+        @Nullable private Consumer<Throwable> connectionErrorHandler;
 
         private WebSocketMessagingConfigurationBuilder() {
             jsonSchemaVersion = JsonSchemaVersion.LATEST;
             reconnectEnabled = true;
             proxyConfiguration = null;
+            connectionErrorHandler = null;
         }
 
         @Override
@@ -148,6 +158,12 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         public MessagingConfiguration.Builder trustStoreConfiguration(
                 final TrustStoreConfiguration trustStoreConfiguration) {
             this.trustStoreConfiguration = checkNotNull(trustStoreConfiguration, "trustStoreConfiguration");
+            return this;
+        }
+
+        @Override
+        public Builder connectionErrorHandler(final Consumer<Throwable> handler) {
+            this.connectionErrorHandler = handler;
             return this;
         }
 
