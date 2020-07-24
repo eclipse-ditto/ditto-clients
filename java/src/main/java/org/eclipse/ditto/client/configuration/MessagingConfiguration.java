@@ -133,7 +133,6 @@ public interface MessagingConfiguration {
          */
         Builder trustStoreConfiguration(TrustStoreConfiguration trustStoreConfiguration);
 
-
         /**
          * Register a consumer of errors which occur during opening the connection initially and on reconnects.
          *

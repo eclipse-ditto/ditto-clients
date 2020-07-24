@@ -13,7 +13,6 @@
 package org.eclipse.ditto.client.messaging.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
