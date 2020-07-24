@@ -18,6 +18,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
@@ -41,17 +42,20 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
     private final String nameOfAction;
     private final Supplier<T> retriedSupplier;
     private final ScheduledExecutorService executorService;
+    @Nullable private final Consumer<Throwable> errorConsumer;
 
 
     private Retry(final String nameOfAction,
             final String sessionId,
             final Supplier<T> retriedSupplier,
-            final ScheduledExecutorService executorService) {
+            final ScheduledExecutorService executorService,
+            @Nullable final Consumer<Throwable> errorConsumer) {
 
         this.sessionId = sessionId;
         this.nameOfAction = nameOfAction;
         this.retriedSupplier = retriedSupplier;
         this.executorService = executorService;
+        this.errorConsumer = errorConsumer;
     }
 
     private static int ensureIndexIntoTimeToWaitBounds(final int index) {
@@ -82,7 +86,20 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
         } catch (final RuntimeException e) {
             // log error, but try again (don't end loop)
             LOGGER.error("Client <{}>: Failed to <{}>: {}.", sessionId, nameOfAction, e.getMessage());
-
+            if (errorConsumer != null) {
+                try {
+                    errorConsumer.accept(e);
+                } catch (final Throwable errorFromConsumer) {
+                    LOGGER.warn("Got exception from error consumer: {}.\n" +
+                                    "If you see this log, you most likely tried to throw an exception which you " +
+                                    "wanted to handle in your application.\n" +
+                                    "Keep in mind that this operation runs in a separate thread and therefore the " +
+                                    "exception does not reach your application thread.\n" +
+                                    "If this is the case, please try to move the logic for handling the exception " +
+                                    "to the error consumer.",
+                            errorFromConsumer.getMessage(), errorFromConsumer);
+                }
+            }
             final int timeToWaitInSeconds = getTimeToWaitInSecondsForAttempt(attempt);
             LOGGER.info("Client <{}>: Waiting for <{}> second(s) before retrying to <{}>.",
                     sessionId, timeToWaitInSeconds, nameOfAction);
@@ -153,6 +170,13 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
     interface RetryBuilderFinal<T> extends Supplier<CompletionStage<T>> {
 
         /**
+         * Sets a consumer which will be called with errors that happen during task to retry.
+         *
+         * @param errorConsumer consumer which will be called with errors that happen during task to retry.
+         */
+        RetryBuilderFinal<T> notifyOnError(@Nullable final Consumer<Throwable> errorConsumer);
+
+        /**
          * Executes the provided supplier unit the supplier returns a result.
          *
          * @return A completion stage which finally completes with the result of the supplier. Result can be null.
@@ -172,37 +196,45 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
         private final String nameOfAction;
         private final Supplier<T> retriedSupplier;
         private final String sessionId;
+        @Nullable private final Consumer<Throwable> errorConsumer;
         @Nullable private final ScheduledExecutorService executorService;
 
         private RetryBuilder(final String nameOfAction, final Supplier<T> retriedSupplier) {
-            this(nameOfAction, retriedSupplier, "", null);
+            this(nameOfAction, retriedSupplier, "", null, null);
         }
 
         private RetryBuilder(final String nameOfAction,
                 final Supplier<T> retriedSupplier,
                 final String sessionId,
-                @Nullable final ScheduledExecutorService executorService) {
+                @Nullable final ScheduledExecutorService executorService,
+                @Nullable final Consumer<Throwable> errorConsumer) {
 
             this.nameOfAction = nameOfAction;
             this.retriedSupplier = retriedSupplier;
             this.sessionId = sessionId;
             this.executorService = executorService;
+            this.errorConsumer = errorConsumer;
         }
 
         @Override
         public RetryBuilderStep2<T> inClientSession(final String sessionId) {
-            return new RetryBuilder<>(nameOfAction, retriedSupplier, sessionId, executorService);
+            return new RetryBuilder<>(nameOfAction, retriedSupplier, sessionId, executorService, errorConsumer);
         }
 
         @Override
         public RetryBuilderFinal<T> withExecutor(final ScheduledExecutorService executorService) {
-            return new RetryBuilder<>(nameOfAction, retriedSupplier, sessionId, executorService);
+            return new RetryBuilder<>(nameOfAction, retriedSupplier, sessionId, executorService, errorConsumer);
+        }
+
+        @Override
+        public RetryBuilderFinal<T> notifyOnError(@Nullable final Consumer<Throwable> errorConsumer) {
+            return new RetryBuilder<>(nameOfAction, retriedSupplier, sessionId, executorService, errorConsumer);
         }
 
         @Override
         public CompletionStage<T> get() {
             checkNotNull(executorService, "executorService");
-            return new Retry<>(nameOfAction, sessionId, retriedSupplier, executorService).get();
+            return new Retry<>(nameOfAction, sessionId, retriedSupplier, executorService, errorConsumer).get();
         }
 
     }
