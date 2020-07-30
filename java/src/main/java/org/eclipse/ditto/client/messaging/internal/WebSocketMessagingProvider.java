@@ -18,18 +18,18 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
@@ -159,19 +159,19 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     @Override
     public void initialize() {
-        synchronized (webSocket) {
-            if (webSocket.get() == null) {
-                final ScheduledExecutorService connectionExecutor = createConnectionExecutor();
-                try {
-                    final WebSocket connectedWebSocket = connectWithRetries(this::createWebsocket, connectionExecutor)
-                            .toCompletableFuture()
-                            .join();
-                    this.webSocket.set(connectedWebSocket);
-                } finally {
-                    connectionExecutor.shutdown();
-                }
-            }
+        final ExecutorService executor = createConnectionExecutor();
+        try {
+            setWebSocket(initiateConnection(createWebsocket(), executor).toCompletableFuture().join());
+            initiallyConnected.set(true);
+        } catch (final Exception e) {
+            handleConnectError(e);
+        } finally {
+            executor.shutdownNow();
         }
+    }
+
+    private void handleConnectError(final Throwable error) {
+        messagingConfiguration.getConnectionErrorHandler().ifPresent(c -> c.accept(mapConnectError(error)));
     }
 
     private WebSocket createWebsocket() {
@@ -185,56 +185,28 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         return ws;
     }
 
-
-    /**
-     * Wrapper that catches exceptions of {@code future.get()} and wraps them in a {@link AuthenticationException}.
-     *
-     * @param future the Future to be wrapped.
-     * @param <T> the type of the computed result.
-     * @return the computed result.
-     */
-    @SuppressWarnings("squid:S2142")
-    private <T> T safeGet(final Future<T> future) {
-        try {
-            return future.get(CONNECTION_TIMEOUT_MS, TimeUnit.MILLISECONDS);
-        } catch (final InterruptedException e) {
-            return handleInterruptedException(e);
-        } catch (final TimeoutException e) {
-            return handleTimeoutException(e);
-        } catch (final ExecutionException e) {
-            return handleExecutionException(e);
-        }
-    }
-
-    private <T> T handleInterruptedException(final InterruptedException e) {
-        Thread.currentThread().interrupt();
-        throw MessagingException.connectInterrupted(sessionId, e);
-    }
-
-    private <T> T handleTimeoutException(final TimeoutException e) {
-        throw MessagingException.connectTimeout(sessionId, e);
-    }
-
-    private <T> T handleExecutionException(final ExecutionException e) {
-        final Throwable cause = e.getCause();
+    private Throwable mapConnectError(final Throwable e) {
+        final Throwable cause = (e instanceof CompletionException || e instanceof ExecutionException)
+                ? e.getCause()
+                : e;
         if (cause instanceof AuthenticationException) {
-            // no unneccessary boxing of AuthenticationException
-            throw ((AuthenticationException) cause);
+            // no unnecessary boxing of AuthenticationException
+            return cause;
         } else if (cause instanceof WebSocketException) {
             LOGGER.error("Got exception: {}", cause.getMessage());
 
             if (isAuthenticationException((WebSocketException) cause)) {
-                throw AuthenticationException.unauthorized(sessionId, cause);
+                return AuthenticationException.unauthorized(sessionId, cause);
             } else if (isForbidden((WebSocketException) cause)) {
-                throw AuthenticationException.forbidden(sessionId, cause);
+                return AuthenticationException.forbidden(sessionId, cause);
             } else if (cause instanceof OpeningHandshakeException) {
                 final StatusLine statusLine = ((OpeningHandshakeException) cause).getStatusLine();
-                throw AuthenticationException.withStatus(sessionId, cause, statusLine.getStatusCode(),
+                return AuthenticationException.withStatus(sessionId, cause, statusLine.getStatusCode(),
                         statusLine.getReasonPhrase());
             }
         }
 
-        throw AuthenticationException.of(sessionId, e);
+        return cause;
     }
 
     private static boolean isAuthenticationException(final WebSocketException exception) {
@@ -262,7 +234,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
      * be empty.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    private WebSocket initiateConnection(final WebSocket ws) {
+    private CompletionStage<WebSocket> initiateConnection(final WebSocket ws, final ExecutorService executor) {
         checkNotNull(ws, "ws");
 
         // TODO: make these configurable?
@@ -274,14 +246,17 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         authenticationProvider.prepareAuthentication(ws);
         ws.addListener(this);
 
-        final ExecutorService connectionExecutor = createConnectionExecutor();
-        try {
-            LOGGER.info("Connecting WebSocket on endpoint <{}>.", ws.getURI());
-            return safeGet(ws.connect(connectionExecutor));
-        } finally {
-            // right after the connection was established, the connectionExecutor may release its threads:
-            connectionExecutor.shutdown();
-        }
+        LOGGER.info("Connecting WebSocket on endpoint <{}>.", ws.getURI());
+        final CompletableFuture<WebSocket> webSocketFuture = new CompletableFuture<>();
+        final Callable<WebSocket> connectCallable = ws.connectable();
+        executor.submit(() -> {
+            try {
+                webSocketFuture.complete(connectCallable.call());
+            } catch (final Throwable e) {
+                webSocketFuture.completeExceptionally(e);
+            }
+        });
+        return webSocketFuture;
     }
 
     private static ScheduledExecutorService createConnectionExecutor() {
@@ -325,18 +300,6 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     @Override
     public void onConnected(final WebSocket websocket, final Map<String, List<String>> headers) {
-        synchronized (webSocket) {
-            final WebSocket ws = webSocket.get();
-            try {
-                if (ws != websocket && ws != null) {
-                    ws.disconnect();
-                }
-            } catch (final Exception exception) {
-                LOGGER.error("Client <{}>: Error disconnecting a previous websocket", sessionId, exception);
-            }
-            webSocket.set(websocket);
-        }
-
         callbackExecutor.execute(() -> {
             LOGGER.info("Client <{}>: WebSocket connection is established", sessionId);
 
@@ -346,7 +309,6 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                         sessionId);
                 subscriptionMessages.values().forEach(this::emit);
             }
-            initiallyConnected.set(true);
         });
     }
 
@@ -373,7 +335,6 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     @Override
     public void onError(final WebSocket websocket, final WebSocketException cause) {
-
         callbackExecutor.execute(() -> {
             final String msgPattern = "Client <{}>: Error in WebSocket: {}";
             final String errorMsg; // avoids cluttering the log
@@ -390,8 +351,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     private CompletionStage<WebSocket> connectWithRetries(final Supplier<WebSocket> webSocket,
             final ScheduledExecutorService executorService) {
 
-        return Retry
-                .retryTo("initialize WebSocket connection", () -> initiateConnection(webSocket.get()))
+        return Retry.retryTo("initialize WebSocket connection",
+                () -> initiateConnection(webSocket.get(), reconnectExecutor))
                 .inClientSession(sessionId)
                 .withExecutor(executorService)
                 .notifyOnError(messagingConfiguration.getConnectionErrorHandler().orElse(null))
@@ -416,9 +377,23 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     private void reconnectWithRetries() {
         this.connectWithRetries(this::recreateWebSocket, reconnectExecutor)
                 .thenAccept(reconnectedWebSocket -> {
-                    this.webSocket.set(reconnectedWebSocket);
+                    setWebSocket(reconnectedWebSocket);
                     reconnecting.set(false);
                 });
+    }
+
+    private void setWebSocket(final WebSocket webSocket) {
+        synchronized (this.webSocket) {
+            final WebSocket oldWebSocket = this.webSocket.get();
+            this.webSocket.set(webSocket);
+            try {
+                if (oldWebSocket != null && oldWebSocket != webSocket) {
+                    oldWebSocket.disconnect();
+                }
+            } catch (final Exception exception) {
+                LOGGER.error("Client <{}>: Error disconnecting a previous websocket", sessionId, exception);
+            }
+        }
     }
 
     private WebSocket recreateWebSocket() {

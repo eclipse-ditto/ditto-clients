@@ -15,6 +15,7 @@ package org.eclipse.ditto.client.messaging.internal;
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -40,14 +41,14 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
 
     private final String sessionId;
     private final String nameOfAction;
-    private final Supplier<T> retriedSupplier;
+    private final Supplier<CompletionStage<T>> retriedSupplier;
     private final ScheduledExecutorService executorService;
     @Nullable private final Consumer<Throwable> errorConsumer;
 
 
     private Retry(final String nameOfAction,
             final String sessionId,
-            final Supplier<T> retriedSupplier,
+            final Supplier<CompletionStage<T>> retriedSupplier,
             final ScheduledExecutorService executorService,
             @Nullable final Consumer<Throwable> errorConsumer) {
 
@@ -82,31 +83,42 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
 
     private void completeFutureEventually(final int attempt, final CompletableFuture<T> resultToComplete) {
         try {
-            resultToComplete.complete(retriedSupplier.get());
-        } catch (final RuntimeException e) {
-            // log error, but try again (don't end loop)
-            LOGGER.error("Client <{}>: Failed to <{}>: {}.", sessionId, nameOfAction, e.getMessage());
-            if (errorConsumer != null) {
-                try {
-                    errorConsumer.accept(e);
-                } catch (final Throwable errorFromConsumer) {
-                    LOGGER.warn("Got exception from error consumer: {}.\n" +
-                                    "If you see this log, you most likely tried to throw an exception which you " +
-                                    "wanted to handle in your application.\n" +
-                                    "Keep in mind that this operation runs in a separate thread and therefore the " +
-                                    "exception does not reach your application thread.\n" +
-                                    "If this is the case, please try to move the logic for handling the exception " +
-                                    "to the error consumer.",
-                            errorFromConsumer.getMessage(), errorFromConsumer);
+            retriedSupplier.get().whenComplete((result, error) -> {
+                if (result != null) {
+                    resultToComplete.complete(result);
+                } else {
+                    reschedule(attempt, resultToComplete, error);
                 }
-            }
-            final int timeToWaitInSeconds = getTimeToWaitInSecondsForAttempt(attempt);
-            LOGGER.info("Client <{}>: Waiting for <{}> second(s) before retrying to <{}>.",
-                    sessionId, timeToWaitInSeconds, nameOfAction);
-            executorService.schedule(() -> this.completeFutureEventually(attempt + 1, resultToComplete),
-                    timeToWaitInSeconds,
-                    TimeUnit.SECONDS);
+            });
+        } catch (final RuntimeException e) {
+            reschedule(attempt, resultToComplete, e);
         }
+    }
+
+    private void reschedule(final int attempt, final CompletableFuture<T> resultToComplete, final Throwable error) {
+        // log error, but try again (don't end loop)
+        LOGGER.error("Client <{}>: Failed to <{}>: {}.", sessionId, nameOfAction, error.getMessage());
+        final Throwable cause = error instanceof CompletionException ? error.getCause() : error;
+        if (errorConsumer != null) {
+            try {
+                errorConsumer.accept(cause);
+            } catch (final Throwable errorFromConsumer) {
+                LOGGER.warn("Got exception from error consumer: {}.\n" +
+                                "If you see this log, you most likely tried to throw an exception which you " +
+                                "wanted to handle in your application.\n" +
+                                "Keep in mind that this operation runs in a separate thread and therefore the " +
+                                "exception does not reach your application thread.\n" +
+                                "If this is the case, please try to move the logic for handling the exception " +
+                                "to the error consumer.",
+                        errorFromConsumer.getMessage(), errorFromConsumer);
+            }
+        }
+        final int timeToWaitInSeconds = getTimeToWaitInSecondsForAttempt(attempt);
+        LOGGER.info("Client <{}>: Waiting for <{}> second(s) before retrying to <{}>.",
+                sessionId, timeToWaitInSeconds, nameOfAction);
+        executorService.schedule(() -> this.completeFutureEventually(attempt + 1, resultToComplete),
+                timeToWaitInSeconds,
+                TimeUnit.SECONDS);
     }
 
     private int getTimeToWaitInSecondsForAttempt(final int attempt) {
@@ -122,7 +134,8 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
      * @param <T> The type of the expected result.
      * @return The result of the supplier after it finally succeeds.
      */
-    static <T> RetryBuilderStep1<T> retryTo(final String nameOfAction, final Supplier<T> supplierToRetry) {
+    static <T> RetryBuilderStep1<T> retryTo(final String nameOfAction,
+            final Supplier<CompletionStage<T>> supplierToRetry) {
         return new RetryBuilder<>(nameOfAction, supplierToRetry);
     }
 
@@ -194,17 +207,17 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
     static class RetryBuilder<T> implements RetryBuilderStep1<T>, RetryBuilderStep2<T>, RetryBuilderFinal<T> {
 
         private final String nameOfAction;
-        private final Supplier<T> retriedSupplier;
+        private final Supplier<CompletionStage<T>> retriedSupplier;
         private final String sessionId;
         @Nullable private final Consumer<Throwable> errorConsumer;
         @Nullable private final ScheduledExecutorService executorService;
 
-        private RetryBuilder(final String nameOfAction, final Supplier<T> retriedSupplier) {
+        private RetryBuilder(final String nameOfAction, final Supplier<CompletionStage<T>> retriedSupplier) {
             this(nameOfAction, retriedSupplier, "", null, null);
         }
 
         private RetryBuilder(final String nameOfAction,
-                final Supplier<T> retriedSupplier,
+                final Supplier<CompletionStage<T>> retriedSupplier,
                 final String sessionId,
                 @Nullable final ScheduledExecutorService executorService,
                 @Nullable final Consumer<Throwable> errorConsumer) {
