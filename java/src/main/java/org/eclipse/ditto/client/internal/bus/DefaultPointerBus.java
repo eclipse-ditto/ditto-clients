@@ -59,7 +59,7 @@ final class DefaultPointerBus implements PointerBus {
     @Override
     public void close() {
         consumerRegistry.clear();
-        executor.shutdown();
+        executor.shutdownNow();
         try {
             executor.awaitTermination(TERMINATION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         } catch (final InterruptedException e) {

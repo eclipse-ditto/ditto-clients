@@ -29,6 +29,7 @@ import org.junit.Test;
 
 public final class RetryTest {
 
+    private static final Supplier<Boolean> IS_CANCELLED = () -> false;
     private static ScheduledExecutorService scheduledExecutorService;
 
     @BeforeClass
@@ -45,7 +46,7 @@ public final class RetryTest {
     @Test
     public void getsResultOfRetryableSupplier() {
         final Supplier<CompletionStage<String>> retryableSupplier = () -> CompletableFuture.completedFuture("foo");
-        final String actualResult = Retry.retryTo("test the result", retryableSupplier)
+        final String actualResult = Retry.retryTo("test the result", retryableSupplier, IS_CANCELLED)
                 .inClientSession(UUID.randomUUID().toString())
                 .withExecutor(scheduledExecutorService)
                 .get()
@@ -66,7 +67,7 @@ public final class RetryTest {
                 return "bar";
             }
         });
-        final String actualResult = Retry.retryTo("test the result", retryableSupplier)
+        final String actualResult = Retry.retryTo("test the result", retryableSupplier, IS_CANCELLED)
                 .inClientSession(UUID.randomUUID().toString())
                 .withExecutor(scheduledExecutorService)
                 .get()
@@ -90,7 +91,7 @@ public final class RetryTest {
                 return "bar";
             }
         });
-        final String actualResult = Retry.retryTo("test the result", retryableSupplier)
+        final String actualResult = Retry.retryTo("test the result", retryableSupplier, IS_CANCELLED)
                 .inClientSession(UUID.randomUUID().toString())
                 .withExecutor(scheduledExecutorService)
                 .notifyOnError(error -> {
