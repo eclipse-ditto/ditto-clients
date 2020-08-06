@@ -271,11 +271,11 @@ public abstract class AbstractHandle {
         return statusCode.isClientError() || statusCode.isInternalError();
     }
 
-    private static ThingModifyCommandResponse<ThingModifyCommandResponse<?>>
+    private static <T extends ThingModifyCommandResponse<T>> ThingModifyCommandResponse<T>
     createThingModifyCommandResponseFromAcknowledgement(
             final Signal<?> signal,
             final Acknowledgement ack) {
-        return new ThingModifyCommandResponse<ThingModifyCommandResponse<?>>() {
+        return new ThingModifyCommandResponse<T>() {
             @Override
             public JsonPointer getResourcePath() {
                 return signal.getResourcePath();
@@ -308,8 +308,8 @@ public abstract class AbstractHandle {
             }
 
             @Override
-            public ThingModifyCommandResponse<?> setDittoHeaders(final DittoHeaders dittoHeaders) {
-                return this;
+            public T setDittoHeaders(final DittoHeaders dittoHeaders) {
+                return (T) this;
             }
 
             @Override
