@@ -15,7 +15,6 @@ package org.eclipse.ditto.client.messaging.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -79,7 +78,7 @@ public final class WebSocketMessagingProviderTest {
         CompletableFuture.runAsync(() -> {
             try (final ServerSocket s = new ServerSocket(0)) {
                 serverSocket.add(s);
-                writeAndClose(s.accept(), "HTTP/1.0 403 Forbidden");
+                write(s.accept(), "HTTP/1.0 403 Forbidden");
             } catch (final Exception e) {
                 throw new RuntimeException(e);
             }
@@ -107,7 +106,7 @@ public final class WebSocketMessagingProviderTest {
             try (final ServerSocket s = new ServerSocket(0)) {
                 serverSocket.add(s);
                 for (int i = 0; i < numberOfRecoverableErrors; ++i) {
-                    writeAndClose(s.accept(), "HTTP/1.0 503 Server hurt itself in its confusion!");
+                    write(s.accept(), "HTTP/1.0 503 Server hurt itself in its confusion!");
                 }
             } catch (final Exception e) {
                 throw new RuntimeException(e);
@@ -158,12 +157,11 @@ public final class WebSocketMessagingProviderTest {
                 BasicAuthenticationConfiguration.newBuilder().username("dummy").password("auth").build());
     }
 
-    private static void writeAndClose(final Socket socket, final String line) throws Exception {
+    private static void write(final Socket socket, final String line) throws Exception {
         final PrintWriter writer = new PrintWriter(socket.getOutputStream());
         writer.println(line);
         writer.println();
         writer.flush();
-        socket.close();
     }
 
     private static void expectNoMsg(final BlockingQueue<?> queue) {
