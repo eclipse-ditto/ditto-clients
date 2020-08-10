@@ -453,8 +453,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
      * @see this#mapConnectError(Throwable)
      */
     private static boolean isRecoverable(final Throwable error) {
-        return !(error instanceof AuthenticationException ||
-                error instanceof MessagingException && error.getCause() instanceof UnknownHostException);
+        // every exception should be recoverable
+        return true;
     }
 
 }

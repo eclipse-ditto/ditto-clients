@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.configuration.BasicAuthenticationConfiguration;
@@ -55,11 +56,45 @@ public final class WebSocketMessagingProviderTest {
     }
 
     @Test
-    public void connectToUnknownHost() throws Exception {
+    public void connectToUnknownHost() {
         final BlockingQueue<Throwable> errors = new LinkedBlockingQueue<>();
         final WebSocketMessagingProvider underTest =
                 WebSocketMessagingProvider.newInstance(configOf("ws://unknown.host.invalid:80", errors::add),
                         dummyAuth(), EXECUTOR);
+        final CompletableFuture<?> future = CompletableFuture.runAsync(() -> {
+            try {
+                // timeout should be greater than the first two timeouts of Retry#TIME_TO_WAIT_BETWEEN_RETRIES_IN_SECONDS
+                TimeUnit.SECONDS.sleep(3);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            underTest.close();
+        });
+
+        // WHEN: websocket connect to a nonsense address
+        // THEN: the calling thread receives a CompletionException
+        assertThatExceptionOfType(CompletionException.class).isThrownBy(underTest::initialize);
+        assertThat(future).isCompleted();
+
+        // THEN: the error handler is notified multiple times
+        assertThat(errors).hasSizeGreaterThan(1);
+        errors.forEach(error -> assertThat(error)
+                .isInstanceOf(MessagingException.class)
+                .hasCauseInstanceOf(UnknownHostException.class));
+    }
+
+    @Test
+    public void connectToUnknownHostWithErrorConsumer() throws Exception {
+        final BlockingQueue<Throwable> errors = new LinkedBlockingQueue<>();
+        final AtomicReference<WebSocketMessagingProvider> messagingProviderReference = new AtomicReference<>();
+        final ExecutorService e = Executors.newSingleThreadExecutor();
+        final WebSocketMessagingProvider underTest =
+                WebSocketMessagingProvider.newInstance(configOf("ws://unknown.host.invalid:80", error -> {
+                            messagingProviderReference.get().close();
+                            errors.add(error);
+                        }),
+                        dummyAuth(), e);
+        messagingProviderReference.set(underTest);
 
         // WHEN: websocket connect to a nonsense address
         // THEN: the calling thread receives a CompletionException
@@ -89,13 +124,29 @@ public final class WebSocketMessagingProviderTest {
         final WebSocketMessagingProvider underTest =
                 WebSocketMessagingProvider.newInstance(config, dummyAuth(), EXECUTOR);
 
+        final CompletableFuture<?> future = CompletableFuture.runAsync(() -> {
+            try {
+                // timeout should be greater than the first two timeouts of Retry#TIME_TO_WAIT_BETWEEN_RETRIES_IN_SECONDS
+                TimeUnit.SECONDS.sleep(3);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            underTest.close();
+        });
         // WHEN: websocket connect to a forbidden address
         // THEN: the calling thread receives a CompletionException
         assertThatExceptionOfType(CompletionException.class).isThrownBy(underTest::initialize);
+        assertThat(future).isCompleted();
 
-        // THEN: the error handler is notified exactly once
-        assertThat(errors.take()).isInstanceOf(AuthenticationException.class);
-        expectNoMsg(errors);
+        // THEN: the error handler is notified multiple times
+        assertThat(errors).hasSizeGreaterThan(1);
+        while (errors.size() > 1) {
+            assertThat(errors.take())
+                    .isInstanceOf(AuthenticationException.class);
+        }
+        // THEN: the last error is a MessagingException because of closing the provider manually in our future.
+        assertThat(errors.take())
+                .isInstanceOf(MessagingException.class);
     }
 
     @Test(timeout = 10_000)
@@ -173,4 +224,5 @@ public final class WebSocketMessagingProviderTest {
             throw new AssertionError(e);
         }
     }
+
 }
