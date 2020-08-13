@@ -493,7 +493,7 @@ public final class OutgoingMessageFactory {
                     return builder;
                 }).orElseGet(() -> MessagesModelFactory.newMessageBuilder(messageHeaders));
 
-        message.getResponseConsumer().ifPresent(messageBuilder::responseConsumer);
+        message.getGenericResponseConsumer().ifPresent(messageBuilder::responseConsumer);
         return messageBuilder.build();
     }
 

@@ -29,9 +29,10 @@ import org.eclipse.ditto.client.live.messages.PendingMessageWithThingId;
 import org.eclipse.ditto.client.live.messages.internal.ImmutableMessageSender;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.model.messages.Message;
-import org.eclipse.ditto.model.messages.MessageResponseConsumer;
+import org.eclipse.ditto.model.messages.ResponseConsumer;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
+import org.eclipse.ditto.signals.acks.base.Acknowledgements;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.base.ErrorResponse;
 import org.eclipse.ditto.signals.commands.messages.MessageCommand;
@@ -101,7 +102,7 @@ final class PendingMessageImpl<T> implements PendingMessage<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private static void typeCheckAndConsume(final MessageResponseConsumer<?> responseConsumer,
+    private static void typeCheckAndConsume(final ResponseConsumer<?, ?> responseConsumer,
             final Signal<?> response) {
 
         final BiConsumer uncheckedResponseConsumer = responseConsumer.getResponseConsumer();
@@ -109,11 +110,13 @@ final class PendingMessageImpl<T> implements PendingMessage<T> {
 
         try {
             // throw ClassCastException if response has incorrect type
-            final Message<?> responseMessage;
+            final Object responseMessage;
             if (response instanceof MessageCommand) {
                 responseMessage = ((MessageCommand) response).getMessage();
             } else if (response instanceof MessageCommandResponse) {
                 responseMessage = ((MessageCommandResponse) response).getMessage();
+            } else if (response instanceof Acknowledgements) {
+                responseMessage = response;
             } else if (response instanceof ErrorResponse) {
                 uncheckedResponseConsumer.accept(null, ((ErrorResponse<?>) response).getDittoRuntimeException());
                 return;
@@ -122,26 +125,44 @@ final class PendingMessageImpl<T> implements PendingMessage<T> {
                 return;
             }
 
-            if (responseConsumer.getResponseType().isAssignableFrom(ByteBuffer.class)) {
-                uncheckedResponseConsumer.accept(asByteBufferMessage(responseMessage), null);
+            if (responseMessage.getClass().isAssignableFrom(Message.class)) {
+                consumeMessageResponse((Message<?>) responseMessage, responseConsumer);
             } else {
-                final Optional<?> payloadOptional = responseMessage.getPayload();
-                if (payloadOptional.isPresent()) {
-                    final Object payload = payloadOptional.get();
-                    if (responseConsumer.getResponseType().isInstance(payload)) {
-                        uncheckedResponseConsumer.accept(setMessagePayload(responseMessage, payload), null);
-                    } else {
-                        // response has unexpected type
-                        uncheckedResponseConsumer.accept(setMessagePayload(responseMessage, null),
-                                classCastException(responseType, payload));
-                    }
-                } else {
-                    // response has no payload; regard it as any message type
+                if (responseConsumer.getResponseType().isInstance(responseMessage)) {
                     uncheckedResponseConsumer.accept(responseMessage, null);
+                } else {
+                    // response has unexpected type
+                    uncheckedResponseConsumer.accept(null, classCastException(responseType, responseMessage));
                 }
             }
         } catch (final RuntimeException e) {
             uncheckedResponseConsumer.accept(null, e);
+        }
+
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void consumeMessageResponse(final Message<?> responseMessage,
+            final ResponseConsumer<?, ?> responseConsumer) {
+        final BiConsumer uncheckedResponseConsumer = responseConsumer.getResponseConsumer();
+        final Class<?> responseType = responseConsumer.getResponseType();
+        if (responseType.isAssignableFrom(ByteBuffer.class)) {
+            uncheckedResponseConsumer.accept(asByteBufferMessage(responseMessage), null);
+        } else {
+            final Optional<?> payloadOptional = responseMessage.getPayload();
+            if (payloadOptional.isPresent()) {
+                final Object payload = payloadOptional.get();
+                if (responseType.isInstance(payload)) {
+                    uncheckedResponseConsumer.accept(setMessagePayload(responseMessage, payload), null);
+                } else {
+                    // response has unexpected type
+                    uncheckedResponseConsumer.accept(setMessagePayload(responseMessage, null),
+                            classCastException(responseType, payload));
+                }
+            } else {
+                // response has no payload; regard it as any message type
+                uncheckedResponseConsumer.accept(responseMessage, null);
+            }
         }
     }
 
@@ -172,7 +193,7 @@ final class PendingMessageImpl<T> implements PendingMessage<T> {
                 outgoingMessageFactory.sendMessage(messageSerializerRegistry, message);
         final String correlationId = toBeSentMessage.getCorrelationId().orElse(null);
         logger.trace("Message about to send: {}", toBeSentMessage);
-        message.getResponseConsumer().ifPresent(consumer ->
+        message.getGenericResponseConsumer().ifPresent(consumer ->
                 messagingProvider.getAdaptableBus().subscribeOnceForAdaptable(
                         Classification.forCorrelationId(correlationId),
                         Duration.ofSeconds(60)

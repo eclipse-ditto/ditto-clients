@@ -19,6 +19,7 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
+import org.eclipse.ditto.client.ack.Acknowledgeable;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
@@ -32,7 +33,7 @@ import org.eclipse.ditto.signals.base.WithId;
  *
  * @since 1.0.0
  */
-public interface Change extends WithId, WithEntityType, WithDittoHeaders<Change> {
+public interface Change extends WithId, WithEntityType, WithDittoHeaders<Change>, Acknowledgeable {
 
     /**
      * Returns the {@link ChangeAction} which caused this change.
@@ -117,31 +118,5 @@ public interface Change extends WithId, WithEntityType, WithDittoHeaders<Change>
      * @since 1.1.0
      */
     Change withPathAndValue(JsonPointer path, @Nullable JsonValue value);
-
-    /**
-     * Handles {@code AcknowledgementRequest}s issued by the Ditto backend for a received event translated into this
-     * change by invoking the passed {@code acknowledgementHandles} consumer with client side
-     * {@code AcknowledgementHandle}s.
-     *
-     * @param acknowledgementHandles the consumer to invoke with a collection of {@code AcknowledgementHandle}s used to
-     * send back {@code Acknowledgements}.
-     * @since 1.1.0
-     */
-    void handleAcknowledgementRequests(Consumer<Collection<AcknowledgementRequestHandle>> acknowledgementHandles);
-
-    /**
-     * Handles an {@code AcknowledgementRequest} identified by the passed {@code acknowledgementLabel} issued by the
-     * Ditto backend for a received event translated into this change by invoking the passed
-     * {@code acknowledgementHandle} consumer with a client side {@code AcknowledgementHandle} - if the passed
-     * acknowledgementLabel was present in the requested acknowledgements.
-     *
-     * @param acknowledgementLabel the {@code AcknowledgementLabel} which should be handled - if present - by the passed
-     * {@code acknowledgementHandle}.
-     * @param acknowledgementHandle the consumer to invoke with a {@code AcknowledgementHandle} used to
-     * send back an {@code Acknowledgement}.
-     * @since 1.1.0
-     */
-    void handleAcknowledgementRequest(AcknowledgementLabel acknowledgementLabel,
-            Consumer<AcknowledgementRequestHandle> acknowledgementHandle);
 
 }

@@ -32,7 +32,9 @@ import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessageHeadersBuilder;
 import org.eclipse.ditto.model.messages.MessageResponseConsumer;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
+import org.eclipse.ditto.model.messages.ResponseConsumer;
 import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.signals.acks.base.Acknowledgements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,9 +110,9 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
         return new SetThingIdImpl();
     }
 
-    private <R> MessageResponseConsumer<R> createMessageResponseConsumer(final Class<R> expectedResponseType,
-            final BiConsumer<Message<R>, Throwable> responseConsumer) {
-        return new MessageResponseConsumer<R>() {
+    private <R, C> ResponseConsumer<R, C> createResponseConsumer(final Class<R> expectedResponseType,
+            final BiConsumer<C, Throwable> responseConsumer) {
+        return new ResponseConsumer<R, C>() {
             @Override
             @Nonnull
             public Class<R> getResponseType() {
@@ -119,7 +121,7 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
 
             @Override
             @Nonnull
-            public BiConsumer<Message<R>, Throwable> getResponseConsumer() {
+            public BiConsumer<C, Throwable> getResponseConsumer() {
                 return responseConsumer;
             }
         };
@@ -129,7 +131,7 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
         buildAndSendMessage(payload, null);
     }
 
-    private <R> void buildAndSendMessage(final T payload, final MessageResponseConsumer<R> responseConsumer) {
+    private void buildAndSendMessage(final T payload, final ResponseConsumer<?, ?> responseConsumer) {
         final MessageHeadersBuilder messageHeadersBuilder =
                 MessageHeaders.newBuilder(messageDirection, messageThingId, messageSubject);
 
@@ -246,7 +248,12 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
 
         @Override
         public <R> void send(final Class<R> responseType, final BiConsumer<Message<R>, Throwable> responseConsumer) {
-            buildAndSendMessage(null, createMessageResponseConsumer(responseType, responseConsumer));
+            buildAndSendMessage(null, createResponseConsumer(responseType, responseConsumer));
+        }
+
+        @Override
+        public void sendWithExpectedAcknowledgement(final BiConsumer<Acknowledgements, Throwable> responseConsumer) {
+            buildAndSendMessage(null, createResponseConsumer(Acknowledgements.class, responseConsumer));
         }
     }
 
@@ -271,7 +278,12 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
 
         @Override
         public <R> void send(final Class<R> responseType, final BiConsumer<Message<R>, Throwable> responseConsumer) {
-            buildAndSendMessage(payload, createMessageResponseConsumer(responseType, responseConsumer));
+            buildAndSendMessage(payload, createResponseConsumer(responseType, responseConsumer));
+        }
+
+        @Override
+        public void sendWithExpectedAcknowledgement(final BiConsumer<Acknowledgements, Throwable> responseConsumer) {
+            buildAndSendMessage(payload, createResponseConsumer(Acknowledgements.class, responseConsumer));
         }
     }
 
@@ -290,7 +302,12 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
 
         @Override
         public <R> void send(final Class<R> responseType, final BiConsumer<Message<R>, Throwable> responseConsumer) {
-            buildAndSendMessage(payload, createMessageResponseConsumer(responseType, responseConsumer));
+            buildAndSendMessage(payload, createResponseConsumer(responseType, responseConsumer));
+        }
+
+        @Override
+        public void sendWithExpectedAcknowledgement(final BiConsumer<Acknowledgements, Throwable> responseConsumer) {
+            buildAndSendMessage(payload, createResponseConsumer(Acknowledgements.class, responseConsumer));
         }
     }
 

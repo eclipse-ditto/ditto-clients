@@ -12,6 +12,7 @@
  */
 package org.eclipse.ditto.client.live.messages;
 
+import org.eclipse.ditto.client.ack.Acknowledgeable;
 import org.eclipse.ditto.model.messages.Message;
 
 /**
@@ -21,7 +22,7 @@ import org.eclipse.ditto.model.messages.Message;
  * @param <U> the type of the response's payload.
  * @since 1.0.0
  */
-public interface RepliableMessage<T, U> extends Message<T> {
+public interface RepliableMessage<T, U> extends Acknowledgeable, Message<T> {
 
     /**
      * Respond to this message.
