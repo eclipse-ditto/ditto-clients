@@ -233,10 +233,16 @@ public final class DefaultDittoClient implements DittoClient {
     }
 
     private static void init(final PointerBus bus, final MessagingProvider messagingProvider) {
-        registerKeyBasedDistributorForIncomingEvents(bus);
-        registerKeyBasedHandlersForIncomingEvents(bus, messagingProvider,
-                DittoProtocolAdapter.of(HeaderTranslator.empty()));
-        messagingProvider.initialize();
+        try {
+            registerKeyBasedDistributorForIncomingEvents(bus);
+            registerKeyBasedHandlersForIncomingEvents(bus, messagingProvider,
+                    DittoProtocolAdapter.of(HeaderTranslator.empty()));
+            messagingProvider.initialize();
+        } catch (final RuntimeException e) {
+            bus.close();
+            messagingProvider.close();
+            throw e;
+        }
     }
 
     private static void registerKeyBasedDistributorForIncomingEvents(final PointerBus bus) {
@@ -549,5 +555,4 @@ public final class DefaultDittoClient implements DittoClient {
                         emitAcknowledgement)
         );
     }
-
 }

@@ -15,14 +15,17 @@ package org.eclipse.ditto.client.messaging.internal;
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import org.eclipse.ditto.client.messaging.MessagingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,22 +43,29 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
 
     private final String sessionId;
     private final String nameOfAction;
-    private final Supplier<T> retriedSupplier;
+    private final Supplier<CompletionStage<T>> retriedSupplier;
     private final ScheduledExecutorService executorService;
-    @Nullable private final Consumer<Throwable> errorConsumer;
+    @Nullable
+    private final Consumer<Throwable> errorConsumer;
+    private final Predicate<Throwable> isRecoverable;
+    private final Supplier<Boolean> isCancelled;
 
 
     private Retry(final String nameOfAction,
             final String sessionId,
-            final Supplier<T> retriedSupplier,
+            final Supplier<CompletionStage<T>> retriedSupplier,
             final ScheduledExecutorService executorService,
-            @Nullable final Consumer<Throwable> errorConsumer) {
+            @Nullable final Consumer<Throwable> errorConsumer,
+            final Predicate<Throwable> isRecoverable,
+            final Supplier<Boolean> isCancelled) {
 
         this.sessionId = sessionId;
         this.nameOfAction = nameOfAction;
         this.retriedSupplier = retriedSupplier;
         this.executorService = executorService;
         this.errorConsumer = errorConsumer;
+        this.isRecoverable = isRecoverable;
+        this.isCancelled = isCancelled;
     }
 
     private static int ensureIndexIntoTimeToWaitBounds(final int index) {
@@ -81,31 +91,59 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
     }
 
     private void completeFutureEventually(final int attempt, final CompletableFuture<T> resultToComplete) {
-        try {
-            resultToComplete.complete(retriedSupplier.get());
-        } catch (final RuntimeException e) {
-            // log error, but try again (don't end loop)
-            LOGGER.error("Client <{}>: Failed to <{}>: {}.", sessionId, nameOfAction, e.getMessage());
-            if (errorConsumer != null) {
-                try {
-                    errorConsumer.accept(e);
-                } catch (final Throwable errorFromConsumer) {
-                    LOGGER.warn("Got exception from error consumer: {}.\n" +
-                                    "If you see this log, you most likely tried to throw an exception which you " +
-                                    "wanted to handle in your application.\n" +
-                                    "Keep in mind that this operation runs in a separate thread and therefore the " +
-                                    "exception does not reach your application thread.\n" +
-                                    "If this is the case, please try to move the logic for handling the exception " +
-                                    "to the error consumer.",
-                            errorFromConsumer.getMessage(), errorFromConsumer);
-                }
+        if (isCancelled.get()) {
+            // no more retries; complete with error.
+            resultToComplete.completeExceptionally(MessagingException.recreateFailed(sessionId,
+                    new IllegalStateException("The client was destroyed.")
+            ));
+        } else {
+            try {
+                retriedSupplier.get().whenComplete((result, error) -> {
+                    if (result != null) {
+                        resultToComplete.complete(result);
+                    } else {
+                        reschedule(attempt, resultToComplete, error);
+                    }
+                });
+            } catch (final RuntimeException e) {
+                reschedule(attempt, resultToComplete, e);
             }
+        }
+    }
+
+    private void reschedule(final int attempt, final CompletableFuture<T> resultToComplete, final Throwable error) {
+        // log error, but try again (don't end loop)
+        final Throwable cause = error instanceof CompletionException ? error.getCause() : error;
+        if (isRecoverable.test(cause)) {
+            LOGGER.error("Client <{}>: Failed to <{}>: {}", sessionId, nameOfAction, error.getMessage());
+            notifyErrorConsumer(cause);
             final int timeToWaitInSeconds = getTimeToWaitInSecondsForAttempt(attempt);
             LOGGER.info("Client <{}>: Waiting for <{}> second(s) before retrying to <{}>.",
                     sessionId, timeToWaitInSeconds, nameOfAction);
             executorService.schedule(() -> this.completeFutureEventually(attempt + 1, resultToComplete),
                     timeToWaitInSeconds,
                     TimeUnit.SECONDS);
+        } else {
+            LOGGER.error("Client <{}>: Permanently failed to {}: {}", sessionId, nameOfAction, error.getMessage());
+            notifyErrorConsumer(cause);
+            resultToComplete.completeExceptionally(error);
+        }
+    }
+
+    private void notifyErrorConsumer(final Throwable cause) {
+        if (errorConsumer != null) {
+            try {
+                errorConsumer.accept(cause);
+            } catch (final Throwable errorFromConsumer) {
+                LOGGER.warn("Got exception from error consumer: {}.\n" +
+                                "If you see this log, you most likely tried to throw an exception which you " +
+                                "wanted to handle in your application.\n" +
+                                "Keep in mind that this operation runs in a separate thread and therefore the " +
+                                "exception does not reach your application thread.\n" +
+                                "If this is the case, please try to move the logic for handling the exception " +
+                                "to the error consumer.",
+                        errorFromConsumer.getMessage(), errorFromConsumer);
+            }
         }
     }
 
@@ -117,13 +155,16 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
     /**
      * Creates a builder to configure the parameters that are relevant for the retry logic.
      *
+     * @param <T> The type of the expected result.
      * @param nameOfAction A name of the action that is retried. This is only used for logging. E.g. "fetch services".
      * @param supplierToRetry The action that should be retried until a result is returned. Result ca also be null.
-     * @param <T> The type of the expected result.
+     * @param isCancelled whether this retry task was cancelled. MUST be thread-safe.
      * @return The result of the supplier after it finally succeeds.
      */
-    static <T> RetryBuilderStep1<T> retryTo(final String nameOfAction, final Supplier<T> supplierToRetry) {
-        return new RetryBuilder<>(nameOfAction, supplierToRetry);
+    static <T> RetryBuilderStep1<T> retryTo(final String nameOfAction,
+            final Supplier<CompletionStage<T>> supplierToRetry,
+            final Supplier<Boolean> isCancelled) {
+        return new RetryBuilder<>(nameOfAction, supplierToRetry, isCancelled);
     }
 
     /**
@@ -177,6 +218,16 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
         RetryBuilderFinal<T> notifyOnError(@Nullable final Consumer<Throwable> errorConsumer);
 
         /**
+         * Test whether an exception can be recovered from.
+         * If not, no further attempts will be made.
+         * All exceptions are considered recoverable when not set.
+         *
+         * @param isRecoverable whether the exception can be recovered from.
+         * @return this builder.
+         */
+        RetryBuilderFinal<T> isRecoverable(final Predicate<Throwable> isRecoverable);
+
+        /**
          * Executes the provided supplier unit the supplier returns a result.
          *
          * @return A completion stage which finally completes with the result of the supplier. Result can be null.
@@ -194,47 +245,69 @@ final class Retry<T> implements Supplier<CompletionStage<T>> {
     static class RetryBuilder<T> implements RetryBuilderStep1<T>, RetryBuilderStep2<T>, RetryBuilderFinal<T> {
 
         private final String nameOfAction;
-        private final Supplier<T> retriedSupplier;
+        private final Supplier<CompletionStage<T>> retriedSupplier;
         private final String sessionId;
         @Nullable private final Consumer<Throwable> errorConsumer;
         @Nullable private final ScheduledExecutorService executorService;
+        private final Predicate<Throwable> isRecoverable;
+        private final Supplier<Boolean> isCancelled;
 
-        private RetryBuilder(final String nameOfAction, final Supplier<T> retriedSupplier) {
-            this(nameOfAction, retriedSupplier, "", null, null);
+        private RetryBuilder(final String nameOfAction, final Supplier<CompletionStage<T>> retriedSupplier,
+                final Supplier<Boolean> isCancelled) {
+            this(nameOfAction, retriedSupplier, "", null, null,
+                    Exception.class::isInstance, isCancelled);
         }
 
         private RetryBuilder(final String nameOfAction,
-                final Supplier<T> retriedSupplier,
+                final Supplier<CompletionStage<T>> retriedSupplier,
                 final String sessionId,
                 @Nullable final ScheduledExecutorService executorService,
-                @Nullable final Consumer<Throwable> errorConsumer) {
+                @Nullable final Consumer<Throwable> errorConsumer,
+                final Predicate<Throwable> isRecoverable,
+                final Supplier<Boolean> isCancelled) {
 
             this.nameOfAction = nameOfAction;
             this.retriedSupplier = retriedSupplier;
             this.sessionId = sessionId;
+            this.isRecoverable = isRecoverable;
             this.executorService = executorService;
             this.errorConsumer = errorConsumer;
+            this.isCancelled = isCancelled;
         }
 
         @Override
         public RetryBuilderStep2<T> inClientSession(final String sessionId) {
-            return new RetryBuilder<>(nameOfAction, retriedSupplier, sessionId, executorService, errorConsumer);
+            return new RetryBuilder<>(nameOfAction, retriedSupplier, sessionId, executorService, errorConsumer,
+                    isRecoverable,
+                    isCancelled);
         }
 
         @Override
         public RetryBuilderFinal<T> withExecutor(final ScheduledExecutorService executorService) {
-            return new RetryBuilder<>(nameOfAction, retriedSupplier, sessionId, executorService, errorConsumer);
+            return new RetryBuilder<>(nameOfAction, retriedSupplier, sessionId, executorService, errorConsumer,
+                    isRecoverable,
+                    isCancelled);
         }
 
         @Override
         public RetryBuilderFinal<T> notifyOnError(@Nullable final Consumer<Throwable> errorConsumer) {
-            return new RetryBuilder<>(nameOfAction, retriedSupplier, sessionId, executorService, errorConsumer);
+            return new RetryBuilder<>(nameOfAction, retriedSupplier, sessionId, executorService, errorConsumer,
+                    isRecoverable,
+                    isCancelled);
+        }
+
+        @Override
+        public RetryBuilderFinal<T> isRecoverable(final Predicate<Throwable> isRecoverable) {
+            return new RetryBuilder<>(nameOfAction, retriedSupplier, sessionId, executorService, errorConsumer,
+                    isRecoverable,
+                    isCancelled);
         }
 
         @Override
         public CompletionStage<T> get() {
             checkNotNull(executorService, "executorService");
-            return new Retry<>(nameOfAction, sessionId, retriedSupplier, executorService, errorConsumer).get();
+            return new Retry<>(nameOfAction, sessionId, retriedSupplier, executorService, errorConsumer, isRecoverable,
+                    isCancelled).get();
         }
 
     }
