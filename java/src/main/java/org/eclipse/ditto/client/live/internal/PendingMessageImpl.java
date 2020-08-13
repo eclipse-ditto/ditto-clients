@@ -125,7 +125,7 @@ final class PendingMessageImpl<T> implements PendingMessage<T> {
                 return;
             }
 
-            if (responseMessage.getClass().isAssignableFrom(Message.class)) {
+            if (responseMessage instanceof Message) {
                 consumeMessageResponse((Message<?>) responseMessage, responseConsumer);
             } else {
                 if (responseConsumer.getResponseType().isInstance(responseMessage)) {
