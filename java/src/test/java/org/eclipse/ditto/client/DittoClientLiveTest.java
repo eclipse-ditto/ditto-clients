@@ -317,13 +317,17 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
         final String payload = command.getMessage().getPayload().orElse(null);
         final Class<?> messageCommandClass = command.getClass();
 
-        final CountDownLatch latch = new CountDownLatch(1);
+        final CompletableFuture<Void> future = new CompletableFuture<>();
         sender.subject(subject).payload(payload).send((response, error) -> {
-            assertThat(response.getSubject()).isEqualTo(expectedResponse.getMessage().getSubject());
-            assertThat(response.getStatusCode()).contains(expectedResponse.getStatusCode());
-            assertThat(response.getPayload().map(buffer -> new String(buffer.array())))
-                    .isEqualTo(expectedResponse.getMessage().getPayload());
-            latch.countDown();
+            try {
+                assertThat(response.getSubject()).isEqualTo(expectedResponse.getMessage().getSubject());
+                assertThat(response.getStatusCode()).contains(expectedResponse.getStatusCode());
+                assertThat(response.getPayload().map(buffer -> new String(buffer.array())))
+                        .isEqualTo(expectedResponse.getMessage().getPayload());
+                future.complete(null);
+            } catch (final Throwable e) {
+                future.completeExceptionally(e);
+            }
         });
 
         final MessageCommand<?, ?> messageCommand = (MessageCommand<?, ?>) expectMsgClass(messageCommandClass);
@@ -331,7 +335,11 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
         reply(expectedResponse.setDittoHeaders(
                 expectedResponse.getDittoHeaders().toBuilder().correlationId(correlationId).build()
         ));
-        waitForCountDown(latch);
+        try {
+            future.get(TIMEOUT, TIME_UNIT);
+        } catch (final Exception e) {
+            throw new AssertionError(e);
+        }
     }
 
     private void waitForCountDown(final CountDownLatch latch) {

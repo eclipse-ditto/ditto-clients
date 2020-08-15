@@ -42,7 +42,7 @@ import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessageResponseConsumer;
-import org.eclipse.ditto.model.messages.ResponseConsumer;
+import org.eclipse.ditto.client.ack.ResponseConsumer;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 
@@ -129,11 +129,6 @@ public final class ImmutableRepliableMessage<T, U> implements RepliableMessage<T
     @Override
     public Optional<MessageResponseConsumer<?>> getResponseConsumer() {
         return message.getResponseConsumer();
-    }
-
-    @Override
-    public Optional<ResponseConsumer<?, ?>> getGenericResponseConsumer() {
-        return message.getGenericResponseConsumer();
     }
 
     @Override
