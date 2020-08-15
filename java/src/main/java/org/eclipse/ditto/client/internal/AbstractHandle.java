@@ -32,7 +32,7 @@ import org.eclipse.ditto.json.JsonField;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
@@ -86,6 +86,13 @@ public abstract class AbstractHandle {
         this.messagingProvider = messagingProvider;
         this.channel = channel;
     }
+
+    /**
+     * Get the label of built-in acknowledgements for this channel.
+     *
+     * @return the label.
+     */
+    protected abstract AcknowledgementLabel getThingResponseAcknowledgementLabel();
 
     /**
      * Convenience method to turn anything into {@code Void} due to ubiquitous use of {@code CompletableFuture<Void>}
@@ -246,23 +253,23 @@ public abstract class AbstractHandle {
         return PROTOCOL_ADAPTER.toAdaptable(adjustHeadersForLiveSignal(liveSignal));
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     protected static Signal<?> adjustHeadersForLiveSignal(final Signal<?> signal) {
         return adjustHeadersForLive((Signal) signal);
     }
 
-    static CommandResponse<?> extractCommandResponseFromAcknowledgements(final Signal<?> signal,
+    private CommandResponse<?> extractCommandResponseFromAcknowledgements(final Signal<?> signal,
             final Acknowledgements acknowledgements) {
         if (areFailedAcknowledgements(acknowledgements.getStatusCode())) {
             throw AcknowledgementsFailedException.of(acknowledgements);
         } else {
             return acknowledgements.stream()
-                    .filter(ack -> ack.getLabel().equals(DittoAcknowledgementLabel.TWIN_PERSISTED))
+                    .filter(ack -> ack.getLabel().equals(getThingResponseAcknowledgementLabel()))
                     .findFirst()
                     .map(ack -> createThingModifyCommandResponseFromAcknowledgement(signal, ack))
                     .orElseThrow(() -> new IllegalStateException("Didn't receive an Acknowledgement for label '" +
-                            DittoAcknowledgementLabel.TWIN_PERSISTED + "'. Please make sure to always request the '" +
-                            DittoAcknowledgementLabel.TWIN_PERSISTED + "' Acknowledgement if you need to process the " +
+                            getThingResponseAcknowledgementLabel() + "'. Please make sure to always request the '" +
+                            getThingResponseAcknowledgementLabel() + "' Acknowledgement if you need to process the " +
                             "response in the client."));
         }
     }

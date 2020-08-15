@@ -29,6 +29,8 @@ import org.eclipse.ditto.client.twin.Twin;
 import org.eclipse.ditto.client.twin.TwinFeatureHandle;
 import org.eclipse.ditto.client.twin.TwinSearchHandle;
 import org.eclipse.ditto.client.twin.TwinThingHandle;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
+import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 
@@ -124,5 +126,10 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
     @Override
     public TwinSearchHandle search() {
         return search;
+    }
+
+    @Override
+    protected AcknowledgementLabel getThingResponseAcknowledgementLabel() {
+        return DittoAcknowledgementLabel.TWIN_PERSISTED;
     }
 }

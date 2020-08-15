@@ -18,6 +18,8 @@ import java.text.MessageFormat;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import javax.annotation.Nonnull;
+
 import org.eclipse.ditto.client.internal.AbstractHandle;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
@@ -26,6 +28,8 @@ import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.policies.Policies;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
+import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
 import org.eclipse.ditto.model.policies.PoliciesModelFactory;
 import org.eclipse.ditto.model.policies.Policy;
 import org.eclipse.ditto.model.policies.PolicyId;
@@ -168,4 +172,9 @@ public final class PoliciesImpl extends AbstractHandle implements Policies {
         return bus;
     }
 
+    @Override
+    @Nonnull
+    protected AcknowledgementLabel getThingResponseAcknowledgementLabel() {
+        return DittoAcknowledgementLabel.TWIN_PERSISTED;
+    }
 }

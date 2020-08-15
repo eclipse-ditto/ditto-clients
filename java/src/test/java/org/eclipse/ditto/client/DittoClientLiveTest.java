@@ -15,17 +15,17 @@ package org.eclipse.ditto.client;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_ID;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
+import static org.eclipse.ditto.model.base.acks.AcknowledgementRequest.parseAcknowledgementRequest;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
 import org.eclipse.ditto.client.live.commands.FeaturesCommandHandling;
 import org.eclipse.ditto.client.live.commands.ThingCommandHandling;
 import org.eclipse.ditto.client.live.events.FeatureEventFactory;
+import org.eclipse.ditto.client.live.messages.MessageRegistration;
 import org.eclipse.ditto.client.live.messages.MessageSender;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.json.JsonFactory;
@@ -36,6 +36,7 @@ import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommandAnswerBuilder;
 import org.eclipse.ditto.signals.commands.live.modify.DeleteFeatureLiveCommandAnswerBuilder;
@@ -61,7 +62,9 @@ import org.junit.Test;
  * - emit event
  * - send message, receive response
  * - subscribe for message, send message
+ * - subscribe for message, send acknowledgement
  * - subscribe for command, send response and/or event
+ * - subscribe for command, send acknowledgement
  */
 public final class DittoClientLiveTest extends AbstractDittoClientTest {
 
@@ -178,6 +181,42 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
     @Test
     public void subscribeForDeleteFeatureAsFeature() {
         testHandleDeleteFeature(client.live().forId(THING_ID).forFeature(FEATURE_ID));
+    }
+
+    @Test
+    public void testThingMessageAcknowledgement() {
+        testMessageAcknowledgement(client.live(), thingMessage());
+    }
+
+    @Test
+    public void testFeatureMessageAcknowledgement() {
+        testMessageAcknowledgement(client.live().forId(THING_ID).forFeature(FEATURE_ID), featureMessage());
+    }
+
+    private void testMessageAcknowledgement(final MessageRegistration registration, final Signal<?> message) {
+        assertEventualCompletion(startConsumption());
+        registration.registerForMessage("Ackermann", "request", String.class, msg ->
+                msg.handleAcknowledgementRequests(handles ->
+                        handles.forEach(handle -> handle.acknowledge(
+                                HttpStatusCode.forInt(Integer.parseInt(handle.getAcknowledgementLabel().toString()))
+                                        .orElse(HttpStatusCode.EXPECTATION_FAILED)
+                        ))
+                )
+        );
+
+        reply(message.setDittoHeaders(DittoHeaders.newBuilder()
+                .channel(TopicPath.Channel.TWIN.getName())
+                .acknowledgementRequest(
+                        parseAcknowledgementRequest("100"),
+                        parseAcknowledgementRequest("301"),
+                        parseAcknowledgementRequest("403")
+                )
+                .build()
+        ));
+
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.CONTINUE);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.MOVED_PERMANENTLY);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.FORBIDDEN);
     }
 
     private void testHandleCreateThing(final ThingCommandHandling thingCommandHandling) {
@@ -340,15 +379,6 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
         } catch (final Exception e) {
             throw new AssertionError(e);
         }
-    }
-
-    private void waitForCountDown(final CountDownLatch latch) {
-        try {
-            latch.await(1, TimeUnit.SECONDS);
-        } catch (final Throwable error) {
-            throw new AssertionError(error);
-        }
-        assertThat(latch.getCount()).isEqualTo(0L);
     }
 
     private CompletableFuture<Void> startConsumption() {

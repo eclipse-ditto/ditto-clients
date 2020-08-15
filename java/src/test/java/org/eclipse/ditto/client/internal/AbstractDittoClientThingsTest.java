@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.ditto.client.management.CommonManagement;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
+import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.junit.runner.RunWith;
@@ -48,5 +50,11 @@ public abstract class AbstractDittoClientThingsTest extends AbstractDittoClientT
             default:
                 throw new AssertionError("Unexpected channel=" + channel);
         }
+    }
+
+    protected AcknowledgementLabel getChannelAcknowledgementLabel() {
+        return channel == TopicPath.Channel.TWIN
+                ? DittoAcknowledgementLabel.TWIN_PERSISTED
+                : DittoAcknowledgementLabel.LIVE_RESPONSE;
     }
 }

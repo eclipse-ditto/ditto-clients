@@ -42,6 +42,8 @@ import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.live.messages.PendingMessage;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
+import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.KnownMessageSubjects;
 import org.eclipse.ditto.model.messages.Message;
@@ -735,5 +737,10 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
             // ClassCastException on incorrect type
             return ((MessageCommandResponse<?, ?>) signal).getMessage();
         }
+    }
+
+    @Override
+    protected AcknowledgementLabel getThingResponseAcknowledgementLabel() {
+        return DittoAcknowledgementLabel.LIVE_RESPONSE;
     }
 }

@@ -37,6 +37,8 @@ import org.eclipse.ditto.client.live.messages.PendingMessageWithThingId;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.client.management.internal.ThingHandleImpl;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
+import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.KnownMessageSubjects;
 import org.eclipse.ditto.model.things.ThingId;
@@ -544,4 +546,8 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
         liveCommandAnswer.getEvent().ifPresent(e -> getMessagingProvider().emitAdaptable(adaptOutgoingLiveSignal(e)));
     }
 
+    @Override
+    protected AcknowledgementLabel getThingResponseAcknowledgementLabel() {
+        return DittoAcknowledgementLabel.LIVE_RESPONSE;
+    }
 }

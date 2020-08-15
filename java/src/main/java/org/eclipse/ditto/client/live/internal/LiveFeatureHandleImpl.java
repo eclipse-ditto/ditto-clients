@@ -37,6 +37,8 @@ import org.eclipse.ditto.client.live.messages.PendingMessageWithFeatureId;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.client.management.internal.FeatureHandleImpl;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
+import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.TopicPath;
@@ -337,4 +339,8 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
         liveCommandAnswer.getEvent().ifPresent(e -> getMessagingProvider().emitAdaptable(adaptOutgoingLiveSignal(e)));
     }
 
+    @Override
+    protected AcknowledgementLabel getThingResponseAcknowledgementLabel() {
+        return DittoAcknowledgementLabel.LIVE_RESPONSE;
+    }
 }
