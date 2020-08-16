@@ -32,6 +32,7 @@ import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.model.messages.MessagePayloadSizeTooLargeException;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
@@ -48,6 +49,7 @@ import org.eclipse.ditto.signals.commands.messages.SendFeatureMessage;
 import org.eclipse.ditto.signals.commands.messages.SendFeatureMessageResponse;
 import org.eclipse.ditto.signals.commands.messages.SendThingMessage;
 import org.eclipse.ditto.signals.commands.messages.SendThingMessageResponse;
+import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeature;
@@ -103,6 +105,34 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
                 featureMessageResponse());
         testMessageSending(client.live().forId(THING_ID).forFeature(FEATURE_ID).message().to(), featureMessage(),
                 featureMessageResponse());
+    }
+
+    @Test
+    public void sendMessageAndGetErrorResponse() {
+        final CompletableFuture<Void> future = new CompletableFuture<>();
+        client.live().message().to(THING_ID).subject("request").payload("payload").send((response, error) -> {
+            try {
+                assertThat(response).describedAs("response").isNull();
+                assertThat(error).describedAs("error")
+                        .isInstanceOf(MessagePayloadSizeTooLargeException.class);
+                future.complete(null);
+            } catch (final Throwable e) {
+                future.completeExceptionally(e);
+            }
+        });
+
+        final MessagePayloadSizeTooLargeException error =
+                MessagePayloadSizeTooLargeException.newBuilder(9001, 9000)
+                        .build();
+
+        final MessageCommand<?, ?> messageCommand = expectMsgClass(SendThingMessage.class);
+        final String correlationId = messageCommand.getDittoHeaders().getCorrelationId().orElse(null);
+        reply(ThingErrorResponse.of(THING_ID, error, DittoHeaders.newBuilder().correlationId(correlationId).build()));
+        try {
+            future.get(TIMEOUT, TIME_UNIT);
+        } catch (final Exception e) {
+            throw new AssertionError(e);
+        }
     }
 
     @Test

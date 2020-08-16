@@ -14,6 +14,8 @@ package org.eclipse.ditto.client.ack;
 
 import java.util.function.BiConsumer;
 
+import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
+
 /**
  * Interface encapsulating a {@link java.util.function.BiConsumer} which is notified about responses with either the
  * response of type {@link R} (if it was successful) or with an {@link Throwable} if there occurred an error.
@@ -47,6 +49,8 @@ public interface ResponseConsumer<R> {
     default void accept(final Object argument) {
         if (getResponseType().isInstance(argument)) {
             getResponseConsumer().accept(getResponseType().cast(argument), null);
+        } else if (argument instanceof ThingErrorResponse) {
+            getResponseConsumer().accept(null, ((ThingErrorResponse) argument).getDittoRuntimeException());
         } else if (argument != null) {
             getResponseConsumer().accept(null, new ClassCastException(
                     "Expected: " + getResponseType().getCanonicalName() +
