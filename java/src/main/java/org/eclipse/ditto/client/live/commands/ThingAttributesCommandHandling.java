@@ -14,6 +14,7 @@ package org.eclipse.ditto.client.live.commands;
 
 import java.util.function.Function;
 
+import org.eclipse.ditto.client.live.LiveCommandProcessor;
 import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.signals.commands.live.modify.DeleteAttributeLiveCommand;
 import org.eclipse.ditto.signals.commands.live.modify.DeleteAttributesLiveCommand;
@@ -28,7 +29,7 @@ import org.eclipse.ditto.signals.commands.live.query.RetrieveAttributesLiveComma
  *
  * @since 1.0.0
  */
-public interface ThingAttributesCommandHandling {
+public interface ThingAttributesCommandHandling extends LiveCommandProcessor {
 
     /**
      * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyAttributes
@@ -40,14 +41,18 @@ public interface ThingAttributesCommandHandling {
      * calling this method
      * @see #stopHandlingModifyAttributesCommands()
      */
-    void handleModifyAttributesCommands(
-            Function<ModifyAttributesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
+    default void handleModifyAttributesCommands(
+            final Function<ModifyAttributesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(ModifyAttributesLiveCommand.class, handler));
+    }
 
     /**
      * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyAttributes
      * ModifyAttributes} commands.
      */
-    void stopHandlingModifyAttributesCommands();
+    default void stopHandlingModifyAttributesCommands() {
+        unregister(ModifyAttributesLiveCommand.class);
+    }
 
     /**
      * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteAttributes
@@ -59,14 +64,18 @@ public interface ThingAttributesCommandHandling {
      * calling this method
      * @see #stopHandlingDeleteAttributesCommands()
      */
-    void handleDeleteAttributesCommands(
-            Function<DeleteAttributesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
+    default void handleDeleteAttributesCommands(
+            final Function<DeleteAttributesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(DeleteAttributesLiveCommand.class, handler));
+    }
 
     /**
      * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteAttributes
      * DeleteAttributes} commands.
      */
-    void stopHandlingDeleteAttributesCommands();
+    default void stopHandlingDeleteAttributesCommands() {
+        unregister(DeleteAttributesLiveCommand.class);
+    }
 
     /**
      * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyAttribute
@@ -78,14 +87,18 @@ public interface ThingAttributesCommandHandling {
      * calling this method
      * @see #stopHandlingModifyAttributeCommands()
      */
-    void handleModifyAttributeCommands(
-            Function<ModifyAttributeLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
+    default void handleModifyAttributeCommands(
+            final Function<ModifyAttributeLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(ModifyAttributeLiveCommand.class, handler));
+    }
 
     /**
      * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyAttribute
      * ModifyAttribute} commands.
      */
-    void stopHandlingModifyAttributeCommands();
+    default void stopHandlingModifyAttributeCommands() {
+        unregister(ModifyAttributeLiveCommand.class);
+    }
 
     /**
      * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteAttribute
@@ -97,14 +110,18 @@ public interface ThingAttributesCommandHandling {
      * calling this method
      * @see #stopHandlingDeleteAttributeCommands()
      */
-    void handleDeleteAttributeCommands(
-            Function<DeleteAttributeLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
+    default void handleDeleteAttributeCommands(
+            final Function<DeleteAttributeLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(DeleteAttributeLiveCommand.class, handler));
+    }
 
     /**
      * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteAttribute
      * DeleteAttribute} commands.
      */
-    void stopHandlingDeleteAttributeCommands();
+    default void stopHandlingDeleteAttributeCommands() {
+        unregister(DeleteAttributeLiveCommand.class);
+    }
 
     /**
      * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveAttributes
@@ -116,14 +133,18 @@ public interface ThingAttributesCommandHandling {
      * calling this method
      * @see #stopHandlingRetrieveAttributesCommands()
      */
-    void handleRetrieveAttributesCommands(
-            Function<RetrieveAttributesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
+    default void handleRetrieveAttributesCommands(
+            final Function<RetrieveAttributesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(RetrieveAttributesLiveCommand.class, handler));
+    }
 
     /**
      * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveAttributes
      * RetrieveAttributes} commands.
      */
-    void stopHandlingRetrieveAttributesCommands();
+    default void stopHandlingRetrieveAttributesCommands() {
+        unregister(RetrieveAttributesLiveCommand.class);
+    }
 
     /**
      * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveAttribute
@@ -135,13 +156,17 @@ public interface ThingAttributesCommandHandling {
      * calling this method
      * @see #stopHandlingRetrieveAttributeCommand()
      */
-    void handleRetrieveAttributeCommand(
-            Function<RetrieveAttributeLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
+    default void handleRetrieveAttributeCommand(
+            final Function<RetrieveAttributeLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(RetrieveAttributeLiveCommand.class, handler));
+    }
 
     /**
      * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveAttribute
      * RetrieveAttribute} commands.
      */
-    void stopHandlingRetrieveAttributeCommand();
+    default void stopHandlingRetrieveAttributeCommand() {
+        unregister(RetrieveAttributeLiveCommand.class);
+    }
 
 }

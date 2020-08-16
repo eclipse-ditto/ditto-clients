@@ -14,9 +14,7 @@ package org.eclipse.ditto.client.live.internal;
 
 import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
 
-import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -36,6 +34,7 @@ import org.eclipse.ditto.client.live.Live;
 import org.eclipse.ditto.client.live.LiveCommandProcessor;
 import org.eclipse.ditto.client.live.LiveFeatureHandle;
 import org.eclipse.ditto.client.live.LiveThingHandle;
+import org.eclipse.ditto.client.live.commands.LiveCommandHandler;
 import org.eclipse.ditto.client.live.events.GlobalEventFactory;
 import org.eclipse.ditto.client.live.events.internal.ImmutableGlobalEventFactory;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
@@ -55,31 +54,6 @@ import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.base.WithFeatureId;
 import org.eclipse.ditto.signals.commands.live.LiveCommandFactory;
 import org.eclipse.ditto.signals.commands.live.base.LiveCommand;
-import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswer;
-import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswerBuilder;
-import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.DeleteAttributeLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.DeleteAttributesLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.DeleteFeatureLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.DeleteFeaturePropertiesLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.DeleteFeaturePropertyLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.DeleteFeaturesLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.DeleteThingLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.ModifyAttributeLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.ModifyAttributesLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.ModifyFeatureLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.ModifyFeaturePropertiesLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.ModifyFeaturePropertyLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.ModifyFeaturesLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.ModifyThingLiveCommand;
-import org.eclipse.ditto.signals.commands.live.query.RetrieveAttributeLiveCommand;
-import org.eclipse.ditto.signals.commands.live.query.RetrieveAttributesLiveCommand;
-import org.eclipse.ditto.signals.commands.live.query.RetrieveFeatureLiveCommand;
-import org.eclipse.ditto.signals.commands.live.query.RetrieveFeaturePropertiesLiveCommand;
-import org.eclipse.ditto.signals.commands.live.query.RetrieveFeaturePropertyLiveCommand;
-import org.eclipse.ditto.signals.commands.live.query.RetrieveFeaturesLiveCommand;
-import org.eclipse.ditto.signals.commands.live.query.RetrieveThingLiveCommand;
-import org.eclipse.ditto.signals.commands.live.query.RetrieveThingsLiveCommand;
 import org.eclipse.ditto.signals.commands.messages.MessageCommand;
 import org.eclipse.ditto.signals.commands.messages.MessageCommandResponse;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
@@ -93,15 +67,13 @@ import org.slf4j.LoggerFactory;
  * @since 1.0.0
  */
 @ParametersAreNonnullByDefault
-public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFeatureHandle>
-        implements Live, LiveCommandProcessor {
+public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFeatureHandle> implements Live {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LiveImpl.class);
 
     private final JsonSchemaVersion schemaVersion;
     private final MessageSerializerRegistry messageSerializerRegistry;
-    private final Map<Class<? extends LiveCommand>, Function<? extends LiveCommand, LiveCommandAnswerBuilder.BuildStep>>
-            liveCommandsFunctions;
+    private final Map<Class<? extends LiveCommand<?, ?>>, LiveCommandHandler<?, ?>> liveCommandHandlers;
     private final Map<Classification.StreamingType, AdaptableBus.SubscriptionId> subscriptionIds;
 
     private LiveImpl(final MessagingProvider messagingProvider,
@@ -117,7 +89,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
 
         this.schemaVersion = schemaVersion;
         this.messageSerializerRegistry = messageSerializerRegistry;
-        liveCommandsFunctions = new ConcurrentHashMap<>();
+        liveCommandHandlers = new ConcurrentHashMap<>();
         subscriptionIds = new ConcurrentHashMap<>();
     }
 
@@ -348,334 +320,19 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
         getMessagingProvider().emit(signalToJsonString(adjustHeadersForLiveSignal(eventToEmit)));
     }
 
-    /*
-     * ###### Section
-     * ###### Handle "live" Commands
-     */
-
     @Override
-    public void handleRetrieveThingsCommands(
-            final Function<RetrieveThingsLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(RetrieveThingsLiveCommand.class, handler);
+    public Map<Class<? extends LiveCommand<?, ?>>, LiveCommandHandler<?, ?>> getLiveCommandHandlers() {
+        return liveCommandHandlers;
     }
 
     @Override
-    public void stopHandlingRetrieveThingsCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(RetrieveThingsLiveCommand.class);
+    public void publishLiveSignal(final Signal<?> signal) {
+        getMessagingProvider().emitAdaptable(adaptOutgoingLiveSignal(signal));
     }
 
     @Override
-    public void handleCreateThingCommands(
-            final Function<CreateThingLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(CreateThingLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingCreateThingCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(CreateThingLiveCommand.class);
-    }
-
-    @Override
-    public void handleModifyThingCommands(
-            final Function<ModifyThingLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(ModifyThingLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingModifyThingCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(ModifyThingLiveCommand.class);
-    }
-
-    @Override
-    public void handleDeleteThingCommands(
-            final Function<DeleteThingLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(DeleteThingLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingDeleteThingCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(DeleteThingLiveCommand.class);
-    }
-
-    @Override
-    public void handleRetrieveThingCommandsFunction(
-            final Function<RetrieveThingLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(RetrieveThingLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingRetrieveThingCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(RetrieveThingLiveCommand.class);
-    }
-
-    @Override
-    public void handleModifyAttributesCommands(
-            final Function<ModifyAttributesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(ModifyAttributesLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingModifyAttributesCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(ModifyAttributesLiveCommand.class);
-    }
-
-    @Override
-    public void handleDeleteAttributesCommands(
-            final Function<DeleteAttributesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(DeleteAttributesLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingDeleteAttributesCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(DeleteAttributesLiveCommand.class);
-    }
-
-    @Override
-    public void handleModifyAttributeCommands(
-            final Function<ModifyAttributeLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(ModifyAttributeLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingModifyAttributeCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(ModifyAttributeLiveCommand.class);
-    }
-
-    @Override
-    public void handleDeleteAttributeCommands(
-            final Function<DeleteAttributeLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(DeleteAttributeLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingDeleteAttributeCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(DeleteAttributeLiveCommand.class);
-    }
-
-    @Override
-    public void handleRetrieveAttributesCommands(
-            final Function<RetrieveAttributesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(RetrieveAttributesLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingRetrieveAttributesCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(RetrieveAttributesLiveCommand.class);
-    }
-
-    @Override
-    public void handleRetrieveAttributeCommand(
-            final Function<RetrieveAttributeLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(RetrieveAttributeLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingRetrieveAttributeCommand() {
-        unregisterLiveCommandToAnswerBuilderFunction(RetrieveAttributeLiveCommand.class);
-    }
-
-    @Override
-    public void handleModifyFeaturesCommands(
-            final Function<ModifyFeaturesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(ModifyFeaturesLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingModifyFeaturesCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(ModifyFeaturesLiveCommand.class);
-    }
-
-    @Override
-    public void handleDeleteFeaturesCommands(
-            final Function<DeleteFeaturesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(DeleteFeaturesLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingDeleteFeaturesCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(DeleteFeaturesLiveCommand.class);
-    }
-
-    @Override
-    public void handleModifyFeatureCommands(
-            final Function<ModifyFeatureLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(ModifyFeatureLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingModifyFeatureCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(ModifyFeatureLiveCommand.class);
-    }
-
-    @Override
-    public void handleDeleteFeatureCommands(
-            final Function<DeleteFeatureLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(DeleteFeatureLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingDeleteFeatureCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(DeleteFeatureLiveCommand.class);
-    }
-
-    @Override
-    public void handleModifyFeaturePropertiesCommands(
-            final Function<ModifyFeaturePropertiesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(ModifyFeaturePropertiesLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingModifyFeaturePropertiesCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(ModifyFeaturePropertiesLiveCommand.class);
-    }
-
-    @Override
-    public void handleDeleteFeaturePropertiesCommands(
-            final Function<DeleteFeaturePropertiesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(DeleteFeaturePropertiesLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingDeleteFeaturePropertiesCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(DeleteFeaturePropertiesLiveCommand.class);
-    }
-
-    @Override
-    public void handleModifyFeaturePropertyCommands(
-            final Function<ModifyFeaturePropertyLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(ModifyFeaturePropertyLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingModifyFeaturePropertyCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(ModifyFeaturePropertyLiveCommand.class);
-    }
-
-    @Override
-    public void handleDeleteFeaturePropertyCommands(
-            final Function<DeleteFeaturePropertyLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(DeleteFeaturePropertyLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingDeleteFeaturePropertyCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(DeleteFeaturePropertyLiveCommand.class);
-    }
-
-    @Override
-    public void handleRetrieveFeaturesCommands(
-            final Function<RetrieveFeaturesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(RetrieveFeaturesLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingRetrieveFeaturesCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(RetrieveFeaturesLiveCommand.class);
-    }
-
-    @Override
-    public void handleRetrieveFeatureCommands(
-            final Function<RetrieveFeatureLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(RetrieveFeatureLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingRetrieveFeatureCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(RetrieveFeatureLiveCommand.class);
-    }
-
-    @Override
-    public void handleRetrieveFeaturePropertyCommands(
-            final Function<RetrieveFeaturePropertyLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(RetrieveFeaturePropertyLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingRetrieveFeaturePropertyCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(RetrieveFeaturePropertyLiveCommand.class);
-    }
-
-    @Override
-    public void handleRetrieveFeaturePropertiesCommands(
-            final Function<RetrieveFeaturePropertiesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
-        argumentNotNull(handler);
-        registerLiveCommandToAnswerBuilderFunction(RetrieveFeaturePropertiesLiveCommand.class, handler);
-    }
-
-    @Override
-    public void stopHandlingRetrieveFeaturePropertiesCommands() {
-        unregisterLiveCommandToAnswerBuilderFunction(RetrieveFeaturePropertiesLiveCommand.class);
-    }
-
-    private void registerLiveCommandToAnswerBuilderFunction(final Class<? extends LiveCommand> liveCommandClass,
-            final Function<? extends LiveCommand, LiveCommandAnswerBuilder.BuildStep> function) {
-        liveCommandsFunctions.compute(liveCommandClass, (key, value) -> {
-            if (value != null) {
-                throw new IllegalStateException(
-                        "A Function for '" + liveCommandClass.getSimpleName() + "' is already " +
-                                "defined. Stop the registered handler before registering a new handler.");
-            } else {
-                return function;
-            }
-        });
-    }
-
-    private void unregisterLiveCommandToAnswerBuilderFunction(final Class<? extends LiveCommand> liveCommandClass) {
-        liveCommandsFunctions.remove(liveCommandClass);
-    }
-
-    @Override
-    public boolean processLiveCommand(final LiveCommand liveCommand) {
-        return Arrays.stream(liveCommand.getClass().getInterfaces())
-                .map(liveCommandsFunctions::get)
-                .filter(Objects::nonNull)
-                .map(function -> (Function<LiveCommand, LiveCommandAnswerBuilder.BuildStep>) function)
-                .map(function -> {
-                    try {
-                        final LiveCommandAnswerBuilder.BuildStep builder = function.apply(liveCommand);
-                        processLiveCommandAnswer(builder.build());
-                        return true;
-                    } catch (final RuntimeException e) {
-                        LOGGER.error(
-                                "User defined function which processed LiveCommand '{}' threw RuntimeException: {}",
-                                liveCommand.getType(), e.getMessage(), e);
-                        return false;
-                    }
-                })
-                .findAny()
-                .orElse(false);
-    }
-
-    private void processLiveCommandAnswer(final LiveCommandAnswer liveCommandAnswer) {
-        liveCommandAnswer.getResponse()
-                .ifPresent(r -> getMessagingProvider()
-                        .emitAdaptable(PROTOCOL_ADAPTER.toAdaptable(adjustHeadersForLiveSignal(r))));
-        liveCommandAnswer.getEvent().ifPresent(e -> getMessagingProvider().emitAdaptable(adaptOutgoingLiveSignal(e)));
+    public Logger getLogger() {
+        return LOGGER;
     }
 
     private void handleLiveCommandOrResponse(final Adaptable adaptable) {

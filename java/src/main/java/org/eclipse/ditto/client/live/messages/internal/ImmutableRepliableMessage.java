@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.client.ack.internal.ImmutableAcknowledgementRequestHandle;
-import org.eclipse.ditto.client.changes.AcknowledgementRequestHandle;
+import org.eclipse.ditto.client.ack.AcknowledgementRequestHandle;
 import org.eclipse.ditto.client.live.messages.MessageSender;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.json.JsonObject;
@@ -42,7 +42,6 @@ import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessageResponseConsumer;
-import org.eclipse.ditto.client.ack.ResponseConsumer;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 

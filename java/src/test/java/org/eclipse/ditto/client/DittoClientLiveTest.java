@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
 import org.eclipse.ditto.client.live.commands.FeaturesCommandHandling;
+import org.eclipse.ditto.client.live.commands.LiveCommandHandler;
 import org.eclipse.ditto.client.live.commands.ThingCommandHandling;
 import org.eclipse.ditto.client.live.events.FeatureEventFactory;
 import org.eclipse.ditto.client.live.messages.MessageRegistration;
@@ -39,6 +40,7 @@ import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 import org.eclipse.ditto.signals.base.Signal;
+import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommand;
 import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommandAnswerBuilder;
 import org.eclipse.ditto.signals.commands.live.modify.DeleteFeatureLiveCommandAnswerBuilder;
 import org.eclipse.ditto.signals.commands.messages.MessageCommand;
@@ -223,6 +225,36 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
         testMessageAcknowledgement(client.live().forId(THING_ID).forFeature(FEATURE_ID), featureMessage());
     }
 
+    @Test
+    public void testThingCommandAcknowledgement() {
+        startConsumption();
+        client.live().register(LiveCommandHandler.withAcks(
+                CreateThingLiveCommand.class,
+                acknowledgeable -> {
+                    acknowledgeable.handleAcknowledgementRequests(handles ->
+                            handles.forEach(handle -> handle.acknowledge(
+                                    HttpStatusCode.forInt(Integer.parseInt(handle.getAcknowledgementLabel().toString()))
+                                            .orElse(HttpStatusCode.EXPECTATION_FAILED)
+                            ))
+                    );
+                    return acknowledgeable.answer().withoutResponse().withoutEvent();
+                }
+        ));
+        final String correlationId = UUID.randomUUID().toString();
+        reply(setHeaders(CreateThing.of(THING, null, DittoHeaders.newBuilder()
+                .channel(TopicPath.Channel.LIVE.getName())
+                .acknowledgementRequest(
+                        parseAcknowledgementRequest("100"),
+                        parseAcknowledgementRequest("301"),
+                        parseAcknowledgementRequest("403")
+                )
+                .build()), correlationId));
+
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.CONTINUE);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.MOVED_PERMANENTLY);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.FORBIDDEN);
+    }
+
     private void testMessageAcknowledgement(final MessageRegistration registration, final Signal<?> message) {
         assertEventualCompletion(startConsumption());
         registration.registerForMessage("Ackermann", "request", String.class, msg ->
@@ -235,7 +267,7 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
         );
 
         reply(message.setDittoHeaders(DittoHeaders.newBuilder()
-                .channel(TopicPath.Channel.TWIN.getName())
+                .channel(TopicPath.Channel.LIVE.getName())
                 .acknowledgementRequest(
                         parseAcknowledgementRequest("100"),
                         parseAcknowledgementRequest("301"),

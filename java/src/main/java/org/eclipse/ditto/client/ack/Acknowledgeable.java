@@ -15,7 +15,6 @@ package org.eclipse.ditto.client.ack;
 import java.util.Collection;
 import java.util.function.Consumer;
 
-import org.eclipse.ditto.client.changes.AcknowledgementRequestHandle;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 
 /**

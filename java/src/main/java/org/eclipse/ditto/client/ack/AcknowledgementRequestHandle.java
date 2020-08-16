@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.changes;
+package org.eclipse.ditto.client.ack;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
