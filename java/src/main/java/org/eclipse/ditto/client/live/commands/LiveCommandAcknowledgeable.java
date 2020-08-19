@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 the Eclipse Foundation
+ * Copyright (c) 2020 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.eclipse.ditto.client.ack.Acknowledgeable;
-import org.eclipse.ditto.client.ack.AcknowledgementRequestHandle;
+import org.eclipse.ditto.client.changes.AcknowledgementRequestHandle;
 import org.eclipse.ditto.client.ack.internal.ImmutableAcknowledgementRequestHandle;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.acks.AcknowledgementRequest;

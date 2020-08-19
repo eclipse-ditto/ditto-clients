@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.client.ack.internal.ImmutableAcknowledgementRequestHandle;
-import org.eclipse.ditto.client.ack.AcknowledgementRequestHandle;
+import org.eclipse.ditto.client.changes.AcknowledgementRequestHandle;
 import org.eclipse.ditto.client.live.messages.MessageSender;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.json.JsonObject;
