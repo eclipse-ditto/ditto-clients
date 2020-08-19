@@ -61,7 +61,7 @@ public interface LiveCommandProcessor {
     default void register(final LiveCommandHandler<?, ?> liveCommandHandler) {
         final Class<? extends LiveCommand<?, ?>> liveCommandClass = liveCommandHandler.getType();
         getLiveCommandHandlers().compute(liveCommandClass, (clazz, handler) -> {
-            if (getLiveCommandHandlers().containsKey(liveCommandClass)) {
+            if (handler != null) {
                 throw new IllegalStateException(
                         "A Function for '" + liveCommandClass.getSimpleName() + "' is already " +
                                 "defined. Stop the registered handler before registering a new handler.");
