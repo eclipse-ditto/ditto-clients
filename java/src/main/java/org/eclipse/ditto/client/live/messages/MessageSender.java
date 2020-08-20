@@ -56,26 +56,24 @@ public interface MessageSender<T> {
 
     /**
      * Sets the message as being sent <em>FROM</em> a {@code Thing} (or a Thing's {@code Feature}).
+     * No response is expected for the message.
      *
      * @param sendConsumer a Consumer which will at the end of the builder when invoking {@code send()} be called with
      * the built Message.
      * @return fluent api builder that provides the functionality to set the id of the Thing from which the Message will
      * be sent.
-     * @deprecated since 1.2.0 - use {@code from(BiConsumer<Message<T>, ResponseConsumer<?>)} instead.
      */
-    @Deprecated
     SetThingId<T> from(Consumer<Message<T>> sendConsumer);
 
     /**
      * Sets the message as being sent <em>TO</em> a {@code Thing} (or a Thing's {@code Feature}).
+     * No response is expected for the message.
      *
      * @param sendConsumer a Consumer which will at the end of the builder when invoking {@code send()} be called with
      * the built Message.
      * @return fluent api builder that provides the functionality to set the id of the Thing to which the Message will
      * be sent.
-     * @deprecated since 1.2.0 - use {@code to(BiConsumer<Message<T>, ResponseConsumer<?>)} instead.
      */
-    @Deprecated
     SetThingId<T> to(Consumer<Message<T>> sendConsumer);
 
     /**

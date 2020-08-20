@@ -21,7 +21,6 @@ import java.util.NoSuchElementException;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.client.ack.ResponseConsumer;
@@ -33,15 +32,10 @@ import org.eclipse.ditto.model.messages.MessageBuilder;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessageHeadersBuilder;
-import org.eclipse.ditto.model.messages.MessageResponseConsumer;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.signals.acks.base.Acknowledgements;
 import org.eclipse.ditto.signals.commands.messages.MessageCommandResponse;
-import org.eclipse.ditto.signals.commands.messages.SendClaimMessageResponse;
-import org.eclipse.ditto.signals.commands.messages.SendFeatureMessageResponse;
-import org.eclipse.ditto.signals.commands.messages.SendMessageAcceptedResponse;
-import org.eclipse.ditto.signals.commands.messages.SendThingMessageResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,15 +102,14 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
         return new SetThingIdImpl();
     }
 
-    // TODO: test backward compatibility
     @Override
     public SetThingId<T> from(final Consumer<Message<T>> sendConsumer) {
-        return from(adjustSendConsumerForBackwardCompatibility(sendConsumer));
+        return from(ignoreResponse(sendConsumer));
     }
 
     @Override
     public SetThingId<T> to(final Consumer<Message<T>> sendConsumer) {
-        return to(adjustSendConsumerForBackwardCompatibility(sendConsumer));
+        return to(ignoreResponse(sendConsumer));
     }
 
     private void buildAndSendMessage(final T payload) {
@@ -162,74 +155,9 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
         sendConsumer.accept(messageBuilder.build(), responseConsumer);
     }
 
-    /* BEGIN Backward compatibility block */
-    private BiConsumer<Message<T>, ResponseConsumer<?>> adjustSendConsumerForBackwardCompatibility(
-            final Consumer<Message<T>> sendConsumer) {
-        return (message, responseConsumer) ->
-                sendConsumer.accept(combineForBackwardCompatibility(message, responseConsumer));
+    private BiConsumer<Message<T>, ResponseConsumer<?>> ignoreResponse(final Consumer<Message<T>> sendConsumer) {
+        return (message, responseConsumer) -> sendConsumer.accept(message);
     }
-
-    @SuppressWarnings("deprecation")
-    private Message<T> combineForBackwardCompatibility(final Message<T> message,
-            final ResponseConsumer<?> responseConsumer) {
-        return MessagesModelFactory.<T>newMessageBuilder(message.getHeaders())
-                .payload(message.getPayload().orElse(null))
-                .rawPayload(message.getRawPayload().orElse(null))
-                .extra(message.getExtra().orElse(null))
-                .responseConsumer(convertToMessageResponseConsumerForBackwardCompatibility(responseConsumer))
-                .build();
-    }
-
-    @SuppressWarnings("deprecation")
-    private MessageResponseConsumer<?> convertToMessageResponseConsumerForBackwardCompatibility(
-            final ResponseConsumer<?> responseConsumer) {
-        return new MessageResponseConsumer<Object>() {
-            @Nonnull
-            @Override
-            public Class<Object> getResponseType() {
-                return Object.class;
-            }
-
-            @Override
-            @Nonnull
-            public BiConsumer<Message<Object>, Throwable> getResponseConsumer() {
-                return (message, error) -> {
-                    if (message != null) {
-                        acceptWrappedForBackwardCompatibility(message, responseConsumer);
-                    } else {
-                        responseConsumer.getResponseConsumer().accept(null, error);
-                    }
-                };
-            }
-
-        };
-    }
-
-    @SuppressWarnings("ConstantConditions")
-    private void acceptWrappedForBackwardCompatibility(final Message<?> message,
-            final ResponseConsumer<?> responseConsumer) {
-
-        final Class<?> clazz = responseConsumer.getResponseType();
-        if (clazz.isAssignableFrom(SendClaimMessageResponse.class)) {
-            responseConsumer.accept(SendClaimMessageResponse.of(message.getThingEntityId(), message,
-                    message.getStatusCode().orElse(null), message.getHeaders()));
-        } else if (clazz.isAssignableFrom(SendFeatureMessageResponse.class)) {
-            responseConsumer.accept(
-                    SendFeatureMessageResponse.of(message.getThingEntityId(), message.getFeatureId().orElse(null),
-                            message, message.getStatusCode().orElse(null), message.getHeaders()));
-        } else if (clazz.isAssignableFrom(SendMessageAcceptedResponse.class)) {
-            responseConsumer.accept(
-                    SendFeatureMessageResponse.of(message.getThingEntityId(), message.getFeatureId().orElse(null),
-                            message, message.getStatusCode().orElse(null), message.getHeaders()));
-        } else if (clazz.isAssignableFrom(SendThingMessageResponse.class)) {
-            responseConsumer.accept(SendThingMessageResponse.of(message.getThingEntityId(), message,
-                    message.getStatusCode().orElse(null), message.getHeaders()));
-        } else {
-            // throw ClassCastException if response consumer does not expect a message.
-            responseConsumer.accept(message);
-        }
-    }
-    /* END Backward compatibility block */
 
     private static <T> ResponseConsumer<?> createMessageCommandResponseConsumer(final Class<T> clazz,
             final BiConsumer<Message<T>, Throwable> responseMessageHandler) {

@@ -16,6 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_ID;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.model.base.acks.AcknowledgementRequest.parseAcknowledgementRequest;
+import static org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel.LIVE_RESPONSE;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -226,6 +227,49 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
     }
 
     @Test
+    public void testFeatureMessageResponseAndAcknowledgement() {
+        assertEventualCompletion(startConsumption());
+        final CompletableFuture<Void> messageReplyFuture = new CompletableFuture<>();
+        client.live().forId(THING_ID).forFeature(FEATURE_ID)
+                .registerForMessage("Ackermann", "request", String.class, msg ->
+                        msg.handleAcknowledgementRequests(handles -> {
+                            try {
+                                handles.forEach(handle -> {
+                                    if (LIVE_RESPONSE.equals(handle.getAcknowledgementLabel())) {
+                                        msg.reply().statusCode(HttpStatusCode.OK).payload("response").send();
+                                    } else {
+                                        handle.acknowledge(HttpStatusCode.forInt(
+                                                Integer.parseInt(handle.getAcknowledgementLabel().toString()))
+                                                .orElse(HttpStatusCode.EXPECTATION_FAILED));
+                                    }
+                                });
+                                messageReplyFuture.complete(null);
+                            } catch (final Throwable error) {
+                                messageReplyFuture.completeExceptionally(error);
+                            }
+                        }));
+
+        final Signal<?> featureMessage = (((Signal<?>) featureMessage()).setDittoHeaders(DittoHeaders.newBuilder()
+                .channel(TopicPath.Channel.LIVE.getName())
+                .correlationId("correlation-id")
+                .acknowledgementRequest(
+                        parseAcknowledgementRequest("live-response"),
+                        parseAcknowledgementRequest("100"),
+                        parseAcknowledgementRequest("301"),
+                        parseAcknowledgementRequest("403")
+                )
+                .build()
+        ));
+        reply(featureMessage);
+        messageReplyFuture.join();
+
+        assertThat(expectMsgClass(SendFeatureMessageResponse.class).getStatusCode()).isEqualTo(HttpStatusCode.OK);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.CONTINUE);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.MOVED_PERMANENTLY);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.FORBIDDEN);
+    }
+
+    @Test
     public void testThingCommandAcknowledgement() {
         startConsumption();
         client.live().register(LiveCommandHandler.withAcks(
@@ -257,14 +301,20 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
 
     private void testMessageAcknowledgement(final MessageRegistration registration, final Signal<?> message) {
         assertEventualCompletion(startConsumption());
-        registration.registerForMessage("Ackermann", "request", String.class, msg ->
-                msg.handleAcknowledgementRequests(handles ->
-                        handles.forEach(handle -> handle.acknowledge(
-                                HttpStatusCode.forInt(Integer.parseInt(handle.getAcknowledgementLabel().toString()))
-                                        .orElse(HttpStatusCode.EXPECTATION_FAILED)
-                        ))
-                )
-        );
+        final CompletableFuture<Void> messageHandlingFuture = new CompletableFuture<>();
+        registration.registerForMessage("Ackermann", "request", String.class, msg -> {
+            msg.handleAcknowledgementRequests(handles -> {
+                try {
+                    handles.forEach(handle -> handle.acknowledge(
+                            HttpStatusCode.forInt(Integer.parseInt(handle.getAcknowledgementLabel().toString()))
+                                    .orElse(HttpStatusCode.EXPECTATION_FAILED)
+                    ));
+                    messageHandlingFuture.complete(null);
+                } catch (final Throwable error) {
+                    messageHandlingFuture.completeExceptionally(error);
+                }
+            });
+        });
 
         reply(message.setDittoHeaders(DittoHeaders.newBuilder()
                 .channel(TopicPath.Channel.LIVE.getName())
@@ -275,6 +325,7 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
                 )
                 .build()
         ));
+        messageHandlingFuture.join();
 
         assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.CONTINUE);
         assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.MOVED_PERMANENTLY);

@@ -133,7 +133,7 @@ final class LiveMessagesUtil {
 
     private static Consumer<Acknowledgement> acknowledgementPublisher(final ProtocolAdapter protocolAdapter,
             final MessagingProvider messagingProvider) {
-        return ack -> messagingProvider.emitAdaptable(protocolAdapter.toAdaptable(ack));
+        return ack -> messagingProvider.emitAdaptable(protocolAdapter.toAdaptable((Signal<?>) ack));
     }
 
     private static <T> Message<T> eventToMessage(final PointerWithData e, final Class<T> type, final boolean
