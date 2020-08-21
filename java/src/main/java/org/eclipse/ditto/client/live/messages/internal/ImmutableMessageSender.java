@@ -18,6 +18,7 @@ import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -25,6 +26,9 @@ import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.client.ack.ResponseConsumer;
 import org.eclipse.ditto.client.live.messages.MessageSender;
+import org.eclipse.ditto.client.management.AcknowledgementsFailedException;
+import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
@@ -35,7 +39,10 @@ import org.eclipse.ditto.model.messages.MessageHeadersBuilder;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.signals.acks.base.Acknowledgements;
+import org.eclipse.ditto.signals.base.WithOptionalEntity;
+import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.commands.messages.MessageCommandResponse;
+import org.eclipse.ditto.signals.commands.messages.MessageDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -159,14 +166,45 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
         return (message, responseConsumer) -> sendConsumer.accept(message);
     }
 
-    private static <T> ResponseConsumer<?> createMessageCommandResponseConsumer(final Class<T> clazz,
+    private static <T> ResponseConsumer<?> createCommandResponseConsumer(final Class<T> clazz,
             final BiConsumer<Message<T>, Throwable> responseMessageHandler) {
-        return new ResponseConsumerImpl<>(MessageCommandResponse.class, (response, error) -> {
-            if (response != null) {
-                checkPayloadTypeAndAccept(clazz, responseMessageHandler, response.getMessage(), error);
+        return new ResponseConsumerImpl<>(CommandResponse.class, (response, error) -> {
+            final Message<?> message;
+            final Throwable errorToPublish;
+            if (response instanceof Acknowledgements) {
+                if (!((Acknowledgements) response).getFailedAcknowledgements().isEmpty()) {
+                    message = null;
+                    errorToPublish = AcknowledgementsFailedException.of((Acknowledgements) response);
+                } else {
+                    final Optional<Message<Object>> messageOptional =
+                            ((Acknowledgements) response).getAcknowledgement(DittoAcknowledgementLabel.LIVE_RESPONSE)
+                                    .flatMap(WithOptionalEntity::getEntity)
+                                    .map(JsonValue::asObject)
+                                    .map(MessageDeserializer::deserializeMessageFromJson);
+                    if (messageOptional.isPresent()) {
+                        message = messageOptional.get();
+                        errorToPublish = null;
+                    } else {
+                        message = null;
+                        errorToPublish = AcknowledgementsFailedException.of((Acknowledgements) response);
+                    }
+                }
+            } else if (response instanceof MessageCommandResponse) {
+                message = ((MessageCommandResponse<?, ?>) response).getMessage();
+                errorToPublish = null;
+            } else if (response == null) {
+                message = null;
+                errorToPublish = error;
             } else {
-                responseMessageHandler.accept(null, error);
+                message = null;
+                final String errorMessage = String.format(
+                        "Expected received response to be instance of either <%s> or <%s> but found <%s>.",
+                        Acknowledgements.class,
+                        MessageCommandResponse.class,
+                        response.getClass());
+                errorToPublish = new ClassCastException(errorMessage);
             }
+            checkPayloadTypeAndAccept(clazz, responseMessageHandler, message, errorToPublish);
         });
     }
 
@@ -283,13 +321,9 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
 
         @Override
         public <R> void send(final Class<R> responseType, final BiConsumer<Message<R>, Throwable> responseConsumer) {
-            buildAndSendMessage(null, createMessageCommandResponseConsumer(responseType, responseConsumer));
+            buildAndSendMessage(null, createCommandResponseConsumer(responseType, responseConsumer));
         }
 
-        @Override
-        public void sendWithExpectedAcknowledgement(final BiConsumer<Acknowledgements, Throwable> responseConsumer) {
-            buildAndSendMessage(null, new ResponseConsumerImpl<>(Acknowledgements.class, responseConsumer));
-        }
     }
 
     private final class SetContentTypeImpl implements SetContentType<T> {
@@ -313,13 +347,9 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
 
         @Override
         public <R> void send(final Class<R> responseType, final BiConsumer<Message<R>, Throwable> responseConsumer) {
-            buildAndSendMessage(payload, createMessageCommandResponseConsumer(responseType, responseConsumer));
+            buildAndSendMessage(payload, createCommandResponseConsumer(responseType, responseConsumer));
         }
 
-        @Override
-        public void sendWithExpectedAcknowledgement(final BiConsumer<Acknowledgements, Throwable> responseConsumer) {
-            buildAndSendMessage(payload, new ResponseConsumerImpl<>(Acknowledgements.class, responseConsumer));
-        }
     }
 
     private class MessageSendableImpl implements MessageSendable<T> {
@@ -337,13 +367,9 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
 
         @Override
         public <R> void send(final Class<R> responseType, final BiConsumer<Message<R>, Throwable> responseConsumer) {
-            buildAndSendMessage(payload, createMessageCommandResponseConsumer(responseType, responseConsumer));
+            buildAndSendMessage(payload, createCommandResponseConsumer(responseType, responseConsumer));
         }
 
-        @Override
-        public void sendWithExpectedAcknowledgement(final BiConsumer<Acknowledgements, Throwable> responseConsumer) {
-            buildAndSendMessage(payload, new ResponseConsumerImpl<>(Acknowledgements.class, responseConsumer));
-        }
     }
 
     private static final class ResponseConsumerImpl<T> implements ResponseConsumer<T> {

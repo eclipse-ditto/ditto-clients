@@ -257,17 +257,6 @@ public interface MessageSender<T> {
          */
         <R> void send(Class<R> responseType, BiConsumer<Message<R>, Throwable> responseConsumer);
 
-
-        /**
-         * Terminates this builder, builds the {@link Message} and sends it providing a callback for the expected
-         * response in the passed {@code responseConsumer}. Expects {@link Acknowledgements} as response.
-         *
-         * @param responseConsumer the Consumer which should be notified with the response ot the Throwable in case of
-         * an error.
-         * @throws IllegalStateException if the {@code Message} to be sent is in an invalid state.
-         * @since 1.2.0
-         */
-        void sendWithExpectedAcknowledgement(BiConsumer<Acknowledgements, Throwable> responseConsumer);
     }
 
 }
