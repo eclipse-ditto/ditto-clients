@@ -41,8 +41,10 @@ import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.signals.acks.base.Acknowledgements;
 import org.eclipse.ditto.signals.base.WithOptionalEntity;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
+import org.eclipse.ditto.signals.commands.base.ErrorResponse;
 import org.eclipse.ditto.signals.commands.messages.MessageCommandResponse;
 import org.eclipse.ditto.signals.commands.messages.MessageDeserializer;
+import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -192,6 +194,9 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
             } else if (response instanceof MessageCommandResponse) {
                 message = ((MessageCommandResponse<?, ?>) response).getMessage();
                 errorToPublish = null;
+            } else if (response instanceof ErrorResponse) {
+                message = null;
+                errorToPublish = ((ThingErrorResponse) response).getDittoRuntimeException();
             } else if (response == null) {
                 message = null;
                 errorToPublish = error;
