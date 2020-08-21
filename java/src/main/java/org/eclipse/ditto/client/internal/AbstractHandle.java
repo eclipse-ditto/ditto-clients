@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
+import org.eclipse.ditto.client.ack.internal.AcknowledgementRequestsValidator;
 import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.client.management.AcknowledgementsFailedException;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
@@ -163,7 +164,7 @@ public abstract class AbstractHandle {
             final T command,
             final Class<S> expectedResponse,
             final Function<S, R> onSuccess) {
-        final ThingCommand<?> commandWithChannel = setChannel(command, channel);
+        final ThingCommand<?> commandWithChannel = validateAckRequests(setChannel(command, channel));
         return sendSignalAndExpectResponse(commandWithChannel, expectedResponse, onSuccess, ErrorResponse.class,
                 ErrorResponse::getDittoRuntimeException);
     }
@@ -258,19 +259,23 @@ public abstract class AbstractHandle {
         return adjustHeadersForLive((Signal) signal);
     }
 
+    private ThingCommand<?> validateAckRequests(final ThingCommand<?> thingCommand) {
+        AcknowledgementRequestsValidator.validate(thingCommand.getDittoHeaders().getAcknowledgementRequests(),
+                getThingResponseAcknowledgementLabel());
+        return thingCommand;
+    }
+
     private CommandResponse<?> extractCommandResponseFromAcknowledgements(final Signal<?> signal,
             final Acknowledgements acknowledgements) {
         if (areFailedAcknowledgements(acknowledgements.getStatusCode())) {
             throw AcknowledgementsFailedException.of(acknowledgements);
         } else {
+            final AcknowledgementLabel expectedLabel = getThingResponseAcknowledgementLabel();
             return acknowledgements.stream()
-                    .filter(ack -> ack.getLabel().equals(getThingResponseAcknowledgementLabel()))
+                    .filter(ack -> ack.getLabel().equals(expectedLabel))
                     .findFirst()
                     .map(ack -> createThingModifyCommandResponseFromAcknowledgement(signal, ack))
-                    .orElseThrow(() -> new IllegalStateException("Didn't receive an Acknowledgement for label '" +
-                            getThingResponseAcknowledgementLabel() + "'. Please make sure to always request the '" +
-                            getThingResponseAcknowledgementLabel() + "' Acknowledgement if you need to process the " +
-                            "response in the client."));
+                    .orElseThrow(() -> AcknowledgementRequestsValidator.didNotReceiveAcknowledgement(expectedLabel));
         }
     }
 

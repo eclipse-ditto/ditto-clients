@@ -25,9 +25,11 @@ import java.util.function.Consumer;
 import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.client.ack.ResponseConsumer;
+import org.eclipse.ditto.client.ack.internal.AcknowledgementRequestsValidator;
 import org.eclipse.ditto.client.live.messages.MessageSender;
 import org.eclipse.ditto.client.management.AcknowledgementsFailedException;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
@@ -38,13 +40,12 @@ import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessageHeadersBuilder;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
 import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 import org.eclipse.ditto.signals.acks.base.Acknowledgements;
-import org.eclipse.ditto.signals.base.WithOptionalEntity;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.commands.base.ErrorResponse;
 import org.eclipse.ditto.signals.commands.messages.MessageCommandResponse;
 import org.eclipse.ditto.signals.commands.messages.MessageDeserializer;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -178,17 +179,16 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
                     message = null;
                     errorToPublish = AcknowledgementsFailedException.of((Acknowledgements) response);
                 } else {
-                    final Optional<Message<Object>> messageOptional =
-                            ((Acknowledgements) response).getAcknowledgement(DittoAcknowledgementLabel.LIVE_RESPONSE)
-                                    .flatMap(WithOptionalEntity::getEntity)
-                                    .map(JsonValue::asObject)
-                                    .map(MessageDeserializer::deserializeMessageFromJson);
+                    final AcknowledgementLabel expectedLabel = DittoAcknowledgementLabel.LIVE_RESPONSE;
+                    final Optional<Message<?>> messageOptional =
+                            ((Acknowledgements) response).getAcknowledgement(expectedLabel)
+                                    .flatMap(ImmutableMessageSender::getMessageResponseInAcknowledgement);
                     if (messageOptional.isPresent()) {
                         message = messageOptional.get();
                         errorToPublish = null;
                     } else {
                         message = null;
-                        errorToPublish = AcknowledgementsFailedException.of((Acknowledgements) response);
+                        errorToPublish = AcknowledgementRequestsValidator.didNotReceiveAcknowledgement(expectedLabel);
                     }
                 }
             } else if (response instanceof MessageCommandResponse) {
@@ -196,7 +196,7 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
                 errorToPublish = null;
             } else if (response instanceof ErrorResponse) {
                 message = null;
-                errorToPublish = ((ThingErrorResponse) response).getDittoRuntimeException();
+                errorToPublish = ((ErrorResponse<?>) response).getDittoRuntimeException();
             } else if (response == null) {
                 message = null;
                 errorToPublish = error;
@@ -211,6 +211,21 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
             }
             checkPayloadTypeAndAccept(clazz, responseMessageHandler, message, errorToPublish);
         });
+    }
+
+    private static Optional<Message<?>> getMessageResponseInAcknowledgement(final Acknowledgement ack) {
+        final Optional<Message<?>> deserializedMessage =
+                ack.getEntity().map(JsonValue::asObject).map(MessageDeserializer::deserializeMessageFromJson);
+
+        return deserializedMessage.map(message ->
+                MessagesModelFactory.newMessageBuilder(message.getHeaders().toBuilder()
+                        .statusCode(ack.getStatusCode())
+                        .build())
+                        .payload(message.getPayload().orElse(null))
+                        .rawPayload(message.getRawPayload().orElse(null))
+                        .extra(message.getExtra().orElse(null))
+                        .build()
+        );
     }
 
     private static <T> void checkPayloadTypeAndAccept(final Class<T> clazz,
@@ -310,6 +325,8 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
 
         @Override
         public SetPayloadOrSend<T> headers(final DittoHeaders additionalHeaders) {
+            AcknowledgementRequestsValidator.validate(additionalHeaders.getAcknowledgementRequests(),
+                    DittoAcknowledgementLabel.LIVE_RESPONSE);
             messageAdditionalHeaders = additionalHeaders;
             return this;
         }

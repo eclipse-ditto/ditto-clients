@@ -13,11 +13,14 @@
 package org.eclipse.ditto.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_ID;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.model.base.acks.AcknowledgementRequest.parseAcknowledgementRequest;
 import static org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel.LIVE_RESPONSE;
 
+import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -30,16 +33,20 @@ import org.eclipse.ditto.client.live.events.FeatureEventFactory;
 import org.eclipse.ditto.client.live.messages.MessageRegistration;
 import org.eclipse.ditto.client.live.messages.MessageSender;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
+import org.eclipse.ditto.client.management.AcknowledgementsFailedException;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonPointer;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessagePayloadSizeTooLargeException;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
+import org.eclipse.ditto.signals.acks.base.Acknowledgements;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommand;
 import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommandAnswerBuilder;
@@ -136,6 +143,130 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
         } catch (final Exception e) {
             throw new AssertionError(e);
         }
+    }
+
+    @Test
+    public void sendThingMessageAndGetSuccessAcknowledgements() {
+        final CompletableFuture<Void> future = new CompletableFuture<>();
+        client.live().message().from(THING_ID)
+                .subject("request")
+                .headers(DittoHeaders.newBuilder()
+                        .putHeader("my-header", "my-header-value")
+                        .acknowledgementRequest(
+                                parseAcknowledgementRequest("live-response"),
+                                parseAcknowledgementRequest("custom")
+                        )
+                        .build())
+                .payload("payload")
+                .contentType("text/plain")
+                .send(String.class, (message, error) -> {
+                    try {
+                        if (error != null) {
+                            future.completeExceptionally(error);
+                        } else {
+                            assertThat(message.getStatusCode()).contains(HttpStatusCode.ALREADY_REPORTED);
+                            assertThat(message.getHeaders())
+                                    .contains(new AbstractMap.SimpleEntry<>("my-header", "my-header-value"));
+                            assertThat(message.getHeaders().getDirection()).isEqualTo(MessageDirection.FROM);
+                            assertThat(message.getSubject()).isEqualTo("request");
+                            assertThat(message.getPayload()).contains("payload");
+                            future.complete(null);
+                        }
+                    } catch (final Throwable e) {
+                        future.completeExceptionally(e);
+                    }
+                });
+
+        final SendThingMessage<?> command = expectMsgClass(SendThingMessage.class);
+        final SendThingMessageResponse<?> response =
+                SendThingMessageResponse.of(command.getEntityId(), command.getMessage(),
+                        HttpStatusCode.ALREADY_REPORTED, command.getDittoHeaders());
+        final Acknowledgement liveResponseAck = Acknowledgement.of(
+                LIVE_RESPONSE,
+                response.getEntityId(),
+                response.getStatusCode(),
+                response.getDittoHeaders(),
+                response.toJson().getValueOrThrow(MessageCommand.JsonFields.JSON_MESSAGE)
+        );
+        final Acknowledgement customAck = Acknowledgement.of(
+                AcknowledgementLabel.of("custom"),
+                command.getEntityId(),
+                HttpStatusCode.NO_CONTENT,
+                command.getDittoHeaders()
+        );
+        reply(Acknowledgements.of(Arrays.asList(liveResponseAck, customAck), command.getDittoHeaders()));
+        try {
+            future.get(TIMEOUT, TIME_UNIT);
+        } catch (final Exception e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    @Test
+    public void sendThingMessageAndGetFailedAcknowledgements() {
+        final CompletableFuture<Void> future = new CompletableFuture<>();
+        client.live().message().from(THING_ID)
+                .subject("request")
+                .headers(DittoHeaders.newBuilder()
+                        .putHeader("my-header", "my-header-value")
+                        .acknowledgementRequest(
+                                parseAcknowledgementRequest("live-response"),
+                                parseAcknowledgementRequest("custom")
+                        )
+                        .build())
+                .payload("payload")
+                .contentType("text/plain")
+                .send(String.class, (message, error) -> {
+                    try {
+                        assertThat(error).isInstanceOf(AcknowledgementsFailedException.class);
+                        final Acknowledgements acks = ((AcknowledgementsFailedException) error).getAcknowledgements();
+                        assertThat(acks.getStatusCode()).isEqualTo(HttpStatusCode.FAILED_DEPENDENCY);
+                        assertThat(acks.getAcknowledgement(LIVE_RESPONSE).map(Acknowledgement::getStatusCode))
+                                .contains(HttpStatusCode.IM_A_TEAPOT);
+                        assertThat(acks.getAcknowledgement(AcknowledgementLabel.of("custom"))
+                                .map(Acknowledgement::getStatusCode))
+                                .contains(HttpStatusCode.NO_CONTENT);
+                        future.complete(null);
+                    } catch (final Throwable e) {
+                        future.completeExceptionally(e);
+                    }
+                });
+
+        final SendThingMessage<?> command = expectMsgClass(SendThingMessage.class);
+        final SendThingMessageResponse<?> response =
+                SendThingMessageResponse.of(command.getEntityId(), command.getMessage(),
+                        HttpStatusCode.IM_A_TEAPOT, command.getDittoHeaders());
+        final Acknowledgement liveResponseAck = Acknowledgement.of(
+                LIVE_RESPONSE,
+                response.getEntityId(),
+                response.getStatusCode(),
+                response.getDittoHeaders(),
+                response.toJson().getValueOrThrow(MessageCommand.JsonFields.JSON_MESSAGE)
+        );
+        final Acknowledgement customAck = Acknowledgement.of(
+                AcknowledgementLabel.of("custom"),
+                command.getEntityId(),
+                HttpStatusCode.NO_CONTENT,
+                command.getDittoHeaders()
+        );
+        reply(Acknowledgements.of(Arrays.asList(liveResponseAck, customAck), command.getDittoHeaders()));
+        try {
+            future.get(TIMEOUT, TIME_UNIT);
+        } catch (final Exception e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    @Test
+    public void sendThingMessageWithoutLiveResponseAckRequest() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.live().message().from(THING_ID)
+                        .subject("request")
+                        .headers(DittoHeaders.newBuilder()
+                                .putHeader("my-header", "my-header-value")
+                                .acknowledgementRequest(parseAcknowledgementRequest("custom"))
+                                .build())
+                );
     }
 
     @Test

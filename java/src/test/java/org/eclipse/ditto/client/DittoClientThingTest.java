@@ -99,6 +99,17 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
     }
 
     @Test
+    public void testCreateThingWithCustomAcknowledgementsOnly() {
+        final AcknowledgementLabel label1 = AcknowledgementLabel.of("custom-ack-1");
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> getManagement()
+                        .create(THING_ID, Options.headers(DittoHeaders.newBuilder()
+                                .acknowledgementRequest(AcknowledgementRequest.of(label1))
+                                .build()))
+                );
+    }
+
+    @Test
     public void testCreateThingWith2Acknowledgements() {
         final AcknowledgementLabel label1 = AcknowledgementLabel.of("custom-ack-1");
         final AcknowledgementLabel label2 = getChannelAcknowledgementLabel();
