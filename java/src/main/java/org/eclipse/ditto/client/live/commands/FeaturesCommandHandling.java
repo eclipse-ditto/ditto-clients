@@ -16,12 +16,8 @@ import java.util.function.Function;
 
 import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.signals.commands.live.modify.DeleteFeatureLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.DeleteFeaturePropertiesLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.DeleteFeaturePropertyLiveCommand;
 import org.eclipse.ditto.signals.commands.live.modify.DeleteFeaturesLiveCommand;
 import org.eclipse.ditto.signals.commands.live.modify.ModifyFeatureLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.ModifyFeaturePropertiesLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.ModifyFeaturePropertyLiveCommand;
 import org.eclipse.ditto.signals.commands.live.modify.ModifyFeaturesLiveCommand;
 import org.eclipse.ditto.signals.commands.live.query.RetrieveFeatureLiveCommand;
 import org.eclipse.ditto.signals.commands.live.query.RetrieveFeaturesLiveCommand;
@@ -33,7 +29,7 @@ import org.eclipse.ditto.signals.commands.live.query.RetrieveFeaturesLiveCommand
  *
  * @since 1.0.0
  */
-public interface FeaturesCommandHandling {
+public interface FeaturesCommandHandling extends FeaturePropertiesCommandHandling {
 
     /**
      * Registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyFeatures
@@ -45,14 +41,18 @@ public interface FeaturesCommandHandling {
      * calling this method
      * @see #stopHandlingModifyFeatureCommands()
      */
-    void handleModifyFeaturesCommands(
-            Function<ModifyFeaturesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
+    default void handleModifyFeaturesCommands(
+            final Function<ModifyFeaturesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(ModifyFeaturesLiveCommand.class, handler));
+    }
 
     /**
      * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyFeature
      * ModifyFeature} commands.
      */
-    void stopHandlingModifyFeaturesCommands();
+    default void stopHandlingModifyFeaturesCommands() {
+        unregister(ModifyFeaturesLiveCommand.class);
+    }
 
     /**
      * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteFeatures
@@ -64,14 +64,18 @@ public interface FeaturesCommandHandling {
      * calling this method
      * @see #stopHandlingDeleteFeatureCommands()
      */
-    void handleDeleteFeaturesCommands(
-            Function<DeleteFeaturesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
+    default void handleDeleteFeaturesCommands(
+            final Function<DeleteFeaturesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(DeleteFeaturesLiveCommand.class, handler));
+    }
 
     /**
      * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteFeatures
      * DeleteFeatures} commands.
      */
-    void stopHandlingDeleteFeaturesCommands();
+    default void stopHandlingDeleteFeaturesCommands() {
+        unregister(DeleteFeaturesLiveCommand.class);
+    }
 
     /**
      * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyFeature
@@ -83,14 +87,18 @@ public interface FeaturesCommandHandling {
      * calling this method
      * @see #stopHandlingModifyFeatureCommands()
      */
-    void handleModifyFeatureCommands(
-            Function<ModifyFeatureLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
+    default void handleModifyFeatureCommands(
+            final Function<ModifyFeatureLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(ModifyFeatureLiveCommand.class, handler));
+    }
 
     /**
      * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyFeature
      * ModifyFeature} commands.
      */
-    void stopHandlingModifyFeatureCommands();
+    default void stopHandlingModifyFeatureCommands() {
+        unregister(ModifyFeatureLiveCommand.class);
+    }
 
     /**
      * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteFeature
@@ -102,90 +110,18 @@ public interface FeaturesCommandHandling {
      * calling this method
      * @see #stopHandlingDeleteFeatureCommands()
      */
-    void handleDeleteFeatureCommands(
-            Function<DeleteFeatureLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
+    default void handleDeleteFeatureCommands(
+            final Function<DeleteFeatureLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(DeleteFeatureLiveCommand.class, handler));
+    }
 
     /**
      * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteFeature
      * DeleteFeature} commands.
      */
-    void stopHandlingDeleteFeatureCommands();
-
-    /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperties
-     * ModifyFeatureProperties} commands.
-     *
-     * @param handler the handler to receive the commands
-     * @throws NullPointerException if {@code handler} is {@code null}
-     * @throws IllegalStateException if there is already a handler registered. Stop the registered handler before
-     * calling this method
-     * @see #stopHandlingModifyFeaturePropertiesCommands()
-     */
-    void handleModifyFeaturePropertiesCommands(
-            Function<ModifyFeaturePropertiesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
-
-    /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperties
-     * ModifyFeatureProperties} commands.
-     */
-    void stopHandlingModifyFeaturePropertiesCommands();
-
-    /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperties
-     * DeleteFeatureProperties} commands.
-     *
-     * @param handler the handler to receive the commands
-     * @throws NullPointerException if {@code handler} is {@code null}
-     * @throws IllegalStateException if there is already a handler registered. Stop the registered handler before
-     * calling this method
-     * @see #stopHandlingDeleteFeaturePropertiesCommands()
-     */
-    void handleDeleteFeaturePropertiesCommands(
-            Function<DeleteFeaturePropertiesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
-
-    /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperties
-     * DeleteFeatureProperties} commands.
-     */
-    void stopHandlingDeleteFeaturePropertiesCommands();
-
-    /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperty
-     * ModifyFeatureProperty} commands.
-     *
-     * @param handler the handler to receive the commands
-     * @throws NullPointerException if {@code handler} is {@code null}
-     * @throws IllegalStateException if there is already a handler registered. Stop the registered handler before
-     * calling this method
-     * @see #stopHandlingModifyFeaturePropertyCommands()
-     */
-    void handleModifyFeaturePropertyCommands(
-            Function<ModifyFeaturePropertyLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
-
-    /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperty
-     * ModifyFeatureProperty} commands.
-     */
-    void stopHandlingModifyFeaturePropertyCommands();
-
-    /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperty
-     * DeleteFeatureProperty} commands.
-     *
-     * @param handler the handler to receive the commands
-     * @throws NullPointerException if {@code handler} is {@code null}
-     * @throws IllegalStateException if there is already a handler registered. Stop the registered handler before
-     * calling this method
-     * @see #stopHandlingDeleteFeaturePropertyCommands()
-     */
-    void handleDeleteFeaturePropertyCommands(
-            Function<DeleteFeaturePropertyLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
-
-    /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperty
-     * DeleteFeatureProperty} commands.
-     */
-    void stopHandlingDeleteFeaturePropertyCommands();
+    default void stopHandlingDeleteFeatureCommands() {
+        unregister(DeleteFeatureLiveCommand.class);
+    }
 
     /**
      * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveFeatures
@@ -197,14 +133,18 @@ public interface FeaturesCommandHandling {
      * calling this method
      * @see #stopHandlingRetrieveFeaturesCommands()
      */
-    void handleRetrieveFeaturesCommands(
-            Function<RetrieveFeaturesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
+    default void handleRetrieveFeaturesCommands(
+            final Function<RetrieveFeaturesLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(RetrieveFeaturesLiveCommand.class, handler));
+    }
 
     /**
      * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveFeatures
      * RetrieveFeatures} commands.
      */
-    void stopHandlingRetrieveFeaturesCommands();
+    default void stopHandlingRetrieveFeaturesCommands() {
+        unregister(RetrieveFeaturesLiveCommand.class);
+    }
 
     /**
      * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveFeature
@@ -219,13 +159,17 @@ public interface FeaturesCommandHandling {
      * calling this method
      * @see #stopHandlingRetrieveFeatureCommands()
      */
-    void handleRetrieveFeatureCommands(
-            Function<RetrieveFeatureLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
+    default void handleRetrieveFeatureCommands(
+            final Function<RetrieveFeatureLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(RetrieveFeatureLiveCommand.class, handler));
+    }
 
     /**
      * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveFeature
      * RetrieveFeature} commands.
      */
-    void stopHandlingRetrieveFeatureCommands();
+    default void stopHandlingRetrieveFeatureCommands() {
+        unregister(RetrieveFeatureLiveCommand.class);
+    }
 
 }

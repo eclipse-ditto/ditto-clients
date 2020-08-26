@@ -13,19 +13,28 @@
 package org.eclipse.ditto.client.live.messages.internal;
 
 import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
+import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.eclipse.ditto.client.ack.internal.ImmutableAcknowledgementRequestHandle;
+import org.eclipse.ditto.client.changes.AcknowledgementRequestHandle;
 import org.eclipse.ditto.client.live.messages.MessageSender;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.json.JsonObject;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
+import org.eclipse.ditto.model.base.acks.AcknowledgementRequest;
 import org.eclipse.ditto.model.base.auth.AuthorizationContext;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
@@ -34,6 +43,7 @@ import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessageResponseConsumer;
 import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 
 /**
  * Immutable implementation for {@link RepliableMessage}.
@@ -47,10 +57,13 @@ public final class ImmutableRepliableMessage<T, U> implements RepliableMessage<T
 
     private final Message<T> message;
     private final Consumer<Message<U>> responseConsumer;
+    private final Consumer<Acknowledgement> acknowledgementPublisher;
 
-    private ImmutableRepliableMessage(final Message<T> message, final Consumer<Message<U>> responseConsumer) {
+    private ImmutableRepliableMessage(final Message<T> message, final Consumer<Message<U>> responseConsumer,
+            final Consumer<Acknowledgement> acknowledgementPublisher) {
         this.message = message;
         this.responseConsumer = responseConsumer;
+        this.acknowledgementPublisher = acknowledgementPublisher;
     }
 
     /**
@@ -59,16 +72,17 @@ public final class ImmutableRepliableMessage<T, U> implements RepliableMessage<T
      *
      * @param message the message to delegate/wrap.
      * @param responseConsumer the consumer which gets notified about the response message.
+     * @param acknowledgementPublisher the consumer for publishing built acknowledgements to the Ditto backend.
      * @param <T> the type of the message's payload.
      * @param <U> the type of the response's payload.
      * @return the new {@code RepliableMessage} instance.
      */
     public static <T, U> RepliableMessage<T, U> of(final Message<T> message,
-            final Consumer<Message<U>> responseConsumer) {
+            final Consumer<Message<U>> responseConsumer, final Consumer<Acknowledgement> acknowledgementPublisher) {
         argumentNotNull(message, "Message");
         argumentNotNull(responseConsumer, "ResponseConsumer");
 
-        return new ImmutableRepliableMessage<>(message, responseConsumer);
+        return new ImmutableRepliableMessage<>(message, responseConsumer, acknowledgementPublisher);
     }
 
     @Override
@@ -180,5 +194,37 @@ public final class ImmutableRepliableMessage<T, U> implements RepliableMessage<T
                 "message=" + message +
                 ", responseConsumer=" + responseConsumer +
                 "]";
+    }
+
+    @Override
+    public void handleAcknowledgementRequests(
+            final Consumer<Collection<AcknowledgementRequestHandle>> acknowledgementHandles) {
+
+        checkNotNull(acknowledgementHandles, "acknowledgementHandles");
+        final MessageHeaders headers = message.getHeaders();
+        final Set<AcknowledgementRequest> acknowledgementRequests = headers.getAcknowledgementRequests();
+        final ThingId thingId = message.getThingEntityId();
+        acknowledgementHandles.accept(
+                acknowledgementRequests.stream()
+                        .map(request -> new ImmutableAcknowledgementRequestHandle(request.getLabel(), thingId, headers,
+                                acknowledgementPublisher))
+                        .collect(Collectors.toCollection(LinkedHashSet::new))
+        );
+    }
+
+    @Override
+    public void handleAcknowledgementRequest(final AcknowledgementLabel acknowledgementLabel,
+            final Consumer<AcknowledgementRequestHandle> acknowledgementHandle) {
+
+        checkNotNull(acknowledgementLabel, "acknowledgementLabel");
+        checkNotNull(acknowledgementHandle, "acknowledgementHandle");
+        final MessageHeaders headers = message.getHeaders();
+        final Set<AcknowledgementRequest> acknowledgementRequests = headers.getAcknowledgementRequests();
+        final ThingId thingId = message.getThingEntityId();
+        acknowledgementRequests.stream()
+                .filter(req -> req.getLabel().equals(acknowledgementLabel))
+                .map(request -> new ImmutableAcknowledgementRequestHandle(request.getLabel(), thingId, headers,
+                        acknowledgementPublisher))
+                .forEach(acknowledgementHandle);
     }
 }

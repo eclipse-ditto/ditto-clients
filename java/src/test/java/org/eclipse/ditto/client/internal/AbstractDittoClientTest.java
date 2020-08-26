@@ -56,7 +56,7 @@ public abstract class AbstractDittoClientTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDittoClientTest.class);
 
-    protected static final int TIMEOUT = 100;
+    protected static final int TIMEOUT = 1000;
     protected static final TimeUnit TIME_UNIT = TimeUnit.MILLISECONDS;
     protected static final ProtocolAdapter PROTOCOL_ADAPTER = DittoProtocolAdapter.newInstance();
 

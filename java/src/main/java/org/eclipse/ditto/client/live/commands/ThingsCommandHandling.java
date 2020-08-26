@@ -24,7 +24,7 @@ import org.eclipse.ditto.signals.commands.live.query.RetrieveThingsLiveCommand;
  *
  * @since 1.0.0
  */
-public interface ThingsCommandHandling {
+public interface ThingsCommandHandling extends ThingCommandHandling {
 
     /**
      * Registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveThings
@@ -36,12 +36,17 @@ public interface ThingsCommandHandling {
      * calling this method
      * @see #stopHandlingRetrieveThingsCommands()
      */
-    void handleRetrieveThingsCommands(Function<RetrieveThingsLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
+    default void handleRetrieveThingsCommands(
+            final Function<RetrieveThingsLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(RetrieveThingsLiveCommand.class, handler));
+    }
 
     /**
      * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveThings
      * RetrieveThings} commands.
      */
-    void stopHandlingRetrieveThingsCommands();
+    default void stopHandlingRetrieveThingsCommands() {
+        unregister(RetrieveThingsLiveCommand.class);
+    }
 
 }

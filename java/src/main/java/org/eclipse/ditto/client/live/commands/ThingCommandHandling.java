@@ -14,6 +14,7 @@ package org.eclipse.ditto.client.live.commands;
 
 import java.util.function.Function;
 
+import org.eclipse.ditto.client.live.LiveCommandProcessor;
 import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommand;
 import org.eclipse.ditto.signals.commands.live.modify.DeleteThingLiveCommand;
@@ -27,7 +28,7 @@ import org.eclipse.ditto.signals.commands.live.query.RetrieveThingLiveCommand;
  *
  * @since 1.0.0
  */
-public interface ThingCommandHandling {
+public interface ThingCommandHandling extends LiveCommandProcessor {
 
     /**
      * Registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.CreateThing CreateThing}
@@ -39,13 +40,18 @@ public interface ThingCommandHandling {
      * calling this method
      * @see #stopHandlingCreateThingCommands()
      */
-    void handleCreateThingCommands(Function<CreateThingLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
+    default void handleCreateThingCommands(
+            final Function<CreateThingLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(CreateThingLiveCommand.class, handler));
+    }
 
     /**
      * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.CreateThing
      * CreateThing} commands.
      */
-    void stopHandlingCreateThingCommands();
+    default void stopHandlingCreateThingCommands() {
+        unregister(CreateThingLiveCommand.class);
+    }
 
     /**
      * Registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyThing ModifyThing}
@@ -57,13 +63,18 @@ public interface ThingCommandHandling {
      * calling this method
      * @see #stopHandlingModifyThingCommands()
      */
-    void handleModifyThingCommands(Function<ModifyThingLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
+    default void handleModifyThingCommands(
+            final Function<ModifyThingLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(ModifyThingLiveCommand.class, handler));
+    }
 
     /**
      * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyThing
      * ModifyThing} commands.
      */
-    void stopHandlingModifyThingCommands();
+    default void stopHandlingModifyThingCommands() {
+        unregister(ModifyThingLiveCommand.class);
+    }
 
     /**
      * Registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteThing DeleteThing}
@@ -75,13 +86,18 @@ public interface ThingCommandHandling {
      * calling this method
      * @see #stopHandlingDeleteThingCommands()
      */
-    void handleDeleteThingCommands(Function<DeleteThingLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
+    default void handleDeleteThingCommands(
+            final Function<DeleteThingLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(DeleteThingLiveCommand.class, handler));
+    }
 
     /**
      * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteThing
      * DeleteThing} commands.
      */
-    void stopHandlingDeleteThingCommands();
+    default void stopHandlingDeleteThingCommands() {
+        unregister(DeleteThingLiveCommand.class);
+    }
 
     /**
      * Registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveThing
@@ -93,13 +109,17 @@ public interface ThingCommandHandling {
      * calling this method
      * @see #stopHandlingRetrieveThingCommands()
      */
-    void handleRetrieveThingCommandsFunction(
-            Function<RetrieveThingLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler);
+    default void handleRetrieveThingCommandsFunction(
+            final Function<RetrieveThingLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(RetrieveThingLiveCommand.class, handler));
+    }
 
     /**
      * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveThing
      * RetrieveThing} commands.
      */
-    void stopHandlingRetrieveThingCommands();
+    default void stopHandlingRetrieveThingCommands() {
+        unregister(RetrieveThingLiveCommand.class);
+    }
 
 }

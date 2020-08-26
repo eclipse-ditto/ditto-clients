@@ -12,7 +12,16 @@
  */
 package org.eclipse.ditto.client.live;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.stream.Stream;
+
+import org.eclipse.ditto.client.live.commands.LiveCommandHandler;
+import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.live.base.LiveCommand;
+import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswer;
+import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswerBuilder;
+import org.slf4j.Logger;
 
 /**
  * Internal interface for implementations capable of processing {@link LiveCommand}s.
@@ -22,12 +31,85 @@ import org.eclipse.ditto.signals.commands.live.base.LiveCommand;
 public interface LiveCommandProcessor {
 
     /**
+     * Get a concurrent map of live command handlers.
+     *
+     * @return the live command handler.
+     */
+    Map<Class<? extends LiveCommand<?, ?>>, LiveCommandHandler<?, ?>> getLiveCommandHandlers();
+
+    /**
+     * Publish a signal.
+     *
+     * @param signal the signal to publish.
+     */
+    void publishLiveSignal(Signal<?> signal);
+
+    /**
+     * Retrieve the logger.
+     *
+     * @return the logger.
+     */
+    Logger getLogger();
+
+    /**
+     * Register a live command handler.
+     *
+     * @param liveCommandHandler the live command handler.
+     * @throws java.lang.IllegalStateException if the live command handled by the live command handler is already
+     * registered.
+     */
+    default void register(final LiveCommandHandler<?, ?> liveCommandHandler) {
+        final Class<? extends LiveCommand<?, ?>> liveCommandClass = liveCommandHandler.getType();
+        getLiveCommandHandlers().compute(liveCommandClass, (clazz, handler) -> {
+            if (handler != null) {
+                throw new IllegalStateException(
+                        "A Function for '" + liveCommandClass.getSimpleName() + "' is already " +
+                                "defined. Stop the registered handler before registering a new handler.");
+            } else {
+                return liveCommandHandler;
+            }
+        });
+    }
+
+    /**
+     * Remove the registration for a live command.
+     *
+     * @param liveCommandClass the class of the live command whose handler should be removed.
+     */
+    default void unregister(final Class<? extends LiveCommand<?, ?>> liveCommandClass) {
+        getLiveCommandHandlers().remove(liveCommandClass);
+    }
+
+    /**
      * Processes the passed {@link LiveCommand} and reports the successful processing via return value.
      *
      * @param liveCommand the live command to process
      * @return {@code true} when the passed {@code liveCommand} was successfully processed, {@code false} if either the
      * implementation did not have a function to handle the type or a RuntimeException occurred during invocation.
      */
-    boolean processLiveCommand(LiveCommand liveCommand);
+    default boolean processLiveCommand(final LiveCommand<?, ?> liveCommand) {
+        return Arrays.stream(liveCommand.getClass().getInterfaces())
+                .flatMap(clazz -> {
+                    final LiveCommandHandler<?, ?> handler = getLiveCommandHandlers().get(clazz);
+                    return handler == null ? Stream.empty() : Stream.of(handler);
+                })
+                .map(handler -> {
+                    try {
+                        final LiveCommandAnswerBuilder.BuildStep builder =
+                                handler.castAndApply(liveCommand, this::publishLiveSignal);
+                        final LiveCommandAnswer liveCommandAnswer = builder.build();
+                        liveCommandAnswer.getResponse().ifPresent(this::publishLiveSignal);
+                        liveCommandAnswer.getEvent().ifPresent(this::publishLiveSignal);
+                        return true;
+                    } catch (final RuntimeException e) {
+                        getLogger().error(
+                                "User defined function which processed LiveCommand '{}' threw RuntimeException: {}",
+                                liveCommand.getType(), e.getMessage(), e);
+                        return false;
+                    }
+                })
+                .findAny()
+                .orElse(false);
+    }
 
 }

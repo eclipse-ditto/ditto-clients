@@ -33,6 +33,7 @@ import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.messages.MessageCommand;
 import org.eclipse.ditto.signals.commands.messages.MessageCommandResponse;
@@ -83,12 +84,13 @@ final class LiveMessagesUtil {
             final Message<T> deserializedMessage =
                     ImmutableDeserializingMessage.of(message, type, messageSerializerRegistry);
 
-            final RepliableMessage<T, U> repliableMessage = ImmutableRepliableMessage.of(deserializedMessage, msg -> {
-                final Message<U> toBeSentMessage = outgoingMessageFactory.sendMessage(messageSerializerRegistry, msg);
-                LOGGER.trace("Response Message about to send: {}", toBeSentMessage);
-                messagingProvider.emitAdaptable(
-                        LiveMessagesUtil.constructAdaptableFromMessage(toBeSentMessage, protocolAdapter));
-            });
+            final Consumer<Message<U>> responsePublisher = responsePublisher(protocolAdapter, messagingProvider,
+                    outgoingMessageFactory, messageSerializerRegistry);
+            final Consumer<Acknowledgement> acknowledgementPublisher =
+                    acknowledgementPublisher(protocolAdapter, messagingProvider);
+
+            final RepliableMessage<T, U> repliableMessage =
+                    ImmutableRepliableMessage.of(deserializedMessage, responsePublisher, acknowledgementPublisher);
             handler.accept(repliableMessage);
         };
     }
@@ -104,14 +106,34 @@ final class LiveMessagesUtil {
         {
             final Message<?> message = LiveMessagesUtil.eventToMessage(e, Object.class, true);
 
-            final RepliableMessage<?, U> repliableMessage = ImmutableRepliableMessage.of(message, msg ->
-            {
-                final Message<U> toBeSentMessage = outgoingMessageFactory.sendMessage(messageSerializerRegistry, msg);
-                LOGGER.trace("Response Message about to send: {}", toBeSentMessage);
-                messagingProvider.emitAdaptable(constructAdaptableFromMessage(toBeSentMessage, protocolAdapter));
-            });
+            final Consumer<Message<U>> responsePublisher = responsePublisher(protocolAdapter, messagingProvider,
+                    outgoingMessageFactory, messageSerializerRegistry);
+            final Consumer<Acknowledgement> acknowledgementPublisher =
+                    acknowledgementPublisher(protocolAdapter, messagingProvider);
+
+            final RepliableMessage<?, U> repliableMessage =
+                    ImmutableRepliableMessage.of(message, responsePublisher, acknowledgementPublisher);
             handler.accept(repliableMessage);
         };
+    }
+
+    private static <U> Consumer<Message<U>> responsePublisher(
+            final ProtocolAdapter protocolAdapter,
+            final MessagingProvider messagingProvider,
+            final OutgoingMessageFactory outgoingMessageFactory,
+            final MessageSerializerRegistry messageSerializerRegistry) {
+
+        return msg ->
+        {
+            final Message<U> toBeSentMessage = outgoingMessageFactory.sendMessage(messageSerializerRegistry, msg);
+            LOGGER.trace("Response Message about to send: {}", toBeSentMessage);
+            messagingProvider.emitAdaptable(constructAdaptableFromMessage(toBeSentMessage, protocolAdapter));
+        };
+    }
+
+    private static Consumer<Acknowledgement> acknowledgementPublisher(final ProtocolAdapter protocolAdapter,
+            final MessagingProvider messagingProvider) {
+        return ack -> messagingProvider.emitAdaptable(protocolAdapter.toAdaptable((Signal<?>) ack));
     }
 
     private static <T> Message<T> eventToMessage(final PointerWithData e, final Class<T> type, final boolean

@@ -18,10 +18,12 @@ import java.time.OffsetDateTime;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import org.eclipse.ditto.client.ack.ResponseConsumer;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.signals.acks.base.Acknowledgements;
 
 /**
  * Builder for instances of {@link Message} which uses Object Scoping and Method Chaining to provide a convenient usage
@@ -36,6 +38,27 @@ public interface MessageSender<T> {
      * Sets the message as being sent <em>FROM</em> a {@code Thing} (or a Thing's {@code Feature}).
      *
      * @param sendConsumer a Consumer which will at the end of the builder when invoking {@code send()} be called with
+     * the built Message and any callback for the message response.
+     * @return fluent api builder that provides the functionality to set the id of the Thing from which the Message will
+     * be sent.
+     */
+    SetThingId<T> from(BiConsumer<Message<T>, ResponseConsumer<?>> sendConsumer);
+
+    /**
+     * Sets the message as being sent <em>TO</em> a {@code Thing} (or a Thing's {@code Feature}).
+     *
+     * @param sendConsumer a Consumer which will at the end of the builder when invoking {@code send()} be called with
+     * the built Message and any callback of the response.
+     * @return fluent api builder that provides the functionality to set the id of the Thing to which the Message will
+     * be sent.
+     */
+    SetThingId<T> to(BiConsumer<Message<T>, ResponseConsumer<?>> sendConsumer);
+
+    /**
+     * Sets the message as being sent <em>FROM</em> a {@code Thing} (or a Thing's {@code Feature}).
+     * No response is expected for the message.
+     *
+     * @param sendConsumer a Consumer which will at the end of the builder when invoking {@code send()} be called with
      * the built Message.
      * @return fluent api builder that provides the functionality to set the id of the Thing from which the Message will
      * be sent.
@@ -44,6 +67,7 @@ public interface MessageSender<T> {
 
     /**
      * Sets the message as being sent <em>TO</em> a {@code Thing} (or a Thing's {@code Feature}).
+     * No response is expected for the message.
      *
      * @param sendConsumer a Consumer which will at the end of the builder when invoking {@code send()} be called with
      * the built Message.
@@ -232,6 +256,7 @@ public interface MessageSender<T> {
          * @since 1.0.0
          */
         <R> void send(Class<R> responseType, BiConsumer<Message<R>, Throwable> responseConsumer);
+
     }
 
 }

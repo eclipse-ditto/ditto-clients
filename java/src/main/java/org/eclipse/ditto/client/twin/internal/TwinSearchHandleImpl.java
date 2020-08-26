@@ -26,6 +26,8 @@ import org.eclipse.ditto.client.streaming.ThingSearchPublisher;
 import org.eclipse.ditto.client.twin.SearchQueryBuilder;
 import org.eclipse.ditto.client.twin.TwinSearchHandle;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
+import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
@@ -87,5 +89,10 @@ final class TwinSearchHandleImpl extends AbstractHandle implements TwinSearchHan
                 .map(JsonValue::asObject)
                 .map(ThingsModelFactory::newThing)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    protected AcknowledgementLabel getThingResponseAcknowledgementLabel() {
+        return DittoAcknowledgementLabel.TWIN_PERSISTED;
     }
 }

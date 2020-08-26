@@ -14,15 +14,23 @@ package org.eclipse.ditto.client.live.messages.internal;
 
 import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
 
+import java.nio.ByteBuffer;
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-import javax.annotation.Nonnull;
 import javax.annotation.concurrent.Immutable;
 
+import org.eclipse.ditto.client.ack.ResponseConsumer;
+import org.eclipse.ditto.client.ack.internal.AcknowledgementRequestsValidator;
 import org.eclipse.ditto.client.live.messages.MessageSender;
+import org.eclipse.ditto.client.management.AcknowledgementsFailedException;
+import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
+import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
@@ -30,14 +38,20 @@ import org.eclipse.ditto.model.messages.MessageBuilder;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessageHeadersBuilder;
-import org.eclipse.ditto.model.messages.MessageResponseConsumer;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
 import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.signals.acks.base.Acknowledgement;
+import org.eclipse.ditto.signals.acks.base.Acknowledgements;
+import org.eclipse.ditto.signals.commands.base.CommandResponse;
+import org.eclipse.ditto.signals.commands.base.ErrorResponse;
+import org.eclipse.ditto.signals.commands.messages.MessageCommandResponse;
+import org.eclipse.ditto.signals.commands.messages.MessageDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * A mutable builder with a fluent API for building and sending an immutable {@link Message}.
+ * This is ImmutableMessage-Sender, not Immutable-MessageSender.
  *
  * @param <T> the type of the payload of the Messages this builder builds and sends.
  * @since 1.0.0
@@ -58,20 +72,10 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
     private String messageContentType;
     private HttpStatusCode messageStatusCode;
     private DittoHeaders messageAdditionalHeaders;
-    private Consumer<Message<T>> sendConsumer;
+    private BiConsumer<Message<T>, ResponseConsumer<?>> sendConsumer;
 
     private ImmutableMessageSender(final boolean isResponse) {
         this.isResponse = isResponse;
-        messageDirection = null;
-        messageThingId = null;
-        messageFeatureId = null;
-        messageSubject = null;
-        messageContentType = null;
-        messageTimeout = null;
-        messageTimestamp = null;
-        messageCorrelationId = null;
-        messageStatusCode = null;
-        messageAdditionalHeaders = null;
     }
 
     /**
@@ -95,41 +99,34 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
     }
 
     @Override
-    public SetThingId<T> from(final Consumer<Message<T>> sendConsumer) {
+    public SetThingId<T> from(final BiConsumer<Message<T>, ResponseConsumer<?>> sendConsumer) {
         this.sendConsumer = argumentNotNull(sendConsumer, "sendConsumer");
         messageDirection = MessageDirection.FROM;
         return new SetThingIdImpl();
     }
 
     @Override
-    public SetThingId<T> to(final Consumer<Message<T>> sendConsumer) {
+    public SetThingId<T> to(final BiConsumer<Message<T>, ResponseConsumer<?>> sendConsumer) {
         this.sendConsumer = argumentNotNull(sendConsumer, "sendConsumer");
         messageDirection = MessageDirection.TO;
         return new SetThingIdImpl();
     }
 
-    private <R> MessageResponseConsumer<R> createMessageResponseConsumer(final Class<R> expectedResponseType,
-            final BiConsumer<Message<R>, Throwable> responseConsumer) {
-        return new MessageResponseConsumer<R>() {
-            @Override
-            @Nonnull
-            public Class<R> getResponseType() {
-                return expectedResponseType;
-            }
+    @Override
+    public SetThingId<T> from(final Consumer<Message<T>> sendConsumer) {
+        return from(ignoreResponse(sendConsumer));
+    }
 
-            @Override
-            @Nonnull
-            public BiConsumer<Message<R>, Throwable> getResponseConsumer() {
-                return responseConsumer;
-            }
-        };
+    @Override
+    public SetThingId<T> to(final Consumer<Message<T>> sendConsumer) {
+        return to(ignoreResponse(sendConsumer));
     }
 
     private void buildAndSendMessage(final T payload) {
         buildAndSendMessage(payload, null);
     }
 
-    private <R> void buildAndSendMessage(final T payload, final MessageResponseConsumer<R> responseConsumer) {
+    private void buildAndSendMessage(final T payload, final ResponseConsumer<?> responseConsumer) {
         final MessageHeadersBuilder messageHeadersBuilder =
                 MessageHeaders.newBuilder(messageDirection, messageThingId, messageSubject);
 
@@ -163,10 +160,108 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
 
         final MessageBuilder<T> messageBuilder =
                 MessagesModelFactory.<T>newMessageBuilder(messageHeadersBuilder.build())
-                        .responseConsumer(responseConsumer)
                         .payload(payload);
 
-        sendConsumer.accept(messageBuilder.build());
+        sendConsumer.accept(messageBuilder.build(), responseConsumer);
+    }
+
+    private BiConsumer<Message<T>, ResponseConsumer<?>> ignoreResponse(final Consumer<Message<T>> sendConsumer) {
+        return (message, responseConsumer) -> sendConsumer.accept(message);
+    }
+
+    private static <T> ResponseConsumer<?> createCommandResponseConsumer(final Class<T> clazz,
+            final BiConsumer<Message<T>, Throwable> responseMessageHandler) {
+        return new ResponseConsumerImpl<>(CommandResponse.class, (response, error) -> {
+            final Message<?> message;
+            final Throwable errorToPublish;
+            if (response instanceof Acknowledgements) {
+                if (!((Acknowledgements) response).getFailedAcknowledgements().isEmpty()) {
+                    message = null;
+                    errorToPublish = AcknowledgementsFailedException.of((Acknowledgements) response);
+                } else {
+                    final AcknowledgementLabel expectedLabel = DittoAcknowledgementLabel.LIVE_RESPONSE;
+                    final Optional<Message<?>> messageOptional =
+                            ((Acknowledgements) response).getAcknowledgement(expectedLabel)
+                                    .flatMap(ImmutableMessageSender::getMessageResponseInAcknowledgement);
+                    if (messageOptional.isPresent()) {
+                        message = messageOptional.get();
+                        errorToPublish = null;
+                    } else {
+                        message = null;
+                        errorToPublish = AcknowledgementRequestsValidator.didNotReceiveAcknowledgement(expectedLabel);
+                    }
+                }
+            } else if (response instanceof MessageCommandResponse) {
+                message = ((MessageCommandResponse<?, ?>) response).getMessage();
+                errorToPublish = null;
+            } else if (response instanceof ErrorResponse) {
+                message = null;
+                errorToPublish = ((ErrorResponse<?>) response).getDittoRuntimeException();
+            } else if (response == null) {
+                message = null;
+                errorToPublish = error;
+            } else {
+                message = null;
+                final String errorMessage = String.format(
+                        "Expected received response to be instance of either <%s> or <%s> but found <%s>.",
+                        Acknowledgements.class,
+                        MessageCommandResponse.class,
+                        response.getClass());
+                errorToPublish = new ClassCastException(errorMessage);
+            }
+            checkPayloadTypeAndAccept(clazz, responseMessageHandler, message, errorToPublish);
+        });
+    }
+
+    private static Optional<Message<?>> getMessageResponseInAcknowledgement(final Acknowledgement ack) {
+        final Optional<Message<?>> deserializedMessage =
+                ack.getEntity().map(JsonValue::asObject).map(MessageDeserializer::deserializeMessageFromJson);
+
+        return deserializedMessage.map(message ->
+                MessagesModelFactory.newMessageBuilder(message.getHeaders().toBuilder()
+                        .statusCode(ack.getStatusCode())
+                        .build())
+                        .payload(message.getPayload().orElse(null))
+                        .rawPayload(message.getRawPayload().orElse(null))
+                        .extra(message.getExtra().orElse(null))
+                        .build()
+        );
+    }
+
+    private static <T> void checkPayloadTypeAndAccept(final Class<T> clazz,
+            final BiConsumer<Message<T>, Throwable> responseMessageHandler,
+            final Message<?> message,
+            final Throwable error) {
+        if (message != null && message.getPayload().isPresent()) {
+            final Object payload = message.getPayload().get();
+            if (clazz.isInstance(payload)) {
+                responseMessageHandler.accept(withPayload(message, clazz.cast(payload)), error);
+            } else {
+                responseMessageHandler.accept(null, new ClassCastException(
+                        "Expected: " + clazz.getCanonicalName() +
+                                "; Actual: " + payload.getClass().getCanonicalName() +
+                                " (" + payload + ")"
+                ));
+            }
+        } else if (message != null) {
+            if (clazz.isAssignableFrom(ByteBuffer.class)) {
+                responseMessageHandler.accept(
+                        withPayload(message, message.getRawPayload().map(clazz::cast).orElse(null)),
+                        error);
+            } else {
+                responseMessageHandler.accept(null, new NoSuchElementException("No payload"));
+            }
+        } else {
+            responseMessageHandler.accept(null, error);
+        }
+    }
+
+    private static <T> Message<T> withPayload(final Message<?> message, final T payload) {
+        return MessagesModelFactory.<T>newMessageBuilder(message.getHeaders())
+                .payload(payload)
+                .rawPayload(message.getRawPayload().orElse(null))
+                .extra(message.getExtra().orElse(null))
+                .build();
     }
 
     private class SetThingIdImpl implements SetThingId<T> {
@@ -230,6 +325,8 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
 
         @Override
         public SetPayloadOrSend<T> headers(final DittoHeaders additionalHeaders) {
+            AcknowledgementRequestsValidator.validate(additionalHeaders.getAcknowledgementRequests(),
+                    DittoAcknowledgementLabel.LIVE_RESPONSE);
             messageAdditionalHeaders = additionalHeaders;
             return this;
         }
@@ -246,8 +343,9 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
 
         @Override
         public <R> void send(final Class<R> responseType, final BiConsumer<Message<R>, Throwable> responseConsumer) {
-            buildAndSendMessage(null, createMessageResponseConsumer(responseType, responseConsumer));
+            buildAndSendMessage(null, createCommandResponseConsumer(responseType, responseConsumer));
         }
+
     }
 
     private final class SetContentTypeImpl implements SetContentType<T> {
@@ -271,8 +369,9 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
 
         @Override
         public <R> void send(final Class<R> responseType, final BiConsumer<Message<R>, Throwable> responseConsumer) {
-            buildAndSendMessage(payload, createMessageResponseConsumer(responseType, responseConsumer));
+            buildAndSendMessage(payload, createCommandResponseConsumer(responseType, responseConsumer));
         }
+
     }
 
     private class MessageSendableImpl implements MessageSendable<T> {
@@ -290,7 +389,29 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
 
         @Override
         public <R> void send(final Class<R> responseType, final BiConsumer<Message<R>, Throwable> responseConsumer) {
-            buildAndSendMessage(payload, createMessageResponseConsumer(responseType, responseConsumer));
+            buildAndSendMessage(payload, createCommandResponseConsumer(responseType, responseConsumer));
+        }
+
+    }
+
+    private static final class ResponseConsumerImpl<T> implements ResponseConsumer<T> {
+
+        private final Class<T> clazz;
+        private final BiConsumer<T, Throwable> consumer;
+
+        private ResponseConsumerImpl(final Class<T> clazz, final BiConsumer<T, Throwable> consumer) {
+            this.clazz = clazz;
+            this.consumer = consumer;
+        }
+
+        @Override
+        public Class<T> getResponseType() {
+            return clazz;
+        }
+
+        @Override
+        public BiConsumer<T, Throwable> getResponseConsumer() {
+            return consumer;
         }
     }
 

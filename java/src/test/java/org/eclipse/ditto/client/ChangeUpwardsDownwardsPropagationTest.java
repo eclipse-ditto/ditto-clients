@@ -21,10 +21,10 @@ import static org.eclipse.ditto.model.base.auth.AuthorizationModelFactory.newAut
 import static org.junit.Assert.assertEquals;
 
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
-import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.client.changes.FeaturesChange;
@@ -150,22 +150,25 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
         // start consuming changes:
         client.twin().startConsumption();
 
-        final CountDownLatch latch = new CountDownLatch(1);
+        final CompletableFuture<Void> future = new CompletableFuture<>();
 
         client.twin()
                 .forId(thingId1)
                 .registerForThingChanges("testUpwardsRegisterForThingChangeWhenThingIsCreated", thingChange -> {
-                    LOG.info("received ThingChange {}", thingChange);
-                    assertThat(thingChange.getAction()).isEqualTo(ChangeAction.CREATED);
-                    assertThat((CharSequence) thingChange.getEntityId()).isEqualTo(thingId1);
-                    assertThat(thingChange.isPartial()).isFalse();
-                    assertThat((CharSequence) thingChange.getPath())
-                            .isEqualTo(emptyPointer()); // empty path on ThingChange
-                    assertThat(thingChange.getThing()).hasValue(thing1);
-                    assertThat(thingChange.getValue())
-                            .hasValue(thing1.toJson(thing1.getImplementedSchemaVersion()));
-
-                    latch.countDown();
+                    try {
+                        LOG.info("received ThingChange {}", thingChange);
+                        assertThat(thingChange.getAction()).isEqualTo(ChangeAction.CREATED);
+                        assertThat((CharSequence) thingChange.getEntityId()).isEqualTo(thingId1);
+                        assertThat(thingChange.isPartial()).isFalse();
+                        assertThat((CharSequence) thingChange.getPath())
+                                .isEqualTo(emptyPointer()); // empty path on ThingChange
+                        assertThat(thingChange.getThing()).hasValue(thing1);
+                        assertThat(thingChange.getValue())
+                                .hasValue(thing1.toJson(thing1.getImplementedSchemaVersion()));
+                        future.complete(null);
+                    } catch (final Throwable e) {
+                        future.completeExceptionally(e);
+                    }
                 });
 
         final MessageHeaders messageHeaders =
@@ -180,8 +183,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
 
         messaging.receiveEvent(thingCreated);
 
-        latch.await(TIMEOUT_SECONDS, SECONDS);
-        assertEquals(0, latch.getCount());
+        future.get(TIMEOUT_SECONDS, SECONDS);
     }
 
     @Test

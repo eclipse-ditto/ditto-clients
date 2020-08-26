@@ -437,6 +437,7 @@
                             </overrideCompatibilityChangeParameters>
                             <excludes>
                                 <!-- Don't add excludes here before checking with the whole Ditto team -->
+                                <exclude>org.eclipse.ditto.client.ack.internal</exclude>
                                 <exclude>org.eclipse.ditto.client.changes.internal</exclude>
                                 <exclude>org.eclipse.ditto.client.internal</exclude>
                                 <exclude>org.eclipse.ditto.client.live.internal</exclude>

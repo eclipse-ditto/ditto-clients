@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
+import org.eclipse.ditto.client.ack.internal.AcknowledgementRequestsValidator;
 import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.client.management.AcknowledgementsFailedException;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
@@ -32,7 +33,7 @@ import org.eclipse.ditto.json.JsonField;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
@@ -86,6 +87,13 @@ public abstract class AbstractHandle {
         this.messagingProvider = messagingProvider;
         this.channel = channel;
     }
+
+    /**
+     * Get the label of built-in acknowledgements for this channel.
+     *
+     * @return the label.
+     */
+    protected abstract AcknowledgementLabel getThingResponseAcknowledgementLabel();
 
     /**
      * Convenience method to turn anything into {@code Void} due to ubiquitous use of {@code CompletableFuture<Void>}
@@ -156,7 +164,7 @@ public abstract class AbstractHandle {
             final T command,
             final Class<S> expectedResponse,
             final Function<S, R> onSuccess) {
-        final ThingCommand<?> commandWithChannel = setChannel(command, channel);
+        final ThingCommand<?> commandWithChannel = validateAckRequests(setChannel(command, channel));
         return sendSignalAndExpectResponse(commandWithChannel, expectedResponse, onSuccess, ErrorResponse.class,
                 ErrorResponse::getDittoRuntimeException);
     }
@@ -246,24 +254,28 @@ public abstract class AbstractHandle {
         return PROTOCOL_ADAPTER.toAdaptable(adjustHeadersForLiveSignal(liveSignal));
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     protected static Signal<?> adjustHeadersForLiveSignal(final Signal<?> signal) {
         return adjustHeadersForLive((Signal) signal);
     }
 
-    static CommandResponse<?> extractCommandResponseFromAcknowledgements(final Signal<?> signal,
+    private ThingCommand<?> validateAckRequests(final ThingCommand<?> thingCommand) {
+        AcknowledgementRequestsValidator.validate(thingCommand.getDittoHeaders().getAcknowledgementRequests(),
+                getThingResponseAcknowledgementLabel());
+        return thingCommand;
+    }
+
+    private CommandResponse<?> extractCommandResponseFromAcknowledgements(final Signal<?> signal,
             final Acknowledgements acknowledgements) {
         if (areFailedAcknowledgements(acknowledgements.getStatusCode())) {
             throw AcknowledgementsFailedException.of(acknowledgements);
         } else {
+            final AcknowledgementLabel expectedLabel = getThingResponseAcknowledgementLabel();
             return acknowledgements.stream()
-                    .filter(ack -> ack.getLabel().equals(DittoAcknowledgementLabel.TWIN_PERSISTED))
+                    .filter(ack -> ack.getLabel().equals(expectedLabel))
                     .findFirst()
                     .map(ack -> createThingModifyCommandResponseFromAcknowledgement(signal, ack))
-                    .orElseThrow(() -> new IllegalStateException("Didn't receive an Acknowledgement for label '" +
-                            DittoAcknowledgementLabel.TWIN_PERSISTED + "'. Please make sure to always request the '" +
-                            DittoAcknowledgementLabel.TWIN_PERSISTED + "' Acknowledgement if you need to process the " +
-                            "response in the client."));
+                    .orElseThrow(() -> AcknowledgementRequestsValidator.didNotReceiveAcknowledgement(expectedLabel));
         }
     }
 
@@ -271,11 +283,11 @@ public abstract class AbstractHandle {
         return statusCode.isClientError() || statusCode.isInternalError();
     }
 
-    private static ThingModifyCommandResponse<ThingModifyCommandResponse<?>>
+    private static <T extends ThingModifyCommandResponse<T>> ThingModifyCommandResponse<T>
     createThingModifyCommandResponseFromAcknowledgement(
             final Signal<?> signal,
             final Acknowledgement ack) {
-        return new ThingModifyCommandResponse<ThingModifyCommandResponse<?>>() {
+        return new ThingModifyCommandResponse<T>() {
             @Override
             public JsonPointer getResourcePath() {
                 return signal.getResourcePath();
@@ -308,8 +320,8 @@ public abstract class AbstractHandle {
             }
 
             @Override
-            public ThingModifyCommandResponse<?> setDittoHeaders(final DittoHeaders dittoHeaders) {
-                return this;
+            public T setDittoHeaders(final DittoHeaders dittoHeaders) {
+                return (T) this;
             }
 
             @Override

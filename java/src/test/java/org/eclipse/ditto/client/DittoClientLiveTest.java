@@ -13,30 +13,42 @@
 package org.eclipse.ditto.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_ID;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
+import static org.eclipse.ditto.model.base.acks.AcknowledgementRequest.parseAcknowledgementRequest;
+import static org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel.LIVE_RESPONSE;
 
+import java.util.AbstractMap;
+import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
 import org.eclipse.ditto.client.live.commands.FeaturesCommandHandling;
+import org.eclipse.ditto.client.live.commands.LiveCommandHandler;
 import org.eclipse.ditto.client.live.commands.ThingCommandHandling;
 import org.eclipse.ditto.client.live.events.FeatureEventFactory;
+import org.eclipse.ditto.client.live.messages.MessageRegistration;
 import org.eclipse.ditto.client.live.messages.MessageSender;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
+import org.eclipse.ditto.client.management.AcknowledgementsFailedException;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonPointer;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.model.messages.MessageDirection;
+import org.eclipse.ditto.model.messages.MessagePayloadSizeTooLargeException;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.signals.acks.base.Acknowledgement;
+import org.eclipse.ditto.signals.acks.base.Acknowledgements;
 import org.eclipse.ditto.signals.base.Signal;
+import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommand;
 import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommandAnswerBuilder;
 import org.eclipse.ditto.signals.commands.live.modify.DeleteFeatureLiveCommandAnswerBuilder;
 import org.eclipse.ditto.signals.commands.messages.MessageCommand;
@@ -47,6 +59,7 @@ import org.eclipse.ditto.signals.commands.messages.SendFeatureMessage;
 import org.eclipse.ditto.signals.commands.messages.SendFeatureMessageResponse;
 import org.eclipse.ditto.signals.commands.messages.SendThingMessage;
 import org.eclipse.ditto.signals.commands.messages.SendThingMessageResponse;
+import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeature;
@@ -61,7 +74,9 @@ import org.junit.Test;
  * - emit event
  * - send message, receive response
  * - subscribe for message, send message
+ * - subscribe for message, send acknowledgement
  * - subscribe for command, send response and/or event
+ * - subscribe for command, send acknowledgement
  */
 public final class DittoClientLiveTest extends AbstractDittoClientTest {
 
@@ -100,6 +115,158 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
                 featureMessageResponse());
         testMessageSending(client.live().forId(THING_ID).forFeature(FEATURE_ID).message().to(), featureMessage(),
                 featureMessageResponse());
+    }
+
+    @Test
+    public void sendMessageAndGetErrorResponse() {
+        final CompletableFuture<Void> future = new CompletableFuture<>();
+        client.live().message().to(THING_ID).subject("request").payload("payload").send((response, error) -> {
+            try {
+                assertThat(response).describedAs("response").isNull();
+                assertThat(error).describedAs("error")
+                        .isInstanceOf(MessagePayloadSizeTooLargeException.class);
+                future.complete(null);
+            } catch (final Throwable e) {
+                future.completeExceptionally(e);
+            }
+        });
+
+        final MessagePayloadSizeTooLargeException error =
+                MessagePayloadSizeTooLargeException.newBuilder(9001, 9000)
+                        .build();
+
+        final MessageCommand<?, ?> messageCommand = expectMsgClass(SendThingMessage.class);
+        final String correlationId = messageCommand.getDittoHeaders().getCorrelationId().orElse(null);
+        reply(ThingErrorResponse.of(THING_ID, error, DittoHeaders.newBuilder().correlationId(correlationId).build()));
+        try {
+            future.get(TIMEOUT, TIME_UNIT);
+        } catch (final Exception e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    @Test
+    public void sendThingMessageAndGetSuccessAcknowledgements() {
+        final CompletableFuture<Void> future = new CompletableFuture<>();
+        client.live().message().from(THING_ID)
+                .subject("request")
+                .headers(DittoHeaders.newBuilder()
+                        .putHeader("my-header", "my-header-value")
+                        .acknowledgementRequest(
+                                parseAcknowledgementRequest("live-response"),
+                                parseAcknowledgementRequest("custom")
+                        )
+                        .build())
+                .payload("payload")
+                .contentType("text/plain")
+                .send(String.class, (message, error) -> {
+                    try {
+                        if (error != null) {
+                            future.completeExceptionally(error);
+                        } else {
+                            assertThat(message.getStatusCode()).contains(HttpStatusCode.ALREADY_REPORTED);
+                            assertThat(message.getHeaders())
+                                    .contains(new AbstractMap.SimpleEntry<>("my-header", "my-header-value"));
+                            assertThat(message.getHeaders().getDirection()).isEqualTo(MessageDirection.FROM);
+                            assertThat(message.getSubject()).isEqualTo("request");
+                            assertThat(message.getPayload()).contains("payload");
+                            future.complete(null);
+                        }
+                    } catch (final Throwable e) {
+                        future.completeExceptionally(e);
+                    }
+                });
+
+        final SendThingMessage<?> command = expectMsgClass(SendThingMessage.class);
+        final SendThingMessageResponse<?> response =
+                SendThingMessageResponse.of(command.getEntityId(), command.getMessage(),
+                        HttpStatusCode.ALREADY_REPORTED, command.getDittoHeaders());
+        final Acknowledgement liveResponseAck = Acknowledgement.of(
+                LIVE_RESPONSE,
+                response.getEntityId(),
+                response.getStatusCode(),
+                response.getDittoHeaders(),
+                response.toJson().getValueOrThrow(MessageCommand.JsonFields.JSON_MESSAGE)
+        );
+        final Acknowledgement customAck = Acknowledgement.of(
+                AcknowledgementLabel.of("custom"),
+                command.getEntityId(),
+                HttpStatusCode.NO_CONTENT,
+                command.getDittoHeaders()
+        );
+        reply(Acknowledgements.of(Arrays.asList(liveResponseAck, customAck), command.getDittoHeaders()));
+        try {
+            future.get(TIMEOUT, TIME_UNIT);
+        } catch (final Exception e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    @Test
+    public void sendThingMessageAndGetFailedAcknowledgements() {
+        final CompletableFuture<Void> future = new CompletableFuture<>();
+        client.live().message().from(THING_ID)
+                .subject("request")
+                .headers(DittoHeaders.newBuilder()
+                        .putHeader("my-header", "my-header-value")
+                        .acknowledgementRequest(
+                                parseAcknowledgementRequest("live-response"),
+                                parseAcknowledgementRequest("custom")
+                        )
+                        .build())
+                .payload("payload")
+                .contentType("text/plain")
+                .send(String.class, (message, error) -> {
+                    try {
+                        assertThat(error).isInstanceOf(AcknowledgementsFailedException.class);
+                        final Acknowledgements acks = ((AcknowledgementsFailedException) error).getAcknowledgements();
+                        assertThat(acks.getStatusCode()).isEqualTo(HttpStatusCode.FAILED_DEPENDENCY);
+                        assertThat(acks.getAcknowledgement(LIVE_RESPONSE).map(Acknowledgement::getStatusCode))
+                                .contains(HttpStatusCode.IM_A_TEAPOT);
+                        assertThat(acks.getAcknowledgement(AcknowledgementLabel.of("custom"))
+                                .map(Acknowledgement::getStatusCode))
+                                .contains(HttpStatusCode.NO_CONTENT);
+                        future.complete(null);
+                    } catch (final Throwable e) {
+                        future.completeExceptionally(e);
+                    }
+                });
+
+        final SendThingMessage<?> command = expectMsgClass(SendThingMessage.class);
+        final SendThingMessageResponse<?> response =
+                SendThingMessageResponse.of(command.getEntityId(), command.getMessage(),
+                        HttpStatusCode.IM_A_TEAPOT, command.getDittoHeaders());
+        final Acknowledgement liveResponseAck = Acknowledgement.of(
+                LIVE_RESPONSE,
+                response.getEntityId(),
+                response.getStatusCode(),
+                response.getDittoHeaders(),
+                response.toJson().getValueOrThrow(MessageCommand.JsonFields.JSON_MESSAGE)
+        );
+        final Acknowledgement customAck = Acknowledgement.of(
+                AcknowledgementLabel.of("custom"),
+                command.getEntityId(),
+                HttpStatusCode.NO_CONTENT,
+                command.getDittoHeaders()
+        );
+        reply(Acknowledgements.of(Arrays.asList(liveResponseAck, customAck), command.getDittoHeaders()));
+        try {
+            future.get(TIMEOUT, TIME_UNIT);
+        } catch (final Exception e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    @Test
+    public void sendThingMessageWithoutLiveResponseAckRequest() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> client.live().message().from(THING_ID)
+                        .subject("request")
+                        .headers(DittoHeaders.newBuilder()
+                                .putHeader("my-header", "my-header-value")
+                                .acknowledgementRequest(parseAcknowledgementRequest("custom"))
+                                .build())
+                );
     }
 
     @Test
@@ -178,6 +345,122 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
     @Test
     public void subscribeForDeleteFeatureAsFeature() {
         testHandleDeleteFeature(client.live().forId(THING_ID).forFeature(FEATURE_ID));
+    }
+
+    @Test
+    public void testThingMessageAcknowledgement() {
+        testMessageAcknowledgement(client.live(), thingMessage());
+    }
+
+    @Test
+    public void testFeatureMessageAcknowledgement() {
+        testMessageAcknowledgement(client.live().forId(THING_ID).forFeature(FEATURE_ID), featureMessage());
+    }
+
+    @Test
+    public void testFeatureMessageResponseAndAcknowledgement() {
+        assertEventualCompletion(startConsumption());
+        final CompletableFuture<Void> messageReplyFuture = new CompletableFuture<>();
+        client.live().forId(THING_ID).forFeature(FEATURE_ID)
+                .registerForMessage("Ackermann", "request", String.class, msg ->
+                        msg.handleAcknowledgementRequests(handles -> {
+                            try {
+                                handles.forEach(handle -> {
+                                    if (LIVE_RESPONSE.equals(handle.getAcknowledgementLabel())) {
+                                        msg.reply().statusCode(HttpStatusCode.OK).payload("response").send();
+                                    } else {
+                                        handle.acknowledge(HttpStatusCode.forInt(
+                                                Integer.parseInt(handle.getAcknowledgementLabel().toString()))
+                                                .orElse(HttpStatusCode.EXPECTATION_FAILED));
+                                    }
+                                });
+                                messageReplyFuture.complete(null);
+                            } catch (final Throwable error) {
+                                messageReplyFuture.completeExceptionally(error);
+                            }
+                        }));
+
+        final Signal<?> featureMessage = (((Signal<?>) featureMessage()).setDittoHeaders(DittoHeaders.newBuilder()
+                .channel(TopicPath.Channel.LIVE.getName())
+                .correlationId("correlation-id")
+                .acknowledgementRequest(
+                        parseAcknowledgementRequest("live-response"),
+                        parseAcknowledgementRequest("100"),
+                        parseAcknowledgementRequest("301"),
+                        parseAcknowledgementRequest("403")
+                )
+                .build()
+        ));
+        reply(featureMessage);
+        messageReplyFuture.join();
+
+        assertThat(expectMsgClass(SendFeatureMessageResponse.class).getStatusCode()).isEqualTo(HttpStatusCode.OK);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.CONTINUE);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.MOVED_PERMANENTLY);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.FORBIDDEN);
+    }
+
+    @Test
+    public void testThingCommandAcknowledgement() {
+        startConsumption();
+        client.live().register(LiveCommandHandler.withAcks(
+                CreateThingLiveCommand.class,
+                acknowledgeable -> {
+                    acknowledgeable.handleAcknowledgementRequests(handles ->
+                            handles.forEach(handle -> handle.acknowledge(
+                                    HttpStatusCode.forInt(Integer.parseInt(handle.getAcknowledgementLabel().toString()))
+                                            .orElse(HttpStatusCode.EXPECTATION_FAILED)
+                            ))
+                    );
+                    return acknowledgeable.answer().withoutResponse().withoutEvent();
+                }
+        ));
+        final String correlationId = UUID.randomUUID().toString();
+        reply(setHeaders(CreateThing.of(THING, null, DittoHeaders.newBuilder()
+                .channel(TopicPath.Channel.LIVE.getName())
+                .acknowledgementRequest(
+                        parseAcknowledgementRequest("100"),
+                        parseAcknowledgementRequest("301"),
+                        parseAcknowledgementRequest("403")
+                )
+                .build()), correlationId));
+
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.CONTINUE);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.MOVED_PERMANENTLY);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.FORBIDDEN);
+    }
+
+    private void testMessageAcknowledgement(final MessageRegistration registration, final Signal<?> message) {
+        assertEventualCompletion(startConsumption());
+        final CompletableFuture<Void> messageHandlingFuture = new CompletableFuture<>();
+        registration.registerForMessage("Ackermann", "request", String.class, msg -> {
+            msg.handleAcknowledgementRequests(handles -> {
+                try {
+                    handles.forEach(handle -> handle.acknowledge(
+                            HttpStatusCode.forInt(Integer.parseInt(handle.getAcknowledgementLabel().toString()))
+                                    .orElse(HttpStatusCode.EXPECTATION_FAILED)
+                    ));
+                    messageHandlingFuture.complete(null);
+                } catch (final Throwable error) {
+                    messageHandlingFuture.completeExceptionally(error);
+                }
+            });
+        });
+
+        reply(message.setDittoHeaders(DittoHeaders.newBuilder()
+                .channel(TopicPath.Channel.LIVE.getName())
+                .acknowledgementRequest(
+                        parseAcknowledgementRequest("100"),
+                        parseAcknowledgementRequest("301"),
+                        parseAcknowledgementRequest("403")
+                )
+                .build()
+        ));
+        messageHandlingFuture.join();
+
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.CONTINUE);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.MOVED_PERMANENTLY);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.FORBIDDEN);
     }
 
     private void testHandleCreateThing(final ThingCommandHandling thingCommandHandling) {
@@ -317,13 +600,17 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
         final String payload = command.getMessage().getPayload().orElse(null);
         final Class<?> messageCommandClass = command.getClass();
 
-        final CountDownLatch latch = new CountDownLatch(1);
+        final CompletableFuture<Void> future = new CompletableFuture<>();
         sender.subject(subject).payload(payload).send((response, error) -> {
-            assertThat(response.getSubject()).isEqualTo(expectedResponse.getMessage().getSubject());
-            assertThat(response.getStatusCode()).contains(expectedResponse.getStatusCode());
-            assertThat(response.getPayload().map(buffer -> new String(buffer.array())))
-                    .isEqualTo(expectedResponse.getMessage().getPayload());
-            latch.countDown();
+            try {
+                assertThat(response.getSubject()).isEqualTo(expectedResponse.getMessage().getSubject());
+                assertThat(response.getStatusCode()).contains(expectedResponse.getStatusCode());
+                assertThat(response.getPayload().map(buffer -> new String(buffer.array())))
+                        .isEqualTo(expectedResponse.getMessage().getPayload());
+                future.complete(null);
+            } catch (final Throwable e) {
+                future.completeExceptionally(e);
+            }
         });
 
         final MessageCommand<?, ?> messageCommand = (MessageCommand<?, ?>) expectMsgClass(messageCommandClass);
@@ -331,16 +618,11 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
         reply(expectedResponse.setDittoHeaders(
                 expectedResponse.getDittoHeaders().toBuilder().correlationId(correlationId).build()
         ));
-        waitForCountDown(latch);
-    }
-
-    private void waitForCountDown(final CountDownLatch latch) {
         try {
-            latch.await(1, TimeUnit.SECONDS);
-        } catch (final Throwable error) {
-            throw new AssertionError(error);
+            future.get(TIMEOUT, TIME_UNIT);
+        } catch (final Exception e) {
+            throw new AssertionError(e);
         }
-        assertThat(latch.getCount()).isEqualTo(0L);
     }
 
     private CompletableFuture<Void> startConsumption() {

@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.changes.internal;
+package org.eclipse.ditto.client.ack.internal;
 
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 
@@ -35,7 +35,7 @@ import org.eclipse.ditto.signals.acks.base.Acknowledgement;
  * @since 1.1.0
  */
 @Immutable
-final class ImmutableAcknowledgementRequestHandle implements AcknowledgementRequestHandle {
+public final class ImmutableAcknowledgementRequestHandle implements AcknowledgementRequestHandle {
 
     private final AcknowledgementLabel acknowledgementLabel;
     private final EntityIdWithType entityId;
@@ -50,7 +50,7 @@ final class ImmutableAcknowledgementRequestHandle implements AcknowledgementRequ
      * @param dittoHeaders the ditto headers which were contained in the acknowledgement request to handle.
      * @param acknowledgementPublisher the consumer for publishing built acknowledgements to the Ditto backend.
      */
-    ImmutableAcknowledgementRequestHandle(final AcknowledgementLabel acknowledgementLabel,
+    public ImmutableAcknowledgementRequestHandle(final AcknowledgementLabel acknowledgementLabel,
             final EntityIdWithType entityId,
             final DittoHeaders dittoHeaders,
             final Consumer<Acknowledgement> acknowledgementPublisher) {

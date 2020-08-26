@@ -42,7 +42,7 @@ import org.eclipse.ditto.model.things.ThingId;
 public final class HandlerRegistry<T extends ThingHandle<F>, F extends FeatureHandle> {
 
     private final PointerBus bus;
-    private final ConcurrentHashMap<String, Registration<Consumer<PointerWithData>>> registry;
+    private final Map<String, Registration<Consumer<PointerWithData>>> registry;
     private final Map<ThingId, T> thingHandles;
     private final Map<String, F> featureHandles;
 

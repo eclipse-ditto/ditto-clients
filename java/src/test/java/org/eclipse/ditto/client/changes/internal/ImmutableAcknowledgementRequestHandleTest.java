@@ -18,6 +18,7 @@ import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable
 
 import java.util.function.Consumer;
 
+import org.eclipse.ditto.client.ack.internal.ImmutableAcknowledgementRequestHandle;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.entity.id.EntityIdWithType;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
@@ -27,7 +28,7 @@ import org.junit.Test;
 import nl.jqno.equalsverifier.EqualsVerifier;
 
 /**
- * Unit tests for {@link ImmutableAcknowledgementRequestHandle}.
+ * Unit tests for {@link org.eclipse.ditto.client.ack.internal.ImmutableAcknowledgementRequestHandle}.
  */
 public final class ImmutableAcknowledgementRequestHandleTest {
 

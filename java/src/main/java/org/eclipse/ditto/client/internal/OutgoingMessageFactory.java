@@ -235,6 +235,7 @@ public final class OutgoingMessageFactory {
 
     /**
      * Build a command for creating a Policy.
+     *
      * @param policy the policy to create.
      * @param options options to be applied configuring behaviour of this method.
      * @return The {@link CreatePolicy} command.
@@ -285,6 +286,7 @@ public final class OutgoingMessageFactory {
 
     /**
      * Builds a command to retrieve the policy with ID {@code policyId}.
+     *
      * @param policyId the policy to retrieve.
      * @return the {@link RetrievePolicy} command.
      * @throws NullPointerException if the policyId is {@code null}.
@@ -296,6 +298,7 @@ public final class OutgoingMessageFactory {
 
     /**
      * Builds a command to delete the policy with ID {@code policyId}.
+     *
      * @param policyId the policy to delete.
      * @param options options to be applied configuring behaviour of this method.
      * @return the {@link DeletePolicy} command.
@@ -314,7 +317,8 @@ public final class OutgoingMessageFactory {
         return ModifyAttribute.of(thingId, path, value, buildDittoHeaders(true, options));
     }
 
-    public ModifyAttributes setAttributes(final ThingId thingId, final JsonObject attributes, final Option<?>... options) {
+    public ModifyAttributes setAttributes(final ThingId thingId, final JsonObject attributes,
+            final Option<?>... options) {
         return ModifyAttributes.of(thingId, ThingsModelFactory.newAttributes(attributes),
                 buildDittoHeaders(true, options));
     }

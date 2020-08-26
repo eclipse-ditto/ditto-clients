@@ -37,6 +37,8 @@ public class ImmutableRepliableMessageTest {
 
     @Test
     public void testHashCodeAndEquals() {
-        EqualsVerifier.forClass(ImmutableRepliableMessage.class).verify();
+        EqualsVerifier.forClass(ImmutableRepliableMessage.class)
+                .withIgnoredFields("acknowledgementPublisher")
+                .verify();
     }
 }
