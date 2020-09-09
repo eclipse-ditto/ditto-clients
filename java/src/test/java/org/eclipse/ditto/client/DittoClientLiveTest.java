@@ -527,7 +527,10 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
                 AbstractDittoClientTest.<String>newMessageBuilder(subject)
                         .payload(payload)
                         .build(),
-                DittoHeaders.newBuilder().randomCorrelationId().build());
+                DittoHeaders.newBuilder()
+                        .randomCorrelationId()
+                        .contentType("text/plain")
+                        .build());
     }
 
     private SendClaimMessageResponse<String> claimResponse() {
@@ -539,7 +542,9 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
                         .payload(responsePayload)
                         .build(),
                 responseStatus,
-                DittoHeaders.empty());
+                DittoHeaders.newBuilder()
+                        .contentType("text/plain")
+                        .build());
     }
 
     private SendFeatureMessage<String> featureMessage() {

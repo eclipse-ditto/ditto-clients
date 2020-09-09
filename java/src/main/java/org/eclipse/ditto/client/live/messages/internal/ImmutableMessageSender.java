@@ -232,7 +232,11 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
             final BiConsumer<Message<T>, Throwable> responseMessageHandler,
             final Message<?> message,
             final Throwable error) {
-        if (message != null && message.getPayload().isPresent()) {
+        if (message != null && clazz.isAssignableFrom(ByteBuffer.class)) {
+            responseMessageHandler.accept(
+                    withPayload(message, message.getRawPayload().map(clazz::cast).orElse(null)),
+                    error);
+        } else if (message != null && message.getPayload().isPresent()) {
             final Object payload = message.getPayload().get();
             if (clazz.isInstance(payload)) {
                 responseMessageHandler.accept(withPayload(message, clazz.cast(payload)), error);
@@ -244,13 +248,7 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
                 ));
             }
         } else if (message != null) {
-            if (clazz.isAssignableFrom(ByteBuffer.class)) {
-                responseMessageHandler.accept(
-                        withPayload(message, message.getRawPayload().map(clazz::cast).orElse(null)),
-                        error);
-            } else {
-                responseMessageHandler.accept(null, new NoSuchElementException("No payload"));
-            }
+            responseMessageHandler.accept(null, new NoSuchElementException("No payload"));
         } else {
             responseMessageHandler.accept(null, error);
         }
