@@ -365,15 +365,9 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
                 .registerForMessage("Ackermann", "request", String.class, msg ->
                         msg.handleAcknowledgementRequests(handles -> {
                             try {
-                                handles.forEach(handle -> {
-                                    if (LIVE_RESPONSE.equals(handle.getAcknowledgementLabel())) {
-                                        msg.reply().statusCode(HttpStatusCode.OK).payload("response").send();
-                                    } else {
-                                        handle.acknowledge(HttpStatusCode.forInt(
-                                                Integer.parseInt(handle.getAcknowledgementLabel().toString()))
-                                                .orElse(HttpStatusCode.EXPECTATION_FAILED));
-                                    }
-                                });
+                                handles.forEach(handle -> handle.acknowledge(HttpStatusCode.forInt(
+                                        Integer.parseInt(handle.getAcknowledgementLabel().toString()))
+                                        .orElse(HttpStatusCode.EXPECTATION_FAILED)));
                                 messageReplyFuture.complete(null);
                             } catch (final Throwable error) {
                                 messageReplyFuture.completeExceptionally(error);
@@ -394,7 +388,6 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
         reply(featureMessage);
         messageReplyFuture.join();
 
-        assertThat(expectMsgClass(SendFeatureMessageResponse.class).getStatusCode()).isEqualTo(HttpStatusCode.OK);
         assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.CONTINUE);
         assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.MOVED_PERMANENTLY);
         assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.FORBIDDEN);
