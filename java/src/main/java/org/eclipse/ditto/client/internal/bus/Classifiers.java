@@ -16,7 +16,6 @@ import java.util.EnumSet;
 import java.util.Optional;
 
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionEvent;
@@ -82,11 +81,16 @@ public final class Classifiers {
                                 return Optional.of(Classification.StreamingType.LIVE_EVENT);
                             case MESSAGES:
                                 return Optional.of(Classification.StreamingType.LIVE_MESSAGE);
+                            default:
+                                return Optional.empty();
                         }
                     case TWIN:
                         if (topicPath.getCriterion() == TopicPath.Criterion.EVENTS) {
                             return Optional.of(Classification.StreamingType.TWIN_EVENT);
                         }
+                        break;
+                    default:
+                        return Optional.empty();
                 }
             }
             return Optional.empty();
@@ -115,8 +119,8 @@ public final class Classifiers {
     private static final class Instances {
 
         private static final Classifier<Adaptable> CORRELATION_ID_CLASSIFIER = adaptable ->
-                adaptable.getHeaders()
-                        .flatMap(DittoHeaders::getCorrelationId)
+                adaptable.getDittoHeaders()
+                        .getCorrelationId()
                         .map(Classification::forCorrelationId);
 
         private static final Classifier<Adaptable> STREAMING_TYPE_CLASSIFIER = new StreamingTypeClassifier();
