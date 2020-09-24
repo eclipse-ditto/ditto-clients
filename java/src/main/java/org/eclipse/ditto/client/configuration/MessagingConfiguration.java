@@ -55,6 +55,13 @@ public interface MessagingConfiguration {
     boolean isReconnectEnabled();
 
     /**
+     * @return {@code true} if client should retry when connection initialization failed.
+     *
+     * @since 1.3.0
+     */
+    boolean isInitialConnectRetryEnabled();
+
+    /**
      * Returns the proxy configuration.
      *
      * @return the configuration or an empty optional.
@@ -116,6 +123,17 @@ public interface MessagingConfiguration {
          * @return this builder.
          */
         Builder reconnectEnabled(boolean reconnectEnabled);
+
+        /**
+         * Sets if {@code initialConnectRetryEnbaled}.
+         * <p> Default is disabled. When establishing a new connection, the client doesn't try to reconnect.
+         *
+         * @param initialConnectRetryEnabled enables/disables retrying connection initialization.
+         * @return this builder.
+         *
+         * @since 1.3.0
+         */
+        Builder initialConnectRetryEnabled(boolean initialConnectRetryEnabled);
 
         /**
          * Sets the {@code proxyConfiguration}.

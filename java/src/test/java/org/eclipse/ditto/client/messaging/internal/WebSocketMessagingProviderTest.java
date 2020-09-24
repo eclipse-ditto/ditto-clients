@@ -130,6 +130,7 @@ public final class WebSocketMessagingProviderTest {
                 .endpoint(uri)
                 .connectionErrorHandler(errorHandler)
                 .reconnectEnabled(true)
+                .initialConnectRetryEnabled(true)
                 .build();
     }
 
