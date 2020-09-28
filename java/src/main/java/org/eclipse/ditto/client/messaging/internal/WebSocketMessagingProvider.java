@@ -253,6 +253,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
                     cancelScheduledReconnect();
                     authenticationProvider.destroy();
+                    adaptableBus.shutdownExecutor();
                     final WebSocket ws = webSocket.get();
                     if (ws != null) {
                         ws.disconnect();

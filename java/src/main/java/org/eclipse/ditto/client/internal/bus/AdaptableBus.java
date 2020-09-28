@@ -110,6 +110,13 @@ public interface AdaptableBus {
     boolean unsubscribe(@Nullable SubscriptionId subscriptionId);
 
     /**
+     * Closes the executor of the adaptable bus .
+     *
+     * @since 1.2.2
+     */
+    void shutdownExecutor();
+
+    /**
      * Publish a string message that may or may not be an adaptable.
      *
      * @param message the string message.
