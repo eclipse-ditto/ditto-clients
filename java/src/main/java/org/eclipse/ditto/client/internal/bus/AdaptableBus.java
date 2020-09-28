@@ -111,8 +111,6 @@ public interface AdaptableBus {
 
     /**
      * Closes the executor of the adaptable bus .
-     *
-     * @since 1.2.2
      */
     void shutdownExecutor();
 
