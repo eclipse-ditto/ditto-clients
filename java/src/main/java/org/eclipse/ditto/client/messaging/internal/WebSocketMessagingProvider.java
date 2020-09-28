@@ -168,8 +168,12 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
             if (webSocket.get() == null) {
                 final ScheduledExecutorService executor = createConnectionExecutor();
                 try {
-                    setWebSocket(connectWithRetries(this::createWebsocket, executor).toCompletableFuture().join());
+                    setWebSocket(
+                            connectWithPotentialRetries(this::createWebsocket, executor).toCompletableFuture().join());
                     initiallyConnected.set(true);
+                } catch (CompletionException e) {
+                    LOGGER.error("Encountered error during initial connection.");
+                    throw e;
                 } finally {
                     executor.shutdownNow();
                 }
@@ -316,16 +320,21 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         });
     }
 
-    private CompletionStage<WebSocket> connectWithRetries(final Supplier<WebSocket> webSocket,
+    private CompletionStage<WebSocket> connectWithPotentialRetries(final Supplier<WebSocket> webSocket,
             final ScheduledExecutorService executorService) {
 
-        return Retry.retryTo("initialize WebSocket connection",
-                () -> initiateConnection(webSocket.get(), reconnectExecutor), isCancelled::get)
-                .inClientSession(sessionId)
-                .withExecutor(executorService)
-                .notifyOnError(messagingConfiguration.getConnectionErrorHandler().orElse(null))
-                .isRecoverable(WebSocketMessagingProvider::isRecoverable)
-                .get();
+        if (messagingConfiguration.isInitialConnectRetryEnabled()) {
+            return Retry.retryTo("initialize WebSocket connection",
+                    () -> initiateConnection(webSocket.get(), reconnectExecutor), isCancelled::get)
+                    .inClientSession(sessionId)
+                    .withExecutor(executorService)
+                    .notifyOnError(messagingConfiguration.getConnectionErrorHandler().orElse(null))
+                    .isRecoverable(WebSocketMessagingProvider::isRecoverable)
+                    .get();
+        } else {
+            LOGGER.info("Client <{}>: Initializing WebSocket connection without retrying", sessionId);
+            return initiateConnection(webSocket.get(), executorService);
+        }
     }
 
     private void handleReconnectionIfEnabled() {
@@ -344,7 +353,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     private void reconnectWithRetries() {
-        this.connectWithRetries(this::recreateWebSocket, reconnectExecutor)
+        this.connectWithPotentialRetries(this::recreateWebSocket, reconnectExecutor)
                 .thenAccept(reconnectedWebSocket -> {
                     setWebSocket(reconnectedWebSocket);
                     reconnecting.set(false);

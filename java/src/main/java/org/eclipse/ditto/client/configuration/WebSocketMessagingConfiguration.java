@@ -40,6 +40,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
     private final JsonSchemaVersion jsonSchemaVersion;
     private final URI endpointUri;
     private final boolean reconnectEnabled;
+    private final boolean initialConnectRetryEnabled;
     @Nullable private final ProxyConfiguration proxyConfiguration;
     @Nullable private final TrustStoreConfiguration trustStoreConfiguration;
     @Nullable private final Consumer<Throwable> connectionErrorHandler;
@@ -49,6 +50,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
 
         jsonSchemaVersion = builder.jsonSchemaVersion;
         reconnectEnabled = builder.reconnectEnabled;
+        initialConnectRetryEnabled = builder.initialConnectRetryEnabled;
         proxyConfiguration = builder.proxyConfiguration;
         trustStoreConfiguration = builder.trustStoreConfiguration;
         connectionErrorHandler = builder.connectionErrorHandler;
@@ -81,6 +83,11 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
     }
 
     @Override
+    public boolean isInitialConnectRetryEnabled() {
+        return initialConnectRetryEnabled;
+    }
+
+    @Override
     public Optional<ProxyConfiguration> getProxyConfiguration() {
         return Optional.ofNullable(proxyConfiguration);
     }
@@ -105,6 +112,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         private Duration timeout = Duration.ofSeconds(60L);
         private URI endpointUri;
         private boolean reconnectEnabled;
+        private boolean initialConnectRetryEnabled;
         @Nullable private ProxyConfiguration proxyConfiguration;
         private TrustStoreConfiguration trustStoreConfiguration;
         @Nullable private Consumer<Throwable> connectionErrorHandler;
@@ -112,6 +120,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         private WebSocketMessagingConfigurationBuilder() {
             jsonSchemaVersion = JsonSchemaVersion.LATEST;
             reconnectEnabled = true;
+            initialConnectRetryEnabled = false;
             proxyConfiguration = null;
             connectionErrorHandler = null;
         }
@@ -144,6 +153,12 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         @Override
         public MessagingConfiguration.Builder reconnectEnabled(final boolean reconnectEnabled) {
             this.reconnectEnabled = reconnectEnabled;
+            return this;
+        }
+
+        @Override
+        public MessagingConfiguration.Builder initialConnectRetryEnabled(final boolean initialConnectRetryEnabled) {
+            this.initialConnectRetryEnabled = initialConnectRetryEnabled;
             return this;
         }
 

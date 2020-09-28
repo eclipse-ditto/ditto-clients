@@ -157,6 +157,7 @@ public class MockMessagingProvider implements MessagingProvider {
         return WebSocketMessagingConfiguration.newBuilder()
                 .endpoint("ws://localhost:8080")
                 .jsonSchemaVersion(version)
+                .initialConnectRetryEnabled(true)
                 .build();
     }
 
