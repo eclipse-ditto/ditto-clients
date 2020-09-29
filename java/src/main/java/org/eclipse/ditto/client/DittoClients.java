@@ -137,7 +137,7 @@ public final class DittoClients {
 
     /**
      * Creates a new {@link org.eclipse.ditto.client.DittoClient} with a shared {@code Twin} and {@code Live}
-     * {@link org.eclipse.ditto.client.messaging.MessagingProvider} but do not attempt to connect to the configured
+     * {@link org.eclipse.ditto.client.messaging.MessagingProvider} but does not attempt to connect to the configured
      * back-end.
      *
      * @param messagingProvider the messaging provider for this client.
@@ -151,8 +151,8 @@ public final class DittoClients {
 
     /**
      * Creates a new {@link org.eclipse.ditto.client.DittoClient} with a specific {@code Twin}, {@code Live} and
-     * {@code Policy} {@link org.eclipse.ditto.client.messaging.MessagingProvider} but do not attempt to the configured
-     * back-end.
+     * {@code Policy} {@link org.eclipse.ditto.client.messaging.MessagingProvider} but does not attempt to connect to
+     * the configured back-end.
      *
      * @param twinMessagingProvider the messaging provider for the {@code Twin} part of the client.
      * @param liveMessagingProvider the messaging provider for the {@code Live} part of the client.

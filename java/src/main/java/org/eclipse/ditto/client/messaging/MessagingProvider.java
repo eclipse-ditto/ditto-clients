@@ -42,7 +42,7 @@ public interface MessagingProvider {
     /**
      * Initializes the Messaging Provider by opening the underlying connections, etc.
      * Blocks the calling thread until messaging provider is ready.
-     * Use {@code initializeAsync} instead.
+     * @deprecated since 1.3.0. Use {@code initializeAsync} instead.
      */
     @Deprecated
     default void initialize() {
@@ -52,7 +52,7 @@ public interface MessagingProvider {
     /**
      * Perform initialization asynchronously.
      *
-     * @return a future that completes after initialization completes.
+     * @return a future that completes after initialization completed.
      * @since 1.3.0
      */
     CompletionStage<?> initializeAsync();
