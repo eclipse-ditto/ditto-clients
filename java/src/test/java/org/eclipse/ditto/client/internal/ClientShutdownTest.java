@@ -14,16 +14,21 @@ package org.eclipse.ditto.client.internal;
 
 import static java.util.Arrays.asList;
 
-import java.util.Arrays;
+import java.time.Duration;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.assertj.core.api.Assertions;
+import org.eclipse.ditto.client.DisconnectedDittoClient;
+import org.eclipse.ditto.client.DittoClientUsageExamples;
 import org.eclipse.ditto.client.DittoClients;
-import org.eclipse.ditto.client.messaging.internal.MockMessagingProvider;
+import org.eclipse.ditto.client.internal.bus.Classification;
+import org.eclipse.ditto.client.messaging.internal.WebSocketMessagingProvider;
 import org.junit.Test;
 
 /**
@@ -36,35 +41,47 @@ public class ClientShutdownTest {
             "FelixResolver-");
 
     @Test
-    public void testNoMoreActiveThreads() throws InterruptedException {
+    public void noThreadLeakWithWebsocketMessagingProvider() throws Exception {
+        final List<String> startingThreadNames = getActiveThreads(Collections.emptySet());
 
-        final Thread[] startingThreads = new Thread[Thread.activeCount()];
-        Thread.enumerate(startingThreads);
-        final Set<String> startingThreadNames =
-                Arrays.stream(startingThreads).map(Thread::getName).collect(Collectors.toSet());
+        final WebSocketMessagingProvider messaging =
+                (WebSocketMessagingProvider) DittoClientUsageExamples.createMessagingProvider();
 
-        final MockMessagingProvider messaging = new MockMessagingProvider();
-        messaging.onSend(m -> {});
+        // GIVEN: known executors for messaging and adaptable bus have tasks submitted
+        messaging.getExecutorService().submit(() -> {});
+        messaging.getConnectExecutor().submit(() -> {});
+        final CompletionStage<String> stringFuture = messaging.getAdaptableBus()
+                .subscribeOnceForString(Classification.forString("string-message"), Duration.ofDays(1L));
+        messaging.getAdaptableBus().publish("string-message");
+        stringFuture.toCompletableFuture().join();
 
-        // create client and destroy again
-        DittoClients.newInstance(messaging).destroy();
+        // WHEN: client is created
+        final DisconnectedDittoClient client = DittoClients.newDisconnectedInstance(messaging);
 
-        // wait some time for executors/threads to shutdown
+        // THEN: threads are allocated
+        Assertions.assertThat(getActiveThreads(startingThreadNames)).isNotEmpty();
+
+        // WHEN: client is destroyed
+        client.destroy();
+        // wait for threads to stop
         TimeUnit.SECONDS.sleep(2L);
 
+        // THEN: all allocated threads are destroyed
+        final List<String> activeThreads = getActiveThreads(startingThreadNames);
+        Assertions.assertThat(activeThreads)
+                .withFailMessage("There are %d threads active: %s", activeThreads.size(), activeThreads)
+                .isEmpty();
+    }
+
+    private static List<String> getActiveThreads(final Collection<String> startingThreadNames) {
         final Thread[] threads = new Thread[Thread.activeCount()];
         Thread.enumerate(threads);
 
         // filter out main thread and monitor thread
-        final List<String> activeThreads = Stream.of(threads)
+        return Stream.of(threads)
                 .map(Thread::getName)
                 .filter(name -> !ALLOWED_THREADS.contains(name) && !startingThreadNames.contains(name))
                 .collect(Collectors.toList());
-
-        // expect no more active threads
-        Assertions.assertThat(activeThreads)
-                .withFailMessage("There are %d threads active: %s", activeThreads.size(), activeThreads)
-                .isEmpty();
     }
 
 }

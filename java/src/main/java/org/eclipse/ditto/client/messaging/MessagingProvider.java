@@ -16,6 +16,7 @@ import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 
@@ -41,8 +42,20 @@ public interface MessagingProvider {
     /**
      * Initializes the Messaging Provider by opening the underlying connections, etc.
      * Blocks the calling thread until messaging provider is ready.
+     * @deprecated since 1.3.0. Use {@code initializeAsync} instead.
      */
-    void initialize();
+    @Deprecated
+    default void initialize() {
+        initializeAsync().toCompletableFuture().join();
+    }
+
+    /**
+     * Perform initialization asynchronously.
+     *
+     * @return a future that completes after initialization completed.
+     * @since 1.3.0
+     */
+    CompletionStage<?> initializeAsync();
 
     /**
      * Returns the {@code AuthenticationConfiguration} of this provider.

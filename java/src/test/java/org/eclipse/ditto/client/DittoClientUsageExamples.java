@@ -691,7 +691,12 @@ public final class DittoClientUsageExamples {
         }
     }
 
-    private static MessagingProvider createMessagingProvider() {
+    /**
+     * Create a messaging provider according to the configuration.
+     *
+     * @return the messaging provider.
+     */
+    public static MessagingProvider createMessagingProvider() {
         final MessagingConfiguration.Builder builder = WebSocketMessagingConfiguration.newBuilder()
                 .endpoint(DITTO_ENDPOINT_URL)
                 .jsonSchemaVersion(JsonSchemaVersion.V_2)
