@@ -16,6 +16,8 @@ import java.util.concurrent.CompletionStage;
 
 /**
  * Client interface before connecting.
+ *
+ * @since 1.3.0
  */
 public interface DisconnectedDittoClient {
 
