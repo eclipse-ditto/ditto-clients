@@ -46,11 +46,10 @@ public final class RetryTest {
     @Test
     public void getsResultOfRetryableSupplier() {
         final Supplier<CompletionStage<String>> retryableSupplier = () -> CompletableFuture.completedFuture("foo");
-        final String actualResult = Retry.retryTo("test the result", retryableSupplier, IS_CANCELLED)
+        final String actualResult = Retry.retryTo("test the result", retryableSupplier)
                 .inClientSession(UUID.randomUUID().toString())
-                .withExecutor(scheduledExecutorService)
-                .get()
-                .toCompletableFuture()
+                .withExecutors(scheduledExecutorService, scheduledExecutorService)
+                .completeFutureEventually(new CompletableFuture<>())
                 .join();
 
         assertThat(actualResult).isEqualTo("foo");
@@ -67,11 +66,10 @@ public final class RetryTest {
                 return "bar";
             }
         });
-        final String actualResult = Retry.retryTo("test the result", retryableSupplier, IS_CANCELLED)
+        final String actualResult = Retry.retryTo("test the result", retryableSupplier)
                 .inClientSession(UUID.randomUUID().toString())
-                .withExecutor(scheduledExecutorService)
-                .get()
-                .toCompletableFuture()
+                .withExecutors(scheduledExecutorService, scheduledExecutorService)
+                .completeFutureEventually(new CompletableFuture<>())
                 .join();
 
         assertThat(actualResult).isEqualTo("bar");
@@ -91,16 +89,15 @@ public final class RetryTest {
                 return "bar";
             }
         });
-        final String actualResult = Retry.retryTo("test the result", retryableSupplier, IS_CANCELLED)
+        final String actualResult = Retry.retryTo("test the result", retryableSupplier)
                 .inClientSession(UUID.randomUUID().toString())
-                .withExecutor(scheduledExecutorService)
+                .withExecutors(scheduledExecutorService, scheduledExecutorService)
                 .notifyOnError(error -> {
                     assertThat(error).isInstanceOf(RuntimeException.class);
                     assertThat(error.getMessage()).isEqualTo("Expected exception in first iteration.");
                     errorConsumerLatch.countDown();
                 })
-                .get()
-                .toCompletableFuture()
+                .completeFutureEventually(new CompletableFuture<>())
                 .join();
 
         assertThat(actualResult).isEqualTo("bar");

@@ -15,6 +15,8 @@ package org.eclipse.ditto.client.messaging.internal;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -108,8 +110,8 @@ public class MockMessagingProvider implements MessagingProvider {
     }
 
     @Override
-    public void initialize() {
-        // noop
+    public CompletionStage<?> initializeAsync() {
+        return CompletableFuture.completedFuture(this);
     }
 
     @Override

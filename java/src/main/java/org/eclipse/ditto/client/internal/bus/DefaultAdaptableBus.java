@@ -143,8 +143,9 @@ final class DefaultAdaptableBus implements AdaptableBus {
 
     @Override
     public void shutdownExecutor() {
-        LOGGER.trace("Shutting down AdaptableBus Executor");
+        LOGGER.trace("Shutting down AdaptableBus Executors");
         singleThreadedExecutorService.shutdownNow();
+        scheduledExecutorService.shutdownNow();
     }
 
     // call this in a single-threaded executor so that ordering is preserved

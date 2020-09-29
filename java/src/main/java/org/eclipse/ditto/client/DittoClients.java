@@ -135,4 +135,40 @@ public final class DittoClients {
                 messageSerializerRegistry);
     }
 
+    /**
+     * Creates a new {@link org.eclipse.ditto.client.DittoClient} with a shared {@code Twin} and {@code Live}
+     * {@link org.eclipse.ditto.client.messaging.MessagingProvider} but do not attempt to connect to the configured
+     * back-end.
+     *
+     * @param messagingProvider the messaging provider for this client.
+     * @return the disconnected client.
+     * @since 1.3.0
+     */
+    public static DisconnectedDittoClient newDisconnectedInstance(final MessagingProvider messagingProvider) {
+        return newDisconnectedInstance(messagingProvider, messagingProvider, messagingProvider,
+                MessageSerializerFactory.newInstance().getMessageSerializerRegistry());
+    }
+
+    /**
+     * Creates a new {@link org.eclipse.ditto.client.DittoClient} with a specific {@code Twin}, {@code Live} and
+     * {@code Policy} {@link org.eclipse.ditto.client.messaging.MessagingProvider} but do not attempt to the configured
+     * back-end.
+     *
+     * @param twinMessagingProvider the messaging provider for the {@code Twin} part of the client.
+     * @param liveMessagingProvider the messaging provider for the {@code Live} part of the client.
+     * @param policyMessagingProvider the messaging provider for the {@code Policy} part of the client.
+     * @param messageSerializerRegistry a registry of {@code MessageSerializer}s for the {@code Live} part of the client.
+     * @return the disconnected client.
+     * @since 1.3.0
+     */
+    public static DisconnectedDittoClient newDisconnectedInstance(final MessagingProvider twinMessagingProvider,
+            final MessagingProvider liveMessagingProvider, final MessagingProvider policyMessagingProvider,
+            final MessageSerializerRegistry messageSerializerRegistry) {
+
+        return DefaultDittoClient.newDisconnectedInstance(twinMessagingProvider,
+                liveMessagingProvider,
+                policyMessagingProvider,
+                messageSerializerRegistry);
+    }
+
 }
