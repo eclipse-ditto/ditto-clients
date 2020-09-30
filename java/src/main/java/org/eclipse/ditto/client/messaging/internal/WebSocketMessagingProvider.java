@@ -31,6 +31,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
@@ -322,25 +323,16 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
             final CompletableFuture<WebSocket> future) {
 
         try {
-            if (messagingConfiguration.isInitialConnectRetryEnabled()) {
-                return Retry.retryTo("initialize WebSocket connection",
-                        () -> initiateConnection(webSocket.get()))
-                        .inClientSession(sessionId)
-                        .withExecutors(connectExecutor, callbackExecutor)
-                        .notifyOnError(messagingConfiguration.getConnectionErrorHandler().orElse(null))
-                        .isRecoverable(WebSocketMessagingProvider::isRecoverable)
-                        .completeFutureEventually(future);
-            } else {
-                LOGGER.info("Client <{}>: Initializing WebSocket connection without retrying", sessionId);
-                initiateConnection(webSocket.get()).whenComplete((result, error) -> {
-                    if (error == null) {
-                        future.complete(result);
-                    } else {
-                        future.completeExceptionally(error);
-                    }
-                });
-                return future;
-            }
+            final Predicate<Throwable> isRecoverable = messagingConfiguration.isInitialConnectRetryEnabled()
+                    ? WebSocketMessagingProvider::isRecoverable
+                    : exception -> false;
+            return Retry.retryTo("initialize WebSocket connection",
+                    () -> initiateConnection(webSocket.get()))
+                    .inClientSession(sessionId)
+                    .withExecutors(connectExecutor, callbackExecutor)
+                    .notifyOnError(messagingConfiguration.getConnectionErrorHandler().orElse(null))
+                    .isRecoverable(isRecoverable)
+                    .completeFutureEventually(future);
         } catch (final Exception exception) {
             future.completeExceptionally(exception);
             return future;
