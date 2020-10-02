@@ -185,7 +185,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         }
 
         @Override
-        public Builder connectionErrorHandler(final Consumer<Throwable> handler) {
+        public Builder connectionErrorHandler(@Nullable final Consumer<Throwable> handler) {
             this.connectionErrorHandler = handler;
             return this;
         }

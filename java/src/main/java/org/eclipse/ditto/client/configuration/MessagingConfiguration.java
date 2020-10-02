@@ -156,7 +156,7 @@ public interface MessagingConfiguration {
          * @param handler the handler that will be called with the cause of the connection error.
          * @since 1.2.0
          */
-        Builder connectionErrorHandler(final Consumer<Throwable> handler);
+        Builder connectionErrorHandler(@Nullable final Consumer<Throwable> handler);
 
         /**
          * Creates a new instance of {@code MessagingConfiguration}.
