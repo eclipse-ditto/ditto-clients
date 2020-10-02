@@ -19,14 +19,22 @@ import java.net.URI;
 import java.text.MessageFormat;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
+import org.eclipse.ditto.json.JsonArray;
+import org.eclipse.ditto.json.JsonCollectors;
+import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 
 /**
@@ -43,6 +51,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
     @Nullable private final ProxyConfiguration proxyConfiguration;
     @Nullable private final TrustStoreConfiguration trustStoreConfiguration;
     @Nullable private final Consumer<Throwable> connectionErrorHandler;
+    private final Collection<AcknowledgementLabel> declaredAcknowledgements;
 
     public WebSocketMessagingConfiguration(final WebSocketMessagingConfigurationBuilder builder,
             final URI endpointUri) {
@@ -53,6 +62,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         trustStoreConfiguration = builder.trustStoreConfiguration;
         connectionErrorHandler = builder.connectionErrorHandler;
         this.timeout = builder.timeout;
+        this.declaredAcknowledgements = Collections.unmodifiableSet(builder.declaredAcknowledgements);
         this.endpointUri = endpointUri;
     }
 
@@ -73,6 +83,11 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
     @Override
     public URI getEndpointUri() {
         return endpointUri;
+    }
+
+    @Override
+    public Collection<AcknowledgementLabel> getDeclaredAcknowledgements() {
+        return declaredAcknowledgements;
     }
 
     @Override
@@ -108,6 +123,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         @Nullable private ProxyConfiguration proxyConfiguration;
         private TrustStoreConfiguration trustStoreConfiguration;
         @Nullable private Consumer<Throwable> connectionErrorHandler;
+        private final Set<AcknowledgementLabel> declaredAcknowledgements = new HashSet<>();
 
         private WebSocketMessagingConfigurationBuilder() {
             jsonSchemaVersion = JsonSchemaVersion.LATEST;
@@ -138,6 +154,13 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
             });
 
             endpointUri = uri;
+            return this;
+        }
+
+        @Override
+        public Builder declaredAcknowledgements(final Collection<AcknowledgementLabel> acknowledgementLabels) {
+            this.declaredAcknowledgements.clear();
+            this.declaredAcknowledgements.addAll(acknowledgementLabels);
             return this;
         }
 

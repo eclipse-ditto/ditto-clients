@@ -14,11 +14,13 @@ package org.eclipse.ditto.client.configuration;
 
 import java.net.URI;
 import java.time.Duration;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 
 /**
@@ -48,6 +50,13 @@ public interface MessagingConfiguration {
      * @return the URI.
      */
     URI getEndpointUri();
+
+    /**
+     * Returns the labels of all acknowledgements that are declared to be provided by this connection.
+     *
+     * @return the acknowledgment labels.
+     */
+    Collection<AcknowledgementLabel> getDeclaredAcknowledgements();
 
     /**
      * @return {@code true} if client should try to reconnect when connection is lost.
@@ -106,6 +115,14 @@ public interface MessagingConfiguration {
          * @return this builder.
          */
         Builder endpoint(String endpoint);
+
+        /**
+         * Sets the labels of all acknowledgements that are declared to be provided by this connection.
+         *
+         * @param acknowledgementLabels the acknowledgement labels
+         * @return this builder.
+         */
+        Builder declaredAcknowledgements(Collection<AcknowledgementLabel> acknowledgementLabels);
 
         /**
          * Sets if {@code reconnectEnabled}.

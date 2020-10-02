@@ -17,6 +17,7 @@ import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -43,7 +44,11 @@ import org.eclipse.ditto.client.messaging.AuthenticationException;
 import org.eclipse.ditto.client.messaging.AuthenticationProvider;
 import org.eclipse.ditto.client.messaging.MessagingException;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
+import org.eclipse.ditto.json.JsonCollectors;
+import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -181,7 +186,14 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         final WebSocketFactory webSocketFactory = WebSocketFactoryFactory.newWebSocketFactory(messagingConfiguration);
         final WebSocket ws;
         try {
-            ws = webSocketFactory.createSocket(messagingConfiguration.getEndpointUri());
+            final String declaredAcksJsonArrayString = messagingConfiguration.getDeclaredAcknowledgements()
+                    .stream()
+                    .map(AcknowledgementLabel::toString)
+                    .map(JsonValue::of)
+                    .collect(JsonCollectors.valuesToArray())
+                    .toString();
+            ws = webSocketFactory.createSocket(messagingConfiguration.getEndpointUri())
+                    .addHeader(DittoHeaderDefinition.DECLARED_ACKS.getKey(), declaredAcksJsonArrayString);
         } catch (final IOException e) {
             throw MessagingException.connectFailed(sessionId, e);
         }
