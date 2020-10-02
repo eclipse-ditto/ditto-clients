@@ -444,7 +444,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                             return AuthenticationException.forbidden(sessionId, cause);
                         default:
                             return AuthenticationException.withStatus(sessionId, cause, statusLine.getStatusCode(),
-                                    statusLine.getReasonPhrase());
+                                    statusLine.getReasonPhrase() + ": " +
+                                            new String(((OpeningHandshakeException) cause).getBody()));
                     }
                 }
             } else if (((WebSocketException) cause).getError() == WebSocketError.SOCKET_CONNECT_ERROR &&
