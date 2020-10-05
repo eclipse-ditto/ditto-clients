@@ -222,10 +222,10 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
                         final Acknowledgements acks = ((AcknowledgementsFailedException) error).getAcknowledgements();
                         assertThat(acks.getStatusCode()).isEqualTo(HttpStatusCode.FAILED_DEPENDENCY);
                         assertThat(acks.getAcknowledgement(LIVE_RESPONSE).map(Acknowledgement::getStatusCode))
-                                .contains(HttpStatusCode.IM_A_TEAPOT);
+                                .contains(HttpStatusCode.OK);
                         assertThat(acks.getAcknowledgement(AcknowledgementLabel.of("custom"))
                                 .map(Acknowledgement::getStatusCode))
-                                .contains(HttpStatusCode.NO_CONTENT);
+                                .contains(HttpStatusCode.IM_A_TEAPOT);
                         future.complete(null);
                     } catch (final Throwable e) {
                         future.completeExceptionally(e);
@@ -235,7 +235,7 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
         final SendThingMessage<?> command = expectMsgClass(SendThingMessage.class);
         final SendThingMessageResponse<?> response =
                 SendThingMessageResponse.of(command.getEntityId(), command.getMessage(),
-                        HttpStatusCode.IM_A_TEAPOT, command.getDittoHeaders());
+                        HttpStatusCode.OK, command.getDittoHeaders());
         final Acknowledgement liveResponseAck = Acknowledgement.of(
                 LIVE_RESPONSE,
                 response.getEntityId(),
@@ -246,7 +246,7 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
         final Acknowledgement customAck = Acknowledgement.of(
                 AcknowledgementLabel.of("custom"),
                 command.getEntityId(),
-                HttpStatusCode.NO_CONTENT,
+                HttpStatusCode.IM_A_TEAPOT,
                 command.getDittoHeaders()
         );
         reply(Acknowledgements.of(Arrays.asList(liveResponseAck, customAck), command.getDittoHeaders()));
