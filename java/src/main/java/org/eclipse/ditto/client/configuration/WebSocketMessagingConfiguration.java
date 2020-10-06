@@ -48,7 +48,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
     @Nullable private final ProxyConfiguration proxyConfiguration;
     @Nullable private final TrustStoreConfiguration trustStoreConfiguration;
     @Nullable private final Consumer<Throwable> connectionErrorHandler;
-    private final Collection<AcknowledgementLabel> declaredAcknowledgements;
+    private final Set<AcknowledgementLabel> declaredAcknowledgements;
 
     public WebSocketMessagingConfiguration(final WebSocketMessagingConfigurationBuilder builder,
             final URI endpointUri) {
@@ -83,7 +83,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
     }
 
     @Override
-    public Collection<AcknowledgementLabel> getDeclaredAcknowledgements() {
+    public Set<AcknowledgementLabel> getDeclaredAcknowledgements() {
         return declaredAcknowledgements;
     }
 

@@ -16,6 +16,7 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
@@ -57,7 +58,7 @@ public interface MessagingConfiguration {
      * @return the acknowledgment labels.
      * @since 1.4.0
      */
-    Collection<AcknowledgementLabel> getDeclaredAcknowledgements();
+    Set<AcknowledgementLabel> getDeclaredAcknowledgements();
 
     /**
      * @return {@code true} if client should try to reconnect when connection is lost.
@@ -118,7 +119,7 @@ public interface MessagingConfiguration {
         Builder endpoint(String endpoint);
 
         /**
-         * Sets the labels of all acknowledgements that are declared to be provided by this connection.
+         * Sets the labels of all acknowledgements that are declared to be provided by this client session/connection.
          *
          * @param acknowledgementLabels the acknowledgement labels
          * @return this builder.
