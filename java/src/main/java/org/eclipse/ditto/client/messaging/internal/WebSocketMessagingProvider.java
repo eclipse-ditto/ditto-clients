@@ -46,8 +46,8 @@ import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.json.JsonCollectors;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
-import org.eclipse.ditto.model.base.common.DittoConstants;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -192,7 +192,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                     .collect(JsonCollectors.valuesToArray())
                     .toString();
             ws = webSocketFactory.createSocket(messagingConfiguration.getEndpointUri())
-                    .addHeader(DittoConstants.WEBSOCKET_SESSION_HEADER_DECLARED_ACKS, declaredAcksJsonArrayString);
+                    .addHeader(DittoHeaderDefinition.DECLARED_ACKS.getKey(), declaredAcksJsonArrayString);
         } catch (final IOException e) {
             throw MessagingException.connectFailed(sessionId, e);
         }
