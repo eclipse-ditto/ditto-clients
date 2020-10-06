@@ -55,6 +55,7 @@ public interface MessagingConfiguration {
      * Returns the labels of all acknowledgements that are declared to be provided by this connection.
      *
      * @return the acknowledgment labels.
+     * @since 1.4.0
      */
     Collection<AcknowledgementLabel> getDeclaredAcknowledgements();
 
@@ -121,6 +122,7 @@ public interface MessagingConfiguration {
          *
          * @param acknowledgementLabels the acknowledgement labels
          * @return this builder.
+         * @since 1.4.0
          */
         Builder declaredAcknowledgements(Collection<AcknowledgementLabel> acknowledgementLabels);
 
