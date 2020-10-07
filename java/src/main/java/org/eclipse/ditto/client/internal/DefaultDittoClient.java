@@ -14,8 +14,10 @@ package org.eclipse.ditto.client.internal;
 
 import java.text.MessageFormat;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
+import org.eclipse.ditto.client.DisconnectedDittoClient;
 import org.eclipse.ditto.client.DittoClient;
 import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.client.changes.internal.ImmutableChange;
@@ -81,7 +83,7 @@ import org.slf4j.LoggerFactory;
  *
  * @since 1.0.0
  */
-public final class DefaultDittoClient implements DittoClient {
+public final class DefaultDittoClient implements DittoClient, DisconnectedDittoClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultDittoClient.class);
 
@@ -120,6 +122,35 @@ public final class DefaultDittoClient implements DittoClient {
             final MessagingProvider liveMessagingProvider,
             final MessagingProvider policyMessagingProvider,
             final MessageSerializerRegistry messageSerializerRegistry) {
+
+        final DisconnectedDittoClient disconnectedClient =
+                newDisconnectedInstance(twinMessagingProvider, liveMessagingProvider, policyMessagingProvider,
+                        messageSerializerRegistry);
+        final CompletionStage<DittoClient> connectFuture = disconnectedClient.connect();
+
+        connectFuture.whenComplete((result, error) -> {
+            if (error != null) {
+                disconnectedClient.destroy();
+            }
+        });
+
+        return connectFuture.toCompletableFuture().join();
+    }
+
+    /**
+     * Create a Ditto client object but do not attempt to connect to the configured back-end.
+     *
+     * @param twinMessagingProvider the messaging provider to use for the {@code Twin} aspect.
+     * @param liveMessagingProvider the messaging provider to use for the {@code Live} aspect.
+     * @param policyMessagingProvider the messaging provider for the {@code Policy} part of the client.
+     * @param messageSerializerRegistry registry for all serializers of live messages.
+     * @return the disconnected client.
+     */
+    public static DisconnectedDittoClient newDisconnectedInstance(final MessagingProvider twinMessagingProvider,
+            final MessagingProvider liveMessagingProvider,
+            final MessagingProvider policyMessagingProvider,
+            final MessageSerializerRegistry messageSerializerRegistry) {
+
         final TwinImpl twin = configureTwin(twinMessagingProvider);
         final LiveImpl live = configureLive(liveMessagingProvider, messageSerializerRegistry);
         final PoliciesImpl policy = configurePolicyClient(policyMessagingProvider);
@@ -233,16 +264,9 @@ public final class DefaultDittoClient implements DittoClient {
     }
 
     private static void init(final PointerBus bus, final MessagingProvider messagingProvider) {
-        try {
-            registerKeyBasedDistributorForIncomingEvents(bus);
-            registerKeyBasedHandlersForIncomingEvents(bus, messagingProvider,
-                    DittoProtocolAdapter.of(HeaderTranslator.empty()));
-            messagingProvider.initialize();
-        } catch (final RuntimeException e) {
-            bus.close();
-            messagingProvider.close();
-            throw e;
-        }
+        registerKeyBasedDistributorForIncomingEvents(bus);
+        registerKeyBasedHandlersForIncomingEvents(bus, messagingProvider,
+                DittoProtocolAdapter.of(HeaderTranslator.empty()));
     }
 
     private static void registerKeyBasedDistributorForIncomingEvents(final PointerBus bus) {
@@ -554,5 +578,13 @@ public final class DefaultDittoClient implements DittoClient {
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
                         emitAcknowledgement)
         );
+    }
+
+    @Override
+    public CompletionStage<DittoClient> connect() {
+        return twin.messagingProvider.initializeAsync()
+                .thenCompose(result -> live.messagingProvider.initializeAsync())
+                .thenCompose(result -> policies.messagingProvider.initializeAsync())
+                .thenApply(result -> this);
     }
 }

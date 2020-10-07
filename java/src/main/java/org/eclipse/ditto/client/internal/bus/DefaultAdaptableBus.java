@@ -141,6 +141,13 @@ final class DefaultAdaptableBus implements AdaptableBus {
         singleThreadedExecutorService.submit(() -> doPublish(message));
     }
 
+    @Override
+    public void shutdownExecutor() {
+        LOGGER.trace("Shutting down AdaptableBus Executors");
+        singleThreadedExecutorService.shutdownNow();
+        scheduledExecutorService.shutdownNow();
+    }
+
     // call this in a single-threaded executor so that ordering is preserved
     private void doPublish(final String message) {
         if (publishToOneTimeStringSubscribers(message)) {

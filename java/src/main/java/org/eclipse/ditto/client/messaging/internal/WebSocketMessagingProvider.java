@@ -78,11 +78,11 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     private final AuthenticationProvider<WebSocket> authenticationProvider;
     private final ExecutorService callbackExecutor;
     private final String sessionId;
-    private final ScheduledExecutorService reconnectExecutor;
+    private final ScheduledExecutorService connectExecutor;
     private final Map<Object, String> subscriptionMessages;
     private final AtomicBoolean reconnecting = new AtomicBoolean(false);
-    private final AtomicBoolean initiallyConnected = new AtomicBoolean(false);
-    private final AtomicBoolean isCancelled = new AtomicBoolean(false);
+    private final AtomicBoolean initializing = new AtomicBoolean(false);
+    private final CompletableFuture<WebSocket> initializationFuture = new CompletableFuture<>();
 
     private final AtomicReference<WebSocket> webSocket;
 
@@ -104,12 +104,12 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         this.callbackExecutor = callbackExecutor;
 
         sessionId = authenticationProvider.getConfiguration().getSessionId();
-        reconnectExecutor = createReconnectExecutor();
+        connectExecutor = createConnectExecutor();
         subscriptionMessages = new ConcurrentHashMap<>();
         webSocket = new AtomicReference<>();
     }
 
-    private static ScheduledExecutorService createReconnectExecutor() {
+    private static ScheduledExecutorService createConnectExecutor() {
         return Executors.newScheduledThreadPool(1, new DefaultThreadFactory("ditto-client-reconnect"));
     }
 
@@ -148,6 +148,15 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         return callbackExecutor;
     }
 
+    /**
+     * Return the executor for reconnection.
+     *
+     * @return the reconnect executor.
+     */
+    public ScheduledExecutorService getConnectExecutor() {
+        return connectExecutor;
+    }
+
     @Override
     public AdaptableBus getAdaptableBus() {
         return adaptableBus;
@@ -166,19 +175,19 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     @Override
-    public synchronized void initialize() {
+    public CompletionStage<?> initializeAsync() {
         // this method may be called multiple times.
-        synchronized (initiallyConnected) {
+        if (!initializing.getAndSet(true)) {
             if (webSocket.get() == null) {
-                final ScheduledExecutorService executor = createConnectionExecutor();
-                try {
-                    setWebSocket(connectWithRetries(this::createWebsocket, executor).toCompletableFuture().join());
-                    initiallyConnected.set(true);
-                } finally {
-                    executor.shutdownNow();
-                }
+                return connectWithPotentialRetries(this::createWebsocket, initializationFuture)
+                        .thenApply(ws -> {
+                            setWebSocket(ws);
+                            return this;
+                        });
             }
         }
+        // no need to set flags for subsequent calls of this method
+        return initializationFuture.thenApply(ws -> this);
     }
 
     private WebSocket createWebsocket() {
@@ -208,9 +217,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
      * be empty.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    private CompletionStage<WebSocket> initiateConnection(final WebSocket ws, final ExecutorService executor) {
+    private CompletionStage<WebSocket> initiateConnection(final WebSocket ws) {
         checkNotNull(ws, "ws");
-        checkNotNull(executor, "executor");
 
         // TODO: make these configurable?
         ws.addHeader("User-Agent", DITTO_CLIENT_USER_AGENT);
@@ -222,20 +230,14 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         ws.addListener(this);
 
         LOGGER.info("Connecting WebSocket on endpoint <{}>.", ws.getURI());
-        final CompletableFuture<WebSocket> webSocketFuture = new CompletableFuture<>();
         final Callable<WebSocket> connectCallable = ws.connectable();
-        executor.submit(() -> {
+        return CompletableFuture.supplyAsync(() -> {
             try {
-                webSocketFuture.complete(connectCallable.call());
+                return connectCallable.call();
             } catch (final Throwable e) {
-                webSocketFuture.completeExceptionally(mapConnectError(e));
+                throw mapConnectError(e);
             }
-        });
-        return webSocketFuture;
-    }
-
-    private static ScheduledExecutorService createConnectionExecutor() {
-        return Executors.newScheduledThreadPool(1, new DefaultThreadFactory("ditto-client-connect"));
+        }, connectExecutor);
     }
 
     @Override
@@ -256,24 +258,26 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     @Override
     public void close() {
-        synchronized (isCancelled) {
-            if (!isCancelled.get()) {
-                try {
-                    LOGGER.debug("Client <{}>: Closing WebSocket client of endpoint <{}>.", sessionId,
-                            messagingConfiguration.getEndpointUri());
+        try {
+            LOGGER.debug("Client <{}>: Closing WebSocket client of endpoint <{}>.", sessionId,
+                    messagingConfiguration.getEndpointUri());
 
-                    cancelScheduledReconnect();
-                    authenticationProvider.destroy();
-                    final WebSocket ws = webSocket.get();
-                    if (ws != null) {
-                        ws.disconnect();
-                    }
-
-                    LOGGER.info("Client <{}>: WebSocket destroyed.", sessionId);
-                } catch (final Exception e) {
-                    LOGGER.info("Client <{}>: Exception occurred while trying to shutdown http client.", sessionId, e);
-                }
+            // Scheduled tasks obtained from "shutdownNow" are useless because they overrides Runnable.run()
+            // to NOT run when the parent executor was shut down.
+            connectExecutor.shutdownNow();
+            authenticationProvider.destroy();
+            adaptableBus.shutdownExecutor();
+            final WebSocket ws = webSocket.get();
+            if (ws != null) {
+                ws.disconnect();
             }
+
+            LOGGER.info("Client <{}>: WebSocket destroyed.", sessionId);
+            initializationFuture.completeExceptionally(MessagingException.connectFailed(sessionId,
+                    new IllegalStateException("The client was destroyed.")));
+        } catch (final Exception e) {
+            LOGGER.info("Client <{}>: Exception occurred while trying to shutdown http client.", sessionId, e);
+            initializationFuture.completeExceptionally(MessagingException.connectFailed(sessionId, e));
         }
     }
 
@@ -282,15 +286,13 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         callbackExecutor.execute(() -> {
             LOGGER.info("Client <{}>: WebSocket connection is established", sessionId);
 
-            if (initiallyConnected.get()) {
-                // we were already connected - so this is a reconnect
+            if (!subscriptionMessages.isEmpty()) {
                 LOGGER.info("Client <{}>: Subscribing again for messages from backend after reconnection",
                         sessionId);
                 subscriptionMessages.values().forEach(this::emit);
             }
         });
     }
-
 
     @Override
     public void onDisconnected(final WebSocket websocket, final WebSocketFrame serverCloseFrame,
@@ -327,26 +329,43 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         });
     }
 
-    private CompletionStage<WebSocket> connectWithRetries(final Supplier<WebSocket> webSocket,
-            final ScheduledExecutorService executorService) {
+    private CompletableFuture<WebSocket> connectWithPotentialRetries(final Supplier<WebSocket> webSocket,
+            final CompletableFuture<WebSocket> future) {
 
-        return Retry.retryTo("initialize WebSocket connection",
-                () -> initiateConnection(webSocket.get(), reconnectExecutor), isCancelled::get)
-                .inClientSession(sessionId)
-                .withExecutor(executorService)
-                .notifyOnError(messagingConfiguration.getConnectionErrorHandler().orElse(null))
-                .isRecoverable(WebSocketMessagingProvider::isRecoverable)
-                .get();
+        try {
+            if (messagingConfiguration.isInitialConnectRetryEnabled()) {
+                return Retry.retryTo("initialize WebSocket connection",
+                        () -> initiateConnection(webSocket.get()))
+                        .inClientSession(sessionId)
+                        .withExecutors(connectExecutor, callbackExecutor)
+                        .notifyOnError(messagingConfiguration.getConnectionErrorHandler().orElse(null))
+                        .isRecoverable(WebSocketMessagingProvider::isRecoverable)
+                        .completeFutureEventually(future);
+            } else {
+                LOGGER.info("Client <{}>: Initializing WebSocket connection without retrying", sessionId);
+                initiateConnection(webSocket.get()).whenComplete((result, error) -> {
+                    if (error == null) {
+                        future.complete(result);
+                    } else {
+                        future.completeExceptionally(error);
+                    }
+                });
+                return future;
+            }
+        } catch (final Exception exception) {
+            future.completeExceptionally(exception);
+            return future;
+        }
     }
 
     private void handleReconnectionIfEnabled() {
 
         if (messagingConfiguration.isReconnectEnabled()) {
             // reconnect in a while if client was initially connected and we are not reconnecting already
-            if (initiallyConnected.get() && reconnecting.compareAndSet(false, true) && null != reconnectExecutor) {
+            if (reconnecting.compareAndSet(false, true)) {
                 LOGGER.info("Client <{}>: Reconnection is enabled. Reconnecting in <{}> seconds ...",
                         sessionId, RECONNECTION_TIMEOUT_SECONDS);
-                reconnectExecutor.schedule(this::reconnectWithRetries, RECONNECTION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+                connectExecutor.schedule(this::reconnectWithRetries, RECONNECTION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
             }
         } else {
             LOGGER.info("Client <{}>: Reconnection is NOT enabled. Closing client ...", sessionId);
@@ -355,7 +374,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     private void reconnectWithRetries() {
-        this.connectWithRetries(this::recreateWebSocket, reconnectExecutor)
+        this.connectWithPotentialRetries(this::recreateWebSocket, new CompletableFuture<>())
                 .thenAccept(reconnectedWebSocket -> {
                     setWebSocket(reconnectedWebSocket);
                     reconnecting.set(false);
@@ -416,19 +435,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         adaptableBus.publish(message);
     }
 
-    private void cancelScheduledReconnect() {
-        isCancelled.set(true);
-        if (null != reconnectExecutor) {
-            // Run the Retry tasks on the reconnect executor here
-            // so that they release any threads waiting on them, because isCancelled(true)
-            reconnectExecutor.shutdownNow().forEach(Runnable::run);
-        }
-    }
-
-    private Throwable mapConnectError(final Throwable e) {
-        final Throwable cause = (e instanceof CompletionException || e instanceof ExecutionException)
-                ? e.getCause()
-                : e;
+    private RuntimeException mapConnectError(final Throwable e) {
+        final Throwable cause = getRootCause(e);
         if (cause instanceof WebSocketException) {
             LOGGER.error("Got exception: {}", cause.getMessage());
             if (cause instanceof OpeningHandshakeException) {
@@ -467,6 +475,15 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     private static boolean isRecoverable(final Throwable error) {
         // every exception should be recoverable
         return true;
+    }
+
+    private static Throwable getRootCause(final Throwable e) {
+        if (e.getCause() == null) {
+            return e;
+        }
+        return (e instanceof CompletionException || e instanceof ExecutionException)
+                ? getRootCause(e.getCause())
+                : e;
     }
 
 }

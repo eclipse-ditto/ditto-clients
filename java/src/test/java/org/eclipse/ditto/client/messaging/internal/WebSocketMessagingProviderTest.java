@@ -22,6 +22,7 @@ import java.net.UnknownHostException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -32,7 +33,6 @@ import java.util.function.Consumer;
 import org.eclipse.ditto.client.configuration.BasicAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.configuration.WebSocketMessagingConfiguration;
-import org.eclipse.ditto.client.messaging.AuthenticationException;
 import org.eclipse.ditto.client.messaging.AuthenticationProvider;
 import org.eclipse.ditto.client.messaging.AuthenticationProviders;
 import org.eclipse.ditto.client.messaging.MessagingException;
@@ -73,7 +73,7 @@ public final class WebSocketMessagingProviderTest {
         assertThatExceptionOfType(CompletionException.class).isThrownBy(underTest::initialize);
 
         // THEN: the error handler is notified exactly once
-        assertThat(errors.take())
+        assertThat(errors.poll(2L, TimeUnit.SECONDS))
                 .isInstanceOf(MessagingException.class)
                 .hasCauseInstanceOf(UnknownHostException.class);
         expectNoMsg(errors);
@@ -99,37 +99,31 @@ public final class WebSocketMessagingProviderTest {
         final WebSocketMessagingProvider underTest =
                 WebSocketMessagingProvider.newInstance(config, dummyAuth(), EXECUTOR);
 
-        final ExecutorService executor = Executors.newSingleThreadExecutor();
-        try {
-            // WHEN: websocket connect to an unavailable address
-            final CompletableFuture<?> future = CompletableFuture.runAsync(underTest::initialize, executor);
+        // WHEN: websocket connect to an unavailable address
+        final CompletableFuture<?> future = underTest.initializeAsync().toCompletableFuture();
 
-            // THEN: the error handler is notified many times
-            for (int i = 0; i < numberOfRecoverableErrors; ++i) {
-                assertThat(errors.take())
-                        .isInstanceOf(MessagingException.class)
-                        .hasCauseInstanceOf(OpeningHandshakeException.class);
-            }
-
-            // THEN: the calling thread of .initialize blocks until the client is destroyed,
-            // upon which an exception is thrown
-            underTest.close();
-            assertThatExceptionOfType(CompletionException.class)
-                    .isThrownBy(future::join)
-                    .withCauseInstanceOf(MessagingException.class);
-        } finally {
-            // NOT a hard kill
-            executor.shutdownNow();
+        // THEN: the error handler is notified many times
+        for (int i = 0; i < numberOfRecoverableErrors; ++i) {
+            assertThat(errors.poll(2L, TimeUnit.SECONDS))
+                    .isInstanceOf(MessagingException.class)
+                    .hasCauseInstanceOf(OpeningHandshakeException.class);
         }
+
+        // THEN: the calling thread of .initialize blocks until the client is destroyed,
+        // upon which an exception is thrown
+        underTest.close();
+        assertThatExceptionOfType(ExecutionException.class)
+                .isThrownBy(() -> future.get(5L, TimeUnit.SECONDS))
+                .withCauseInstanceOf(MessagingException.class);
     }
 
     private MessagingConfiguration configOf(final String uri, final Consumer<Throwable> errorHandler) {
         return WebSocketMessagingConfiguration.newBuilder()
                 .jsonSchemaVersion(JsonSchemaVersion.V_2)
                 .reconnectEnabled(true)
+                .initialConnectRetryEnabled(true)
                 .endpoint(uri)
                 .connectionErrorHandler(errorHandler)
-                .reconnectEnabled(true)
                 .build();
     }
 
