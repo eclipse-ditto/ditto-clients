@@ -407,7 +407,15 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         ws.clearListeners();
 
         try {
-            return ws.recreate(CONNECTION_TIMEOUT_MS);
+            final String declaredAcksJsonArrayString = messagingConfiguration.getDeclaredAcknowledgements()
+                    .stream()
+                    .map(AcknowledgementLabel::toString)
+                    .map(JsonValue::of)
+                    .collect(JsonCollectors.valuesToArray())
+                    .toString();
+
+            return ws.recreate(CONNECTION_TIMEOUT_MS)
+                    .addHeader(DittoHeaderDefinition.DECLARED_ACKS.getKey(), declaredAcksJsonArrayString);
         } catch (IOException e) {
             throw MessagingException.recreateFailed(sessionId, e);
         }
