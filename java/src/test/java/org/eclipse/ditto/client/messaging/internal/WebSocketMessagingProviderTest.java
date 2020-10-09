@@ -64,13 +64,14 @@ public final class WebSocketMessagingProviderTest {
                 WebSocketMessagingProvider.newInstance(configOf("ws://unknown.host.invalid:80", error -> {
                             messagingProviderReference.get().close();
                             errors.add(error);
-                        }),
+                        }, false),
                         dummyAuth(), e);
         messagingProviderReference.set(underTest);
 
         // WHEN: websocket connect to a nonsense address
         // THEN: the calling thread receives a CompletionException
-        assertThatExceptionOfType(CompletionException.class).isThrownBy(underTest::initialize);
+        assertThatExceptionOfType(CompletionException.class)
+                .isThrownBy(() -> underTest.initializeAsync().toCompletableFuture().join());
 
         // THEN: the error handler is notified exactly once
         assertThat(errors.poll(2L, TimeUnit.SECONDS))
@@ -95,7 +96,7 @@ public final class WebSocketMessagingProviderTest {
         });
         final BlockingQueue<Throwable> errors = new LinkedBlockingQueue<>();
         final MessagingConfiguration config =
-                configOf("ws://127.0.0.1:" + serverSocket.take().getLocalPort(), errors::add);
+                configOf("ws://127.0.0.1:" + serverSocket.take().getLocalPort(), errors::add, true);
         final WebSocketMessagingProvider underTest =
                 WebSocketMessagingProvider.newInstance(config, dummyAuth(), EXECUTOR);
 
@@ -117,11 +118,12 @@ public final class WebSocketMessagingProviderTest {
                 .withCauseInstanceOf(MessagingException.class);
     }
 
-    private MessagingConfiguration configOf(final String uri, final Consumer<Throwable> errorHandler) {
+    private MessagingConfiguration configOf(final String uri, final Consumer<Throwable> errorHandler,
+            final boolean reconnect) {
         return WebSocketMessagingConfiguration.newBuilder()
                 .jsonSchemaVersion(JsonSchemaVersion.V_2)
-                .reconnectEnabled(true)
-                .initialConnectRetryEnabled(true)
+                .reconnectEnabled(reconnect)
+                .initialConnectRetryEnabled(reconnect)
                 .endpoint(uri)
                 .connectionErrorHandler(errorHandler)
                 .build();
