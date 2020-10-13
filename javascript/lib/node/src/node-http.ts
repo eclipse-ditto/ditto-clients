@@ -96,7 +96,7 @@ export class NodeRequester implements HttpRequester {
       host: parsedUrl.host,
       path: parsedUrl.pathname
     };
-    if (this.proxyAgent !== undefined) {
+    if (this.proxyAgent.options.path !== undefined) {
       request['agent'] = this.proxyAgent;
     }
     return request;
