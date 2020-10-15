@@ -35,7 +35,8 @@ Maven coordinates:
 
 To configure your Ditto client instance, use the `org.eclipse.ditto.client.configuration` package in order to 
 * create instances of `AuthenticationProvider` and `MessagingProvider`
-* create a `DittoClient` instance
+* create a `DisconnectedDittoClient` instance
+* obtain a `DittoClient` instance asynchronously by calling `.connect()`
 
 For example:
 
@@ -80,7 +81,11 @@ MessagingProvider messagingProvider = MessagingProviders.webSocket(WebSocketMess
         .build())
     .build(), authenticationProvider);
 
-DittoClient client = DittoClients.newInstance(messagingProvider);
+DisconnectedDittoClient disconnectedDittoClient = DittoClients.newDisconnectedInstance(messagingProvider);
+
+disconnectedDittoClient.connect()
+    .thenAccept(this::startUsingDittoClient)
+    .exceptionally(error -> disconnectedDittoClient.destroy());
 ```
 
 ### Use the Ditto client

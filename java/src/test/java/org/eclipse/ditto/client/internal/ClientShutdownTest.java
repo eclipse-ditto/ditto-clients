@@ -18,6 +18,7 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -80,6 +81,7 @@ public class ClientShutdownTest {
         // filter out main thread and monitor thread
         return Stream.of(threads)
                 .map(Thread::getName)
+                .filter(Objects::nonNull)
                 .filter(name -> !ALLOWED_THREADS.contains(name) && !startingThreadNames.contains(name))
                 .collect(Collectors.toList());
     }
