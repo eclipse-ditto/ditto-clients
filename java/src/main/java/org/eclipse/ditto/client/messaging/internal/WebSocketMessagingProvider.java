@@ -396,20 +396,15 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     @Override
     public void onBinaryMessage(final WebSocket websocket, final byte[] binary) {
-        callbackExecutor.execute(() -> {
-            final String stringMessage = new String(binary, StandardCharsets.UTF_8);
-            LOGGER.debug(
-                    "Client <{}>: Received WebSocket byte array message <{}>, as string <{}> - don't know what to do" +
-                            " with it!.", sessionId, binary, stringMessage);
-        });
+        final String stringMessage = new String(binary, StandardCharsets.UTF_8);
+        LOGGER.debug("Client <{}>: Received WebSocket byte array message <{}>, as string <{}> - don't know what to do" +
+                " with it!.", sessionId, binary, stringMessage);
     }
 
     @Override
     public void onTextMessage(final WebSocket websocket, final String text) {
-        callbackExecutor.execute(() -> {
-            LOGGER.debug("Client <{}>: Received WebSocket string message <{}>", sessionId, text);
-            handleIncomingMessage(text);
-        });
+        LOGGER.debug("Client <{}>: Received WebSocket string message <{}>", sessionId, text);
+        handleIncomingMessage(text);
     }
 
     private void handleIncomingMessage(final String message) {
