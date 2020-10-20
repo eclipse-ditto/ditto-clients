@@ -14,6 +14,7 @@ package org.eclipse.ditto.client.internal.bus;
 
 import java.time.Duration;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -84,6 +85,16 @@ public interface AdaptableBus {
     SubscriptionId subscribeForAdaptable(Classification tag, Consumer<Adaptable> adaptableConsumer);
 
     /**
+     * Add a persistent subscriber for an adaptable message and remove all other subscribers.
+     * Only effective if no one-time string or adaptable subscriber matches.
+     *
+     * @param tag the adaptable classification.
+     * @param adaptableConsumer the consumer of the adaptable message.
+     * @return the subscription ID.
+     */
+    SubscriptionId subscribeForAdaptableExclusively(Classification tag, Consumer<Adaptable> adaptableConsumer);
+
+    /**
      * Add a persistent subscriber for an adaptable message that are removed after a timeout.
      * If tag requires sequentialization, take care that all consumer and predicate parameters are fast,
      * or the bus will block.
@@ -108,6 +119,11 @@ public interface AdaptableBus {
      * @return whether the removed subscription exists.
      */
     boolean unsubscribe(@Nullable SubscriptionId subscriptionId);
+
+    /**
+     * @return the scheduled executor service of this adaptable bus.
+     */
+    ScheduledExecutorService getScheduledExecutor();
 
     /**
      * Closes the executor of the adaptable bus .

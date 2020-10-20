@@ -71,6 +71,16 @@ public interface Classification {
     }
 
     /**
+     * Create an error-code classification key.
+     *
+     * @param errorCode the error code.
+     * @return the key.
+     */
+    static Classification forErrorCode(final String errorCode) {
+        return new ErrorCode(errorCode);
+    }
+
+    /**
      * Check whether subscribers for this classification requires sequential dispatching.
      *
      * @return whether sequential dispatching is required.
@@ -190,6 +200,13 @@ public interface Classification {
 
         static <T> Optional<Classification> of(final T value) {
             return Optional.of(new Identity<>(value));
+        }
+    }
+
+    final class ErrorCode extends Literal<String> {
+
+        private ErrorCode(final String errorCode) {
+            super(errorCode);
         }
     }
 }

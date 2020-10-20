@@ -17,6 +17,7 @@ import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -68,6 +69,9 @@ import com.neovisionaries.ws.client.WebSocketFrame;
  * @since 1.0.0
  */
 public final class WebSocketMessagingProvider extends WebSocketAdapter implements MessagingProvider {
+
+    // how long this object survives after the websocket connection is closed by server and reconnect is disabled
+    private static final Duration ZOMBIE_LIFETIME = Duration.ofSeconds(3L);
 
     private static final String DITTO_CLIENT_USER_AGENT = "DittoClient/" + VersionReader.determineClientVersion();
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketMessagingProvider.class);
@@ -361,7 +365,9 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
             }
         } else {
             LOGGER.info("Client <{}>: Reconnection is NOT enabled. Closing client ...", sessionId);
-            close();
+            // delay self destruction in order to handle any final error message
+            adaptableBus.getScheduledExecutor()
+                    .schedule(this::close, ZOMBIE_LIFETIME.toMillis(), TimeUnit.MILLISECONDS);
         }
     }
 

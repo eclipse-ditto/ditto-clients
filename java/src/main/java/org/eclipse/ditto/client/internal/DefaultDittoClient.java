@@ -13,6 +13,7 @@
 package org.eclipse.ditto.client.internal;
 
 import java.text.MessageFormat;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
@@ -24,7 +25,9 @@ import org.eclipse.ditto.client.changes.internal.ImmutableChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeatureChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeaturesChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableThingChange;
+import org.eclipse.ditto.client.internal.bus.AdaptableBus;
 import org.eclipse.ditto.client.internal.bus.BusFactory;
+import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.client.internal.bus.JsonPointerSelectors;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.internal.bus.SelectorUtil;
@@ -37,6 +40,8 @@ import org.eclipse.ditto.client.policies.internal.PoliciesImpl;
 import org.eclipse.ditto.client.twin.Twin;
 import org.eclipse.ditto.client.twin.internal.TwinImpl;
 import org.eclipse.ditto.json.JsonPointer;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabelNotDeclaredException;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabelNotUniqueException;
 import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.model.base.headers.DittoHeadersBuilder;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
@@ -47,9 +52,11 @@ import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.DittoProtocolAdapter;
 import org.eclipse.ditto.protocoladapter.HeaderTranslator;
 import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
+import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 import org.eclipse.ditto.signals.base.Signal;
+import org.eclipse.ditto.signals.commands.base.ErrorResponse;
 import org.eclipse.ditto.signals.events.things.AclEntryCreated;
 import org.eclipse.ditto.signals.events.things.AclEntryDeleted;
 import org.eclipse.ditto.signals.events.things.AclEntryModified;
@@ -107,6 +114,7 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
         this.live = live;
         this.policies = policies;
         logVersionInformation();
+        handleSpontaneousErrors();
     }
 
     /**
@@ -586,5 +594,49 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
                 .thenCompose(result -> live.messagingProvider.initializeAsync())
                 .thenCompose(result -> policies.messagingProvider.initializeAsync())
                 .thenApply(result -> this);
+    }
+
+    private void handleSpontaneousErrors() {
+        handleSpontaneousErrors(twin.messagingProvider);
+        if (live.messagingProvider != twin.messagingProvider) {
+            handleSpontaneousErrors(live.messagingProvider);
+        }
+        if (policies.messagingProvider != twin.messagingProvider) {
+            handleSpontaneousErrors(policies.messagingProvider);
+        }
+    }
+
+    /**
+     * Handle {@code DittoRuntimeException}s from the back-end that are not replies of anything.
+     *
+     * @param provider the messaging provider.
+     */
+    private static void handleSpontaneousErrors(final MessagingProvider provider) {
+        final Optional<Consumer<Throwable>> connectionErrorHandler =
+                provider.getMessagingConfiguration().getConnectionErrorHandler();
+        if (connectionErrorHandler.isPresent()) {
+            final AdaptableBus adaptableBus = provider.getAdaptableBus();
+            final Consumer<Throwable> consumer = connectionErrorHandler.get();
+
+            final Classification ackLabelNotUnique =
+                    Classification.forErrorCode(AcknowledgementLabelNotUniqueException.ERROR_CODE);
+            final Classification ackLabelNotDeclared =
+                    Classification.forErrorCode(AcknowledgementLabelNotDeclaredException.ERROR_CODE);
+
+            adaptableBus.subscribeForAdaptableExclusively(ackLabelNotUnique,
+                    adaptable -> consumer.accept(asDittoRuntimeException(adaptable)));
+            adaptableBus.subscribeForAdaptableExclusively(ackLabelNotDeclared,
+                    adaptable -> consumer.accept(asDittoRuntimeException(adaptable)));
+        }
+    }
+
+    private static Throwable asDittoRuntimeException(final Adaptable adaptable) {
+        final Signal<?> signal = AbstractHandle.PROTOCOL_ADAPTER.fromAdaptable(adaptable);
+        if (signal instanceof ErrorResponse) {
+            return ((ErrorResponse<?>) signal).getDittoRuntimeException();
+        } else {
+            return new ClassCastException("Expect an error response, got: " +
+                    ProtocolFactory.wrapAsJsonifiableAdaptable(adaptable).toJsonString());
+        }
     }
 }
