@@ -16,6 +16,7 @@ import java.util.EnumSet;
 import java.util.Optional;
 
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionEvent;
@@ -64,6 +65,15 @@ public final class Classifiers {
      */
     public static Classifier<Adaptable> thingsSearch() {
         return Instances.THINGS_SEARCH_CLASSIFIER;
+    }
+
+    /**
+     * Classify Ditto protocol errors by error codes.
+     *
+     * @return the error code classifier.
+     */
+    public static Classifier<Adaptable> errorCode() {
+        return Instances.ERROR_CODE_CLASSIFIER;
     }
 
     private static final class StreamingTypeClassifier implements Classifier<Adaptable> {
@@ -116,6 +126,22 @@ public final class Classifiers {
         }
     }
 
+    private static final class ErrorCodeClassifier implements Classifier<Adaptable> {
+
+        @Override
+        public Optional<Classification> classify(final Adaptable message) {
+            if (message.getTopicPath().getCriterion() == TopicPath.Criterion.ERRORS) {
+                return message.getPayload()
+                        .getValue()
+                        .filter(JsonValue::isObject)
+                        .flatMap(value -> value.asObject().getValue(DittoRuntimeException.JsonFields.ERROR_CODE))
+                        .map(Classification::forErrorCode);
+            } else {
+                return Optional.empty();
+            }
+        }
+    }
+
     private static final class Instances {
 
         private static final Classifier<Adaptable> CORRELATION_ID_CLASSIFIER = adaptable ->
@@ -126,5 +152,7 @@ public final class Classifiers {
         private static final Classifier<Adaptable> STREAMING_TYPE_CLASSIFIER = new StreamingTypeClassifier();
 
         private static final Classifier<Adaptable> THINGS_SEARCH_CLASSIFIER = new ThingsSearchClassifier();
+
+        private static final Classifier<Adaptable> ERROR_CODE_CLASSIFIER = new ErrorCodeClassifier();
     }
 }

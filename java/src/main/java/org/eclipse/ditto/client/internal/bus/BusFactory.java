@@ -51,6 +51,7 @@ public final class BusFactory {
                 .addStringClassifier(Classifiers.identity())
                 .addAdaptableClassifier(Classifiers.correlationId())
                 .addAdaptableClassifier(Classifiers.streamingType())
-                .addAdaptableClassifier(Classifiers.thingsSearch());
+                .addAdaptableClassifier(Classifiers.thingsSearch())
+                .addAdaptableClassifier(Classifiers.errorCode());
     }
 }

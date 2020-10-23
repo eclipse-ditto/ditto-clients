@@ -80,6 +80,7 @@ public class ClientShutdownTest {
 
         // filter out main thread and monitor thread
         return Stream.of(threads)
+                .filter(Objects::nonNull)
                 .map(Thread::getName)
                 .filter(Objects::nonNull)
                 .filter(name -> !ALLOWED_THREADS.contains(name) && !startingThreadNames.contains(name))

@@ -17,6 +17,7 @@ import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -44,7 +45,11 @@ import org.eclipse.ditto.client.messaging.AuthenticationException;
 import org.eclipse.ditto.client.messaging.AuthenticationProvider;
 import org.eclipse.ditto.client.messaging.MessagingException;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
+import org.eclipse.ditto.json.JsonCollectors;
+import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +69,9 @@ import com.neovisionaries.ws.client.WebSocketFrame;
  * @since 1.0.0
  */
 public final class WebSocketMessagingProvider extends WebSocketAdapter implements MessagingProvider {
+
+    // how long this object survives after the websocket connection is closed by server and reconnect is disabled
+    private static final Duration ZOMBIE_LIFETIME = Duration.ofSeconds(3L);
 
     private static final String DITTO_CLIENT_USER_AGENT = "DittoClient/" + VersionReader.determineClientVersion();
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketMessagingProvider.class);
@@ -191,7 +199,14 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         final WebSocketFactory webSocketFactory = WebSocketFactoryFactory.newWebSocketFactory(messagingConfiguration);
         final WebSocket ws;
         try {
-            ws = webSocketFactory.createSocket(messagingConfiguration.getEndpointUri());
+            final String declaredAcksJsonArrayString = messagingConfiguration.getDeclaredAcknowledgements()
+                    .stream()
+                    .map(AcknowledgementLabel::toString)
+                    .map(JsonValue::of)
+                    .collect(JsonCollectors.valuesToArray())
+                    .toString();
+            ws = webSocketFactory.createSocket(messagingConfiguration.getEndpointUri())
+                    .addHeader(DittoHeaderDefinition.DECLARED_ACKS.getKey(), declaredAcksJsonArrayString);
         } catch (final IOException e) {
             throw MessagingException.connectFailed(sessionId, e);
         }
@@ -350,7 +365,9 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
             }
         } else {
             LOGGER.info("Client <{}>: Reconnection is NOT enabled. Closing client ...", sessionId);
-            close();
+            // delay self destruction in order to handle any final error message
+            adaptableBus.getScheduledExecutor()
+                    .schedule(this::close, ZOMBIE_LIFETIME.toMillis(), TimeUnit.MILLISECONDS);
         }
     }
 
@@ -388,7 +405,15 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         ws.clearListeners();
 
         try {
-            return ws.recreate(CONNECTION_TIMEOUT_MS);
+            final String declaredAcksJsonArrayString = messagingConfiguration.getDeclaredAcknowledgements()
+                    .stream()
+                    .map(AcknowledgementLabel::toString)
+                    .map(JsonValue::of)
+                    .collect(JsonCollectors.valuesToArray())
+                    .toString();
+
+            return ws.recreate(CONNECTION_TIMEOUT_MS)
+                    .addHeader(DittoHeaderDefinition.DECLARED_ACKS.getKey(), declaredAcksJsonArrayString);
         } catch (IOException e) {
             throw MessagingException.recreateFailed(sessionId, e);
         }
@@ -427,7 +452,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                             return AuthenticationException.forbidden(sessionId, cause);
                         default:
                             return AuthenticationException.withStatus(sessionId, cause, statusLine.getStatusCode(),
-                                    statusLine.getReasonPhrase());
+                                    statusLine.getReasonPhrase() + ": " +
+                                            new String(((OpeningHandshakeException) cause).getBody()));
                     }
                 }
             } else if (((WebSocketException) cause).getError() == WebSocketError.SOCKET_CONNECT_ERROR &&

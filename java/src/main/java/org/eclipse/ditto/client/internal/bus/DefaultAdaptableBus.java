@@ -104,6 +104,15 @@ final class DefaultAdaptableBus implements AdaptableBus {
     }
 
     @Override
+    public SubscriptionId subscribeForAdaptableExclusively(final Classification tag,
+            final Consumer<Adaptable> adaptableConsumer) {
+
+        final Entry<Consumer<Adaptable>> entry = new Entry<>(tag, adaptableConsumer);
+        replaceEntry(persistentAdaptableConsumers, entry);
+        return entry;
+    }
+
+    @Override
     public SubscriptionId subscribeForAdaptableWithTimeout(final Classification tag, final Duration timeout,
             final Consumer<Adaptable> adaptableConsumer, final Predicate<Adaptable> terminationPredicate,
             final Consumer<Throwable> onTimeout) {
@@ -134,6 +143,11 @@ final class DefaultAdaptableBus implements AdaptableBus {
         } else {
             return false;
         }
+    }
+
+    @Override
+    public ScheduledExecutorService getScheduledExecutor() {
+        return scheduledExecutorService;
     }
 
     @Override
@@ -300,6 +314,12 @@ final class DefaultAdaptableBus implements AdaptableBus {
             concurrentHashSet.add(entry);
             return concurrentHashSet;
         });
+    }
+
+    private static <T> void replaceEntry(final Map<Classification, Set<Entry<T>>> registry, final Entry<T> entry) {
+        final Set<Entry<T>> set = ConcurrentHashMap.newKeySet();
+        set.add(entry);
+        registry.put(entry.key, set);
     }
 
     private Optional<Adaptable> parseAsAdaptable(final String message) {
