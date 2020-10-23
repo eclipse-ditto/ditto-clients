@@ -248,6 +248,8 @@
         </ditto.thirdPartyLicences.excludedGroups>
 
         <sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+
+        <skipLicenseMavenPlugin>false</skipLicenseMavenPlugin>
     </properties>
 
     <build>
@@ -654,6 +656,7 @@
                 <artifactId>license-maven-plugin</artifactId>
                 <inherited>false</inherited>
                 <configuration>
+                    <skip>${skipLicenseMavenPlugin}</skip>
                     <header>../legal/headers/license-header.txt</header>
                     <validHeaders>
                         <header>../legal/headers/license-header-2019.txt</header>
@@ -701,6 +704,7 @@
                             <goal>add-third-party</goal>
                         </goals>
                         <configuration>
+                            <skipAddThirdParty>${skipLicenseMavenPlugin}</skipAddThirdParty>
                             <outputDirectory>${project.build.outputDirectory}/META-INF</outputDirectory>
                             <excludedGroups>${ditto.thirdPartyLicences.excludedGroups}</excludedGroups>
                             <includedScopes>compile</includedScopes>
