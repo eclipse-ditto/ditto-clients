@@ -63,7 +63,7 @@ export class NodeWebSocket implements WebSocketImplementation {
       const [authenticatedUrl, authenticatedHeaders] = authenticateWithUrlAndHeaders(url, new Map(), authProviders);
       const plainHeaders = mapToPlainObject(authenticatedHeaders);
       const options: ClientOptions = {
-        agent: agent.proxyAgent,
+        agent: agent.proxyAgent.options.path !== undefined ? agent.proxyAgent : false,
         rejectUnauthorized: false,
         headers: plainHeaders
       };
