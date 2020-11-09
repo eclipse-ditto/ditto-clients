@@ -69,6 +69,12 @@ import org.eclipse.ditto.signals.events.things.AttributesDeleted;
 import org.eclipse.ditto.signals.events.things.AttributesModified;
 import org.eclipse.ditto.signals.events.things.FeatureCreated;
 import org.eclipse.ditto.signals.events.things.FeatureDeleted;
+import org.eclipse.ditto.signals.events.things.FeatureDesiredPropertiesCreated;
+import org.eclipse.ditto.signals.events.things.FeatureDesiredPropertiesDeleted;
+import org.eclipse.ditto.signals.events.things.FeatureDesiredPropertiesModified;
+import org.eclipse.ditto.signals.events.things.FeatureDesiredPropertyCreated;
+import org.eclipse.ditto.signals.events.things.FeatureDesiredPropertyDeleted;
+import org.eclipse.ditto.signals.events.things.FeatureDesiredPropertyModified;
 import org.eclipse.ditto.signals.events.things.FeatureModified;
 import org.eclipse.ditto.signals.events.things.FeaturePropertiesCreated;
 import org.eclipse.ditto.signals.events.things.FeaturePropertiesDeleted;
@@ -104,6 +110,8 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
     private static final String FEATURE_PATTERN = THING_PATTERN + "/features/{1}";
     private static final String FEATURE_PROPERTIES_PATTERN = THING_PATTERN + "/features/{1}/properties";
     private static final String FEATURE_PROPERTY_PATTERN = THING_PATTERN + "/features/{1}/properties{2}";
+    private static final String FEATURE_DESIRED_PROPERTIES_PATTERN = THING_PATTERN + "/features/{1}/desiredProperties";
+    private static final String FEATURE_DESIRED_PROPERTY_PATTERN = THING_PATTERN + "/features/{1}/desiredProperties{2}";
 
     private final TwinImpl twin;
     private final LiveImpl live;
@@ -582,6 +590,78 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
                         e.getFeatureId(), e.getPropertyPointer()),
                 (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.DELETED,
                         e.getPropertyPointer(),
+                        null,
+                        e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
+                        emitAcknowledgement)
+        );
+
+        /*
+         * Feature Desired Properties
+         */
+        SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureDesiredPropertiesCreated.TYPE,
+                FeatureDesiredPropertiesCreated.class,
+                e -> MessageFormat.format(FEATURE_DESIRED_PROPERTIES_PATTERN, e.getThingEntityId(),
+                        e.getFeatureId()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.CREATED,
+                        JsonPointer.empty(),
+                        e.getDesiredProperties().toJson(e.getImplementedSchemaVersion()),
+                        e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
+                        emitAcknowledgement)
+        );
+
+        SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureDesiredPropertiesModified.TYPE,
+                FeatureDesiredPropertiesModified.class,
+                e -> MessageFormat.format(FEATURE_DESIRED_PROPERTIES_PATTERN, e.getThingEntityId(),
+                        e.getFeatureId()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.UPDATED,
+                        JsonPointer.empty(),
+                        e.getDesiredProperties().toJson(e.getImplementedSchemaVersion()),
+                        e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
+                        emitAcknowledgement)
+        );
+
+        SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureDesiredPropertiesDeleted.TYPE,
+                FeatureDesiredPropertiesDeleted.class,
+                e -> MessageFormat.format(FEATURE_DESIRED_PROPERTIES_PATTERN, e.getThingEntityId(),
+                        e.getFeatureId()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.DELETED,
+                        JsonPointer.empty(),
+                        null,
+                        e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
+                        emitAcknowledgement)
+        );
+
+        /*
+         * Feature Desired Property
+         */
+        SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureDesiredPropertyCreated.TYPE,
+                FeatureDesiredPropertyCreated.class,
+                e -> MessageFormat.format(FEATURE_DESIRED_PROPERTY_PATTERN, e.getThingEntityId(),
+                        e.getFeatureId(), e.getDesiredPropertyPointer()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.CREATED,
+                        e.getDesiredPropertyPointer(),
+                        e.getDesiredPropertyValue(),
+                        e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
+                        emitAcknowledgement)
+        );
+
+        SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureDesiredPropertyModified.TYPE,
+                FeatureDesiredPropertyModified.class,
+                e -> MessageFormat.format(FEATURE_DESIRED_PROPERTY_PATTERN, e.getThingEntityId(),
+                        e.getFeatureId(), e.getDesiredPropertyPointer()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.UPDATED,
+                        e.getDesiredPropertyPointer(),
+                        e.getDesiredPropertyValue(),
+                        e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
+                        emitAcknowledgement)
+        );
+
+        SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureDesiredPropertyDeleted.TYPE,
+                FeatureDesiredPropertyDeleted.class,
+                e -> MessageFormat.format(FEATURE_DESIRED_PROPERTY_PATTERN, e.getThingEntityId(),
+                        e.getFeatureId(), e.getDesiredPropertyPointer()),
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.DELETED,
+                        e.getDesiredPropertyPointer(),
                         null,
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
                         emitAcknowledgement)
