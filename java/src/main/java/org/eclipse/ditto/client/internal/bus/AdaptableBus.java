@@ -13,6 +13,8 @@
 package org.eclipse.ditto.client.internal.bus;
 
 import java.time.Duration;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Consumer;
@@ -52,6 +54,14 @@ public interface AdaptableBus {
      * @return this object.
      */
     AdaptableBus addAdaptableClassifier(Classifier<Adaptable> adaptableClassifier);
+
+
+    /**
+     * Get oneTimeStringConsumers but unmodifiable to only grant read access.
+     *
+     * @return a {@code UnmodifiableMap}
+     */
+    Map<Classification, Set<Entry<Consumer<String>>>> getUnmodifiableOneTimeStringConsumers();
 
     /**
      * Add a one-time subscriber for a string message.

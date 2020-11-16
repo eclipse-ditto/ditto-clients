@@ -150,6 +150,10 @@ public class MockMessagingProvider implements MessagingProvider {
         adaptableBus.publish(ProtocolFactory.wrapAsJsonifiableAdaptable(adaptable).toJsonString());
     }
 
+    public void receivePlainString(final String plain) {
+        adaptableBus.publish(plain);
+    }
+
     @Override
     public void close() {
         executor.shutdownNow();

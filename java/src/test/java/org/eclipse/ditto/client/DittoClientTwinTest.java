@@ -13,11 +13,18 @@
 package org.eclipse.ditto.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.model.base.acks.AcknowledgementRequest.parseAcknowledgementRequest;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
+import org.eclipse.ditto.client.twin.internal.UncompletedTwinConsumptionRequestException;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
@@ -95,6 +102,21 @@ public final class DittoClientTwinTest extends AbstractDittoClientTest {
                 .isEqualTo(HttpStatusCode.FORBIDDEN);
         Assertions.assertThat(expectMsgClass(Acknowledgement.class).getStatusCode())
                 .isEqualTo(HttpStatusCode.INTERNAL_SERVER_ERROR);
+    }
+
+    @Test
+    public void startConsumptionParallelOnSameTwinChannelShouldThrowException()
+            throws InterruptedException, ExecutionException, TimeoutException {
+
+        final CompletableFuture<Void> voidCompletableFuture1 = client.twin().startConsumption();
+        final CompletableFuture<Void> voidCompletableFuture2 = client.twin().startConsumption();
+
+        messaging.receivePlainString("START-SEND-EVENTS:ACK");
+
+        voidCompletableFuture1.get(10, TimeUnit.SECONDS);
+        assertThatExceptionOfType(ExecutionException.class)
+                .isThrownBy(() -> voidCompletableFuture2.get(10, TimeUnit.SECONDS))
+                .withCauseInstanceOf(UncompletedTwinConsumptionRequestException.class);
     }
 
     @Test
