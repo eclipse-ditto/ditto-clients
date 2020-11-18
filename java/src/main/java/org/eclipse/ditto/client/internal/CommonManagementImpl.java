@@ -24,10 +24,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -49,7 +52,7 @@ import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.OptionName;
 import org.eclipse.ditto.client.options.internal.OptionsEvaluator;
-import org.eclipse.ditto.client.twin.internal.UncompletedTwinConsumptionRequestException;
+import org.eclipse.ditto.client.twin.internal.UncompletedConsumptionRequestException;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
@@ -648,14 +651,14 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
                     && checkIfTwinEventIsInsertedTwiceElseThrow(adaptableBus, futureToCompleteOrFailAfterAck)) {
                 return previousSubscriptionId;
             }
-        } catch (UncompletedTwinConsumptionRequestException e) {
+        } catch (UncompletedConsumptionRequestException e) {
             LOGGER.error(e.getMessage());
         }
         if (previousSubscriptionId != null) {
             // remove previous subscription without going through back-end because subscription will be replaced
             adaptableBus.unsubscribe(previousSubscriptionId);
         }
-        AdaptableBus.SubscriptionId subscriptionId =
+        final AdaptableBus.SubscriptionId subscriptionId =
                 adaptableBus.subscribeForAdaptable(streamingType,
                         adaptable -> adaptableToNotifier.apply(adaptable).accept(getBus()));
         final Classification tag = Classification.forString(protocolCommandAck);
@@ -665,15 +668,19 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         return subscriptionId;
     }
 
-    private boolean checkIfTwinEventIsInsertedTwiceElseThrow(
-            final AdaptableBus adaptableBus,
+    private boolean checkIfTwinEventIsInsertedTwiceElseThrow(final AdaptableBus adaptableBus,
             final CompletableFuture<Void> futureToCompleteOrFailAfterAck) {
 
-        if (adaptableBus.getUnmodifiableOneTimeStringConsumers()
-                .containsKey(Classification.forString(Classification.StreamingType.TWIN_EVENT.startAck()))) {
+        final Set<Classification> stringList = Stream.of(
+                Classification.forString(Classification.StreamingType.TWIN_EVENT.startAck()),
+                Classification.forString(Classification.StreamingType.LIVE_COMMAND.startAck()),
+                Classification.forString(Classification.StreamingType.LIVE_EVENT.startAck()),
+                Classification.forString(Classification.StreamingType.LIVE_MESSAGE.startAck()))
+                .collect(Collectors.toSet());
 
+        if (adaptableBus.getUnmodifiableOneTimeStringConsumers().keySet().stream().anyMatch(stringList::contains)) {
             LOGGER.warn("First consumption request on this channel must be completed first");
-            futureToCompleteOrFailAfterAck.completeExceptionally(new UncompletedTwinConsumptionRequestException());
+            futureToCompleteOrFailAfterAck.completeExceptionally(new UncompletedConsumptionRequestException());
             return true;
         }
         return false;

@@ -90,7 +90,6 @@ final class DefaultAdaptableBus implements AdaptableBus {
         return Collections.unmodifiableMap(oneTimeStringConsumers);
     }
 
-
     @Override
     public CompletionStage<String> subscribeOnceForString(final Classification tag, final Duration timeout) {
         return subscribeOnce(oneTimeStringConsumers, tag, timeout);

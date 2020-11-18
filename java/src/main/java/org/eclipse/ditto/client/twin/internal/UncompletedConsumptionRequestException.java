@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.twin.internal;
 
-public class UncompletedTwinConsumptionRequestException extends RuntimeException {
+public class UncompletedConsumptionRequestException extends RuntimeException {
 
     private static final long serialVersionUID = -565137801315595348L;
     private static final String MESSAGE = "First consumption request on this channel must be completed first";
@@ -20,7 +20,7 @@ public class UncompletedTwinConsumptionRequestException extends RuntimeException
     /**
      * Constructs a new {@code UncompletedTwinConsumptionRequestException} object.
      */
-    public UncompletedTwinConsumptionRequestException() {
+    public UncompletedConsumptionRequestException() {
         super(MESSAGE, null);
     }
 

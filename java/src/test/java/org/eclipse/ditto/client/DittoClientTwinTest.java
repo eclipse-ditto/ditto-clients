@@ -24,7 +24,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
-import org.eclipse.ditto.client.twin.internal.UncompletedTwinConsumptionRequestException;
+import org.eclipse.ditto.client.twin.internal.UncompletedConsumptionRequestException;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
@@ -116,7 +116,24 @@ public final class DittoClientTwinTest extends AbstractDittoClientTest {
         voidCompletableFuture1.get(10, TimeUnit.SECONDS);
         assertThatExceptionOfType(ExecutionException.class)
                 .isThrownBy(() -> voidCompletableFuture2.get(10, TimeUnit.SECONDS))
-                .withCauseInstanceOf(UncompletedTwinConsumptionRequestException.class);
+                .withCauseInstanceOf(UncompletedConsumptionRequestException.class);
+    }
+
+    @Test
+    public void startConsumptionParallelOnSameLiveChannelShouldThrowException()
+            throws InterruptedException, ExecutionException, TimeoutException {
+
+        final CompletableFuture<Void> voidCompletableFuture1 = client.live().startConsumption();
+        final CompletableFuture<Void> voidCompletableFuture2 = client.live().startConsumption();
+
+        messaging.receivePlainString("START-SEND-LIVE-COMMANDS:ACK");
+        messaging.receivePlainString("START-SEND-LIVE-EVENTS:ACK");
+        messaging.receivePlainString("START-SEND-MESSAGES:ACK");
+
+        voidCompletableFuture1.get(10, TimeUnit.SECONDS);
+        assertThatExceptionOfType(ExecutionException.class)
+                .isThrownBy(() -> voidCompletableFuture2.get(10, TimeUnit.SECONDS))
+                .withCauseInstanceOf(UncompletedConsumptionRequestException.class);
     }
 
     @Test
