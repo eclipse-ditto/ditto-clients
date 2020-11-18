@@ -172,11 +172,7 @@ public final class SelectorUtil {
                     if (value.isObject()) {
                         final List<JsonPointer> pointersOnLevel = new ArrayList<>();
                         final JsonObject objectOnLevel = value.asObject();
-                        if (objectOnLevel.getSize() > 1) {
-                            // if more than one sub-fields are contained in the object on this level, we add the "parent"
-                            // aggregating both of the changed fields:
                             pointersOnLevel.add(pointerOnLevel);
-                        }
 
                         // recurse further "down":
                         pointersOnLevel.addAll(calculateJsonPointerHierarchy(pointerOnLevel, objectOnLevel));
