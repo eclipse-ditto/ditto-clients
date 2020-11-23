@@ -133,6 +133,10 @@ public class MockMessagingProvider implements MessagingProvider {
         }
     }
 
+    public void clearEmitted() {
+        emittedMessages.clear();
+    }
+
     public void onSend(final Consumer<Object> out) {
         onSendConsumer.set(Objects.requireNonNull(out));
     }
@@ -147,16 +151,22 @@ public class MockMessagingProvider implements MessagingProvider {
                                 .withExtra(message.getExtra().orElse(null))
                                 .build())
                         .build();
-        adaptableBus.publish(ProtocolFactory.wrapAsJsonifiableAdaptable(adaptable).toJsonString());
+        receiveAdaptable(adaptable);
     }
 
-    public void receivePlainString(final String plain) {
-        adaptableBus.publish(plain);
+    public void receiveAdaptable(final Adaptable adaptable) {
+        adaptableBus.publish(ProtocolFactory.wrapAsJsonifiableAdaptable(adaptable).toJsonString());
     }
 
     @Override
     public void close() {
+        adaptableBus.shutdownExecutor();
         executor.shutdownNow();
+        try {
+            executor.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOGGER.info("Waiting for termination was interrupted.");
+        }
     }
 
     private static MessagingConfiguration getDefaultMessagingConfiguration(final JsonSchemaVersion version) {

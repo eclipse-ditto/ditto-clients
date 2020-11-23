@@ -12,10 +12,17 @@
  */
 package org.eclipse.ditto.client.internal;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.eclipse.ditto.client.internal.ActiveThreadsUtil.assertNoMoreActiveThreads;
+import static org.eclipse.ditto.client.internal.ActiveThreadsUtil.getActiveThreads;
+
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -25,8 +32,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
-import org.assertj.core.api.Assertions;
+import org.awaitility.Awaitility;
 import org.eclipse.ditto.client.DittoClient;
 import org.eclipse.ditto.client.DittoClients;
 import org.eclipse.ditto.client.messaging.internal.MockMessagingProvider;
@@ -46,6 +54,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +69,8 @@ public abstract class AbstractDittoClientTest {
     protected static final int TIMEOUT = 1000;
     protected static final TimeUnit TIME_UNIT = TimeUnit.MILLISECONDS;
     protected static final ProtocolAdapter PROTOCOL_ADAPTER = DittoProtocolAdapter.newInstance();
+    private static final Duration ACTIVE_THREADS_WAIT_TIMEOUT = Duration.ofSeconds(5);
+    private static final Duration ACTIVE_THREADS_POLL_INTERVAL = Duration.ofSeconds(1);
 
     private final Queue<Throwable> uncaught = new ConcurrentLinkedQueue<>();
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -66,6 +78,7 @@ public abstract class AbstractDittoClientTest {
 
     public DittoClient client;
     public MockMessagingProvider messaging;
+    private List<String> startingThreadNames;
 
     protected static ThingId newThingId(final String thingId) {
         return ThingId.of("org.eclipse.ditto.test:" + thingId);
@@ -79,23 +92,43 @@ public abstract class AbstractDittoClientTest {
     }
 
     @Rule
+    public TestRule loggingWatcher = new TestedMethodLoggingWatcher(LOGGER);
+
+    @Rule
     public TestRule rule = new FailOnExceptionRule(uncaught);
 
     @Before
     public void before() {
+        startingThreadNames = getActiveThreads(Collections.emptySet());
+        LOGGER.debug("active threads before test: {}", startingThreadNames);
         messaging = new MockMessagingProvider();
         messaging.onSend(m -> LOGGER.info("Send message: " + m));
         client = DittoClients.newInstance(messaging);
     }
 
     @After
-    public void after() {
-        client.destroy();
+    public void after() throws InterruptedException {
         assertAll();
         executorService.shutdown();
+        assertThat(executorService.awaitTermination(5, TimeUnit.SECONDS)).isTrue();
+
+        client.destroy();
+        LOGGER.debug("Client destroyed...");
+
+        Awaitility.await("active threads")
+                .pollDelay(Duration.ZERO)
+                .pollInterval(ACTIVE_THREADS_POLL_INTERVAL)
+                .timeout(ACTIVE_THREADS_WAIT_TIMEOUT)
+                .untilAsserted(() -> {
+                    final List<String> activeThreads =
+                            getActiveThreads(startingThreadNames, "awaitility[active threads]");
+                    LOGGER.debug("active threads after test: {}", activeThreads);
+                    assertNoMoreActiveThreads(activeThreads);
+                });
     }
 
     protected void assertAll() {
+        LOGGER.debug("Waiting for {} futures to complete.", assertionFutures.size());
         CompletableFuture.allOf(assertionFutures.toArray(new CompletableFuture[0])).join();
     }
 
@@ -103,8 +136,21 @@ public abstract class AbstractDittoClientTest {
         assertionFutures.add(CompletableFuture.runAsync(() -> assertCompletion(future), executorService));
     }
 
-    protected void expectMsg(final String msg) {
-        Assertions.assertThat(messaging.expectEmitted()).isEqualTo(msg);
+    protected String expectProtocolMsgWithCorrelationId(final String msg) {
+        final String emitted = messaging.expectEmitted();
+        assertThat(emitted)
+                .startsWith(msg)
+                .contains(DittoHeaderDefinition.CORRELATION_ID.getKey());
+        return determineCorrelationId(emitted);
+    }
+
+    protected static String determineCorrelationId(final String protocolMessage) {
+        final String parametersString = protocolMessage.split(Pattern.quote("?"), 2)[1];
+        return Arrays.stream(parametersString.split("&"))
+                .map(paramWithValue -> paramWithValue.split("=", 2))
+                .filter(pv -> DittoHeaderDefinition.CORRELATION_ID.getKey().equals(pv[0]))
+                .map(pv -> pv[1])
+                .findFirst().orElseThrow(() -> new IllegalArgumentException(""));
     }
 
     protected <T> T expectMsgClass(final Class<T> clazz) {
@@ -136,21 +182,21 @@ public abstract class AbstractDittoClientTest {
 
     protected static void assertCompletion(final CompletableFuture<?> future) {
         try {
-            future.get(1L, TimeUnit.SECONDS);
+            future.get(10L, TimeUnit.SECONDS);
         } catch (final Exception e) {
             throw new AssertionError(e);
         }
     }
 
     protected static void assertOnlyIfNoneMatchHeader(final Signal<?> signal) {
-        Assertions.assertThat(signal.getDittoHeaders()).doesNotContainKey(DittoHeaderDefinition.IF_MATCH.getKey());
-        Assertions.assertThat(signal.getDittoHeaders())
+        assertThat(signal.getDittoHeaders()).doesNotContainKey(DittoHeaderDefinition.IF_MATCH.getKey());
+        assertThat(signal.getDittoHeaders())
                 .containsEntry(DittoHeaderDefinition.IF_NONE_MATCH.getKey(), "*");
     }
 
     protected static void assertOnlyIfMatchHeader(final Signal<?> signal) {
-        Assertions.assertThat(signal.getDittoHeaders()).doesNotContainKey(DittoHeaderDefinition.IF_NONE_MATCH.getKey());
-        Assertions.assertThat(signal.getDittoHeaders()).containsEntry(DittoHeaderDefinition.IF_MATCH.getKey(), "*");
+        assertThat(signal.getDittoHeaders()).doesNotContainKey(DittoHeaderDefinition.IF_NONE_MATCH.getKey());
+        assertThat(signal.getDittoHeaders()).containsEntry(DittoHeaderDefinition.IF_MATCH.getKey(), "*");
     }
 
     protected static <T> MessageBuilder<T> newMessageBuilder(final String subject) {
@@ -170,5 +216,24 @@ public abstract class AbstractDittoClientTest {
                         .correlationId(null)
                         .build();
         return Message.newBuilder(messageHeaders);
+    }
+
+    private static final class TestedMethodLoggingWatcher extends TestWatcher {
+
+        private final Logger logger;
+
+        public TestedMethodLoggingWatcher(final Logger logger) {
+            this.logger = logger;
+        }
+
+        @Override
+        protected void starting(final org.junit.runner.Description description) {
+            logger.info("Testing: {}#{}()", description.getTestClass().getSimpleName(), description.getMethodName());
+        }
+
+        @Override
+        protected void finished(final Description description) {
+            logger.info("Finished: {}#{}()", description.getTestClass().getSimpleName(), description.getMethodName());
+        }
     }
 }

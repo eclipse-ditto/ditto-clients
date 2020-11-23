@@ -13,24 +13,20 @@
 package org.eclipse.ditto.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.model.base.acks.AcknowledgementRequest.parseAcknowledgementRequest;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
-import org.assertj.core.api.Assertions;
-import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
-import org.eclipse.ditto.client.twin.internal.UncompletedConsumptionRequestException;
+import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.exceptions.InvalidRqlExpressionException;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
+import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
 import org.eclipse.ditto.signals.events.things.AttributeCreated;
 import org.eclipse.ditto.signals.events.things.FeaturePropertyModified;
 import org.eclipse.ditto.signals.events.things.ThingDeleted;
@@ -41,7 +37,7 @@ import org.junit.Test;
  * namely:
  * - subscribe for event, send acknowledgement
  */
-public final class DittoClientTwinTest extends AbstractDittoClientTest {
+public final class DittoClientTwinTest extends AbstractConsumptionDittoClientTest {
 
     @Test
     public void testThingEventAcknowledgement() {
@@ -96,44 +92,10 @@ public final class DittoClientTwinTest extends AbstractDittoClientTest {
                         )
                         .build())
         );
-        Assertions.assertThat(expectMsgClass(Acknowledgement.class).getStatusCode())
-                .isEqualTo(HttpStatusCode.OK);
-        Assertions.assertThat(expectMsgClass(Acknowledgement.class).getStatusCode())
-                .isEqualTo(HttpStatusCode.FORBIDDEN);
-        Assertions.assertThat(expectMsgClass(Acknowledgement.class).getStatusCode())
-                .isEqualTo(HttpStatusCode.INTERNAL_SERVER_ERROR);
-    }
-
-    @Test
-    public void startConsumptionParallelOnSameTwinChannelShouldThrowException()
-            throws InterruptedException, ExecutionException, TimeoutException {
-
-        final CompletableFuture<Void> voidCompletableFuture1 = client.twin().startConsumption();
-        final CompletableFuture<Void> voidCompletableFuture2 = client.twin().startConsumption();
-
-        messaging.receivePlainString("START-SEND-EVENTS:ACK");
-
-        voidCompletableFuture1.get(10, TimeUnit.SECONDS);
-        assertThatExceptionOfType(ExecutionException.class)
-                .isThrownBy(() -> voidCompletableFuture2.get(10, TimeUnit.SECONDS))
-                .withCauseInstanceOf(UncompletedConsumptionRequestException.class);
-    }
-
-    @Test
-    public void startConsumptionParallelOnSameLiveChannelShouldThrowException()
-            throws InterruptedException, ExecutionException, TimeoutException {
-
-        final CompletableFuture<Void> voidCompletableFuture1 = client.live().startConsumption();
-        final CompletableFuture<Void> voidCompletableFuture2 = client.live().startConsumption();
-
-        messaging.receivePlainString("START-SEND-LIVE-COMMANDS:ACK");
-        messaging.receivePlainString("START-SEND-LIVE-EVENTS:ACK");
-        messaging.receivePlainString("START-SEND-MESSAGES:ACK");
-
-        voidCompletableFuture1.get(10, TimeUnit.SECONDS);
-        assertThatExceptionOfType(ExecutionException.class)
-                .isThrownBy(() -> voidCompletableFuture2.get(10, TimeUnit.SECONDS))
-                .withCauseInstanceOf(UncompletedConsumptionRequestException.class);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.OK);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.FORBIDDEN);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(
+                HttpStatusCode.INTERNAL_SERVER_ERROR);
     }
 
     @Test
@@ -160,11 +122,41 @@ public final class DittoClientTwinTest extends AbstractDittoClientTest {
                         )
                         .build())
         );
-        Assertions.assertThat(expectMsgClass(Acknowledgement.class).getStatusCode())
-                .isEqualTo(HttpStatusCode.CONFLICT);
-        Assertions.assertThat(expectMsgClass(Acknowledgement.class).getStatusCode())
-                .isEqualTo(HttpStatusCode.CREATED);
-        Assertions.assertThat(expectMsgClass(Acknowledgement.class).getStatusCode())
-                .isEqualTo(HttpStatusCode.FORBIDDEN);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.CONFLICT);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.CREATED);
+        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.FORBIDDEN);
     }
+
+    @Override
+    protected CompletableFuture<Void> startConsumptionRequest() {
+        return client.twin().startConsumption();
+    }
+
+    @Override
+    protected void replyToConsumptionRequest() {
+        expectProtocolMsgWithCorrelationId("START-SEND-EVENTS");
+        reply("START-SEND-EVENTS:ACK");
+    }
+
+    @Override
+    protected void startConsumptionAndExpectError() {
+        final CompletableFuture<Void> future = client.twin().startConsumption();
+        final String protocolMessage = messaging.expectEmitted();
+        final String correlationId = determineCorrelationId(protocolMessage);
+        final DittoHeaders dittoHeaders = DittoHeaders.newBuilder().correlationId(correlationId).build();
+        final InvalidRqlExpressionException invalidRqlExpressionException = InvalidRqlExpressionException.newBuilder()
+                .message("Invalid filter.")
+                .dittoHeaders(dittoHeaders)
+                .build();
+        reply(ThingErrorResponse.of(invalidRqlExpressionException));
+        assertFailedCompletion(future, InvalidRqlExpressionException.class);
+    }
+
+    @Override
+    protected void startConsumptionSucceeds() {
+        final CompletableFuture<Void> future = client.twin().startConsumption();
+        reply(Classification.StreamingType.TWIN_EVENT.startAck());
+        future.join();
+    }
+
 }

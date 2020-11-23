@@ -10,17 +10,20 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.eclipse.ditto.client.twin.internal;
+package org.eclipse.ditto.client.internal;
 
-public class UncompletedConsumptionRequestException extends RuntimeException {
+/**
+ * This exception may be thrown if concurrent consumption requests are detected.
+ */
+public class ConcurrentConsumptionRequestException extends RuntimeException {
 
     private static final long serialVersionUID = -565137801315595348L;
-    private static final String MESSAGE = "First consumption request on this channel must be completed first";
+    private static final String MESSAGE = "Concurrent consumption requests are not allowed on one channel.";
 
     /**
      * Constructs a new {@code UncompletedTwinConsumptionRequestException} object.
      */
-    public UncompletedConsumptionRequestException() {
+    public ConcurrentConsumptionRequestException() {
         super(MESSAGE, null);
     }
 
