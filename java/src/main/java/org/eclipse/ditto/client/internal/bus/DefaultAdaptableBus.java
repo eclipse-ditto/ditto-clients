@@ -15,7 +15,6 @@ package org.eclipse.ditto.client.internal.bus;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -83,11 +82,6 @@ final class DefaultAdaptableBus implements AdaptableBus {
     public AdaptableBus addAdaptableClassifier(final Classifier<Adaptable> adaptableClassifier) {
         adaptableClassifiers.add(adaptableClassifier);
         return this;
-    }
-
-    @Override
-    public final Map<Classification, Set<Entry<Consumer<String>>>> getUnmodifiableOneTimeStringConsumers() {
-        return Collections.unmodifiableMap(oneTimeStringConsumers);
     }
 
     @Override
@@ -262,7 +256,7 @@ final class DefaultAdaptableBus implements AdaptableBus {
             if (persistentConsumers != null && !persistentConsumers.isEmpty()) {
                 publishedToPersistentSubscribers = true;
                 for (final Entry<Consumer<Adaptable>> entry : persistentConsumers) {
-                    runConsumerAsync(entry.getValue(), adaptable, tag);
+                    runConsumerAsync(entry.value, adaptable, tag);
                 }
             }
         }
@@ -314,7 +308,7 @@ final class DefaultAdaptableBus implements AdaptableBus {
 
     private static <T> void addEntry(final Map<Classification, Set<Entry<T>>> registry,
             final Entry<T> entry) {
-        registry.compute(entry.getKey(), (key, previousSet) -> {
+        registry.compute(entry.key, (key, previousSet) -> {
             final Set<Entry<T>> concurrentHashSet =
                     previousSet != null ? previousSet : ConcurrentHashMap.newKeySet();
             concurrentHashSet.add(entry);
@@ -325,7 +319,7 @@ final class DefaultAdaptableBus implements AdaptableBus {
     private static <T> void replaceEntry(final Map<Classification, Set<Entry<T>>> registry, final Entry<T> entry) {
         final Set<Entry<T>> set = ConcurrentHashMap.newKeySet();
         set.add(entry);
-        registry.put(entry.getKey(), set);
+        registry.put(entry.key, set);
     }
 
     private Optional<Adaptable> parseAsAdaptable(final String message) {
@@ -345,7 +339,7 @@ final class DefaultAdaptableBus implements AdaptableBus {
     private <T> void removeEntry(final Map<Classification, Set<Entry<T>>> registry,
             final Entry<?> entry,
             final Runnable onRemove) {
-        registry.computeIfPresent(entry.getKey(), (key, set) -> {
+        registry.computeIfPresent(entry.key, (key, set) -> {
             if (set.remove(entry)) {
                 onRemove.run();
             }
@@ -365,7 +359,7 @@ final class DefaultAdaptableBus implements AdaptableBus {
                 .findAny()
                 .map(entry -> {
                     if (set.remove(entry)) {
-                        result.set(entry.getValue());
+                        result.set(entry.value);
                     }
                     return set.isEmpty() ? null : set;
                 })
@@ -377,4 +371,18 @@ final class DefaultAdaptableBus implements AdaptableBus {
         return new TimeoutException("Timed out after " + duration);
     }
 
+    /**
+     * Similar to Map.Entry but with object reference identity and fixed key type to act as identifier for
+     * a subscription.
+     */
+    private static final class Entry<T> implements SubscriptionId {
+
+        private final Classification key;
+        private final T value;
+
+        private Entry(final Classification key, final T value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
 }
