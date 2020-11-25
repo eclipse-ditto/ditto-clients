@@ -24,13 +24,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -52,7 +49,6 @@ import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.OptionName;
 import org.eclipse.ditto.client.options.internal.OptionsEvaluator;
-import org.eclipse.ditto.client.twin.internal.UncompletedConsumptionRequestException;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
@@ -645,15 +641,6 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
 
         LOGGER.trace("Sending {} and waiting for {}", protocolCommand, protocolCommandAck);
         final AdaptableBus adaptableBus = messagingProvider.getAdaptableBus();
-
-        try {
-            if (previousSubscriptionId != null
-                    && checkIfTwinEventIsInsertedTwiceElseThrow(adaptableBus, futureToCompleteOrFailAfterAck)) {
-                return previousSubscriptionId;
-            }
-        } catch (UncompletedConsumptionRequestException e) {
-            LOGGER.error(e.getMessage());
-        }
         if (previousSubscriptionId != null) {
             // remove previous subscription without going through back-end because subscription will be replaced
             adaptableBus.unsubscribe(previousSubscriptionId);
@@ -664,26 +651,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         final Classification tag = Classification.forString(protocolCommandAck);
         adjoin(adaptableBus.subscribeOnceForString(tag, getTimeout()), futureToCompleteOrFailAfterAck);
         messagingProvider.emit(protocolCommand);
-
         return subscriptionId;
-    }
-
-    private boolean checkIfTwinEventIsInsertedTwiceElseThrow(final AdaptableBus adaptableBus,
-            final CompletableFuture<Void> futureToCompleteOrFailAfterAck) {
-
-        final Set<Classification> stringList = Stream.of(
-                Classification.forString(Classification.StreamingType.TWIN_EVENT.startAck()),
-                Classification.forString(Classification.StreamingType.LIVE_COMMAND.startAck()),
-                Classification.forString(Classification.StreamingType.LIVE_EVENT.startAck()),
-                Classification.forString(Classification.StreamingType.LIVE_MESSAGE.startAck()))
-                .collect(Collectors.toSet());
-
-        if (adaptableBus.getUnmodifiableOneTimeStringConsumers().keySet().stream().anyMatch(stringList::contains)) {
-            LOGGER.warn("First consumption request on this channel must be completed first");
-            futureToCompleteOrFailAfterAck.completeExceptionally(new UncompletedConsumptionRequestException());
-            return true;
-        }
-        return false;
     }
 
     /**
