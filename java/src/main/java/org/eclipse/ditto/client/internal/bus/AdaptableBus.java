@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 
 /**
- * Event bus for messages that are either {@code String} or {@code Adaptable}.
+ * Event bus for messages that are either {@code String} or {@code} Adaptable.
  * On publication of a message as {@code String}, subscribers are notified as follows:
  * <ol>
  * <li>Message is classified as {@code String}. If a matching one-time subscriber is found, the subscriber is notified

@@ -38,6 +38,7 @@ import org.eclipse.ditto.client.messaging.AuthenticationProviders;
 import org.eclipse.ditto.client.messaging.MessagingException;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.junit.AfterClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.neovisionaries.ws.client.OpeningHandshakeException;
@@ -80,6 +81,7 @@ public final class WebSocketMessagingProviderTest {
         expectNoMsg(errors);
     }
 
+    @Ignore
     @Test(timeout = 10_000)
     public void serviceUnavailable() throws Exception {
         final int numberOfRecoverableErrors = 3;
