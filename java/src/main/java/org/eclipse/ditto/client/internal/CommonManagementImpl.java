@@ -24,8 +24,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -53,6 +55,9 @@ import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
+import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
@@ -67,6 +72,7 @@ import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.base.WithOptionalEntity;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
+import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyThing;
@@ -93,6 +99,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
 
     protected final OutgoingMessageFactory outgoingMessageFactory;
 
+    private final AtomicBoolean subscriptionRequestPending = new AtomicBoolean(false);
     private final HandlerRegistry<T, F> handlerRegistry;
     private final PointerBus bus;
 
@@ -111,11 +118,19 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
 
     @Override
     public CompletableFuture<Void> startConsumption() {
-        return doStartConsumption(Collections.emptyMap());
+        // do not call doStartConsumption directly
+        return startConsumption(new Option[]{});
     }
 
     @Override
     public CompletableFuture<Void> startConsumption(final Option<?>... consumptionOptions) {
+
+        // concurrent consumption requests can have strange effects, so better avoid it
+        if (!subscriptionRequestPending.compareAndSet(false, true)) {
+            final CompletableFuture<Void> failedFuture = new CompletableFuture<>();
+            failedFuture.completeExceptionally(new ConcurrentConsumptionRequestException());
+            return failedFuture;
+        }
 
         // only accept "Consumption" related options here:
         final Optional<Option<?>> unknownOptionIncluded = Arrays.stream(consumptionOptions)
@@ -139,7 +154,8 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         options.getExtraFields().ifPresent(extraFields ->
                 subscriptionConfig.put(CONSUMPTION_PARAM_EXTRA_FIELDS, extraFields.toString()));
 
-        return doStartConsumption(subscriptionConfig);
+        // make sure to reset the flag when consumption request completes
+        return doStartConsumption(subscriptionConfig).whenComplete((v, t) -> subscriptionRequestPending.set(false));
     }
 
     /**
@@ -639,8 +655,11 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
             final CompletableFuture<Void> futureToCompleteOrFailAfterAck,
             final Function<Adaptable, NotifyMessage> adaptableToNotifier) {
 
-        LOGGER.trace("Sending {} and waiting for {}", protocolCommand, protocolCommandAck);
+        final String correlationId = UUID.randomUUID().toString();
+        final String protocolCommandWithCorrelationId = appendCorrelationIdParameter(protocolCommand, correlationId);
+        LOGGER.trace("Sending {} and waiting for {}", protocolCommandWithCorrelationId, protocolCommandAck);
         final AdaptableBus adaptableBus = messagingProvider.getAdaptableBus();
+
         if (previousSubscriptionId != null) {
             // remove previous subscription without going through back-end because subscription will be replaced
             adaptableBus.unsubscribe(previousSubscriptionId);
@@ -649,9 +668,40 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
                 adaptableBus.subscribeForAdaptable(streamingType,
                         adaptable -> adaptableToNotifier.apply(adaptable).accept(getBus()));
         final Classification tag = Classification.forString(protocolCommandAck);
-        adjoin(adaptableBus.subscribeOnceForString(tag, getTimeout()), futureToCompleteOrFailAfterAck);
-        messagingProvider.emit(protocolCommand);
+
+        // subscribe exclusively because we allow only one request at a time
+        final CompletionStage<String> ackStage = adaptableBus.subscribeOnceForStringExclusively(tag, getTimeout());
+        final CompletableFuture<String> ackFuture = ackStage.toCompletableFuture();
+
+        // subscribe for possible error responses by correlationId
+        final Classification correlationIdTag = Classification.forCorrelationId(correlationId);
+        adaptableBus.subscribeOnceForAdaptable(correlationIdTag, getTimeout())
+                .thenAccept(adaptable -> {
+                    final Signal<?> signal = AbstractHandle.PROTOCOL_ADAPTER.fromAdaptable(adaptable);
+                    if (signal instanceof ThingErrorResponse) {
+                        ackFuture.completeExceptionally(((ThingErrorResponse) signal).getDittoRuntimeException());
+                    } else {
+                        ackFuture.completeExceptionally(getUnexpectedSignalException(signal));
+                    }
+                });
+
+        adjoin(ackFuture, futureToCompleteOrFailAfterAck);
+        messagingProvider.emit(protocolCommandWithCorrelationId);
+
         return subscriptionId;
+    }
+
+    private DittoRuntimeException getUnexpectedSignalException(final Signal<?> signal) {
+        return DittoRuntimeException
+                .newBuilder("signal.unexpected", HttpStatusCode.BAD_REQUEST)
+                .message(() -> String.format("Received unexpected response of type '%s'.", signal.getType()))
+                .build();
+    }
+
+    private String appendCorrelationIdParameter(final String protocolCommand, final String correlationId) {
+        final String separator = protocolCommand.contains("?") ? "&" : "?";
+        return String.format("%s%s%s=%s", protocolCommand, separator,
+                DittoHeaderDefinition.CORRELATION_ID.getKey(), correlationId);
     }
 
     /**

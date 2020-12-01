@@ -12,17 +12,14 @@
  */
 package org.eclipse.ditto.client.internal;
 
-import static java.util.Arrays.asList;
+import static org.eclipse.ditto.client.internal.ActiveThreadsUtil.assertNoMoreActiveThreads;
+import static org.eclipse.ditto.client.internal.ActiveThreadsUtil.getActiveThreads;
 
 import java.time.Duration;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.DisconnectedDittoClient;
@@ -36,10 +33,6 @@ import org.junit.Test;
  * Test if all threads were shutdown after client is destroyed.
  */
 public class ClientShutdownTest {
-
-    private static final List<String> ALLOWED_THREADS = asList("main", "Monitor Ctrl-Break", "BundleWatcher: 1",
-            "surefire-forkedjvm-command-thread", "surefire-forkedjvm-ping-30s", "ping-30s", "Attach API wait loop",
-            "FelixResolver-");
 
     @Test
     public void noThreadLeakWithWebsocketMessagingProvider() throws Exception {
@@ -68,23 +61,6 @@ public class ClientShutdownTest {
         TimeUnit.SECONDS.sleep(2L);
 
         // THEN: all allocated threads are destroyed
-        final List<String> activeThreads = getActiveThreads(startingThreadNames);
-        Assertions.assertThat(activeThreads)
-                .withFailMessage("There are %d threads active: %s", activeThreads.size(), activeThreads)
-                .isEmpty();
+        assertNoMoreActiveThreads(getActiveThreads(startingThreadNames));
     }
-
-    private static List<String> getActiveThreads(final Collection<String> startingThreadNames) {
-        final Thread[] threads = new Thread[Thread.activeCount()];
-        Thread.enumerate(threads);
-
-        // filter out main thread and monitor thread
-        return Stream.of(threads)
-                .filter(Objects::nonNull)
-                .map(Thread::getName)
-                .filter(Objects::nonNull)
-                .filter(name -> !ALLOWED_THREADS.contains(name) && !startingThreadNames.contains(name))
-                .collect(Collectors.toList());
-    }
-
 }

@@ -26,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
+import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.client.live.commands.FeaturesCommandHandling;
 import org.eclipse.ditto.client.live.commands.LiveCommandHandler;
 import org.eclipse.ditto.client.live.commands.ThingCommandHandling;
@@ -38,6 +39,7 @@ import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.exceptions.InvalidRqlExpressionException;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessagePayloadSizeTooLargeException;
@@ -78,7 +80,7 @@ import org.junit.Test;
  * - subscribe for command, send response and/or event
  * - subscribe for command, send acknowledgement
  */
-public final class DittoClientLiveTest extends AbstractDittoClientTest {
+public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTest {
 
     private static final String FEATURE_ID = "someFeature";
     private static final JsonPointer ATTRIBUTE_KEY_NEW = JsonFactory.newPointer("new");
@@ -423,6 +425,51 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
         assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.FORBIDDEN);
     }
 
+    @Override
+    protected CompletableFuture<Void> startConsumptionRequest() {
+        return client.live().startConsumption();
+    }
+
+    @Override
+    protected void replyToConsumptionRequest() {
+        expectProtocolMsgWithCorrelationId("START-SEND-LIVE-EVENTS");
+        reply("START-SEND-LIVE-EVENTS:ACK");
+
+        expectProtocolMsgWithCorrelationId("START-SEND-MESSAGES");
+        reply("START-SEND-MESSAGES:ACK");
+
+        expectProtocolMsgWithCorrelationId("START-SEND-LIVE-COMMANDS");
+        reply("START-SEND-LIVE-COMMANDS:ACK");
+    }
+
+    @Override
+    protected void startConsumptionAndExpectError() {
+        final CompletableFuture<Void> future = client.live().startConsumption();
+        final InvalidRqlExpressionException invalidRqlExpressionException =
+                InvalidRqlExpressionException.newBuilder().message("Invalid filter.").build();
+
+        // live-events + live-messages + live-commands = 3
+        for (int i = 0; i < 3; i++) {
+            final String protocolMessage = messaging.expectEmitted();
+            final String correlationId = determineCorrelationId(protocolMessage);
+            final DittoHeaders dittoHeaders = DittoHeaders.newBuilder().correlationId(correlationId).build();
+            reply(ThingErrorResponse.of(invalidRqlExpressionException.setDittoHeaders(dittoHeaders)));
+        }
+
+        assertFailedCompletion(future, InvalidRqlExpressionException.class);
+    }
+
+    @Override
+    protected void startConsumptionSucceeds() {
+        final CompletableFuture<Void> future = client.live().startConsumption();
+
+        reply(Classification.StreamingType.LIVE_EVENT.startAck());
+        reply(Classification.StreamingType.LIVE_COMMAND.startAck());
+        reply(Classification.StreamingType.LIVE_MESSAGE.startAck());
+
+        future.join();
+    }
+
     private void testMessageAcknowledgement(final MessageRegistration registration, final Signal<?> message) {
         assertEventualCompletion(startConsumption());
         final CompletableFuture<Void> messageHandlingFuture = new CompletableFuture<>();
@@ -625,9 +672,9 @@ public final class DittoClientLiveTest extends AbstractDittoClientTest {
 
     private CompletableFuture<Void> startConsumption() {
         final CompletableFuture<Void> result = client.live().startConsumption();
-        expectMsg("START-SEND-LIVE-EVENTS");
-        expectMsg("START-SEND-MESSAGES");
-        expectMsg("START-SEND-LIVE-COMMANDS");
+        expectProtocolMsgWithCorrelationId("START-SEND-LIVE-EVENTS");
+        expectProtocolMsgWithCorrelationId("START-SEND-MESSAGES");
+        expectProtocolMsgWithCorrelationId("START-SEND-LIVE-COMMANDS");
         reply("START-SEND-LIVE-EVENTS:ACK");
         reply("START-SEND-MESSAGES:ACK");
         reply("START-SEND-LIVE-COMMANDS:ACK");

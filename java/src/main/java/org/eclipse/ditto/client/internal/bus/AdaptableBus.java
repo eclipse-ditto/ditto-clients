@@ -58,10 +58,20 @@ public interface AdaptableBus {
      *
      * @param tag the string classification, usually itself.
      * @param timeout how long to wait for a match.
-     * @return a future adaptable matching the tag according to the classifiers, or a failed future
-     * if no adaptable is matched within the timeout.
+     * @return a future string matching the tag according to the classifiers, or a failed future
+     * if no string is matched within the timeout.
      */
     CompletionStage<String> subscribeOnceForString(Classification tag, Duration timeout);
+
+    /**
+     * Add a one-time subscriber for a string message by replacing an existing with the same string value.
+     *
+     * @param tag the string classification, usually itself.
+     * @param timeout how long to wait for a match.
+     * @return a future string matching the tag according to the classifiers, or a failed future
+     * if no string is matched within the timeout.
+     */
+    CompletionStage<String> subscribeOnceForStringExclusively(Classification tag, Duration timeout);
 
     /**
      * Add a one-time subscriber for an adaptable message. Only effective if no one-time string subscriber matches.

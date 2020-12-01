@@ -90,6 +90,11 @@ final class DefaultAdaptableBus implements AdaptableBus {
     }
 
     @Override
+    public CompletionStage<String> subscribeOnceForStringExclusively(final Classification tag, final Duration timeout) {
+        return subscribeOnce(oneTimeStringConsumers, tag, timeout, true);
+    }
+
+    @Override
     public CompletionStage<Adaptable> subscribeOnceForAdaptable(final Classification tag,
             final Duration timeout) {
         return subscribeOnce(oneTimeAdaptableConsumers, tag, timeout);
@@ -158,8 +163,14 @@ final class DefaultAdaptableBus implements AdaptableBus {
     @Override
     public void shutdownExecutor() {
         LOGGER.trace("Shutting down AdaptableBus Executors");
-        singleThreadedExecutorService.shutdownNow();
-        scheduledExecutorService.shutdownNow();
+        try {
+            singleThreadedExecutorService.shutdownNow();
+            scheduledExecutorService.shutdownNow();
+            singleThreadedExecutorService.awaitTermination(2, TimeUnit.SECONDS);
+            scheduledExecutorService.awaitTermination(2, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            LOGGER.info("Waiting for termination was interrupted.");
+        }
     }
 
     // call this in a single-threaded executor so that ordering is preserved
@@ -206,9 +217,21 @@ final class DefaultAdaptableBus implements AdaptableBus {
             final Map<Classification, Set<Entry<Consumer<T>>>> registry,
             final Classification tag,
             final Duration timeout) {
+        return subscribeOnce(registry, tag, timeout, false);
+    }
+
+    private <T> CompletionStage<T> subscribeOnce(
+            final Map<Classification, Set<Entry<Consumer<T>>>> registry,
+            final Classification tag,
+            final Duration timeout,
+            final boolean exclusively) {
         final CompletableFuture<T> resultFuture = new CompletableFuture<>();
         final Entry<Consumer<T>> subscriber = new Entry<>(tag, resultFuture::complete);
-        addEntry(registry, subscriber);
+        if (exclusively) {
+            replaceEntry(registry, subscriber);
+        } else {
+            addEntry(registry, subscriber);
+        }
         removeAfter(registry, subscriber, timeout, resultFuture);
         return resultFuture;
     }
