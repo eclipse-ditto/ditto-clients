@@ -57,14 +57,10 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
     public void verifyClientDefaultsToSchemaVersion2ForPolicyCommands() {
         messaging = new MockMessagingProvider(JsonSchemaVersion.V_1);
         final DittoClient client = DittoClients.newInstance(messaging);
-        try {
-            assertEventualCompletion(client.policies().retrieve(POLICY_ID));
-            final RetrievePolicy command = expectMsgClass(RetrievePolicy.class);
-            reply(RetrievePolicyResponse.of(POLICY_ID, POLICY, command.getDittoHeaders()));
-            assertThat(command).hasSchemaVersion(JsonSchemaVersion.V_2);
-        } finally {
-            client.destroy();
-        }
+        assertEventualCompletion(client.policies().retrieve(POLICY_ID).thenRun(client::destroy));
+        final RetrievePolicy command = expectMsgClass(RetrievePolicy.class);
+        reply(RetrievePolicyResponse.of(POLICY_ID, POLICY, command.getDittoHeaders()));
+        assertThat(command).hasSchemaVersion(JsonSchemaVersion.V_2);
     }
 
     @Test
