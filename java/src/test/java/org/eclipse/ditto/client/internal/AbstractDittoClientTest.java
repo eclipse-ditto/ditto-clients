@@ -69,7 +69,7 @@ public abstract class AbstractDittoClientTest {
     protected static final int TIMEOUT = 1000;
     protected static final TimeUnit TIME_UNIT = TimeUnit.MILLISECONDS;
     protected static final ProtocolAdapter PROTOCOL_ADAPTER = DittoProtocolAdapter.newInstance();
-    private static final Duration ACTIVE_THREADS_WAIT_TIMEOUT = Duration.ofSeconds(5);
+    private static final Duration ACTIVE_THREADS_WAIT_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration ACTIVE_THREADS_POLL_INTERVAL = Duration.ofSeconds(1);
 
     private final Queue<Throwable> uncaught = new ConcurrentLinkedQueue<>();
