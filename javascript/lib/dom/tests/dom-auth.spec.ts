@@ -13,7 +13,8 @@
 
 
 import { DittoURL, ImmutableURL } from '@eclipse-ditto/ditto-javascript-client-api_1.0';
-import { DomBase64Encoder, DomHttpBasicAuth, DomWebSocketBasicAuth } from '../src/dom-auth';
+import { DomBase64Encoder, DomHttpBasicAuth, DomWebSocketBasicAuth, DomHttpBearerAuth } from '../src/dom-auth';
+
 
 const USERNAME = 'ditto';
 const PASSWORD = 'foo$bar';
@@ -74,6 +75,30 @@ describe('DomWebSocketBasicAuth', () => {
     expectEquals(actual, expected);
   });
 
+});
+
+describe('DomHttpBearerAuth', () => {
+
+
+  const exampleToken = 'AYjcyMzY3ZDhiNmJkNTY';
+
+  it('should leave urls as they are', () => {
+    const bearerAuth = DomHttpBearerAuth.newInstance(exampleToken);
+
+    const expected = defaultUrl();
+    const actual = bearerAuth.authenticateWithUrl(defaultUrl());
+
+    expectEquals(actual, expected);
+  });
+
+  it('should add a Authorization header', () => {
+    const bearerAuth = DomHttpBearerAuth.newInstance(exampleToken);
+
+    const dittoHeaders = bearerAuth.authenticateWithHeaders(defaultHeaders());
+    expect(dittoHeaders.size).toEqual(2);
+    expect(dittoHeaders.get(DEFAULT_KEY)).toEqual(DEFAULT_VAL);
+    expect(dittoHeaders.get('Authorization')).toEqual(`Bearer ${exampleToken}`);
+  });
 });
 
 const defaultHeaders = () => {
