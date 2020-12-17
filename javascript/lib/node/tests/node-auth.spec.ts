@@ -13,7 +13,7 @@
 
 
 import { BasicAuth, DittoURL, ImmutableURL } from '@eclipse-ditto/ditto-javascript-client-api_1.0';
-import { NodeBase64Encoder, NodeHttpBasicAuth, NodeWebSocketBasicAuth } from '../src/node-auth';
+import { NodeBase64Encoder, NodeHttpBasicAuth, NodeHttpBearerAuth, NodeWebSocketBasicAuth } from '../src/node-auth';
 
 const USERNAME = 'ditto';
 const PASSWORD = 'foo$bar';
@@ -55,6 +55,29 @@ describe('NodeWebSocketBasicAuth', () => {
     expectLeavesUrlAsItIs(NodeWebSocketBasicAuth.newInstance(USERNAME, PASSWORD));
   });
 
+});
+
+describe('NodeHttpBearerAuth', () => {
+
+  const exampleToken = 'AYjcyMzY3ZDhiNmJkNTY';
+
+  it('should leave urls as they are', () => {
+    const bearerAuth = NodeHttpBearerAuth.newInstance(exampleToken);
+
+    const expected = defaultUrl();
+    const actual = bearerAuth.authenticateWithUrl(defaultUrl());
+
+    expectEquals(actual, expected);
+  });
+
+  it('should add a Authorization header', () => {
+    const bearerAuth = NodeHttpBearerAuth.newInstance(exampleToken);
+
+    const dittoHeaders = bearerAuth.authenticateWithHeaders(defaultHeaders());
+    expect(dittoHeaders.size).toEqual(2);
+    expect(dittoHeaders.get(DEFAULT_KEY)).toEqual(DEFAULT_VAL);
+    expect(dittoHeaders.get('Authorization')).toEqual(`Bearer ${exampleToken}`);
+  });
 });
 
 const expectAddsBasicAuthHeader = (implementation: BasicAuth) => {
