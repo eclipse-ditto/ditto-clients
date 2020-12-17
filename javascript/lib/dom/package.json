@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-ditto/ditto-javascript-client-dom_1.0",
-  "version": "2.1.0-alpha.0",
+  "version": "2.1.0-alpha.1",
   "description": "DOM implementation of Eclipse Ditto 1.0.x JavaScript API to be used in browsers.",
   "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
   "repository": "https://github.com/eclipse/ditto-clients",
@@ -16,7 +16,7 @@
     "dist"
   ],
   "dependencies": {
-    "@eclipse-ditto/ditto-javascript-client-api_1.0": "^2.1.0-alpha.0"
+    "@eclipse-ditto/ditto-javascript-client-api_1.0": "^2.1.0-alpha.1"
   },
   "devDependencies": {
     "@types/jest": "^24.0.18",
