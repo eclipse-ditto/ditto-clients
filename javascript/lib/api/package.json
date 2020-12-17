@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-ditto/ditto-javascript-client-api_1.0",
-  "version": "2.0.0",
+  "version": "2.1.0-alpha.0",
   "description": "API interfaces for implementing TypeScript clients for Eclipse Ditto 1.0.x.",
   "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
   "repository": "https://github.com/eclipse/ditto-clients",

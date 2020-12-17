@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-ditto/ditto-javascript-client-node_1.0",
-  "version": "2.0.0",
+  "version": "2.1.0-alpha.0",
   "description": "Node.js(r) implementation of Eclipse Ditto 1.0.x JavaScript API.",
   "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
   "repository": "https://github.com/eclipse/ditto-clients",
@@ -14,7 +14,7 @@
     "dist"
   ],
   "dependencies": {
-    "@eclipse-ditto/ditto-javascript-client-api_1.0": "^2.0.0",
+    "@eclipse-ditto/ditto-javascript-client-api_1.0": "^2.1.0-alpha.0",
     "https-proxy-agent": "2.2.2",
     "url": "0.11.0",
     "ws": "7.1.2"
