@@ -11,7 +11,13 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Base64Encoder, BasicAuth, HttpBasicAuth } from '@eclipse-ditto/ditto-javascript-client-api_1.0';
+import {
+  Base64Encoder,
+  BasicAuth,
+  HttpBasicAuth,
+  HttpBearerAuth,
+  TokenSupplier
+} from '@eclipse-ditto/ditto-javascript-client-api_1.0';
 
 /**
  * Node implementation of base64 encoding.
@@ -56,4 +62,24 @@ export class NodeWebSocketBasicAuth extends HttpBasicAuth {
   static newInstance(username: string, password: string): BasicAuth {
     return new NodeWebSocketBasicAuth(username, password, new NodeBase64Encoder());
   }
+}
+
+/**
+ * Node implementation of basic auth for HTTP connections
+ */
+export class NodeHttpBearerAuth extends HttpBearerAuth {
+
+  constructor(tokenSupplier: TokenSupplier) {
+    super(tokenSupplier);
+  }
+
+
+  /**
+   * Create bearer token AuthProvider for HTTP connections
+   * @param tokenSupplier Provides auth tokens to this AuthProvider when needed
+   */
+  static newInstance(tokenSupplier: TokenSupplier) {
+    return new NodeHttpBearerAuth(tokenSupplier);
+  }
+
 }
