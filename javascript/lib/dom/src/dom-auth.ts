@@ -17,7 +17,8 @@ import {
   DittoHeaders,
   DittoURL,
   HttpBasicAuth,
-  HttpBearerAuth
+  HttpBearerAuth,
+  TokenSupplier
 } from '@eclipse-ditto/ditto-javascript-client-api_1.0';
 
 /**
@@ -78,15 +79,15 @@ export class DomWebSocketBasicAuth extends BasicAuth {
  */
 export class DomHttpBearerAuth extends HttpBearerAuth {
 
-  constructor(token: string) {
-    super(token);
+  constructor(tokenSupplier: TokenSupplier) {
+    super(tokenSupplier);
   }
 
   /**
    * Create a new AuthProvider for bearer token authentication over http
-   * @param token
+   * @param tokenSupplier Provides auth tokens to this AuthProvider when needed
    */
-  static newInstance(token: string) {
-    return new DomHttpBearerAuth(token);
+  static newInstance(tokenSupplier: TokenSupplier) {
+    return new DomHttpBearerAuth(tokenSupplier);
   }
 }

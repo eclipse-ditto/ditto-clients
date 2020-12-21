@@ -12,8 +12,13 @@
  */
 
 
-import { DittoURL, ImmutableURL } from '@eclipse-ditto/ditto-javascript-client-api_1.0';
-import { DomBase64Encoder, DomHttpBasicAuth, DomWebSocketBasicAuth, DomHttpBearerAuth } from '../src/dom-auth';
+import {
+  DefaultTokenSupplier,
+  DittoURL,
+  ImmutableURL,
+  TokenSupplier
+} from '@eclipse-ditto/ditto-javascript-client-api_1.0';
+import { DomBase64Encoder, DomHttpBasicAuth, DomHttpBearerAuth, DomWebSocketBasicAuth } from '../src/dom-auth';
 
 
 const USERNAME = 'ditto';
@@ -80,10 +85,11 @@ describe('DomWebSocketBasicAuth', () => {
 describe('DomHttpBearerAuth', () => {
 
 
-  const exampleToken = 'AYjcyMzY3ZDhiNmJkNTY';
+  const exampleToken1 = 'bGLYQpCUgchwipBMEXNeyqGglINUbh';
+  const exampleToken2 = 'ClEXwgYsJGPfrmRVuKpnmsXekuyhbx';
 
   it('should leave urls as they are', () => {
-    const bearerAuth = DomHttpBearerAuth.newInstance(exampleToken);
+    const bearerAuth = DomHttpBearerAuth.newInstance(new DefaultTokenSupplier(exampleToken1));
 
     const expected = defaultUrl();
     const actual = bearerAuth.authenticateWithUrl(defaultUrl());
@@ -92,14 +98,48 @@ describe('DomHttpBearerAuth', () => {
   });
 
   it('should add a Authorization header', () => {
-    const bearerAuth = DomHttpBearerAuth.newInstance(exampleToken);
+    const bearerAuth = DomHttpBearerAuth.newInstance(new DefaultTokenSupplier(exampleToken1));
 
     const dittoHeaders = bearerAuth.authenticateWithHeaders(defaultHeaders());
     expect(dittoHeaders.size).toEqual(2);
     expect(dittoHeaders.get(DEFAULT_KEY)).toEqual(DEFAULT_VAL);
-    expect(dittoHeaders.get('Authorization')).toEqual(`Bearer ${exampleToken}`);
+    expect(dittoHeaders.get('Authorization')).toEqual(`Bearer ${exampleToken1}`);
   });
+
+  it('should use the token provided by the TokenSupplier', () => {
+    const testSupplier = new TestTokenSupplier();
+    testSupplier.testToken = exampleToken1;
+    const bearerAuth = DomHttpBearerAuth.newInstance(testSupplier);
+
+    let dittoHeaders = bearerAuth.authenticateWithHeaders(defaultHeaders());
+    expect(dittoHeaders.size).toEqual(2);
+    expect(dittoHeaders.get(DEFAULT_KEY)).toEqual(DEFAULT_VAL);
+    expect(dittoHeaders.get('Authorization')).toEqual(`Bearer ${exampleToken1}`);
+
+    testSupplier.testToken = exampleToken2;
+
+    dittoHeaders = bearerAuth.authenticateWithHeaders(defaultHeaders());
+    expect(dittoHeaders.size).toEqual(2);
+    expect(dittoHeaders.get(DEFAULT_KEY)).toEqual(DEFAULT_VAL);
+    expect(dittoHeaders.get('Authorization')).toEqual(`Bearer ${exampleToken2}`);
+  });
+
 });
+
+
+/**
+ * Used to test BearerAuth
+ */
+class TestTokenSupplier implements TokenSupplier {
+
+  public testToken = '';
+
+  getToken(): string {
+    return this.testToken;
+  }
+
+}
+
 
 const defaultHeaders = () => {
   return new Map().set(DEFAULT_KEY, DEFAULT_VAL);

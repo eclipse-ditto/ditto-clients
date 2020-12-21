@@ -15,7 +15,8 @@ import {
   Base64Encoder,
   BasicAuth,
   HttpBasicAuth,
-  HttpBearerAuth
+  HttpBearerAuth,
+  TokenSupplier
 } from '@eclipse-ditto/ditto-javascript-client-api_1.0';
 
 /**
@@ -68,16 +69,17 @@ export class NodeWebSocketBasicAuth extends HttpBasicAuth {
  */
 export class NodeHttpBearerAuth extends HttpBearerAuth {
 
-  private constructor(token: string) {
-    super(token);
+  constructor(tokenSupplier: TokenSupplier) {
+    super(tokenSupplier);
   }
 
+
   /**
-   * Create berer token AuthProvider for HTTP connections
-   * @param token The bearer token
+   * Create bearer token AuthProvider for HTTP connections
+   * @param tokenSupplier Provides auth tokens to this AuthProvider when needed
    */
-  static newInstance(token: string) {
-    return new NodeHttpBearerAuth(token);
+  static newInstance(tokenSupplier: TokenSupplier) {
+    return new NodeHttpBearerAuth(tokenSupplier);
   }
 
 }

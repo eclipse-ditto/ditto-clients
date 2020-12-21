@@ -21,21 +21,20 @@ export abstract class BearerAuth implements AuthProvider {
   /**
    * The bearer token used for authentication
    */
-  protected token!: string;
+  protected supplier!: TokenSupplier;
 
   /**
    * Build a new instance of bearer auth
-   * @param token The bearer token to be used
+   * @param tokenSupplier Implementation of the TokenSupplier class to provide tokens for authentication
    */
-  constructor(token: string) {
-    this.token = token;
+  constructor(tokenSupplier: TokenSupplier) {
+    this.supplier = tokenSupplier;
   }
 
   abstract authenticateWithHeaders(originalHeaders: DittoHeaders): DittoHeaders;
 
   abstract authenticateWithUrl(originalUrl: DittoURL): DittoURL;
 }
-
 
 /**
  * Http implementation of bearer auth using the Authorization HTTP header.
@@ -44,10 +43,10 @@ export class HttpBearerAuth extends BearerAuth {
 
   /**
    * Creates a new instance for HTTP connections
-   * @param token
+   * @param supplier TokenSupplier used to get a token
    */
-  static newInstance(token: string): HttpBearerAuth {
-    return new HttpBearerAuth(token);
+  static newInstance(supplier: TokenSupplier): HttpBearerAuth {
+    return new HttpBearerAuth(supplier);
   }
 
   authenticateWithUrl(originalUrl: DittoURL): DittoURL {
@@ -55,7 +54,33 @@ export class HttpBearerAuth extends BearerAuth {
   }
 
   authenticateWithHeaders(originalHeaders: DittoHeaders): DittoHeaders {
-    return originalHeaders.set('Authorization', `Bearer ${this.token}`);
+    return originalHeaders.set('Authorization', `Bearer ${this.supplier.getToken()}`);
+  }
+
+}
+
+/**
+ * Provides a token for use in the bearer auth
+ */
+export interface TokenSupplier {
+
+  /**
+   * Called by the AuthProvider when a token is needed
+   */
+  getToken(): string;
+}
+
+
+/**
+ * Static implementation of the TokenSupplier interface that always returns the same token
+ */
+export class DefaultTokenSupplier implements TokenSupplier {
+
+  constructor(readonly token: string) {
+  }
+
+  getToken(): string {
+    return this.token;
   }
 
 }
