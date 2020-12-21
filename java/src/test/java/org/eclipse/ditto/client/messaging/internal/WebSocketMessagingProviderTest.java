@@ -81,7 +81,7 @@ public final class WebSocketMessagingProviderTest {
         expectNoMsg(errors);
     }
 
-    @Ignore
+    @Ignore("TODO: fix it")
     @Test(timeout = 10_000)
     public void serviceUnavailable() throws Exception {
         final int numberOfRecoverableErrors = 3;
