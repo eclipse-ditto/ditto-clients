@@ -128,7 +128,7 @@ export class HttpClientBuilder extends AbstractBuilder<BuildStepApi1, BuildStepA
 
   private buildUrl(): DittoURL {
     const protocol = this.tls ? 'https' : 'http';
-    const path = this.customPath === undefined ? this.customPath : '/api';
+    const path = (this.customPath === undefined) ? '/api' : this.customPath;
     return ImmutableURL.newInstance(protocol, this.domain, `${path}/${this.apiVersion}`);
   }
 
