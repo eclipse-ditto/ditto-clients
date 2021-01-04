@@ -13,7 +13,13 @@
 
 import { HttpThingsHandle, HttpThingsHandleV1, HttpThingsHandleV2 } from './handles/things.interfaces';
 import { HttpRequester, HttpRequestSenderBuilder } from './request-factory/http-request-sender';
-import { AllDittoHttpHandles, DefaultDittoHttpClient, DittoHttpClient, DittoHttpClientV1, DittoHttpClientV2 } from './ditto-client-http';
+import {
+  AllDittoHttpHandles,
+  DefaultDittoHttpClient,
+  DittoHttpClient,
+  DittoHttpClientV1,
+  DittoHttpClientV2
+} from './ditto-client-http';
 import { HttpMessagesHandle } from './handles/messages-http';
 import { PoliciesHandle } from './handles/policies';
 import { SearchHandle } from './handles/search';
@@ -122,7 +128,8 @@ export class HttpClientBuilder extends AbstractBuilder<BuildStepApi1, BuildStepA
 
   private buildUrl(): DittoURL {
     const protocol = this.tls ? 'https' : 'http';
-    return ImmutableURL.newInstance(protocol, this.domain, `/api/${this.apiVersion}`);
+    const path = this.customPath === undefined ? this.customPath : '/api';
+    return ImmutableURL.newInstance(protocol, this.domain, `${path}/${this.apiVersion}`);
   }
 
   withCustomThingsHandle(factory: (requestSenderBuilder: HttpRequestSenderBuilder,

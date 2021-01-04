@@ -189,9 +189,11 @@ export class WebSocketClientBuilder extends AbstractBuilder<WebSocketBufferStep,
 
   build(): DefaultDittoWebSocketClient {
     const protocol = this.tls ? 'wss' : 'ws';
+    const path = this.customPath === undefined ? this.customPath : '/ws';
+
     const resilienceHandlerFactory = this.resilienceFactory.withContext(
       this.builder.withConnectionDetails(
-        ImmutableURL.newInstance(protocol, this.domain, `/ws/${this.apiVersion}`),
+        ImmutableURL.newInstance(protocol, this.domain, `${path}/${this.apiVersion}`),
         this.authProviders),
       this.stateHandler);
     const requester = new WebSocketRequestHandler(resilienceHandlerFactory);

@@ -68,6 +68,14 @@ interface ProtocolStep<T extends BuildStep, U extends BuildStep> extends BuildSt
  * @param <U> - type of API 2 Build steps.
  */
 interface EnvironmentStep<T extends BuildStep, U extends BuildStep> extends BuildStep {
+
+  /**
+   * Sets a custom path for the api endpoint (optional step)
+   *
+   * @param path custom ditto api path, e.g. /custom - will be used instead of the default /api
+   */
+  withCustomPath(path: string): EnvironmentStep<T, U>;
+
   /**
    * Sets a custom domain to use for requests.
    *
@@ -212,6 +220,7 @@ interface CustomSearchHandleStep<R, H extends SearchHandle> extends BuildStep {
 abstract class AbstractBuilder<T extends BuildStep, U extends BuildStep> implements ProtocolStep<T, U>, EnvironmentStep<T, U>,
   AuthenticationStep<T, U>, ApiVersionStep<T, U> {
   protected domain!: string;
+  protected customPath?: string;
   protected apiVersion!: ApiVersion;
   protected authProviders!: AuthProvider[];
   protected tls!: boolean;
@@ -224,6 +233,11 @@ abstract class AbstractBuilder<T extends BuildStep, U extends BuildStep> impleme
 
   withoutTls(): EnvironmentStep<T, U> {
     this.tls = false;
+    return this;
+  }
+
+  withCustomPath(path: string): EnvironmentStep<T, U> {
+    this.customPath = path;
     return this;
   }
 
