@@ -7,7 +7,6 @@
   "license": "SEE LICENSE IN LICENSE",
   "module": "./dist/index.js",
   "main": "./dist/index.js",
-  "browser": "./dist/index.bundle.js",
   "types": "./dist/index.d.ts",
   "publishConfig": {
     "access": "public"

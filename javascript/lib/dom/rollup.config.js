@@ -21,15 +21,6 @@ export default {
             file: pkg.module,
             format: 'es',
             sourcemap: true
-        },
-        {
-            file: pkg.browser,
-            format: 'iife',
-            name: 'EclipseDittoJavascriptClient',
-            sourcemap: true,
-            globals: {
-                '@eclipse-ditto/ditto-javascript-client-api_1.0': 'EclipseDittoJavascriptClientApi'
-            }
         }
     ],
     external: [
