@@ -56,8 +56,7 @@ subprojects (`api`, `dom` and `node`) but still are able to control dependencies
 build processes or release processes globally.
 
 Furthermore we use [rollup.js](https://rollupjs.org/) for providing multiple
-module types of the packages, e.g. the `api` will be published as IIFE,
-ES Module and CommonJS module.
+module types of the packages, e.g. the `api` will be published as ES6 Module and CommonJS module.
 
 For automatically generating barrel files, [barrelsby](https://github.com/bencoveney/barrelsby)
 is used during the build process.

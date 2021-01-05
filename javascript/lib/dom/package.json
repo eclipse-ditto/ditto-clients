@@ -7,7 +7,6 @@
   "license": "SEE LICENSE IN LICENSE",
   "module": "./dist/index.js",
   "main": "./dist/index.js",
-  "browser": "./dist/index.bundle.js",
   "types": "./dist/index.d.ts",
   "publishConfig": {
     "access": "public"
@@ -19,6 +18,7 @@
     "@eclipse-ditto/ditto-javascript-client-api_1.0": "^2.0.0"
   },
   "devDependencies": {
+    "@rollup/plugin-node-resolve": "^11.0.1",
     "@types/jest": "^24.0.18",
     "barrelsby": "^2.1.1",
     "jest": "^24.9.0",
@@ -48,7 +48,6 @@
     "eclipseditto",
     "client",
     "iot",
-    "iife",
     "dom",
     "browser"
   ]

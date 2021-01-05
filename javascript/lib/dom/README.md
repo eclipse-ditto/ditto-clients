@@ -3,11 +3,8 @@
 Implementation of the Eclipse Ditto JavaScript API that uses functionality of DOM environments, 
 e.g. `btoa()` or `WebSocket`.
 
-It is published with two different module types to the npm registry:
-* IIFE (`dist/index.bundle.js`), for using it directly in a browser. The functionality is available under the base name
-`EclipseDittoJavascriptClient`. You can use a CDN like [UNPKG](https://unpkg.com/) to directly
-use it in a HTML document without the need to compile or pack anything.
-* ES Module (`dist/index.es.js`)
+It is published as an ES6 module. You could also use a CDN like [UNPKG](https://unpkg.com/) to directly use it
+in an HTML document (although "_very experimental_", use the `?module`-flag when importing from UNPKG).
 
 
 ## Building

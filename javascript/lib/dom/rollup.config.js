@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { nodeResolve } from '@rollup/plugin-node-resolve';
 import typescript from 'rollup-plugin-typescript2';
 import pkg from './package.json';
 
@@ -21,21 +22,13 @@ export default {
             file: pkg.module,
             format: 'es',
             sourcemap: true
-        },
-        {
-            file: pkg.browser,
-            format: 'iife',
-            name: 'EclipseDittoJavascriptClient',
-            sourcemap: true,
-            globals: {
-                '@eclipse-ditto/ditto-javascript-client-api_1.0': 'EclipseDittoJavascriptClientApi'
-            }
         }
     ],
     external: [
         ...Object.keys(pkg.dependencies || {}),
     ],
     plugins: [
+        nodeResolve(),
         typescript({
                        typescript: require('typescript'),
                        tsconfigDefaults: {
@@ -44,7 +37,8 @@ export default {
                                declaration: false,
                                declarationMap: false
                            }
-                       }
+                       },
+                       objectHashIgnoreUnknownHack: true,
                    }),
     ]
 };
