@@ -26,6 +26,7 @@ export class Thing extends EntityWithId<Thing> {
                      private readonly _features?: Features,
                      private readonly __revision?: number,
                      private readonly __modified?: string,
+                     private readonly __metadata?: Features,
                      private readonly _acl?: Acl) {
     super();
   }
@@ -43,11 +44,11 @@ export class Thing extends EntityWithId<Thing> {
     // @ts-ignore
     return new Thing(o['thingId'], o['policyId'], o['attributes'],
       // @ts-ignore
-      Features.fromObject(o['features']), o['_revision'], o['_modified'], Acl.fromObject(o['acl']));
+      Features.fromObject(o['features']), o['_revision'], o['_modified'], Features.fromObject(o['_metadata']['features']), Acl.fromObject(o['acl']));
   }
 
   public static empty(): Thing {
-    return new Thing('', '', undefined, undefined, 0, '', undefined);
+    return new Thing('', '', undefined, undefined, 0, '', undefined, undefined);
   }
 
   public toObject(): object {
@@ -60,6 +61,7 @@ export class Thing extends EntityWithId<Thing> {
       ['features', featuresObj],
       ['_revision', this._revision],
       ['_modified', this._modified],
+      ['_metadata', this._metadata],
       ['acl', aclObj]
     ]));
   }
@@ -90,6 +92,10 @@ export class Thing extends EntityWithId<Thing> {
 
   get _revision(): number | undefined {
     return this.__revision;
+  }
+
+  get _metadata(): Features | undefined {
+    return this.__metadata;
   }
 
   get namespace(): string {
@@ -140,6 +146,7 @@ export class Features extends IndexedEntityModel<Features, Feature> {
     }
     return new Features(IndexedEntityModel.fromPlainObject(o, Feature.fromObject));
   }
+
 }
 
 /**
