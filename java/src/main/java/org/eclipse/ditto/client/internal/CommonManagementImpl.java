@@ -384,6 +384,25 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
                 .toCompletableFuture();
     }
 
+
+    @Override
+    public CompletableFuture<Thing> merge(final ThingId thingId, final JsonObject jsonObject,
+            final Option<?>... options) {
+        argumentNotNull(jsonObject);
+
+        final Thing thing = ThingsModelFactory.newThing(jsonObject);
+        return merge(thingId, thing, options);
+    }
+
+    @Override
+    public CompletableFuture<Thing> merge(final ThingId thingId, final Thing thing,
+            final Option<?>... options) {
+
+        return askThingCommand(outgoingMessageFactory.mergeThing(thingId, thing, options),
+                CommandResponse.class,
+                this::transformModifyResponse).toCompletableFuture();
+    }
+
     @Override
     public CompletableFuture<Optional<Thing>> put(final Thing thing, final Option<?>... options) {
         argumentNotNull(thing, ARGUMENT_THING);

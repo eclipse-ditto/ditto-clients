@@ -66,6 +66,7 @@ import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperties;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperty;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatures;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
+import org.eclipse.ditto.signals.commands.things.modify.MergeThing;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyAttribute;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributes;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeature;
@@ -183,6 +184,27 @@ public final class OutgoingMessageFactory {
                 .build();
 
         return ModifyThing.of(thingId, thing, null, headers);
+    }
+
+    /**
+     * @param thingId the thing to be merged.
+     * @param thing which should be used for merged.
+     * @param options options to be applied configuring behaviour of this method.
+     * @return the ThingCommand
+     * @throws NullPointerException if any argument is {@code null}.
+     * @throws IllegalArgumentException if {@code thing} has no identifier.
+     * @throws UnsupportedOperationException if an invalid option has been specified.
+     */
+    MergeThing mergeThing(final ThingId thingId, final Thing thing, final Option<?>[] options) {
+        checkNotNull(thing, "thing");
+        logWarningsForAclPolicyUsage(thing);
+
+        final DittoHeaders headersWithoutIfMatch = buildDittoHeaders(false, options);
+        final DittoHeaders headers = headersWithoutIfMatch.toBuilder()
+                .ifMatch(ASTERISK)
+                .build();
+
+        return MergeThing.withThing(thingId, thing, headers);
     }
 
     private void logWarningsForAclPolicyUsage(final Thing thing) {
