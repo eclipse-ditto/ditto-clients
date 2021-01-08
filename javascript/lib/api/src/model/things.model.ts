@@ -212,9 +212,8 @@ export class Metadata extends IndexedEntityModel<Metadata, Feature> {
     }
     if (o.features !== undefined) {
       return new Metadata(IndexedEntityModel.fromPlainObject(o.features, Feature.fromObject));
-    } else {
-      return new Metadata(undefined);
     }
+    return new Metadata(undefined);
   }
 }
 
