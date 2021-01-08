@@ -26,7 +26,7 @@ export class Thing extends EntityWithId<Thing> {
                      private readonly _features?: Features,
                      private readonly __revision?: number,
                      private readonly __modified?: string,
-                     private readonly __metadata?: Features,
+                     private readonly __metadata?: Metadata,
                      private readonly _acl?: Acl) {
     super();
   }
@@ -44,7 +44,7 @@ export class Thing extends EntityWithId<Thing> {
     // @ts-ignore
     return new Thing(o['thingId'], o['policyId'], o['attributes'],
       // @ts-ignore
-      Features.fromObject(o['features']), o['_revision'], o['_modified'], Features.fromObject(o['_metadata']['features']), Acl.fromObject(o['acl']));
+      Features.fromObject(o['features']), o['_revision'], o['_modified'], Metadata.fromObject(o['_metadata']), Acl.fromObject(o['acl']));
   }
 
   public static empty(): Thing {
@@ -192,6 +192,29 @@ export class Feature extends EntityWithId<Feature> {
 
   get properties(): object | undefined {
     return this._properties;
+  }
+}
+
+export class Metadata extends IndexedEntityModel<Metadata, Feature> {
+  public constructor(readonly features?: FeaturesType) {
+    super(features);
+  }
+
+  /**
+   * Parses Metadata.
+   *
+   * @param o - The object to parse.
+   * @returns The Features
+   */
+  public static fromObject(o: any): Metadata {
+    if (o === undefined) {
+      return o;
+    }
+    if (o.features !== undefined) {
+      return new Metadata(IndexedEntityModel.fromPlainObject(o.features, Feature.fromObject));
+    } else {
+      return new Metadata(undefined);
+    }
   }
 }
 
