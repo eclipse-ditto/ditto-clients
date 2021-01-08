@@ -306,6 +306,14 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
     }
 
     @Test
+    public void testMergePolicyId() {
+        assertEventualCompletion(getManagement().forId(THING_ID).mergePolicyId(POLICY_ID));
+        final MergeThing mergeThing = expectMsgClass(MergeThing.class);
+        reply(MergeThingResponse.of(THING_ID, Thing.JsonFields.POLICY_ID.getPointer(),
+                mergeThing.getDittoHeaders()));
+    }
+
+    @Test
     public void testRegisterTwoHandlersWithSameSelector() throws Exception {
         final CountDownLatch latch = new CountDownLatch(2);
 

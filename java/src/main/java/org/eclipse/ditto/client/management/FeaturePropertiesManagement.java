@@ -218,6 +218,130 @@ public interface FeaturePropertiesManagement {
     CompletableFuture<Void> putProperty(JsonPointer path, JsonValue value, Option<?>... options);
 
     /**
+     * Merge the given property of the Feature.
+     *
+     * @param path the hierarchical path to the property to be merged - may contain {@code "/"} for addressing nested
+     * paths in a hierarchy.
+     * @param value the value to be merged.
+     * @param options options to be applied configuring behaviour of this method, see {@link
+     * org.eclipse.ditto.client.options.Options}.
+     * @return a completable future providing the result of this operation or a specific {@link
+     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     */
+    default CompletableFuture<Void> mergeProperty(final CharSequence path, final boolean value,
+            final Option<?>... options) {
+        argumentNotNull(path);
+        return mergeProperty(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
+    }
+
+    /**
+     * Merge the given property of the Feature.
+     *
+     * @param path the hierarchical path to the property to be merged - may contain {@code "/"} for addressing nested
+     * paths in a hierarchy.
+     * @param value the value to be merged.
+     * @param options options to be applied configuring behaviour of this method, see {@link
+     * org.eclipse.ditto.client.options.Options}.
+     * @return a completable future providing the result of this operation or a specific {@link
+     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     */
+    default CompletableFuture<Void> mergeProperty(final CharSequence path, final double value,
+            final Option<?>... options) {
+        argumentNotNull(path);
+        return mergeProperty(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
+    }
+
+    /**
+     * Merge the given property of the Feature.
+     *
+     * @param path the hierarchical path to the property to be merged - may contain {@code "/"} for addressing nested
+     * paths
+     * in a hierarchy.
+     * @param value the value to be merged.
+     * @param options options to be applied configuring behaviour of this method, see {@link
+     * org.eclipse.ditto.client.options.Options}.
+     * @return a completable future providing the result of this operation or a specific {@link
+     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     */
+    default CompletableFuture<Void> mergeProperty(final CharSequence path, final int value,
+            final Option<?>... options) {
+        argumentNotNull(path);
+        return mergeProperty(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
+    }
+
+    /**
+     * Merge the given property of the Feature.
+     *
+     * @param path the hierarchical path to the property to be merged - may contain {@code "/"} for addressing nested
+     * paths
+     * in a hierarchy.
+     * @param value the value to be merged.
+     * @param options options to be applied configuring behaviour of this method, see {@link
+     * org.eclipse.ditto.client.options.Options}.
+     * @return a completable future providing the result of this operation or a specific {@link
+     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     */
+    default CompletableFuture<Void> mergeProperty(final CharSequence path, final long value,
+            final Option<?>... options) {
+        argumentNotNull(path);
+        return mergeProperty(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
+    }
+
+    /**
+     * Sets the given property of the Feature.
+     *
+     * @param path the hierarchical path to the property to be merged - may contain {@code "/"} for addressing nested
+     * paths
+     * in a hierarchy.
+     * @param value the value to be merged.
+     * @param options options to be applied configuring behaviour of this method, see {@link
+     * org.eclipse.ditto.client.options.Options}.
+     * @return a completable future providing the result of this operation or a specific {@link
+     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     */
+    default CompletableFuture<Void> mergeProperty(final CharSequence path, final String value,
+            final Option<?>... options) {
+        argumentNotNull(path);
+        return mergeProperty(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
+    }
+
+    /**
+     * Sets the given property of the Feature.
+     *
+     * @param path the hierarchical path to the property to be set - may contain {@code "/"} for addressing nested paths
+     * in a hierarchy.
+     * @param value the value to be set.
+     * @param options options to be applied configuring behaviour of this method, see {@link
+     * org.eclipse.ditto.client.options.Options}.
+     * @return a completable future providing the result of this operation or a specific {@link
+     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     */
+    default CompletableFuture<Void> mergeProperty(final CharSequence path, final JsonValue value,
+            final Option<?>... options) {
+        argumentNotNull(path);
+        return mergeProperty(JsonFactory.newPointer(path), value, options);
+    }
+
+    /**
+     * Merge the given property of the Feature.
+     *
+     * @param path the hierarchical path to the property to be merged.
+     * @param value the value to be merged.
+     * @param options options to be applied configuring behaviour of this method, see {@link
+     * org.eclipse.ditto.client.options.Options}.
+     * @return a completable future providing the result of this operation or a specific {@link
+     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     */
+    CompletableFuture<Void> mergeProperty(JsonPointer path, JsonValue value, Option<?>... options);
+
+    /**
      * Sets the given properties of the Feature.
      *
      * @param value the properties to be set.
@@ -227,6 +351,17 @@ public interface FeaturePropertiesManagement {
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      */
     CompletableFuture<Void> setProperties(JsonObject value, Option<?>... options);
+
+    /**
+     * Merge the given properties of the Feature.
+     *
+     * @param value the properties to be merged.
+     * @param options options to be applied configuring behaviour of this method, see {@link
+     * org.eclipse.ditto.client.options.Options}.
+     * @return a completable future providing the result of this operation or a specific {@link
+     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     */
+    CompletableFuture<Void> mergeProperties(JsonObject value, Option<?>... options);
 
     /**
      * Deletes the property specified by the given path.

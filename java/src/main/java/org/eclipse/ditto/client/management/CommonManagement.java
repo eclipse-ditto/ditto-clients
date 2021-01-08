@@ -308,16 +308,12 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @param thing which should be used for merged.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return completable future providing the merged Thing object or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
-     * {@code "thingId"}, or if {@code initialPolicy} is {@code null}.
-     * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code thing} cannot be parsed to a {@link
-     * Thing}.
-     * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
+     * @return completable future providing {@code null} in case of success or a specific {@link
+     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code argument} is {@code null}.
      * @since 2.0.0
      */
-    CompletableFuture<Thing> merge(ThingId thingId, Thing thing, Option<?>... options);
+    CompletableFuture<Void> merge(ThingId thingId, Thing thing, Option<?>... options);
 
     /**
      * Merges a {@link Thing} if it does exist based on the given {@link JsonObject}.
@@ -326,16 +322,12 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @param thing a JSON object representation of the Thing which should be used for merged.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return completable future providing the created Thing object or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
-     * {@code "thingId"}, or if {@code initialPolicy} is {@code null}.
-     * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code thing} cannot be parsed to a {@link
-     * Thing}.
-     * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
+     * @return completable future providing {@code null} in case of success or a specific {@link
+     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code argument} is {@code null}.
      * @since 2.0.0
      */
-    CompletableFuture<Thing> merge(ThingId thingId, JsonObject thing, Option<?>... options);
+    CompletableFuture<Void> merge(ThingId thingId, JsonObject thing, Option<?>... options);
 
     /**
      * Puts the given {@link Thing}, which means that the Thing might be created or updated. The behaviour can be

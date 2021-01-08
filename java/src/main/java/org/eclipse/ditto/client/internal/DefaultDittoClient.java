@@ -51,9 +51,12 @@ import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.DittoProtocolAdapter;
 import org.eclipse.ditto.protocoladapter.HeaderTranslator;
+import org.eclipse.ditto.protocoladapter.PayloadPathMatcher;
 import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
 import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.protocoladapter.UnknownPathException;
+import org.eclipse.ditto.protocoladapter.things.ThingMergePayloadPathMatcher;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.base.ErrorResponse;
@@ -87,6 +90,7 @@ import org.eclipse.ditto.signals.events.things.FeaturesDeleted;
 import org.eclipse.ditto.signals.events.things.FeaturesModified;
 import org.eclipse.ditto.signals.events.things.ThingCreated;
 import org.eclipse.ditto.signals.events.things.ThingDeleted;
+import org.eclipse.ditto.signals.events.things.ThingMerged;
 import org.eclipse.ditto.signals.events.things.ThingModified;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -335,6 +339,15 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
                 DittoHeaderDefinition.AUTHORIZATION_CONTEXT,
                 DittoHeaderDefinition.RESPONSE_REQUIRED
         );
+
+        /*
+         * Merge Events are separated by theire path. There is only one command
+         */
+        SelectorUtil.addHandlerForThingEvent(LOGGER, bus, ThingMerged.TYPE, ThingMerged.class,
+                DefaultDittoClient::mapEventPathToAddress,
+                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.MERGED,
+                        e.getResourcePath(), e.getValue(), e.getRevision(), e.getTimestamp().orElse(null),
+                        extra, e.getDittoHeaders(), emitAcknowledgement));
 
         /*
          * Thing
@@ -718,5 +731,95 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
             return new ClassCastException("Expect an error response, got: " +
                     ProtocolFactory.wrapAsJsonifiableAdaptable(adaptable).toJsonString());
         }
+    }
+
+    private static String mapEventPathToAddress(final ThingMerged mergedEvent) {
+        final ThingId thingEntityId = mergedEvent.getThingEntityId();
+
+        final PayloadPathMatcher payloadPathMatcher = ThingMergePayloadPathMatcher.getInstance();
+        final String errorMessage = "No address pointer was found";
+        switch (payloadPathMatcher.match(mergedEvent.getResourcePath())) {
+            case "thing":
+                return MessageFormat.format(
+                        DefaultDittoClient.THING_PATTERN, thingEntityId);
+            case "attribute":
+                return filterForAttribute(mergedEvent)
+                        .map(attribute -> MessageFormat.format(
+                                DefaultDittoClient.ATTRIBUTE_PATTERN, thingEntityId, attribute))
+                        .orElseThrow(() -> {
+                            LOGGER.trace(errorMessage);
+                            return new UnknownPathException.Builder(mergedEvent.getResourcePath()).build();
+                        });
+            case "attributes":
+                return MessageFormat.format(DefaultDittoClient.ATTRIBUTES_PATTERN,
+                        thingEntityId);
+            case "feature":
+                return filterForFeatureId(mergedEvent)
+                        .map(featureId -> MessageFormat.format(DefaultDittoClient.FEATURE_PATTERN,
+                                thingEntityId, featureId))
+                        .orElseThrow(() -> {
+                            LOGGER.trace(errorMessage);
+                            return new UnknownPathException.Builder(mergedEvent.getResourcePath()).build();
+                        });
+            case "features":
+                return MessageFormat.format(DefaultDittoClient.FEATURES_PATTERN,
+                        thingEntityId);
+            case "featureProperty":
+                return filterForFeatureId(mergedEvent)
+                        .flatMap(featureId -> filterForFeatureProperty(mergedEvent)
+                                .map(featureProperty -> MessageFormat.format(
+                                        DefaultDittoClient.FEATURE_PROPERTY_PATTERN,
+                                        thingEntityId, featureId, featureProperty))
+                        )
+                        .orElseThrow(() -> {
+                            LOGGER.trace(errorMessage);
+                            return new UnknownPathException.Builder(mergedEvent.getResourcePath()).build();
+                        });
+            case "featureProperties":
+                return filterForFeatureId(mergedEvent)
+                        .map(featureId -> MessageFormat.format(DefaultDittoClient.FEATURE_PROPERTIES_PATTERN,
+                                thingEntityId, featureId))
+                        .orElseThrow(() -> {
+                            LOGGER.trace(errorMessage);
+                            return new UnknownPathException.Builder(mergedEvent.getResourcePath()).build();
+                        });
+            case "featureDesiredProperty":
+                return filterForFeatureId(mergedEvent)
+                        .flatMap(desiredFeatureId -> filterForFeatureProperty(mergedEvent)
+                                .map(featureProperty -> MessageFormat.format(
+                                        DefaultDittoClient.FEATURE_DESIRED_PROPERTY_PATTERN,
+                                        thingEntityId, desiredFeatureId, featureProperty)))
+                        .orElseThrow(() -> {
+                            LOGGER.trace(errorMessage);
+                            return new UnknownPathException.Builder(mergedEvent.getResourcePath()).build();
+                        });
+            case "featureDesiredProperties":
+                return filterForFeatureId(mergedEvent)
+                        .map(desiredFeatureId -> MessageFormat.format(
+                                DefaultDittoClient.FEATURE_DESIRED_PROPERTIES_PATTERN,
+                                thingEntityId, desiredFeatureId))
+                        .orElseThrow(() -> {
+                            LOGGER.trace(errorMessage);
+                            return new UnknownPathException.Builder(mergedEvent.getResourcePath()).build();
+                        });
+            default:
+                LOGGER.trace(errorMessage);
+                throw new UnknownPathException.Builder(mergedEvent.getResourcePath()).build();
+        }
+    }
+
+    private static Optional<String> filterForFeatureProperty(final ThingMerged mergedEvent) {
+        return mergedEvent.getResourcePath().getSubPointer(3)
+                .map(CharSequence::toString);
+    }
+
+    private static Optional<String> filterForFeatureId(final ThingMerged mergedEvent) {
+        return mergedEvent.getResourcePath().get(1)
+                .map(CharSequence::toString);
+    }
+
+    private static Optional<String> filterForAttribute(final ThingMerged mergedEvent) {
+        return mergedEvent.getResourcePath().getSubPointer(1)
+                .map(CharSequence::toString);
     }
 }

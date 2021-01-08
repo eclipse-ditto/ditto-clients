@@ -386,7 +386,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
 
 
     @Override
-    public CompletableFuture<Thing> merge(final ThingId thingId, final JsonObject jsonObject,
+    public CompletableFuture<Void> merge(final ThingId thingId, final JsonObject jsonObject,
             final Option<?>... options) {
         argumentNotNull(jsonObject);
 
@@ -395,12 +395,13 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Thing> merge(final ThingId thingId, final Thing thing,
+    public CompletableFuture<Void> merge(final ThingId thingId, final Thing thing,
             final Option<?>... options) {
+        argumentNotNull(thing);
 
         return askThingCommand(outgoingMessageFactory.mergeThing(thingId, thing, options),
                 CommandResponse.class,
-                this::transformModifyResponse).toCompletableFuture();
+                this::toVoid).toCompletableFuture();
     }
 
     @Override
