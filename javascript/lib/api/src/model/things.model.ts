@@ -127,11 +127,11 @@ export class Features extends IndexedEntityModel<Feature> {
    * @param o - The object to parse.
    * @returns The Features
    */
-  public static fromObject(o: any): Features | undefined {
+  public static fromObject(o: any): Features {
     if (o === undefined) {
       return o;
     }
-    return IndexedEntityModel.fromPlainObject<Feature>(o, Feature.fromObject);
+    return IndexedEntityModel.fromPlainObject<Feature>(o, Feature.fromObject) || {};
   }
 }
 
@@ -189,11 +189,11 @@ export class Acl extends IndexedEntityModel<AclEntry> {
    * @param o - The object to parse.
    * @returns The Acl
    */
-  public static fromObject(o: any): Acl | undefined {
+  public static fromObject(o: any): Acl {
     if (o === undefined) {
       return o;
     }
-    return IndexedEntityModel.fromPlainObject<AclEntry>(o, AclEntry.fromObject);
+    return IndexedEntityModel.fromPlainObject<AclEntry>(o, AclEntry.fromObject) || {};
   }
 }
 
