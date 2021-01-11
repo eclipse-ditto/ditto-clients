@@ -201,7 +201,7 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
       id: thingId,
       path: 'acl',
       requestOptions: options,
-      payload: acl.toObject()
+      payload: Acl.toObject(acl)
     });
   }
 
