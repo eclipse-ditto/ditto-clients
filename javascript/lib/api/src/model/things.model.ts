@@ -20,12 +20,14 @@ export class Thing extends EntityWithId {
 
   public static readonly NAMESPACE_SEPARATION_REGEX = /([^:]*):(.*)/;
 
-  public constructor(private readonly _thingId: string,
+  public constructor(
+    private readonly _thingId: string,
     private readonly _policyId?: string,
     private readonly _attributes?: object,
     private readonly _features?: Features,
     private readonly __revision?: number,
     private readonly __modified?: string,
+    private readonly __metadata?: Metadata,
     private readonly _acl?: Acl) {
     super();
   }
@@ -41,9 +43,15 @@ export class Thing extends EntityWithId {
       return o;
     }
     // @ts-ignore
-    return new Thing(o['thingId'], o['policyId'], o['attributes'],
+    return new Thing(o['thingId'],
+      o['policyId'],
+      o['attributes'],
       // @ts-ignore
-      Features.fromObject(o['features']), o['_revision'], o['_modified'], Metadata.fromObject(o['_metadata']), Acl.fromObject(o['acl']));
+      Features.fromObject(o['features']),
+      o['_revision'],
+      o['_modified'],
+      Metadata.fromObject(o['_metadata']),
+      Acl.fromObject(o['acl']));
   }
 
   public static empty(): Thing {
@@ -93,7 +101,7 @@ export class Thing extends EntityWithId {
     return this.__revision;
   }
 
-  get _metadata(): Features | undefined {
+  get _metadata(): Metadata | undefined {
     return this.__metadata;
   }
 
@@ -143,6 +151,43 @@ export class Features extends IndexedEntityModel<Feature> {
   }
 
 }
+
+
+export class Metadata extends EntityModel {
+
+  public constructor(
+    private readonly _attributes?: Record<string, any>,
+    private readonly _features?: Features) {
+    super();
+  }
+
+
+  get attributes(): Record<string, any> | undefined {
+    return this._attributes;
+  }
+
+  get features(): Features | undefined {
+    return this._features;
+  }
+
+  public static fromObject(o: any): Metadata {
+    if (o === undefined) {
+      return o;
+    }
+    return new Metadata(Features.fromObject(o.features), o.attributes);
+  }
+
+  toObject(): Object | undefined {
+    const features = this.features ? Features.toObject(this.features) : undefined;
+
+    return EntityModel.buildObject(new Map<string, any>([
+      ['features', features],
+      ['attributes', this.attributes]
+    ]));
+  }
+
+}
+
 
 /**
  * Representation of a Feature
