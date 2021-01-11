@@ -60,6 +60,7 @@ export class Thing extends EntityWithId {
 
   public toObject(): object {
     const featuresObj = this.features ? Features.toObject(this.features) : undefined;
+    const metadataObj = this._metadata ? this._metadata.toObject() : undefined;
     const aclObj = this._acl ? Acl.toObject(this._acl) : undefined;
     return EntityModel.buildObject(new Map<string, any>([
       ['thingId', this.thingId],
@@ -68,7 +69,7 @@ export class Thing extends EntityWithId {
       ['features', featuresObj],
       ['_revision', this._revision],
       ['_modified', this._modified],
-      ['_metadata', this._metadata],
+      ['_metadata', metadataObj],
       ['acl', aclObj]
     ]));
   }
