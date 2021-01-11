@@ -174,7 +174,7 @@ export class Metadata extends EntityModel {
     if (o === undefined) {
       return o;
     }
-    return new Metadata(Features.fromObject(o.features), o.attributes);
+    return new Metadata(o.attributes, Features.fromObject(o.features));
   }
 
   toObject(): Object | undefined {
