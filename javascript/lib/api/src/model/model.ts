@@ -14,7 +14,7 @@
 /**
  * Model to represent an Entity in Ditto.
  */
-export abstract class EntityModel<T extends EntityModel<T>> {
+export abstract class EntityModel {
 
   /**
    * Turns an object into an array of the type A. It contains one Entity for every key of the original object
@@ -24,7 +24,7 @@ export abstract class EntityModel<T extends EntityModel<T>> {
    * @param parser - A method to parse instances of the desired Entity.
    * @returns The array of Entities.
    */
-  static objectToArray<T extends EntityWithId<T>>(o: Object, parser: (obj: Object, key: string) => T): T[] {
+  static objectToArray<T extends EntityWithId>(o: Object, parser: (obj: Object, key: string) => T): T[] {
     return Object.keys(o).map((key: string) => {
       // @ts-ignore
       return parser(o[key], key);
@@ -51,7 +51,7 @@ export abstract class EntityModel<T extends EntityModel<T>> {
     return JSON.stringify(this.toObject());
   }
 
-  equals(toCompare: T): boolean {
+  equals(toCompare: EntityModel): boolean {
     // @ts-ignore
     return toCompare !== undefined && (this === toCompare || this.toJson() === toCompare.toJson());
   }
@@ -67,34 +67,21 @@ export abstract class EntityModel<T extends EntityModel<T>> {
 /**
  * Entity with an 'id' field
  */
-export abstract class EntityWithId<T extends EntityWithId<T>> extends EntityModel<T> {
+export abstract class EntityWithId extends EntityModel {
   id!: string;
 
-  equals(toCompare: T): boolean {
+  equals(toCompare: EntityWithId): boolean {
     return super.equals(toCompare) && this.id === toCompare.id;
   }
 }
 
-/**
- * Type that can be used for entities with unknown property keys but known property values.
- * E.g. an entity that has user-defined keys but the values are always of the same type.
- * In typescript such interfaces are called 'index signatures'.
- */
-export interface IndexedEntityModelType<T> {
-  [index: string]: T;
-}
 
 /**
  * Abstract entity model class that consists of entities of the same type but with unknown property keys.
- * @param <T> - Type of the implementing class.
- * @param <V> - Type of the entities that are stored by the model.
  */
-export abstract class IndexedEntityModel<T extends IndexedEntityModel<T, V>, V>
-  extends EntityModel<IndexedEntityModel<T, V>> {
+export abstract class IndexedEntityModel<EntryType extends EntityModel> implements Record<string, EntryType> {
 
-  protected constructor(private readonly _elements: IndexedEntityModelType<V> | undefined) {
-    super();
-  }
+  [key: string]: EntryType;
 
   /**
    * Map the object to an indexed object with types. Iterates all keys and maps all values with {@code mapValue}.
@@ -103,9 +90,9 @@ export abstract class IndexedEntityModel<T extends IndexedEntityModel<T, V>, V>
    * @param mapValue - how to get the value from an objects value.
    * @param mapKey - how to get the key from an objects key.
    */
-  static fromPlainObject<T>(objectToMap: Object | undefined,
-                            mapValue: (value: any, key: string) => T,
-                            mapKey: (key: string, value: any) => string = key => key): IndexedEntityModelType<T> | undefined {
+  static fromPlainObject<T extends EntityModel>(objectToMap: Object | undefined,
+    mapValue: (value: any, key: string) => T,
+    mapKey: (key: string, value: any) => string = key => key): IndexedEntityModel<T> | undefined {
     if (objectToMap) {
       const entries = Object.keys(objectToMap)
         .map(k => {
@@ -126,7 +113,7 @@ export abstract class IndexedEntityModel<T extends IndexedEntityModel<T, V>, V>
    * @param objectToMap - the object to map.
    * @param removeType - function that is called to remove the type of the objects values.
    */
-  static toPlainObject<T>(objectToMap: IndexedEntityModelType<T>, removeType: (typedObject: T) => any) {
+  static toPlainObject<T extends EntityModel>(objectToMap: IndexedEntityModel<T>, removeType: (typedObject: T) => any) {
     const entries = Object.keys(objectToMap)
       .map(k => {
         return { [k]: removeType(objectToMap[k]) };
@@ -139,10 +126,9 @@ export abstract class IndexedEntityModel<T extends IndexedEntityModel<T, V>, V>
    *
    * @returns The object representation of the Entity.
    */
-  toObject(): Object | undefined {
-    if (this._elements) {
-      // @ts-ignore
-      return IndexedEntityModel.toPlainObject(this._elements, element => element.toObject());
+  static toObject<T extends EntityModel>(entityModel: IndexedEntityModel<T>): Object | undefined {
+    if (entityModel != null) {
+      return IndexedEntityModel.toPlainObject(entityModel, element => (<T> element).toObject());
     }
     return undefined;
   }
