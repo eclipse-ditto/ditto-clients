@@ -48,7 +48,7 @@ import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.json.JsonCollectors;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
-import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -438,31 +438,36 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     private RuntimeException mapConnectError(final Throwable e) {
         final Throwable cause = getRootCause(e);
+        final RuntimeException result;
         if (cause instanceof WebSocketException) {
             LOGGER.error("Got exception: {}", cause.getMessage());
             if (cause instanceof OpeningHandshakeException) {
                 final StatusLine statusLine = ((OpeningHandshakeException) cause).getStatusLine();
-                final HttpStatusCode httpStatusCode = HttpStatusCode.forInt(statusLine.getStatusCode())
-                        .orElse(HttpStatusCode.INTERNAL_SERVER_ERROR);
-                if (httpStatusCode.isClientError()) {
-                    switch (httpStatusCode) {
-                        case UNAUTHORIZED:
-                            return AuthenticationException.unauthorized(sessionId, cause);
-                        case FORBIDDEN:
-                            return AuthenticationException.forbidden(sessionId, cause);
-                        default:
-                            return AuthenticationException.withStatus(sessionId, cause, statusLine.getStatusCode(),
-                                    statusLine.getReasonPhrase() + ": " +
-                                            new String(((OpeningHandshakeException) cause).getBody()));
+                final HttpStatus httpStatus = HttpStatus.tryGetInstance(statusLine.getStatusCode())
+                        .orElse(HttpStatus.INTERNAL_SERVER_ERROR);
+                if (httpStatus.isClientError()) {
+                    if (HttpStatus.UNAUTHORIZED.equals(httpStatus)) {
+                        result = AuthenticationException.unauthorized(sessionId, cause);
+                    } else if (HttpStatus.FORBIDDEN.equals(httpStatus)) {
+                        result = AuthenticationException.forbidden(sessionId, cause);
+                    } else {
+                        result = AuthenticationException.withStatus(sessionId, cause, statusLine.getStatusCode(),
+                                statusLine.getReasonPhrase() + ": " +
+                                        new String(((OpeningHandshakeException) cause).getBody()));
                     }
+                } else {
+                    result = MessagingException.connectFailed(sessionId, cause);
                 }
             } else if (((WebSocketException) cause).getError() == WebSocketError.SOCKET_CONNECT_ERROR &&
                     cause.getCause() instanceof UnknownHostException) {
-                return MessagingException.connectFailed(sessionId, cause.getCause());
+                result = MessagingException.connectFailed(sessionId, cause.getCause());
+            } else {
+                result = MessagingException.connectFailed(sessionId, cause);
             }
+        } else {
+            result = MessagingException.connectFailed(sessionId, cause);
         }
-
-        return MessagingException.connectFailed(sessionId, cause);
+        return result;
     }
 
     /**
@@ -482,9 +487,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         if (e.getCause() == null) {
             return e;
         }
-        return (e instanceof CompletionException || e instanceof ExecutionException)
-                ? getRootCause(e.getCause())
-                : e;
+        return e instanceof CompletionException || e instanceof ExecutionException ? getRootCause(e.getCause()) : e;
     }
 
 }

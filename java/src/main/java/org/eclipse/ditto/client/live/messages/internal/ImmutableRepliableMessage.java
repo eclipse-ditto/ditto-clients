@@ -36,7 +36,7 @@ import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.acks.AcknowledgementRequest;
 import org.eclipse.ditto.model.base.auth.AuthorizationContext;
-import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
@@ -61,6 +61,7 @@ public final class ImmutableRepliableMessage<T, U> implements RepliableMessage<T
 
     private ImmutableRepliableMessage(final Message<T> message, final Consumer<Message<U>> responseConsumer,
             final Consumer<Acknowledgement> acknowledgementPublisher) {
+
         this.message = message;
         this.responseConsumer = responseConsumer;
         this.acknowledgementPublisher = acknowledgementPublisher;
@@ -156,8 +157,8 @@ public final class ImmutableRepliableMessage<T, U> implements RepliableMessage<T
     }
 
     @Override
-    public Optional<HttpStatusCode> getStatusCode() {
-        return message.getStatusCode();
+    public Optional<HttpStatus> getHttpStatus() {
+        return message.getHttpStatus();
     }
 
     @Override
@@ -167,7 +168,7 @@ public final class ImmutableRepliableMessage<T, U> implements RepliableMessage<T
                 .featureId(message.getFeatureId().orElse(null))
                 .subject(message.getSubject())
                 .correlationId(message.getCorrelationId().orElseThrow(
-                        () -> DittoRuntimeException.newBuilder("correlation.missing", HttpStatusCode.BAD_REQUEST)
+                        () -> DittoRuntimeException.newBuilder("correlation.missing", HttpStatus.BAD_REQUEST)
                                 .build()));
     }
 
@@ -227,4 +228,5 @@ public final class ImmutableRepliableMessage<T, U> implements RepliableMessage<T
                         acknowledgementPublisher))
                 .forEach(acknowledgementHandle);
     }
+
 }

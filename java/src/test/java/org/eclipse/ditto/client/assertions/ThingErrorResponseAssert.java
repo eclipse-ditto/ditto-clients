@@ -13,6 +13,7 @@
 package org.eclipse.ditto.client.assertions;
 
 import org.assertj.core.api.Assertions;
+import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
@@ -22,8 +23,8 @@ import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
 /**
  * An assert for {@link ThingErrorResponse}.
  */
-public final class ThingErrorResponseAssert extends AbstractCommandResponseAssert<ThingErrorResponseAssert,
-        ThingErrorResponse> {
+public final class ThingErrorResponseAssert
+        extends AbstractCommandResponseAssert<ThingErrorResponseAssert, ThingErrorResponse> {
 
     public ThingErrorResponseAssert(final ThingErrorResponse actual) {
         super(actual, ThingErrorResponseAssert.class);
@@ -37,22 +38,40 @@ public final class ThingErrorResponseAssert extends AbstractCommandResponseAsser
         return hasDittoHeaders(expectedDittoHeaders);
     }
 
+    /**
+     * @deprecated as of 2.0.0 please use {@link #withStatus(HttpStatus)} instead.
+     */
+    @Deprecated
     public ThingErrorResponseAssert withStatus(final HttpStatusCode expectedStatus) {
+        return hasStatus(expectedStatus.getAsHttpStatus());
+    }
+
+    public ThingErrorResponseAssert withStatus(final HttpStatus expectedStatus) {
         return hasStatus(expectedStatus);
     }
 
+    /**
+     * @deprecated as of 2.0.0 please use {@link #hasStatus(HttpStatus)} instead.
+     */
+    @Deprecated
     public ThingErrorResponseAssert hasStatusCode(final HttpStatusCode expectedStatusCode) {
         return assertThatEquals(actual.getStatusCode(), expectedStatusCode, "HTTP status code");
     }
 
+    public ThingErrorResponseAssert hasStatus(final HttpStatus expectedStatus) {
+        return assertThatEquals(actual.getHttpStatus(), expectedStatus, "HTTP status");
+    }
+
     public ThingErrorResponseAssert withDittoRuntimeException(
             final DittoRuntimeException expectedDittoRuntimeException) {
+
         return assertThatEquals(actual.getDittoRuntimeException(), expectedDittoRuntimeException,
                 "DittoRuntimeException");
     }
 
     public ThingErrorResponseAssert withDittoRuntimeExceptionOfType(
             final Class<? extends DittoRuntimeException> expectedType) {
+
         isNotNull();
         final DittoRuntimeException dittoRuntimeException = actual.getDittoRuntimeException();
         Assertions.assertThat(dittoRuntimeException)

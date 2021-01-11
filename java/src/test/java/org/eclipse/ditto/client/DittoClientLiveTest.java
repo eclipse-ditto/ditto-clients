@@ -38,7 +38,7 @@ import org.eclipse.ditto.client.management.AcknowledgementsFailedException;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
-import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.exceptions.InvalidRqlExpressionException;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.MessageDirection;
@@ -166,7 +166,7 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
                         if (error != null) {
                             future.completeExceptionally(error);
                         } else {
-                            assertThat(message.getStatusCode()).contains(HttpStatusCode.ALREADY_REPORTED);
+                            assertThat(message.getHttpStatus()).contains(HttpStatus.ALREADY_REPORTED);
                             assertThat(message.getHeaders())
                                     .contains(new AbstractMap.SimpleEntry<>("my-header", "my-header-value"));
                             assertThat(message.getHeaders().getDirection()).isEqualTo(MessageDirection.FROM);
@@ -182,18 +182,18 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
         final SendThingMessage<?> command = expectMsgClass(SendThingMessage.class);
         final SendThingMessageResponse<?> response =
                 SendThingMessageResponse.of(command.getEntityId(), command.getMessage(),
-                        HttpStatusCode.ALREADY_REPORTED, command.getDittoHeaders());
+                        HttpStatus.ALREADY_REPORTED, command.getDittoHeaders());
         final Acknowledgement liveResponseAck = Acknowledgement.of(
                 LIVE_RESPONSE,
                 response.getEntityId(),
-                response.getStatusCode(),
+                response.getHttpStatus(),
                 response.getDittoHeaders(),
                 response.toJson().getValueOrThrow(MessageCommand.JsonFields.JSON_MESSAGE)
         );
         final Acknowledgement customAck = Acknowledgement.of(
                 AcknowledgementLabel.of("custom"),
                 command.getEntityId(),
-                HttpStatusCode.NO_CONTENT,
+                HttpStatus.NO_CONTENT,
                 command.getDittoHeaders()
         );
         reply(Acknowledgements.of(Arrays.asList(liveResponseAck, customAck), command.getDittoHeaders()));
@@ -222,12 +222,12 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
                     try {
                         assertThat(error).isInstanceOf(AcknowledgementsFailedException.class);
                         final Acknowledgements acks = ((AcknowledgementsFailedException) error).getAcknowledgements();
-                        assertThat(acks.getStatusCode()).isEqualTo(HttpStatusCode.FAILED_DEPENDENCY);
-                        assertThat(acks.getAcknowledgement(LIVE_RESPONSE).map(Acknowledgement::getStatusCode))
-                                .contains(HttpStatusCode.OK);
+                        assertThat(acks.getHttpStatus()).isEqualTo(HttpStatus.FAILED_DEPENDENCY);
+                        assertThat(acks.getAcknowledgement(LIVE_RESPONSE).map(Acknowledgement::getHttpStatus))
+                                .contains(HttpStatus.OK);
                         assertThat(acks.getAcknowledgement(AcknowledgementLabel.of("custom"))
-                                .map(Acknowledgement::getStatusCode))
-                                .contains(HttpStatusCode.IM_A_TEAPOT);
+                                .map(Acknowledgement::getHttpStatus))
+                                .contains(HttpStatus.IM_A_TEAPOT);
                         future.complete(null);
                     } catch (final Throwable e) {
                         future.completeExceptionally(e);
@@ -235,20 +235,18 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
                 });
 
         final SendThingMessage<?> command = expectMsgClass(SendThingMessage.class);
-        final SendThingMessageResponse<?> response =
-                SendThingMessageResponse.of(command.getEntityId(), command.getMessage(),
-                        HttpStatusCode.OK, command.getDittoHeaders());
+        final SendThingMessageResponse<?> response = SendThingMessageResponse.of(command.getEntityId(), command.getMessage(), HttpStatus.OK, command.getDittoHeaders());
         final Acknowledgement liveResponseAck = Acknowledgement.of(
                 LIVE_RESPONSE,
                 response.getEntityId(),
-                response.getStatusCode(),
+                response.getHttpStatus(),
                 response.getDittoHeaders(),
                 response.toJson().getValueOrThrow(MessageCommand.JsonFields.JSON_MESSAGE)
         );
         final Acknowledgement customAck = Acknowledgement.of(
                 AcknowledgementLabel.of("custom"),
                 command.getEntityId(),
-                HttpStatusCode.IM_A_TEAPOT,
+                HttpStatus.IM_A_TEAPOT,
                 command.getDittoHeaders()
         );
         reply(Acknowledgements.of(Arrays.asList(liveResponseAck, customAck), command.getDittoHeaders()));
@@ -367,9 +365,9 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
                 .registerForMessage("Ackermann", "request", String.class, msg ->
                         msg.handleAcknowledgementRequests(handles -> {
                             try {
-                                handles.forEach(handle -> handle.acknowledge(HttpStatusCode.forInt(
+                                handles.forEach(handle -> handle.acknowledge(HttpStatus.tryGetInstance(
                                         Integer.parseInt(handle.getAcknowledgementLabel().toString()))
-                                        .orElse(HttpStatusCode.EXPECTATION_FAILED)));
+                                        .orElse(HttpStatus.EXPECTATION_FAILED)));
                                 messageReplyFuture.complete(null);
                             } catch (final Throwable error) {
                                 messageReplyFuture.completeExceptionally(error);
@@ -390,9 +388,9 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
         reply(featureMessage);
         messageReplyFuture.join();
 
-        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.CONTINUE);
-        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.MOVED_PERMANENTLY);
-        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.FORBIDDEN);
+        assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.CONTINUE);
+        assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.MOVED_PERMANENTLY);
+        assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     @Test
@@ -401,12 +399,9 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
         client.live().register(LiveCommandHandler.withAcks(
                 CreateThingLiveCommand.class,
                 acknowledgeable -> {
-                    acknowledgeable.handleAcknowledgementRequests(handles ->
-                            handles.forEach(handle -> handle.acknowledge(
-                                    HttpStatusCode.forInt(Integer.parseInt(handle.getAcknowledgementLabel().toString()))
-                                            .orElse(HttpStatusCode.EXPECTATION_FAILED)
-                            ))
-                    );
+                    acknowledgeable.handleAcknowledgementRequests(handles -> handles.forEach(handle -> handle.acknowledge(
+                            HttpStatus.tryGetInstance(Integer.parseInt(handle.getAcknowledgementLabel().toString()))
+                                    .orElse(HttpStatus.EXPECTATION_FAILED))));
                     return acknowledgeable.answer().withoutResponse().withoutEvent();
                 }
         ));
@@ -420,9 +415,9 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
                 )
                 .build()), correlationId));
 
-        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.CONTINUE);
-        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.MOVED_PERMANENTLY);
-        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.FORBIDDEN);
+        assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.CONTINUE);
+        assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.MOVED_PERMANENTLY);
+        assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     @Override
@@ -477,8 +472,8 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
             msg.handleAcknowledgementRequests(handles -> {
                 try {
                     handles.forEach(handle -> handle.acknowledge(
-                            HttpStatusCode.forInt(Integer.parseInt(handle.getAcknowledgementLabel().toString()))
-                                    .orElse(HttpStatusCode.EXPECTATION_FAILED)
+                            HttpStatus.tryGetInstance(Integer.parseInt(handle.getAcknowledgementLabel().toString()))
+                                    .orElse(HttpStatus.EXPECTATION_FAILED)
                     ));
                     messageHandlingFuture.complete(null);
                 } catch (final Throwable error) {
@@ -498,9 +493,9 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
         ));
         messageHandlingFuture.join();
 
-        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.CONTINUE);
-        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.MOVED_PERMANENTLY);
-        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.FORBIDDEN);
+        assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.CONTINUE);
+        assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.MOVED_PERMANENTLY);
+        assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     private void testHandleCreateThing(final ThingCommandHandling thingCommandHandling) {
@@ -527,12 +522,12 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
         assertHeaders(expectMsgClass(FeatureDeleted.class), correlationId);
     }
 
-    private void assertHeaders(final Signal<?> signal, final String correlationId) {
+    private static void assertHeaders(final Signal<?> signal, final String correlationId) {
         assertThat(signal.getDittoHeaders().getCorrelationId()).contains(correlationId);
         assertThat(signal.getDittoHeaders().getChannel()).contains(TopicPath.Channel.LIVE.getName());
     }
 
-    private Signal<?> setHeaders(final Signal<?> signal, final String correlationId) {
+    private static Signal<?> setHeaders(final Signal<?> signal, final CharSequence correlationId) {
         return signal.setDittoHeaders(signal.getDittoHeaders()
                 .toBuilder()
                 .correlationId(correlationId)
@@ -543,11 +538,12 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
     private void subscribeForMessageAndSendMessage(final MessageCommand<?, ?> incomingCommand,
             final MessageCommandResponse<String, ?> expectedResponse,
             final MessageHandlerRegistration<String, String> registerForMessage) {
+
         assertEventualCompletion(startConsumption());
         final String subject = incomingCommand.getMessage().getSubject();
         final String correlationId = UUID.randomUUID().toString();
         registerForMessage.accept(correlationId, subject, String.class, msg -> msg.reply()
-                .statusCode(expectedResponse.getStatusCode())
+                .httpStatus(expectedResponse.getHttpStatus())
                 .payload(expectedResponse.getMessage().getPayload().orElse(null))
                 .send()
         );
@@ -556,11 +552,11 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
                 .build())));
         final MessageCommandResponse<?, ?> response = expectMsgClass(expectedResponse.getClass());
         assertThat(response.getDittoHeaders().getCorrelationId()).contains(correlationId);
-        assertThat(response.getStatusCode()).isEqualTo(expectedResponse.getStatusCode());
+        assertThat(response.getHttpStatus()).isEqualTo(expectedResponse.getHttpStatus());
         assertThat(response.getMessage().getPayload()).isEqualTo(expectedResponse.getMessage().getPayload());
     }
 
-    private SendClaimMessage<String> claim() {
+    private static SendClaimMessage<String> claim() {
         final String subject = "claim";
         final String payload = "THOU BELONGEST TO ME!";
         return SendClaimMessage.of(THING_ID,
@@ -573,10 +569,10 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
                         .build());
     }
 
-    private SendClaimMessageResponse<String> claimResponse() {
+    private static SendClaimMessageResponse<String> claimResponse() {
         final String subject = "claim";
         final String responsePayload = "THOU WISHEST!";
-        final HttpStatusCode responseStatus = HttpStatusCode.PAYMENT_REQUIRED;
+        final HttpStatus responseStatus = HttpStatus.PAYMENT_REQUIRED;
         return SendClaimMessageResponse.of(THING_ID,
                 AbstractDittoClientTest.<String>newMessageBuilder(subject)
                         .payload(responsePayload)
@@ -587,7 +583,7 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
                         .build());
     }
 
-    private SendFeatureMessage<String> featureMessage() {
+    private static SendFeatureMessage<String> featureMessage() {
         final String payload = "MAKE COFFEE!";
         return SendFeatureMessage.of(THING_ID, FEATURE_ID,
                 AbstractDittoClientTest.<String>newFeatureMessageBuilder(FEATURE_ID)
@@ -597,9 +593,9 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
         );
     }
 
-    private SendFeatureMessageResponse<String> featureMessageResponse() {
+    private static SendFeatureMessageResponse<String> featureMessageResponse() {
         final String responsePayload = "MAKE IT THYSELFE.";
-        final HttpStatusCode responseStatus = HttpStatusCode.IM_A_TEAPOT;
+        final HttpStatus responseStatus = HttpStatus.IM_A_TEAPOT;
         return SendFeatureMessageResponse.of(THING_ID, FEATURE_ID,
                 AbstractDittoClientTest.<String>newFeatureMessageBuilder(FEATURE_ID)
                         .payload(responsePayload)
@@ -608,7 +604,7 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
                 DittoHeaders.newBuilder().randomCorrelationId().build());
     }
 
-    private SendThingMessage<String> thingMessage() {
+    private static SendThingMessage<String> thingMessage() {
         final String subject = "request";
         final String payload = "MAKE COFFEE!";
         return SendThingMessage.of(THING_ID,
@@ -619,10 +615,10 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
         );
     }
 
-    private SendThingMessageResponse<String> thingMessageResponse() {
+    private static SendThingMessageResponse<String> thingMessageResponse() {
         final String subject = "request";
         final String responsePayload = "MAKE IT THYSELFE.";
-        final HttpStatusCode responseStatus = HttpStatusCode.IM_A_TEAPOT;
+        final HttpStatus responseStatus = HttpStatus.IM_A_TEAPOT;
         return SendThingMessageResponse.of(THING_ID,
                 AbstractDittoClientTest.<String>newMessageBuilder(subject)
                         .payload(responsePayload)
@@ -637,10 +633,10 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
         assertThat((CharSequence) featureDeleted.getThingEntityId()).isEqualTo(THING_ID);
     }
 
-    private void testMessageSending(
-            final MessageSender.SetSubject<Object> sender,
+    private void testMessageSending(final MessageSender.SetSubject<Object> sender,
             final MessageCommand<String, ?> command,
             final MessageCommandResponse<String, ?> expectedResponse) {
+
         final String subject = command.getMessage().getSubject();
         final String payload = command.getMessage().getPayload().orElse(null);
         final Class<?> messageCommandClass = command.getClass();
@@ -649,7 +645,7 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
         sender.subject(subject).payload(payload).send((response, error) -> {
             try {
                 assertThat(response.getSubject()).isEqualTo(expectedResponse.getMessage().getSubject());
-                assertThat(response.getStatusCode()).contains(expectedResponse.getStatusCode());
+                assertThat(response.getHttpStatus()).contains(expectedResponse.getHttpStatus());
                 assertThat(response.getPayload().map(buffer -> new String(buffer.array())))
                         .isEqualTo(expectedResponse.getMessage().getPayload());
                 future.complete(null);
@@ -685,5 +681,7 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
     private interface MessageHandlerRegistration<T, U> {
 
         void accept(String id, String subject, Class<T> clazz, Consumer<RepliableMessage<T, U>> handler);
+
     }
+
 }

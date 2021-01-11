@@ -23,7 +23,7 @@ import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.client.live.messages.internal.ImmutableDeserializingMessage;
 import org.eclipse.ditto.client.live.messages.internal.ImmutableRepliableMessage;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
-import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.base.headers.DittoHeadersBuilder;
 import org.eclipse.ditto.model.messages.Message;
@@ -156,6 +156,7 @@ final class LiveMessagesUtil {
 
     public static Adaptable constructAdaptableFromMessage(final Message<?> message,
             final ProtocolAdapter protocolAdapter) {
+
         final TopicPath.Channel channel = TopicPath.Channel.LIVE;
         final DittoHeadersBuilder headersBuilder = DittoHeaders.newBuilder().channel(channel.getName());
         final Optional<String> optionalCorrelationId = message.getCorrelationId();
@@ -163,15 +164,15 @@ final class LiveMessagesUtil {
         final DittoHeaders dittoHeaders = headersBuilder.build();
 
         final ThingId thingId = message.getThingEntityId();
-        final Optional<HttpStatusCode> statusCodeOptional = message.getStatusCode();
+        final Optional<HttpStatus> httpStatusOptional = message.getHttpStatus();
         final Optional<String> featureIdOptional = message.getFeatureId();
         final Adaptable adaptable;
-        if (statusCodeOptional.isPresent()) {
+        if (httpStatusOptional.isPresent()) {
             // this is treated as a response message
-            final HttpStatusCode statusCode = statusCodeOptional.get();
+            final HttpStatus httpStatus = httpStatusOptional.get();
             final MessageCommandResponse<?, ?> messageCommandResponse = featureIdOptional.isPresent()
-                    ? SendFeatureMessageResponse.of(thingId, featureIdOptional.get(), message, statusCode, dittoHeaders)
-                    : SendThingMessageResponse.of(thingId, message, statusCode, dittoHeaders);
+                    ? SendFeatureMessageResponse.of(thingId, featureIdOptional.get(), message, httpStatus, dittoHeaders)
+                    : SendThingMessageResponse.of(thingId, message, httpStatus, dittoHeaders);
             adaptable = protocolAdapter.toAdaptable((Signal<?>) messageCommandResponse);
         } else {
             final MessageCommand<?, ?> messageCommand = featureIdOptional.isPresent()
@@ -181,4 +182,5 @@ final class LiveMessagesUtil {
         }
         return adaptable;
     }
+
 }
