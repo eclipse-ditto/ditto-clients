@@ -23,7 +23,7 @@ export class Thing extends EntityWithId {
   public constructor(
     private readonly _thingId: string,
     private readonly _policyId?: string,
-    private readonly _attributes?: object,
+    private readonly _attributes?: Record<string, any>,
     private readonly _features?: Features,
     private readonly __revision?: number,
     private readonly __modified?: string,
