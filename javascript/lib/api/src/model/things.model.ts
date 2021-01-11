@@ -131,7 +131,8 @@ export class Features extends IndexedEntityModel<Feature> {
     if (o === undefined) {
       return o;
     }
-    return IndexedEntityModel.fromPlainObject<Feature>(o, Feature.fromObject) || {};
+    const features = IndexedEntityModel.fromPlainObject<Feature>(o, Feature.fromObject);
+    return features != null ? features : {};
   }
 }
 
@@ -193,7 +194,8 @@ export class Acl extends IndexedEntityModel<AclEntry> {
     if (o === undefined) {
       return o;
     }
-    return IndexedEntityModel.fromPlainObject<AclEntry>(o, AclEntry.fromObject) || {};
+    const acl = IndexedEntityModel.fromPlainObject<AclEntry>(o, AclEntry.fromObject);
+    return acl != null ? acl : {};
   }
 }
 

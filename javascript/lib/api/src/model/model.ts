@@ -136,7 +136,7 @@ export abstract class IndexedEntityModel<EntryType extends EntityModel> implemen
    */
   static toObject<T extends EntityModel>(entityModel: IndexedEntityModel<T>): Object | undefined {
     if (entityModel != null) {
-      return IndexedEntityModel.toPlainObject(entityModel, element => (<T>element).toObject());
+      return IndexedEntityModel.toPlainObject(entityModel, element => element.toObject());
     }
     return undefined;
   }

@@ -71,7 +71,8 @@ export class Entries extends IndexedEntityModel<Entry> {
     if (o === undefined) {
       return o;
     }
-    return IndexedEntityModel.fromPlainObject(o, Entry.fromObject) || {};
+    const entries = IndexedEntityModel.fromPlainObject(o, Entry.fromObject);
+    return entries != null ? entries : {};
   }
 
 }
@@ -140,7 +141,8 @@ export class Subjects extends IndexedEntityModel<Subject> {
     if (o === undefined) {
       return o;
     }
-    return IndexedEntityModel.fromPlainObject(o, Subject.fromObject, key => key) || {};
+    const subjects = IndexedEntityModel.fromPlainObject(o, Subject.fromObject, key => key);
+    return subjects != null ? subjects : {};
   }
 }
 
@@ -155,11 +157,12 @@ export class Resources extends IndexedEntityModel<Resource> {
    * @param o - The object to parse.
    * @returns The Resources
    */
-  public static fromObject(o: any): Resources  {
+  public static fromObject(o: any): Resources {
     if (o === undefined) {
       return o;
     }
-    return IndexedEntityModel.fromPlainObject(o, Resource.fromObject) || {};
+    const resources = IndexedEntityModel.fromPlainObject(o, Resource.fromObject);
+    return resources != null ? resources : {};
   }
 }
 
