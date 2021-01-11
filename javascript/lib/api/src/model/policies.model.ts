@@ -16,10 +16,10 @@ import { EntityModel, EntityWithId, IndexedEntityModel } from './model';
 /**
  * Representation of a Policy
  */
-export class Policy extends EntityWithId<Policy> {
+export class Policy extends EntityWithId {
 
   public constructor(private readonly _id: string,
-                     private readonly _entries: Entries) {
+    private readonly _entries: Entries) {
     super();
   }
 
@@ -39,7 +39,7 @@ export class Policy extends EntityWithId<Policy> {
   }
 
   public toObject(): Object {
-    const entriesObj = this.entries !== undefined ? this.entries.toObject() : undefined;
+    const entriesObj = this.entries !== undefined ? Entries.toObject(this.entries) : undefined;
     return EntityModel.buildObject(new Map<string, any>([
       ['entries', entriesObj]
     ]));
@@ -54,18 +54,12 @@ export class Policy extends EntityWithId<Policy> {
   }
 }
 
-interface EntriesType {
-  [entryId: string]: Entry;
-}
 
 /**
  * Representation of Entries
  */
-export class Entries extends IndexedEntityModel<Entries, Entry> {
+export class Entries extends IndexedEntityModel<Entry> {
 
-  public constructor(readonly entries: EntriesType | undefined) {
-    super(entries);
-  }
 
   /**
    * Parses Entries.
@@ -73,11 +67,11 @@ export class Entries extends IndexedEntityModel<Entries, Entry> {
    * @param o - The object to parse.
    * @returns The Entries
    */
-  public static fromObject(o: any): Entries {
+  public static fromObject(o: any): Entries | undefined {
     if (o === undefined) {
       return o;
     }
-    return new Entries(IndexedEntityModel.fromPlainObject(o, Entry.fromObject));
+    return this.fromPlainObject(o, Entry.fromObject);
   }
 
 }
@@ -85,11 +79,11 @@ export class Entries extends IndexedEntityModel<Entries, Entry> {
 /**
  * Representation of an Entry
  */
-export class Entry extends EntityWithId<Entry> {
+export class Entry extends EntityWithId {
 
   public constructor(private readonly _id: string,
-                     private readonly _subjects: Subjects,
-                     private readonly _resources: Resources) {
+    private readonly _subjects: Subjects,
+    private readonly _resources: Resources) {
     super();
   }
 
@@ -109,8 +103,8 @@ export class Entry extends EntityWithId<Entry> {
   }
 
   public toObject(): Object {
-    const subjectsObj = this.subjects !== undefined ? this.subjects.toObject() : undefined;
-    const resourcesObj = this.resources !== undefined ? this.resources.toObject() : undefined;
+    const subjectsObj = this.subjects !== undefined ? Subjects.toObject(this.subjects) : undefined;
+    const resourcesObj = this.resources !== undefined ? Resources.toObject(this.resources) : undefined;
     return EntityModel.buildObject(new Map<string, any>([
       ['subjects', subjectsObj],
       ['resources', resourcesObj]
@@ -130,18 +124,11 @@ export class Entry extends EntityWithId<Entry> {
   }
 }
 
-interface SubjectsType {
-  [subjectId: string]: Subject;
-}
 
 /**
  * Representation of Subjects
  */
-export class Subjects extends IndexedEntityModel<Subjects, Subject> {
-
-  public constructor(readonly subjects: SubjectsType | undefined) {
-    super(subjects);
-  }
+export class Subjects extends IndexedEntityModel<Subject> {
 
   /**
    * Parses Subjects.
@@ -149,26 +136,18 @@ export class Subjects extends IndexedEntityModel<Subjects, Subject> {
    * @param o - The object to parse.
    * @returns The Subjects
    */
-  public static fromObject(o: any): Subjects {
+  public static fromObject(o: any): Subjects | undefined {
     if (o === undefined) {
       return o;
     }
-    return new Subjects(IndexedEntityModel.fromPlainObject(o, Subject.fromObject, key => key));
+    return IndexedEntityModel.fromPlainObject(o, Subject.fromObject, key => key);
   }
-}
-
-interface ResourcesType {
-  [resourceId: string]: Resource;
 }
 
 /**
  * Representation of Resources
  */
-export class Resources extends IndexedEntityModel<Resources, Resource> {
-
-  public constructor(readonly resources: ResourcesType | undefined) {
-    super(resources);
-  }
+export class Resources extends IndexedEntityModel<Resource> {
 
   /**
    * Parses Resources.
@@ -176,11 +155,11 @@ export class Resources extends IndexedEntityModel<Resources, Resource> {
    * @param o - The object to parse.
    * @returns The Resources
    */
-  public static fromObject(o: any): Resources {
+  public static fromObject(o: any): Resources | undefined {
     if (o === undefined) {
       return o;
     }
-    return new Resources(IndexedEntityModel.fromPlainObject(o, Resource.fromObject));
+    return IndexedEntityModel.fromPlainObject(o, Resource.fromObject);
   }
 }
 
@@ -199,6 +178,7 @@ export class SubjectId {
   static fromIssuerAndId(issuer: SubjectIssuer, subjectId: string) {
     return new SubjectId(`${issuer}:${subjectId}`);
   }
+
   static fromString(subjectId: string) {
     return new SubjectId(subjectId);
   }
@@ -213,10 +193,10 @@ export type SubjectType = string;
 /**
  * Representation of a Subject
  */
-export class Subject extends EntityWithId<Subject> {
+export class Subject extends EntityWithId {
 
   public constructor(private readonly _id: SubjectId,
-                     private readonly _type: SubjectType) {
+    private readonly _type: SubjectType) {
     super();
   }
 
@@ -258,11 +238,11 @@ export enum AccessRight {
 /**
  * Representation of a Resource
  */
-export class Resource extends EntityWithId<Resource> {
+export class Resource extends EntityWithId {
 
   public constructor(private readonly _id: string,
-                     private readonly _grant: AccessRight[],
-                     private readonly _revoke: AccessRight[]) {
+    private readonly _grant: AccessRight[],
+    private readonly _revoke: AccessRight[]) {
     super();
   }
 
