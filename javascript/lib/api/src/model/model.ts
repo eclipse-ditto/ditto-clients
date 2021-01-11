@@ -83,6 +83,14 @@ export abstract class IndexedEntityModel<EntryType extends EntityModel> implemen
 
   [key: string]: EntryType;
 
+  static toJson<T extends EntityModel>(entity: IndexedEntityModel<T>): string {
+    return JSON.stringify(this.toObject(entity));
+  }
+
+  static equals<T extends EntityModel>(a: IndexedEntityModel<T>, b: IndexedEntityModel<T>): boolean {
+    return a !== undefined && b !== undefined && (a === b || this.toJson(a) === this.toJson(b));
+  }
+
   /**
    * Map the object to an indexed object with types. Iterates all keys and maps all values with {@code mapValue}.
    *
@@ -128,7 +136,7 @@ export abstract class IndexedEntityModel<EntryType extends EntityModel> implemen
    */
   static toObject<T extends EntityModel>(entityModel: IndexedEntityModel<T>): Object | undefined {
     if (entityModel != null) {
-      return IndexedEntityModel.toPlainObject(entityModel, element => (<T> element).toObject());
+      return IndexedEntityModel.toPlainObject(entityModel, element => (<T>element).toObject());
     }
     return undefined;
   }
