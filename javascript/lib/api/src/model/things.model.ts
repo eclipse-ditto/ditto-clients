@@ -126,6 +126,8 @@ export class Thing extends EntityWithId {
  */
 export class Features extends IndexedEntityModel<Feature> {
 
+  [featureId: string]: Feature
+
   /**
    * Parses Features.
    *
@@ -149,7 +151,7 @@ export class Feature extends EntityWithId {
 
   public constructor(private readonly _id: string,
     private readonly _definition?: string[],
-    private readonly _properties?: object) {
+    private readonly _properties?: Record<string, any>) {
     super();
   }
 
@@ -183,12 +185,14 @@ export class Feature extends EntityWithId {
     return this._definition;
   }
 
-  get properties(): object | undefined {
+  get properties(): Record<string, any> | undefined {
     return this._properties;
   }
 }
 
 export class Acl extends IndexedEntityModel<AclEntry> {
+
+  [entryId: string]: AclEntry
 
   /**
    * Parses Acl.
