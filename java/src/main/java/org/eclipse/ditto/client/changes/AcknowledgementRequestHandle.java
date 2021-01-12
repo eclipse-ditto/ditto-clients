@@ -19,7 +19,7 @@ import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.entity.id.EntityIdWithType;
-import org.eclipse.ditto.model.base.headers.WithDittoHeaders;
+import org.eclipse.ditto.model.base.headers.DittoHeadersSettable;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 
 /**
@@ -30,7 +30,7 @@ import org.eclipse.ditto.signals.acks.base.Acknowledgement;
  * @since 1.1.0
  */
 @Immutable
-public interface AcknowledgementRequestHandle extends WithDittoHeaders<AcknowledgementRequestHandle> {
+public interface AcknowledgementRequestHandle extends DittoHeadersSettable<AcknowledgementRequestHandle> {
 
     /**
      * Returns the {@code AcknowledgementLabel} this handle was created for.
