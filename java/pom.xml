@@ -656,6 +656,7 @@
                     <header>../legal/headers/license-header.txt</header>
                     <validHeaders>
                         <header>../legal/headers/license-header-2019.txt</header>
+                        <header>../legal/headers/license-header-2020.txt</header>
                     </validHeaders>
                     <aggregate>true</aggregate>
                     <quiet>false</quiet>
