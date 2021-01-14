@@ -184,7 +184,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         // this method may be called multiple times.
         if (!initializing.getAndSet(true)) {
             if (webSocket.get() == null) {
-                return connectWithPotentialRetries(this::createWebsocket, initializationFuture)
+                return connectWithPotentialRetries(this::createWebsocket, initializationFuture,
+                        messagingConfiguration.isInitialConnectRetryEnabled())
                         .thenApply(ws -> {
                             setWebSocket(ws);
                             return this;
@@ -335,12 +336,12 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     private CompletableFuture<WebSocket> connectWithPotentialRetries(final Supplier<WebSocket> webSocket,
-            final CompletableFuture<WebSocket> future) {
+            final CompletableFuture<WebSocket> future,
+            final boolean retry) {
 
         try {
-            final Predicate<Throwable> isRecoverable = messagingConfiguration.isInitialConnectRetryEnabled()
-                    ? WebSocketMessagingProvider::isRecoverable
-                    : exception -> false;
+            final Predicate<Throwable> isRecoverable =
+                    retry ? WebSocketMessagingProvider::isRecoverable : exception -> false;
             return Retry.retryTo("initialize WebSocket connection",
                     () -> initiateConnection(webSocket.get()))
                     .inClientSession(sessionId)
@@ -372,7 +373,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     private void reconnectWithRetries() {
-        this.connectWithPotentialRetries(this::recreateWebSocket, new CompletableFuture<>())
+        this.connectWithPotentialRetries(this::recreateWebSocket, new CompletableFuture<>(),
+                messagingConfiguration.isReconnectEnabled())
                 .thenAccept(reconnectedWebSocket -> {
                     setWebSocket(reconnectedWebSocket);
                     reconnecting.set(false);
