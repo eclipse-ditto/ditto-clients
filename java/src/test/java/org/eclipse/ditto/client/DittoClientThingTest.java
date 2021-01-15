@@ -104,8 +104,7 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
     public void testMergeThing() {
         assertEventualCompletion(getManagement().merge(THING_ID, THING));
         final MergeThing command = expectMsgClass(MergeThing.class);
-        reply(MergeThingResponse.of(command.getThingEntityId(), command.getPath(), command.getValue(),
-                command.getDittoHeaders()));
+        reply(MergeThingResponse.of(command.getThingEntityId(), command.getPath(), command.getDittoHeaders()));
         assertOnlyIfMatchHeader(command);
     }
 
