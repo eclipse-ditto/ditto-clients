@@ -39,7 +39,7 @@ import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.acks.AcknowledgementRequest;
 import org.eclipse.ditto.model.base.auth.AuthorizationModelFactory;
 import org.eclipse.ditto.model.base.auth.AuthorizationSubject;
-import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
@@ -124,8 +124,8 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
         final DittoHeaders sentDittoHeaders = expectMsgClass(CreateThing.class).getDittoHeaders();
         reply(Acknowledgements.of(
                 Arrays.asList(
-                        Acknowledgement.of(label1, THING_ID, HttpStatusCode.OK, DittoHeaders.empty()),
-                        Acknowledgement.of(label2, THING_ID, HttpStatusCode.ACCEPTED, DittoHeaders.empty())
+                        Acknowledgement.of(label1, THING_ID, HttpStatus.OK, DittoHeaders.empty()),
+                        Acknowledgement.of(label2, THING_ID, HttpStatus.ACCEPTED, DittoHeaders.empty())
                 ),
                 sentDittoHeaders
         ));
@@ -140,8 +140,8 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
         final AcknowledgementLabel label2 = getChannelAcknowledgementLabel();
         final Acknowledgements expectedAcknowledgements = Acknowledgements.of(
                 Arrays.asList(
-                        Acknowledgement.of(label1, THING_ID, HttpStatusCode.FORBIDDEN, DittoHeaders.empty()),
-                        Acknowledgement.of(label2, THING_ID, HttpStatusCode.ACCEPTED, DittoHeaders.empty())
+                        Acknowledgement.of(label1, THING_ID, HttpStatus.FORBIDDEN, DittoHeaders.empty()),
+                        Acknowledgement.of(label2, THING_ID, HttpStatus.ACCEPTED, DittoHeaders.empty())
                 ),
                 DittoHeaders.empty()
         );
