@@ -265,8 +265,11 @@
                 <filtering>false</filtering>
                 <targetPath>META-INF</targetPath>
                 <excludes>
+                    <exclude>README.md</exclude>
                     <exclude>NOTICE-THIRD-PARTY.md</exclude>
                     <exclude>templates/**</exclude>
+                    <exclude>3rd-party-dependencies/**</exclude>
+                    <exclude>headers/**</exclude>
                 </excludes>
             </resource>
         </resources>
