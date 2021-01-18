@@ -60,7 +60,7 @@ export class Thing extends EntityWithId {
 
   public toObject(): object {
     const featuresObj = Features.toObject(this.features);
-    const metadataObj = this._metadata ? this._metadata.toObject() :undefined;
+    const metadataObj = this._metadata ? this._metadata.toObject() : undefined;
     const aclObj = Acl.toObject(this._acl);
     return EntityModel.buildObject(new Map<string, any>([
       ['thingId', this.thingId],
