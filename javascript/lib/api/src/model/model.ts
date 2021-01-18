@@ -100,7 +100,7 @@ export abstract class IndexedEntityModel<EntryType extends EntityModel> implemen
    */
   static fromPlainObject<T extends EntityModel>(objectToMap: Object | undefined,
     mapValue: (value: any, key: string) => T,
-    mapKey: (key: string, value: any) => string = key => key): IndexedEntityModel<T> | undefined {
+    mapKey: (key: string, value: any) => string = key => key): IndexedEntityModel<T> {
     if (objectToMap) {
       const entries = Object.keys(objectToMap)
         .map(k => {
@@ -113,7 +113,7 @@ export abstract class IndexedEntityModel<EntryType extends EntityModel> implemen
       return Object.assign({}, ...entries);
     }
 
-    return undefined;
+    return {};
   }
 
   /**
@@ -134,7 +134,7 @@ export abstract class IndexedEntityModel<EntryType extends EntityModel> implemen
    *
    * @returns The object representation of the Entity.
    */
-  static toObject<T extends EntityModel>(entityModel: IndexedEntityModel<T>): Object | undefined {
+  static toObject<T extends EntityModel>(entityModel: IndexedEntityModel<T> | undefined): Object | undefined {
     if (entityModel != null) {
       return IndexedEntityModel.toPlainObject(entityModel, element => element.toObject());
     }

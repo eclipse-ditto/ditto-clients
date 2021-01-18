@@ -39,7 +39,7 @@ export class Policy extends EntityWithId {
   }
 
   public toObject(): Object {
-    const entriesObj = this.entries !== undefined ? Entries.toObject(this.entries) : undefined;
+    const entriesObj = Entries.toObject(this.entries);
     return EntityModel.buildObject(new Map<string, any>([
       ['entries', entriesObj]
     ]));
@@ -71,8 +71,7 @@ export class Entries extends IndexedEntityModel<Entry> {
     if (o === undefined) {
       return o;
     }
-    const entries = IndexedEntityModel.fromPlainObject(o, Entry.fromObject);
-    return entries != null ? entries : {};
+    return IndexedEntityModel.fromPlainObject(o, Entry.fromObject);
   }
 
 }
@@ -104,8 +103,8 @@ export class Entry extends EntityWithId {
   }
 
   public toObject(): Object {
-    const subjectsObj = this.subjects !== undefined ? Subjects.toObject(this.subjects) : undefined;
-    const resourcesObj = this.resources !== undefined ? Resources.toObject(this.resources) : undefined;
+    const subjectsObj = Subjects.toObject(this.subjects) ;
+    const resourcesObj = Resources.toObject(this.resources);
     return EntityModel.buildObject(new Map<string, any>([
       ['subjects', subjectsObj],
       ['resources', resourcesObj]
@@ -141,8 +140,7 @@ export class Subjects extends IndexedEntityModel<Subject> {
     if (o === undefined) {
       return o;
     }
-    const subjects = IndexedEntityModel.fromPlainObject(o, Subject.fromObject, key => key);
-    return subjects != null ? subjects : {};
+    return IndexedEntityModel.fromPlainObject(o, Subject.fromObject, key => key);
   }
 }
 
@@ -161,8 +159,7 @@ export class Resources extends IndexedEntityModel<Resource> {
     if (o === undefined) {
       return o;
     }
-    const resources = IndexedEntityModel.fromPlainObject(o, Resource.fromObject);
-    return resources != null ? resources : {};
+    return IndexedEntityModel.fromPlainObject(o, Resource.fromObject);
   }
 }
 
