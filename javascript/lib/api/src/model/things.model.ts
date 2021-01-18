@@ -59,9 +59,9 @@ export class Thing extends EntityWithId {
   }
 
   public toObject(): object {
-    const featuresObj = this.features ? Features.toObject(this.features) : undefined;
-    const metadataObj = this._metadata ? this._metadata.toObject() : undefined;
-    const aclObj = this._acl ? Acl.toObject(this._acl) : undefined;
+    const featuresObj = Features.toObject(this.features);
+    const metadataObj = this._metadata ? this._metadata.toObject() :undefined;
+    const aclObj = Acl.toObject(this._acl);
     return EntityModel.buildObject(new Map<string, any>([
       ['thingId', this.thingId],
       ['policyId', this.policyId],
@@ -250,8 +250,7 @@ export class Acl extends IndexedEntityModel<AclEntry> {
     if (o === undefined) {
       return o;
     }
-    const acl = IndexedEntityModel.fromPlainObject<AclEntry>(o, AclEntry.fromObject);
-    return acl != null ? acl : {};
+    return IndexedEntityModel.fromPlainObject<AclEntry>(o, AclEntry.fromObject);
   }
 }
 
