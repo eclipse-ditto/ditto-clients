@@ -13,6 +13,7 @@
 
 import { ProtocolResponseValue } from '../../../src/client/request-factory/websocket-request-handler';
 import { EventsHelper as H } from './events.helper';
+import { Features } from '../../../src/model/things.model';
 
 
 describe('WebSocket Commands Handle', () => {
@@ -90,7 +91,7 @@ describe('WebSocket Commands Handle', () => {
         topic,
         action,
         path: '/features',
-        value: H.features.toObject()
+        value: Features.toObject(H.features)
       }
     });
   });
