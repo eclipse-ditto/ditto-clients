@@ -133,8 +133,7 @@ export class Features extends IndexedEntityModel<Feature> {
     if (o === undefined) {
       return o;
     }
-    const features = IndexedEntityModel.fromPlainObject<Feature>(o, Feature.fromObject);
-    return features != null ? features : {};
+    return IndexedEntityModel.fromPlainObject<Feature>(o, Feature.fromObject);
   }
 }
 
