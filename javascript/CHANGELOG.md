@@ -4,7 +4,7 @@ All notable changes to the Ditto JavaScript client will be documented in this fi
 ## [3.0.0] - 2021-xx-xx
 
 ### \#166 Refactor model structure: 
-Refactor model structure to avoid "duplicated paths" like `features.features` for all entities inheriting from `IndexedEntityModel` and simplify type generics.
+Fixes #114: Refactor model structure to avoid "duplicated paths" like `features.features` for all entities inheriting from `IndexedEntityModel` and simplify type generics.
     
 
 ### Breaking changes
