@@ -140,7 +140,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
       id: this.thingId,
       path: 'features',
       requestOptions: options,
-      payload: features.toObject()
+      payload: Features.toObject(features)
     });
   }
 

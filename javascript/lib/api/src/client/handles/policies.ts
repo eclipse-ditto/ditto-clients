@@ -377,7 +377,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
       id: policyId,
       path: 'entries',
       requestOptions: options,
-      payload: entries.toObject()
+      payload: Entries.toObject(entries)
     });
   }
 
@@ -416,7 +416,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
       id: policyId,
       path: `entries/${label}/subjects`,
       requestOptions: options,
-      payload: subjects.toObject()
+      payload: Subjects.toObject(subjects)
     });
   }
 
@@ -456,7 +456,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
       id: policyId,
       path: `entries/${label}/resources`,
       requestOptions: options,
-      payload: resources.toObject()
+      payload: Resources.toObject(resources)
     });
   }
 

@@ -12,6 +12,7 @@
  */
 
 import { ProtocolResponseValue } from '../../../src/client/request-factory/websocket-request-handler';
+import { Features } from '../../../src/model/things.model';
 import { EventsHelper as H } from './events.helper';
 
 
@@ -90,7 +91,7 @@ describe('WebSocket Events Handle', () => {
         topic,
         action,
         path: '/features',
-        value: H.features.toObject()
+        value: Features.toObject(H.features)
       }
     });
   });

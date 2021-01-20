@@ -13,7 +13,8 @@
 
 /* tslint:disable:no-duplicate-string */
 import {
-  AccessRight, DittoSubjectIssuer,
+  AccessRight,
+  DittoSubjectIssuer,
   Entries,
   Entry,
   Policy,
@@ -21,8 +22,7 @@ import {
   Resources,
   Subject,
   SubjectId,
-  Subjects,
-  SubjectType
+  Subjects
 } from '../../src/model/policies.model';
 
 const aResourceObj = { grant: ['READ'], revoke: ['READ'] };
@@ -32,18 +32,18 @@ const someMoreResourcesObj = { 'thing:/': aResourceObj };
 const aResource = new Resource('thing:/', [AccessRight.Read], [AccessRight.Read]);
 const anotherResource = new Resource('thing:/attributes/some/path', [AccessRight.Read], [AccessRight.Read]);
 const typedResources = { 'thing:/': aResource, 'thing:/attributes/some/path': anotherResource };
-const someResources = new Resources(typedResources);
-const someMoreResources = new Resources({ 'thing:/': aResource });
+const someResources = typedResources;
+const someMoreResources = { 'thing:/': aResource };
 const aSubject = new Subject(SubjectId.fromString('nginx:user'), 'my default nginx user');
 const anotherSubject = new Subject(SubjectId.fromIssuerAndId(DittoSubjectIssuer.GOOGLE, 'my-google-user@gmail.com'), 'my google user');
 const aLastSubject = new Subject(SubjectId.fromIssuerAndId(DittoSubjectIssuer.NGINX, 'admin'), 'my nginx admin user');
 const typedSubjects = { [aSubject.id]: aSubject, [anotherSubject.id]: anotherSubject };
-const someSubjects = new Subjects(typedSubjects);
-const someMoreSubjects = new Subjects({ [aLastSubject.id]: aLastSubject });
+const someSubjects = typedSubjects;
+const someMoreSubjects = { [aLastSubject.id]: aLastSubject };
 const anEntry = new Entry('label1', someSubjects, someResources);
 const anotherEntry = new Entry('label2', someMoreSubjects, someMoreResources);
 const typedEntries = { label1: anEntry, label2: anotherEntry };
-const entries = new Entries(typedEntries);
+const entries = typedEntries;
 const policy = new Policy('PolicyId', entries);
 
 const aSubjectObj = { type: aSubject.type };
@@ -84,13 +84,13 @@ describe('Resource', () => {
 describe('Resources', () => {
   it('parses an object', () => {
     expect(Resources.fromObject(someResourcesObj)).toEqual(someResources);
-    expect(Resources.fromObject(someResourcesObj).equals(someResources)).toBe(true);
+    expect(Resources.equals(Resources.fromObject(someResourcesObj), someResources)).toBe(true);
   });
   it('builds an object', () => {
-    expect(someResources.toObject()).toEqual(someResourcesObj);
+    expect(Resources.toObject(someResources)).toEqual(someResourcesObj);
   });
   it('returns its content', () => {
-    expect(someResources.resources).toEqual({ 'thing:/': aResource, 'thing:/attributes/some/path': anotherResource });
+    expect(someResources).toEqual({ 'thing:/': aResource, 'thing:/attributes/some/path': anotherResource });
   });
   it('handles an undefined object', () => {
     expect(Resources.fromObject(undefined)).toEqual(undefined);
@@ -117,13 +117,13 @@ describe('Subject', () => {
 describe('Subjects', () => {
   it('parses an object', () => {
     expect(Subjects.fromObject(someSubjectsObj)).toEqual(someSubjects);
-    expect(Subjects.fromObject(someSubjectsObj).equals(someSubjects)).toBe(true);
+    expect(Subjects.equals(Subjects.fromObject(someSubjectsObj), someSubjects)).toBe(true);
   });
   it('builds an object', () => {
-    expect(someSubjects.toObject()).toEqual(someSubjectsObj);
+    expect(Subjects.toObject(someSubjects)).toEqual(someSubjectsObj);
   });
   it('returns its content', () => {
-    expect(someSubjects.subjects).toEqual({ [aSubject.id]: aSubject, [anotherSubject.id]: anotherSubject });
+    expect(someSubjects).toEqual({ [aSubject.id]: aSubject, [anotherSubject.id]: anotherSubject });
   });
   it('handles an undefined object', () => {
     expect(Subjects.fromObject(undefined)).toEqual(undefined);
@@ -136,7 +136,10 @@ describe('Entry', () => {
     expect(Entry.fromObject(anEntryObj, 'label1').equals(anEntry)).toBe(true);
   });
   it('builds an object', () => {
-    expect(anEntry.toObject()).toEqual({ subjects: someSubjects.toObject(), resources: someResources.toObject() });
+    expect(anEntry.toObject()).toEqual({
+      subjects: Subjects.toObject(someSubjects),
+      resources: Resources.toObject(someResources)
+    });
   });
   it('returns its content', () => {
     expect(anEntry.id).toEqual('label1');
@@ -150,13 +153,13 @@ describe('Entry', () => {
 describe('Entries', () => {
   it('parses an object', () => {
     expect(Entries.fromObject(entriesObj)).toEqual(entries);
-    expect(Entries.fromObject(entriesObj).equals(entries)).toBe(true);
+    expect(Entries.equals(Entries.fromObject(entriesObj), entries)).toBe(true);
   });
   it('builds an object', () => {
-    expect(entries.toObject()).toEqual(entriesObj);
+    expect(Entries.toObject(entries)).toEqual(entriesObj);
   });
   it('returns its content', () => {
-    expect(entries.entries).toEqual({ label1: anEntry, label2: anotherEntry });
+    expect(entries).toEqual({ label1: anEntry, label2: anotherEntry });
   });
   it('handles an undefined object', () => {
     expect(Entries.fromObject(undefined)).toEqual(undefined);
@@ -172,7 +175,7 @@ describe('Policy', () => {
     expect(Policy.fromObject(policyObj, 'PolicyId').equals(policy)).toBe(true);
   });
   it('builds an object', () => {
-    expect(policy.toObject()).toEqual({ entries: entries.toObject() });
+    expect(policy.toObject()).toEqual({ entries: Entries.toObject(entries) });
   });
   it('returns its content', () => {
     expect(policy.id).toEqual('PolicyId');

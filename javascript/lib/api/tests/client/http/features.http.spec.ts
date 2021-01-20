@@ -14,6 +14,7 @@
 /* tslint:disable:no-big-function */
 import { FeaturesHandle } from '../../../src/client/handles/features.interfaces';
 import { PutResponse } from '../../../src/model/response';
+import { Features } from '../../../src/model/things.model';
 import { HttpHelper as H } from './http.helper';
 
 describe('Http Features Handle', () => {
@@ -24,7 +25,7 @@ describe('Http Features Handle', () => {
   it('gets Features', () => {
     return H.test({
       toTest: () => handle.getFeatures(),
-      testBody: H.features.toObject(),
+      testBody: Features.toObject(H.features),
       expected: H.features,
       request: baseRequest,
       method: 'get',
@@ -79,12 +80,12 @@ describe('Http Features Handle', () => {
   it('updates Features', () => {
     return H.test({
       toTest: () => handle.putFeatures(H.features),
-      testBody: H.features.toObject(),
+      testBody: Features.toObject(H.features),
       expected: new PutResponse(H.features, 201, undefined),
       request: baseRequest,
       method: 'put',
       status: 201,
-      payload: H.features.toJson()
+      payload: Features.toJson(H.features)
     });
   });
 

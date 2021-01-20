@@ -11,8 +11,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Feature, Features, Thing } from '../../src/model/things.model';
 import { AuthProvider, DittoHeaders, DittoURL } from '../../src/auth/auth-provider';
+import { Feature, Thing } from '../../src/model/things.model';
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 0;
 
@@ -49,10 +49,10 @@ export class Helper {
   public static readonly properties = { A21: 'A3', A31: Helper.property };
   public static readonly feature = new Feature('F1', Helper.definition, Helper.properties);
   public static readonly anotherFeature = new Feature('F2', ['def2'], { A22: 'A3', A32: 'A4' });
-  public static readonly features = new Features({
+  public static readonly features = {
     [Helper.feature.id]: Helper.feature,
     [Helper.anotherFeature.id]: Helper.anotherFeature
-  });
+  };
 
 
   public static testError(method: () => Promise<any>): Promise<any> {

@@ -265,8 +265,11 @@
                 <filtering>false</filtering>
                 <targetPath>META-INF</targetPath>
                 <excludes>
+                    <exclude>README.md</exclude>
                     <exclude>NOTICE-THIRD-PARTY.md</exclude>
                     <exclude>templates/**</exclude>
+                    <exclude>3rd-party-dependencies/**</exclude>
+                    <exclude>headers/**</exclude>
                 </excludes>
             </resource>
         </resources>
@@ -656,6 +659,7 @@
                     <header>../legal/headers/license-header.txt</header>
                     <validHeaders>
                         <header>../legal/headers/license-header-2019.txt</header>
+                        <header>../legal/headers/license-header-2020.txt</header>
                     </validHeaders>
                     <aggregate>true</aggregate>
                     <quiet>false</quiet>

@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { Features } from '../../../src/model/things.model';
 import { WebSocketHelper as H } from './websocket.helper';
 
 // tslint:disable-next-line:no-big-function
@@ -25,7 +26,7 @@ describe('WebSocket Features Handle', () => {
       topic: `${baseTopic}/retrieve`,
       path: '/features',
       status: 200,
-      responseBody: H.features.toObject(),
+      responseBody: Features.toObject(H.features),
       expected: H.features
     });
   });
@@ -80,7 +81,7 @@ describe('WebSocket Features Handle', () => {
       topic: `${baseTopic}/modify`,
       path: '/features',
       status: 204,
-      requestBody: H.features.toObject()
+      requestBody: Features.toObject(H.features)
     });
   });
 
