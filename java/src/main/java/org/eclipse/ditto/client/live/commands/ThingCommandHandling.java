@@ -18,6 +18,7 @@ import org.eclipse.ditto.client.live.LiveCommandProcessor;
 import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommand;
 import org.eclipse.ditto.signals.commands.live.modify.DeleteThingLiveCommand;
+import org.eclipse.ditto.signals.commands.live.modify.MergeThingLiveCommand;
 import org.eclipse.ditto.signals.commands.live.modify.ModifyThingLiveCommand;
 import org.eclipse.ditto.signals.commands.live.query.RetrieveThingLiveCommand;
 
@@ -74,6 +75,29 @@ public interface ThingCommandHandling extends LiveCommandProcessor {
      */
     default void stopHandlingModifyThingCommands() {
         unregister(ModifyThingLiveCommand.class);
+    }
+
+    /**
+     * Registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.MergeThing MergeThing}
+     * commands.
+     *
+     * @param handler the handler to receive the commands
+     * @throws NullPointerException if {@code handler} is {@code null}
+     * @throws IllegalStateException if there is already a handler registered. Stop the registered handler before
+     * calling this method
+     * @see #stopHandlingMergeThingCommands()
+     */
+    default void handleMergeThingCommands(
+            final Function<MergeThingLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(MergeThingLiveCommand.class, handler));
+    }
+
+    /**
+     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.MergeThing
+     * MergeThing} commands.
+     */
+    default void stopHandlingMergeThingCommands() {
+        unregister(MergeThingLiveCommand.class);
     }
 
     /**
