@@ -12,7 +12,8 @@
     "version": {
       "allowBranch": [
         "master",
-        "feature/*"
+        "feature/*",
+        "release-js_1.0_2.1"
       ]
     }
   },
