@@ -331,7 +331,7 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
          * resource paths.
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, ThingMerged.TYPE, ThingMerged.class,
-                e -> BusAddressFactory.forMergeThingEvent(e.getThingEntityId(), e.getResourcePath()),
+                e -> BusAddressFactory.forThingMergedEvent(e.getThingEntityId(), e.getResourcePath()),
                 (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.MERGED,
                         e.getResourcePath(), e.getValue(), e.getRevision(), e.getTimestamp().orElse(null),
                         extra, e.getDittoHeaders(), emitAcknowledgement));

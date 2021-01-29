@@ -29,13 +29,15 @@ import static org.eclipse.ditto.client.internal.BusAddressPatterns.THING_PATTERN
 
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.things.ThingId;
-import org.eclipse.ditto.protocoladapter.UnknownPathException;
-import org.eclipse.ditto.signals.commands.common.ThingMergePathMatcher;
+import org.eclipse.ditto.signals.commands.things.ThingResourceMapper;
 
 /**
  * Factory creates bus addresses for different parts of a thing.
  */
 class BusAddressFactory {
+
+    private static final ThingResourceMapper<ThingId, String> RESOURCE_PATH_MAPPER =
+            ThingResourceMapper.from(PathToBusAddressVisitor.getInstance());
 
     static String forThing(final ThingId thingId) {
         return THING_PATTERN.format(thingId);
@@ -96,46 +98,8 @@ class BusAddressFactory {
         return FEATURE_DESIRED_PROPERTY_PATTERN.format(thingId, featureId, propertyPath);
     }
 
-    static String forMergeThingEvent(final ThingId thingId, final JsonPointer path) {
-        final ThingMergePathMatcher payloadPathMatcher = ThingMergePathMatcher.getInstance();
-        switch (payloadPathMatcher.match(path)) {
-            case THING_PATH:
-                return BusAddressFactory.forThing(thingId);
-            case ATTRIBUTE_PATH:
-                return BusAddressFactory.forAttribute(thingId, extractAttributePath(path));
-            case ATTRIBUTES_PATH:
-                return BusAddressFactory.forAttributes(thingId);
-            case FEATURE_PATH:
-                return BusAddressFactory.forFeature(thingId, extractFeatureId(path));
-            case FEATURES_PATH:
-                return BusAddressFactory.forFeatures(thingId);
-            case FEATURE_PROPERTY_PATH:
-                return BusAddressFactory.forFeatureProperty(thingId, extractFeatureId(path),
-                        extractFeaturePropertyPath(path));
-            case FEATURE_PROPERTIES_PATH:
-                return BusAddressFactory.forFeatureProperties(thingId, extractFeatureId(path));
-            case FEATURE_DESIRED_PROPERTY_PATH:
-                return BusAddressFactory.forFeatureDesiredProperty(thingId, extractFeatureId(path),
-                        extractFeaturePropertyPath(path));
-            case FEATURE_DESIRED_PROPERTIES_PATH:
-                return BusAddressFactory.forFeatureDesiredProperties(thingId, extractFeatureId(path));
-            default:
-                throw new UnknownPathException.Builder(path).build();
-        }
+    static String forThingMergedEvent(final ThingId thingId, final JsonPointer path) {
+        return RESOURCE_PATH_MAPPER.map(path, thingId);
     }
 
-    private static JsonPointer extractFeaturePropertyPath(final JsonPointer path) {
-        return path.getSubPointer(3)
-                .orElseThrow(() -> UnknownPathException.newBuilder(path).build());
-    }
-
-    private static JsonPointer extractAttributePath(final JsonPointer path) {
-        return path.getSubPointer(1)
-                .orElseThrow(() -> UnknownPathException.newBuilder(path).build());
-    }
-
-    private static String extractFeatureId(final JsonPointer path) {
-        return path.get(1).map(CharSequence::toString)
-                .orElseThrow(() -> UnknownPathException.newBuilder(path).build());
-    }
 }
