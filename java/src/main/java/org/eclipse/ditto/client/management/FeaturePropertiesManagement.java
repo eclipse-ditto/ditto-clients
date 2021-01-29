@@ -228,6 +228,7 @@ public interface FeaturePropertiesManagement {
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * TODO adapt @since annotation @since 1.6.0
      */
     default CompletableFuture<Void> mergeProperty(final CharSequence path, final boolean value,
             final Option<?>... options) {
@@ -246,6 +247,7 @@ public interface FeaturePropertiesManagement {
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * TODO adapt @since annotation @since 1.6.0
      */
     default CompletableFuture<Void> mergeProperty(final CharSequence path, final double value,
             final Option<?>... options) {
@@ -265,6 +267,7 @@ public interface FeaturePropertiesManagement {
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * TODO adapt @since annotation @since 1.6.0
      */
     default CompletableFuture<Void> mergeProperty(final CharSequence path, final int value,
             final Option<?>... options) {
@@ -284,6 +287,7 @@ public interface FeaturePropertiesManagement {
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * TODO adapt @since annotation @since 1.6.0
      */
     default CompletableFuture<Void> mergeProperty(final CharSequence path, final long value,
             final Option<?>... options) {
@@ -303,6 +307,7 @@ public interface FeaturePropertiesManagement {
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * TODO adapt @since annotation @since 1.6.0
      */
     default CompletableFuture<Void> mergeProperty(final CharSequence path, final String value,
             final Option<?>... options) {
@@ -321,6 +326,7 @@ public interface FeaturePropertiesManagement {
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * TODO adapt @since annotation @since 1.6.0
      */
     default CompletableFuture<Void> mergeProperty(final CharSequence path, final JsonValue value,
             final Option<?>... options) {
@@ -338,6 +344,7 @@ public interface FeaturePropertiesManagement {
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * TODO adapt @since annotation @since 1.6.0
      */
     CompletableFuture<Void> mergeProperty(JsonPointer path, JsonValue value, Option<?>... options);
 
@@ -360,6 +367,7 @@ public interface FeaturePropertiesManagement {
      * org.eclipse.ditto.client.options.Options}.
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * TODO adapt @since annotation @since 1.6.0
      */
     CompletableFuture<Void> mergeProperties(JsonObject value, Option<?>... options);
 
