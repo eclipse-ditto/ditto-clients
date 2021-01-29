@@ -50,7 +50,7 @@ import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.KnownMessageSubjects;
@@ -462,11 +462,11 @@ public final class DittoClientUsageExamples {
         clientAtDevice.live().registerForMessage("globalMessageHandler", "hello.world", message -> {
             LOGGER.warn("[AT DEVICE] Received Message with subject '{}' on Client 2: {}", message.getSubject(),
                     message.toString());
-            message.reply().statusCode(HttpStatusCode.IM_A_TEAPOT).payload("Hello Teapot!").send();
+            message.reply().httpStatus(HttpStatus.IM_A_TEAPOT).payload("Hello Teapot!").send();
         });
         clientAtDevice.live().registerForClaimMessage("globalClaimMessageHandler", String.class, claimMessage -> {
             LOGGER.info("[AT DEVICE] Received Claim Message on Client 2: '{}'", claimMessage.getPayload().orElse(null));
-            claimMessage.reply().statusCode(HttpStatusCode.OK).payload("claim-acked").send();
+            claimMessage.reply().httpStatus(HttpStatus.OK).payload("claim-acked").send();
         });
 
         LOGGER.info("[AT BACKEND] sending '{}' message..", KnownMessageSubjects.CLAIM_SUBJECT);
@@ -492,8 +492,10 @@ public final class DittoClientUsageExamples {
                                 response.getPayload().orElse(null)));
     }
 
-    private static void performLoadTestUpdate(final DittoClient client, final int updateCount,
-            final int thingCount, final boolean log) {
+    private static void performLoadTestUpdate(final DittoClient client,
+            final int updateCount,
+            final int thingCount,
+            final boolean log) {
 
         final JsonObject attributesExample = JsonFactory.newObjectBuilder()
                 .set("maker", "ACME Inc.")
@@ -796,4 +798,5 @@ public final class DittoClientUsageExamples {
             throw new IllegalStateException(e);
         }
     }
+
 }

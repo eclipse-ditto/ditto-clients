@@ -17,6 +17,7 @@ import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
+import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.entity.id.EntityIdWithType;
 import org.eclipse.ditto.model.base.headers.DittoHeadersSettable;
@@ -25,7 +26,7 @@ import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 /**
  * Abstraction for handling {@code AcknowledgementRequest}s issued by the Ditto backend together with e.g.
  * {@code Event}s. This handle provides means to {@code acknowledge} such acknowledgement requests with a custom
- * {@code HttpStatusCode}, an optional {@code payload} or - alternatively - with a self built {@code Acknowledgement}.
+ * HttpStatus, an optional {@code payload} or - alternatively - with a self built {@code Acknowledgement}.
  *
  * @since 1.1.0
  */
@@ -52,18 +53,47 @@ public interface AcknowledgementRequestHandle extends DittoHeadersSettable<Ackno
      *
      * @param statusCode the http status code to apply for the acknowledgement to send: use a range between 200 and 300
      * in order to declare a successful acknowledgement and a status code above 400 to declare a not successful one.
+     * @deprecated as of 2.0.0 please use {@link #acknowledge(HttpStatus)} instead.
      */
-    void acknowledge(HttpStatusCode statusCode);
+    @Deprecated
+    default void acknowledge(final HttpStatusCode statusCode) {
+        acknowledge(statusCode.getAsHttpStatus());
+    }
 
     /**
      * Builds and sends an {@code Acknowledgement} to the Ditto backend based on the information this handle instance
-     * already has, combined with the passed {@code statusCode} and the passed {@code payload}.
+     * already has, combined with the passed {@code statusCode} and no {@code payload}.
+     *
+     * @param httpStatus the HTTP status to apply for the acknowledgement to send: use a range between 200 and 300
+     * in order to declare a successful acknowledgement and a status code above 400 to declare a not successful one.
+     * @since 2.0.0
+     */
+    void acknowledge(HttpStatus httpStatus);
+
+    /**
+     * Builds and sends an {@code Acknowledgement} to the Ditto backend based on the information this handle instance
+     * already has, combined with the passed HTTP status and the passed {@code payload}.
      *
      * @param statusCode the http status code to apply for the acknowledgement to send: use a range between 200 and 300
      * in order to declare a successful acknowledgement and a status code above 400 to declare a not successful one.
      * @param payload the payload as {@code JsonValue} to include in the sent acknowledgement.
+     * @deprecated as of 2.0.0 please use {@link #acknowledge(HttpStatus, JsonValue)} instead.
      */
-    void acknowledge(HttpStatusCode statusCode, @Nullable JsonValue payload);
+    @Deprecated
+    default void acknowledge(final HttpStatusCode statusCode, @Nullable final JsonValue payload) {
+        acknowledge(statusCode.getAsHttpStatus(), payload);
+    }
+
+    /**
+     * Builds and sends an {@code Acknowledgement} to the Ditto backend based on the information this handle instance
+     * already has, combined with the passed HTTP status and the passed {@code payload}.
+     *
+     * @param httpStatus the HTTP status to apply for the acknowledgement to send: use a range between 200 and 300
+     * in order to declare a successful acknowledgement and a status code above 400 to declare a not successful one.
+     * @param payload the payload as {@code JsonValue} to include in the sent acknowledgement.
+     * @since 2.0.0
+     */
+    void acknowledge(HttpStatus httpStatus, @Nullable JsonValue payload);
 
     /**
      * Sends the passed {@code acknowledgement} to the Ditto backend.

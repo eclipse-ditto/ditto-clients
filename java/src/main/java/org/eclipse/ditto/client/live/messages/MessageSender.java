@@ -19,11 +19,11 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.ack.ResponseConsumer;
+import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.things.ThingId;
-import org.eclipse.ditto.signals.acks.base.Acknowledgements;
 
 /**
  * Builder for instances of {@link Message} which uses Object Scoping and Method Chaining to provide a convenient usage
@@ -174,8 +174,22 @@ public interface MessageSender<T> {
          * @param statusCode the status code.
          * @return fluent api builder that provides the functionality to set <em>optionally</em> fields of the message
          * or send the message.
+         * @deprecated as of 2.0.0 please use {@link #httpStatus(HttpStatus)} instead.
          */
-        SetPayloadOrSend<T> statusCode(HttpStatusCode statusCode);
+        @Deprecated
+        default SetPayloadOrSend<T> statusCode(final HttpStatusCode statusCode) {
+            return httpStatus(null != statusCode ? statusCode.getAsHttpStatus() : null);
+        }
+
+        /**
+         * Sets the HTTP status of the message.
+         *
+         * @param httpStatus the HTTP status.
+         * @return fluent api builder that provides the functionality to set <em>optionally</em> fields of the message
+         * or send the message.
+         * @since 2.0.0
+         */
+        SetPayloadOrSend<T> httpStatus(HttpStatus httpStatus);
 
         /**
          * Sets additional headers to send in the message.

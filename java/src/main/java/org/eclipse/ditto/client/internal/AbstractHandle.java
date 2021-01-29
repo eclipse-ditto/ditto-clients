@@ -34,6 +34,7 @@ import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
+import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
@@ -82,8 +83,7 @@ public abstract class AbstractHandle {
      * @param messagingProvider the messaging provider.
      * @param channel the channel of this handle.
      */
-    protected AbstractHandle(final MessagingProvider messagingProvider,
-            final TopicPath.Channel channel) {
+    protected AbstractHandle(final MessagingProvider messagingProvider, final TopicPath.Channel channel) {
         this.messagingProvider = messagingProvider;
         this.channel = channel;
     }
@@ -267,7 +267,8 @@ public abstract class AbstractHandle {
 
     private CommandResponse<?> extractCommandResponseFromAcknowledgements(final Signal<?> signal,
             final Acknowledgements acknowledgements) {
-        if (areFailedAcknowledgements(acknowledgements.getStatusCode())) {
+
+        if (areFailedAcknowledgements(acknowledgements.getHttpStatus())) {
             throw AcknowledgementsFailedException.of(acknowledgements);
         } else {
             final AcknowledgementLabel expectedLabel = getThingResponseAcknowledgementLabel();
@@ -279,14 +280,14 @@ public abstract class AbstractHandle {
         }
     }
 
-    private static boolean areFailedAcknowledgements(final HttpStatusCode statusCode) {
-        return statusCode.isClientError() || statusCode.isInternalError();
+    private static boolean areFailedAcknowledgements(final HttpStatus httpStatus) {
+        return httpStatus.isClientError() || httpStatus.isServerError();
     }
 
-    private static <T extends ThingModifyCommandResponse<T>> ThingModifyCommandResponse<T>
-    createThingModifyCommandResponseFromAcknowledgement(
+    private static <T extends ThingModifyCommandResponse<T>> ThingModifyCommandResponse<T> createThingModifyCommandResponseFromAcknowledgement(
             final Signal<?> signal,
             final Acknowledgement ack) {
+
         return new ThingModifyCommandResponse<T>() {
             @Override
             public JsonPointer getResourcePath() {
@@ -330,6 +331,11 @@ public abstract class AbstractHandle {
             }
 
             @Override
+            public HttpStatus getHttpStatus() {
+                return ack.getHttpStatus();
+            }
+
+            @Override
             public JsonObject toJson(final JsonSchemaVersion schemaVersion, final Predicate<JsonField> predicate) {
                 return JsonObject.empty();
             }
@@ -355,4 +361,5 @@ public abstract class AbstractHandle {
             throw new IllegalStateException("Missing standard charset UTF 8 for encoding.", e);
         }
     }
+
 }

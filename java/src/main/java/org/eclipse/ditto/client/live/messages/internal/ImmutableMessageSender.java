@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.client.ack.ResponseConsumer;
@@ -31,7 +32,7 @@ import org.eclipse.ditto.client.management.AcknowledgementsFailedException;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
-import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageBuilder;
@@ -70,7 +71,7 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
     private OffsetDateTime messageTimestamp;
     private String messageCorrelationId;
     private String messageContentType;
-    private HttpStatusCode messageStatusCode;
+    private HttpStatus messageStatus;
     private DittoHeaders messageAdditionalHeaders;
     private BiConsumer<Message<T>, ResponseConsumer<?>> sendConsumer;
 
@@ -142,18 +143,19 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
                 .timestamp(messageTimestamp)
                 .correlationId(messageCorrelationId);
 
-        if (null != messageStatusCode) {
-            if (messageStatusCode == HttpStatusCode.NO_CONTENT && payload != null) {
-                final String warnMessage = "StatusCode '" + HttpStatusCode.NO_CONTENT + "' cannot be used in "
+        if (null != messageStatus) {
+            if (HttpStatus.NO_CONTENT.equals(messageStatus) && payload != null) {
+                final String warnMessage = "HTTP status '" + HttpStatus.NO_CONTENT + "' cannot be used in "
                         + "combination with a set message payload. Message with subject '" + messageSubject +
                         "' was NOT sent!";
                 LOGGER.warn(warnMessage);
                 throw new IllegalStateException(warnMessage);
             }
-            messageHeadersBuilder.statusCode(messageStatusCode);
+            messageHeadersBuilder.httpStatus(messageStatus);
         } else if (isResponse) {
-            final String warnMessage = "StatusCode has to be set for response messages. Response message with subject '"
-                    + messageSubject + "' was NOT sent!";
+            final String warnMessage =
+                    "HTTP status has to be set for response messages. Response message with subject '" +
+                            messageSubject + "' was NOT sent!";
             LOGGER.warn(warnMessage);
             throw new IllegalStateException(warnMessage);
         }
@@ -171,6 +173,7 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
 
     private static <T> ResponseConsumer<?> createCommandResponseConsumer(final Class<T> clazz,
             final BiConsumer<Message<T>, Throwable> responseMessageHandler) {
+
         return new ResponseConsumerImpl<>(CommandResponse.class, (response, error) -> {
             final Message<?> message;
             final Throwable errorToPublish;
@@ -219,7 +222,7 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
 
         return deserializedMessage.map(message ->
                 MessagesModelFactory.newMessageBuilder(message.getHeaders().toBuilder()
-                        .statusCode(ack.getStatusCode())
+                        .httpStatus(ack.getHttpStatus())
                         .build())
                         .payload(message.getPayload().orElse(null))
                         .rawPayload(message.getRawPayload().orElse(null))
@@ -232,25 +235,37 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
             final BiConsumer<Message<T>, Throwable> responseMessageHandler,
             final Message<?> message,
             final Throwable error) {
+
         if (message != null && clazz.isAssignableFrom(ByteBuffer.class)) {
             responseMessageHandler.accept(
                     withPayload(message, message.getRawPayload().map(clazz::cast).orElse(null)),
                     error);
-        } else if (message != null && message.getPayload().isPresent()) {
-            final Object payload = message.getPayload().get();
-            if (clazz.isInstance(payload)) {
-                responseMessageHandler.accept(withPayload(message, clazz.cast(payload)), error);
-            } else {
-                responseMessageHandler.accept(null, new ClassCastException(
-                        "Expected: " + clazz.getCanonicalName() +
-                                "; Actual: " + payload.getClass().getCanonicalName() +
-                                " (" + payload + ")"
-                ));
-            }
-        } else if (message != null) {
-            responseMessageHandler.accept(null, new NoSuchElementException("No payload"));
         } else {
-            responseMessageHandler.accept(null, error);
+            final Optional<?> payloadOptional = getMessagePayload(message);
+            if (payloadOptional.isPresent()) {
+                final Object payload = payloadOptional.get();
+                if (clazz.isInstance(payload)) {
+                    responseMessageHandler.accept(withPayload(message, clazz.cast(payload)), error);
+                } else {
+                    responseMessageHandler.accept(null, new ClassCastException(
+                            "Expected: " + clazz.getCanonicalName() +
+                                    "; Actual: " + payload.getClass().getCanonicalName() +
+                                    " (" + payload + ")"
+                    ));
+                }
+            } else if (message != null) {
+                responseMessageHandler.accept(null, new NoSuchElementException("No payload"));
+            } else {
+                responseMessageHandler.accept(null, error);
+            }
+        }
+    }
+
+    private static Optional<?> getMessagePayload(@Nullable final Message<?> message) {
+        if (null != message) {
+            return message.getPayload();
+        } else {
+            return Optional.empty();
         }
     }
 
@@ -262,13 +277,14 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
                 .build();
     }
 
-    private class SetThingIdImpl implements SetThingId<T> {
+    private final class SetThingIdImpl implements SetThingId<T> {
 
         @Override
         public SetFeatureIdOrSubject<T> thingId(final ThingId thingId) {
             messageThingId = thingId;
             return new SetFeatureIdOrSubjectImpl();
         }
+
     }
 
     private final class SetFeatureIdOrSubjectImpl implements SetFeatureIdOrSubject<T> {
@@ -284,6 +300,7 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
             messageSubject = subject;
             return new SetPayloadOrSendImpl();
         }
+
     }
 
     private final class SetSubjectImpl implements SetSubject<T> {
@@ -293,6 +310,7 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
             messageSubject = subject;
             return new SetPayloadOrSendImpl();
         }
+
     }
 
     private final class SetPayloadOrSendImpl implements SetPayloadOrSend<T> {
@@ -316,8 +334,8 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
         }
 
         @Override
-        public SetPayloadOrSend<T> statusCode(final HttpStatusCode statusCode) {
-            messageStatusCode = statusCode;
+        public SetPayloadOrSend<T> httpStatus(final HttpStatus httpStatus) {
+            messageStatus = httpStatus;
             return this;
         }
 
@@ -372,7 +390,7 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
 
     }
 
-    private class MessageSendableImpl implements MessageSendable<T> {
+    private final class MessageSendableImpl implements MessageSendable<T> {
 
         private final T payload;
 
@@ -411,6 +429,7 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
         public BiConsumer<T, Throwable> getResponseConsumer() {
             return consumer;
         }
+
     }
 
 }

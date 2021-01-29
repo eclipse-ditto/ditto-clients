@@ -57,7 +57,7 @@ export class PutResponse<T> implements GenericResponse {
 /**
  * Representation of a response ot a search request
  */
-export class SearchThingsResponse extends EntityModel<SearchThingsResponse> {
+export class SearchThingsResponse extends EntityModel {
 
   public constructor(private readonly _items: Thing[],
                      private readonly _nextPageOffset?: number,

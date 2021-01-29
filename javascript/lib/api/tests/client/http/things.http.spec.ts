@@ -15,7 +15,11 @@
 import { HttpThingsHandleV1, HttpThingsHandleV2 } from '../../../src/client/handles/things.interfaces';
 import { PutResponse } from '../../../src/model/response';
 import { Acl, AclEntry } from '../../../src/model/things.model';
-import { DefaultFieldsOptions, DefaultGetThingsOptions, DefaultMatchOptions } from '../../../src/options/request.options';
+import {
+  DefaultFieldsOptions,
+  DefaultGetThingsOptions,
+  DefaultMatchOptions
+} from '../../../src/options/request.options';
 import { HttpHelper as H } from './http.helper';
 
 describe('Http Things Handle', () => {
@@ -27,7 +31,7 @@ describe('Http Things Handle', () => {
   const authorizationSubject = 'Id';
   const anAclEntry = new AclEntry(authorizationSubject, true, true, true);
   const anotherAclEntry = new AclEntry('Test', false, false, false);
-  const acl = new Acl({ [anAclEntry.id]: anAclEntry, [anotherAclEntry.id]: anotherAclEntry });
+  const acl = { [anAclEntry.id]: anAclEntry, [anotherAclEntry.id]: anotherAclEntry };
 
   it('sends options and gets a Thing', () => {
     const options = DefaultFieldsOptions.getInstance().withFields('A', 'B').ifMatch('C').ifNoneMatch('D');
@@ -105,7 +109,7 @@ describe('Http Things Handle', () => {
   it('gets an Acl', () => {
     return H.test({
       toTest: () => handleV1.getAcl(H.thing.thingId),
-      testBody: acl.toObject(),
+      testBody: Acl.toObject(acl),
       expected: acl,
       request: `${baseRequest}/acl`,
       method: 'get',
@@ -195,7 +199,7 @@ describe('Http Things Handle', () => {
       request: `${baseRequest}/acl`,
       method: 'put',
       status: 204,
-      payload: acl.toJson(),
+      payload: Acl.toJson(acl),
       api: 1
     });
   });
