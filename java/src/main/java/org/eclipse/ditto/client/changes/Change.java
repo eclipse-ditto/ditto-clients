@@ -22,7 +22,7 @@ import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.entity.type.WithEntityType;
-import org.eclipse.ditto.model.base.headers.WithDittoHeaders;
+import org.eclipse.ditto.model.base.headers.DittoHeadersSettable;
 import org.eclipse.ditto.signals.base.WithId;
 
 /**
@@ -30,7 +30,7 @@ import org.eclipse.ditto.signals.base.WithId;
  *
  * @since 1.0.0
  */
-public interface Change extends WithId, WithEntityType, WithDittoHeaders<Change>, Acknowledgeable {
+public interface Change extends WithId, WithEntityType, DittoHeadersSettable<Change>, Acknowledgeable {
 
     /**
      * Returns the {@link ChangeAction} which caused this change.
