@@ -18,7 +18,6 @@ describe('Filters', () => {
   const prop = 'aProperty';
   const numberValue = 7;
   const stringValue = 'foobar';
-  const objectValue = { test: 'test' };
   const boolValue = false;
 
 
@@ -28,9 +27,6 @@ describe('Filters', () => {
 
     eq = Eq(prop, stringValue);
     expect(eq.toString()).toEqual(`eq(${prop},"${stringValue}")`);
-
-    eq = Eq(prop, objectValue);
-    expect(eq.toString()).toEqual(`eq(${prop},${JSON.stringify(objectValue)})`);
 
     eq = Eq(prop, boolValue);
     expect(eq.toString()).toEqual(`eq(${prop},${boolValue})`);
@@ -44,9 +40,6 @@ describe('Filters', () => {
     ne = Ne(prop, stringValue);
     expect(ne.toString()).toEqual(`ne(${prop},"${stringValue}")`);
 
-    ne = Ne(prop, objectValue);
-    expect(ne.toString()).toEqual(`ne(${prop},${JSON.stringify(objectValue)})`);
-
     ne = Ne(prop, boolValue);
     expect(ne.toString()).toEqual(`ne(${prop},${boolValue})`);
   });
@@ -57,9 +50,6 @@ describe('Filters', () => {
 
     gt = Gt(prop, stringValue);
     expect(gt.toString()).toEqual(`gt(${prop},"${stringValue}")`);
-
-    gt = Gt(prop, objectValue);
-    expect(gt.toString()).toEqual(`gt(${prop},${JSON.stringify(objectValue)})`);
 
     gt = Gt(prop, boolValue);
     expect(gt.toString()).toEqual(`gt(${prop},${boolValue})`);
@@ -72,9 +62,6 @@ describe('Filters', () => {
     ge = Ge(prop, stringValue);
     expect(ge.toString()).toEqual(`ge(${prop},"${stringValue}")`);
 
-    ge = Ge(prop, objectValue);
-    expect(ge.toString()).toEqual(`ge(${prop},${JSON.stringify(objectValue)})`);
-
     ge = Ge(prop, boolValue);
     expect(ge.toString()).toEqual(`ge(${prop},${boolValue})`);
 
@@ -85,9 +72,6 @@ describe('Filters', () => {
 
     lt = Lt(prop, stringValue);
     expect(lt.toString()).toEqual(`lt(${prop},"${stringValue}")`);
-
-    lt = Lt(prop, objectValue);
-    expect(lt.toString()).toEqual(`lt(${prop},${JSON.stringify(objectValue)})`);
 
     lt = Lt(prop, boolValue);
     expect(lt.toString()).toEqual(`lt(${prop},${boolValue})`);
@@ -100,16 +84,13 @@ describe('Filters', () => {
     le = Le(prop, stringValue);
     expect(le.toString()).toEqual(`le(${prop},"${stringValue}")`);
 
-    le = Le(prop, objectValue);
-    expect(le.toString()).toEqual(`le(${prop},${JSON.stringify(objectValue)})`);
-
     le = Le(prop, boolValue);
     expect(le.toString()).toEqual(`le(${prop},${boolValue})`);
   });
 
   it('builds an in', () => {
-    const inT = In(prop, numberValue, 'anotherOne');
-    expect(inT.toString()).toEqual(`in(${prop},"${numberValue}","anotherOne")`);
+    const inT = In(prop, numberValue, boolValue, stringValue, 'anotherOne');
+    expect(inT.toString()).toEqual(`in(${prop},${numberValue},${boolValue},"${stringValue}","anotherOne")`);
   });
 
   it('builds a like', () => {
@@ -138,9 +119,6 @@ describe('Filters', () => {
 
     not = Not(Eq(prop, stringValue));
     expect(not.toString()).toEqual(`not(eq(${prop},"${stringValue}"))`);
-
-    not = Not(Eq(prop, objectValue));
-    expect(not.toString()).toEqual(`not(eq(${prop},${JSON.stringify(objectValue)}))`);
 
     not = Not(Eq(prop, boolValue));
     expect(not.toString()).toEqual(`not(eq(${prop},${boolValue}))`);

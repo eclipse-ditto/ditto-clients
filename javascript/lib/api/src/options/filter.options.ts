@@ -154,7 +154,12 @@ export const Le: (property: string, value: any) => Filter =
  */
 export const In: (property: string, ...value: any[]) => Filter =
   (property: string, ...value: any[]) => {
-    return new DefaultFilter(`in(${property},${value.map(v => `"${v}"`).join()})`);
+    return new DefaultFilter(`in(${property},${value.map(v => {
+      if (typeof v === 'number' || typeof v === 'boolean') {
+        return `${v}`;
+      }
+      return `"${v}"`;
+    }).join()})`);
   };
 
 /**
@@ -204,9 +209,6 @@ const standardFilter: (operation: string, property: string, value: any) => Filte
   (operation: string, property: string, value: any) => {
     if (typeof value === 'boolean' || typeof value === 'number') {
       return new DefaultFilter(`${operation}(${property},${value})`);
-    }
-    if (typeof value === 'object') {
-      return new DefaultFilter(`${operation}(${property},${JSON.stringify(value)})`);
     }
     return new DefaultFilter(`${operation}(${property},"${value}")`);
   };
