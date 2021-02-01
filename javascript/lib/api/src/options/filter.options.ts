@@ -200,7 +200,13 @@ const toList: (filter: Filter[]) => string =
  * @param value - The body to check for.
  * @return The Filter.
  */
-const standardFilter: (operation: string, property: string, value: string) => Filter =
-  (operation: string, property: string, value: string) => {
+const standardFilter: (operation: string, property: string, value: any) => Filter =
+  (operation: string, property: string, value: any) => {
+    if (typeof value === 'boolean' || typeof value === 'number') {
+      return new DefaultFilter(`${operation}(${property},${value})`);
+    }
+    if (typeof value === 'object') {
+      return new DefaultFilter(`${operation}(${property},${JSON.stringify(value)})`);
+    }
     return new DefaultFilter(`${operation}(${property},"${value}")`);
   };
