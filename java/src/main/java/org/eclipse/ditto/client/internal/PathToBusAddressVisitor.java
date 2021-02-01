@@ -49,7 +49,7 @@ final class PathToBusAddressVisitor implements ThingResourceVisitor<ThingId, Str
 
     @Override
     public String visitThingDefinition(final JsonPointer path, @Nullable final ThingId thingId) {
-        return BusAddressFactory.forThingDefinition(checkNotNull(thingId), extractFeatureId(path));
+        return BusAddressFactory.forThingDefinition(checkNotNull(thingId));
     }
 
     @Override
@@ -105,7 +105,7 @@ final class PathToBusAddressVisitor implements ThingResourceVisitor<ThingId, Str
 
     @Override
     public String visitFeatureDesiredProperties(final JsonPointer path, @Nullable final ThingId thingId) {
-        return BusAddressFactory.forFeatureProperties(checkNotNull(thingId), extractFeatureId(path));
+        return BusAddressFactory.forFeatureDesiredProperties(checkNotNull(thingId), extractFeatureId(path));
     }
 
     @Override
