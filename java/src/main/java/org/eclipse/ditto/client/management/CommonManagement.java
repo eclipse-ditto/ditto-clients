@@ -311,7 +311,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @return completable future providing {@code null} in case of success or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code argument} is {@code null}.
-     * TODO adapt @since annotation @since 1.6.0
+     * @since 2.0.0
      */
     CompletableFuture<Void> merge(ThingId thingId, Thing thing, Option<?>... options);
 
@@ -325,7 +325,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @return completable future providing {@code null} in case of success or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code argument} is {@code null}.
-     * TODO adapt @since annotation @since 1.6.0
+     * @since 2.0.0
      */
     CompletableFuture<Void> merge(ThingId thingId, JsonObject thing, Option<?>... options);
 

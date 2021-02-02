@@ -52,7 +52,7 @@ public interface FeatureDefinitionManagement {
      * @return a CompletableFuture providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
      * @throws NullPointerException if any argument is {@code null}.
-     * TODO adapt @since annotation @since 1.6.0
+     * @since 2.0.0
      */
     CompletableFuture<Void> mergeDefinition(FeatureDefinition definition, Option<?>... options);
 

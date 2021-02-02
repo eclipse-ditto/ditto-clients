@@ -118,7 +118,7 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @return completable future for handling the result of the operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code policyId} is {@code null}.
-     * TODO adapt @since annotation @since 1.6.0
+     * @since 2.0.0
      */
     CompletableFuture<Void> mergePolicyId(PolicyId policyId, Option<?>... options);
 
@@ -143,7 +143,7 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @return completable future for handling the result of the operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code features} is {@code null}.
-     * TODO adapt @since annotation @since 1.6.0
+     * @since 2.0.0
      */
     CompletableFuture<Void> mergeFeatures(Features features, Option<?>... options);
 
@@ -168,7 +168,7 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @return completable future for handling the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code feature} is {@code null}.
-     * TODO adapt @since annotation @since 1.6.0
+     * @since 2.0.0
      */
     CompletableFuture<Void> mergeFeature(Feature feature, Option<?>... options);
 

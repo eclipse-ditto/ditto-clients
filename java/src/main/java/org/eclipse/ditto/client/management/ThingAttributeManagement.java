@@ -231,7 +231,7 @@ public interface ThingAttributeManagement {
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
-     * TODO adapt @since annotation @since 1.6.0
+     * @since 2.0.0
      */
     default CompletableFuture<Void> mergeAttribute(final CharSequence path, final boolean value,
             final Option<?>... options) {
@@ -250,7 +250,7 @@ public interface ThingAttributeManagement {
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
-     * TODO adapt @since annotation @since 1.6.0
+     * @since 2.0.0
      */
     default CompletableFuture<Void> mergeAttribute(final CharSequence path, final double value,
             final Option<?>... options) {
@@ -269,7 +269,7 @@ public interface ThingAttributeManagement {
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
-     * TODO adapt @since annotation @since 1.6.0
+     * @since 2.0.0
      */
     default CompletableFuture<Void> mergeAttribute(final CharSequence path, final int value,
             final Option<?>... options) {
@@ -288,7 +288,7 @@ public interface ThingAttributeManagement {
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
-     * TODO adapt @since annotation @since 1.6.0
+     * @since 2.0.0
      */
     default CompletableFuture<Void> mergeAttribute(final CharSequence path, final long value,
             final Option<?>... options) {
@@ -307,7 +307,7 @@ public interface ThingAttributeManagement {
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
-     * TODO adapt @since annotation @since 1.6.0
+     * @since 2.0.0
      */
     default CompletableFuture<Void> mergeAttribute(final CharSequence path, final String value,
             final Option<?>... options) {
@@ -326,7 +326,7 @@ public interface ThingAttributeManagement {
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
-     * TODO adapt @since annotation @since 1.6.0
+     * @since 2.0.0
      */
     default CompletableFuture<Void> mergeAttribute(final CharSequence path, final JsonValue value,
             final Option<?>... options) {
@@ -344,7 +344,7 @@ public interface ThingAttributeManagement {
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if any argument is {@code null} or if {@code path} is empty.
-     * TODO adapt @since annotation @since 1.6.0
+     * @since 2.0.0
      */
     CompletableFuture<Void> mergeAttribute(JsonPointer path, JsonValue value, Option<?>... options);
 
@@ -369,7 +369,7 @@ public interface ThingAttributeManagement {
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code value} is {@code null}
-     * TODO adapt @since annotation @since 1.6.0
+     * @since 2.0.0
      */
     CompletableFuture<Void> mergeAttributes(JsonObject value, Option<?>... options);
 
