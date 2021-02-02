@@ -39,113 +39,15 @@ public final class DittoClients {
 
     /**
      * Creates a new {@link org.eclipse.ditto.client.DittoClient} with a shared {@code Twin} and {@code Live}
-     * {@link org.eclipse.ditto.client.messaging.MessagingProvider}.
-     *
-     * @param messagingProvider the messaging provider for this client.
-     * @return the client.
-     * @throws org.eclipse.ditto.client.messaging.AuthenticationException if authentication failed.
-     * @throws org.eclipse.ditto.client.messaging.MessagingException if a connection to the configured endpoint
-     * could not be established
-     */
-    public static DittoClient newInstance(final MessagingProvider messagingProvider) {
-        return newInstance(messagingProvider, messagingProvider);
-    }
-
-    /**
-     * Creates a new {@link org.eclipse.ditto.client.DittoClient} with a specific {@code Twin} and {@code Live}
-     * {@link org.eclipse.ditto.client.messaging.MessagingProvider}.
-     *
-     * @param twinMessagingProvider the messaging provider for the {@code Twin} part of the client.
-     * @param liveMessagingProvider the messaging provider for the {@code Live} part of the client.
-     * @return the client.
-     * @throws org.eclipse.ditto.client.messaging.AuthenticationException if authentication failed.
-     * @throws org.eclipse.ditto.client.messaging.MessagingException if a connection to the configured endpoint
-     * could not be established
-     */
-    public static DittoClient newInstance(final MessagingProvider twinMessagingProvider,
-            final MessagingProvider liveMessagingProvider) {
-
-        return newInstance(twinMessagingProvider, liveMessagingProvider, twinMessagingProvider);
-    }
-
-    /**
-     * Creates a new {@link org.eclipse.ditto.client.DittoClient} with a specific {@code Twin} and {@code Live}
-     * {@link org.eclipse.ditto.client.messaging.MessagingProvider}.
-     *
-     * @param twinMessagingProvider the messaging provider for the {@code Twin} part of the client.
-     * @param liveMessagingProvider the messaging provider for the {@code Live} part of the client.
-     * @param policyMessagingProvider the messaging provider for the {@code Policy} part of the client.
-     * @return the client.
-     * @throws org.eclipse.ditto.client.messaging.AuthenticationException if authentication failed.
-     * @throws org.eclipse.ditto.client.messaging.MessagingException if a connection to the configured endpoint
-     * could not be established
-     * @since 1.1.0
-     */
-    public static DittoClient newInstance(final MessagingProvider twinMessagingProvider,
-            final MessagingProvider liveMessagingProvider,
-            final MessagingProvider policyMessagingProvider) {
-
-        final MessageSerializerRegistry messageSerializerRegistry =
-                MessageSerializerFactory.newInstance().getMessageSerializerRegistry();
-        return newInstance(twinMessagingProvider, liveMessagingProvider, policyMessagingProvider,
-                messageSerializerRegistry);
-    }
-
-    /**
-     * Creates a new {@link org.eclipse.ditto.client.DittoClient} with a specific {@code Twin} and {@code Live}
-     * {@link org.eclipse.ditto.client.messaging.MessagingProvider}.
-     *
-     * @param twinMessagingProvider the messaging provider for the {@code Twin} part of the client.
-     * @param liveMessagingProvider the messaging provider for the {@code Live} part of the client.
-     * @param messageSerializerRegistry a registry of {@code MessageSerializer}s for the {@code Live} part of the client.
-     * @return the client.
-     * @throws org.eclipse.ditto.client.messaging.AuthenticationException if authentication failed.
-     * @throws org.eclipse.ditto.client.messaging.MessagingException if a connection to the configured endpoint
-     * could not be established
-     */
-    public static DittoClient newInstance(final MessagingProvider twinMessagingProvider,
-            final MessagingProvider liveMessagingProvider,
-            final MessageSerializerRegistry messageSerializerRegistry) {
-
-        return newInstance(twinMessagingProvider, liveMessagingProvider, twinMessagingProvider,
-                messageSerializerRegistry);
-    }
-
-    /**
-     * Creates a new {@link org.eclipse.ditto.client.DittoClient} with a specific {@code Twin}, {@code Live} and
-     * {@code Policy} {@link org.eclipse.ditto.client.messaging.MessagingProvider}.
-     *
-     * @param twinMessagingProvider the messaging provider for the {@code Twin} part of the client.
-     * @param liveMessagingProvider the messaging provider for the {@code Live} part of the client.
-     * @param policyMessagingProvider the messaging provider for the {@code Policy} part of the client.
-     * @param messageSerializerRegistry a registry of {@code MessageSerializer}s for the {@code Live} part of the client.
-     * @return the client.
-     * @throws org.eclipse.ditto.client.messaging.AuthenticationException if authentication failed.
-     * @throws org.eclipse.ditto.client.messaging.MessagingException if a connection to the configured endpoint
-     * could not be established
-     * @since 1.1.0
-     */
-    public static DittoClient newInstance(final MessagingProvider twinMessagingProvider,
-            final MessagingProvider liveMessagingProvider, final MessagingProvider policyMessagingProvider,
-            final MessageSerializerRegistry messageSerializerRegistry) {
-
-        return DefaultDittoClient.newInstance(twinMessagingProvider,
-                liveMessagingProvider,
-                policyMessagingProvider,
-                messageSerializerRegistry);
-    }
-
-    /**
-     * Creates a new {@link org.eclipse.ditto.client.DittoClient} with a shared {@code Twin} and {@code Live}
      * {@link org.eclipse.ditto.client.messaging.MessagingProvider} but does not attempt to connect to the configured
      * back-end.
      *
      * @param messagingProvider the messaging provider for this client.
      * @return the disconnected client.
-     * @since 1.3.0
+     * @since 2.0.0
      */
-    public static DisconnectedDittoClient newDisconnectedInstance(final MessagingProvider messagingProvider) {
-        return newDisconnectedInstance(messagingProvider, messagingProvider, messagingProvider,
+    public static DisconnectedDittoClient newInstance(final MessagingProvider messagingProvider) {
+        return newInstance(messagingProvider, messagingProvider, messagingProvider,
                 MessageSerializerFactory.newInstance().getMessageSerializerRegistry());
     }
 
@@ -159,9 +61,9 @@ public final class DittoClients {
      * @param policyMessagingProvider the messaging provider for the {@code Policy} part of the client.
      * @param messageSerializerRegistry a registry of {@code MessageSerializer}s for the {@code Live} part of the client.
      * @return the disconnected client.
-     * @since 1.3.0
+     * @since 2.0.0
      */
-    public static DisconnectedDittoClient newDisconnectedInstance(final MessagingProvider twinMessagingProvider,
+    public static DisconnectedDittoClient newInstance(final MessagingProvider twinMessagingProvider,
             final MessagingProvider liveMessagingProvider, final MessagingProvider policyMessagingProvider,
             final MessageSerializerRegistry messageSerializerRegistry) {
 

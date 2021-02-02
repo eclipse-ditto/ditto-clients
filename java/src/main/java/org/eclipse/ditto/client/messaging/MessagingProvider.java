@@ -40,16 +40,6 @@ import org.eclipse.ditto.signals.events.base.Event;
 public interface MessagingProvider {
 
     /**
-     * Initializes the Messaging Provider by opening the underlying connections, etc.
-     * Blocks the calling thread until messaging provider is ready.
-     * @deprecated since 1.3.0. Use {@code initializeAsync} instead.
-     */
-    @Deprecated
-    default void initialize() {
-        initializeAsync().toCompletableFuture().join();
-    }
-
-    /**
      * Perform initialization asynchronously.
      *
      * @return a future that completes after initialization completed.

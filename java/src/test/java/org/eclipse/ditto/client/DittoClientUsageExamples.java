@@ -97,8 +97,14 @@ public final class DittoClientUsageExamples {
     private static final Properties CONFIG;
 
     public static void main(final String... args) throws ExecutionException, InterruptedException {
-        final DittoClient client = DittoClients.newInstance(createMessagingProvider());
-        final DittoClient client2 = DittoClients.newInstance(createMessagingProvider());
+        final DittoClient client = DittoClients.newInstance(createMessagingProvider())
+                .connect()
+                .toCompletableFuture()
+                .join();
+        final DittoClient client2 = DittoClients.newInstance(createMessagingProvider())
+                .connect()
+                .toCompletableFuture()
+                .join();
 
         if (shouldNotSkip("twin.examples")) {
             final JsonifiableAdaptable jsonifiableAdaptable = ProtocolFactory.jsonifiableAdaptableFromJson(
