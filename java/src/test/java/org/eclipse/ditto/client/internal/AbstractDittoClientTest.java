@@ -103,7 +103,10 @@ public abstract class AbstractDittoClientTest {
         LOGGER.debug("active threads before test: {}", startingThreadNames);
         messaging = new MockMessagingProvider();
         messaging.onSend(m -> LOGGER.info("Send message: " + m));
-        client = DittoClients.newInstance(messaging);
+        client = DittoClients.newInstance(messaging)
+                .connect()
+                .toCompletableFuture()
+                .join();
     }
 
     @After

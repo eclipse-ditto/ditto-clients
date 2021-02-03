@@ -126,34 +126,6 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
     }
 
     /**
-     * Creates a new {@link org.eclipse.ditto.client.DittoClient}.
-     *
-     * @param twinMessagingProvider the messaging provider to use for the {@code Twin} aspect.
-     * @param liveMessagingProvider the messaging provider to use for the {@code Live} aspect.
-     * @param policyMessagingProvider the messaging provider for the {@code Policy} part of the client.
-     * @param messageSerializerRegistry registry for all serializers of live messages.
-     * @return the client.
-     */
-    public static DittoClient newInstance(final MessagingProvider twinMessagingProvider,
-            final MessagingProvider liveMessagingProvider,
-            final MessagingProvider policyMessagingProvider,
-            final MessageSerializerRegistry messageSerializerRegistry) {
-
-        final DisconnectedDittoClient disconnectedClient =
-                newDisconnectedInstance(twinMessagingProvider, liveMessagingProvider, policyMessagingProvider,
-                        messageSerializerRegistry);
-        final CompletionStage<DittoClient> connectFuture = disconnectedClient.connect();
-
-        connectFuture.whenComplete((result, error) -> {
-            if (error != null) {
-                disconnectedClient.destroy();
-            }
-        });
-
-        return connectFuture.toCompletableFuture().join();
-    }
-
-    /**
      * Create a Ditto client object but do not attempt to connect to the configured back-end.
      *
      * @param twinMessagingProvider the messaging provider to use for the {@code Twin} aspect.
