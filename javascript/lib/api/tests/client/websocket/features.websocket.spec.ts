@@ -11,8 +11,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { Features } from '../../../src/model/things.model';
 import { WebSocketHelper as H } from './websocket.helper';
+import { Features } from '../../../src/model/things.model';
 
 // tslint:disable-next-line:no-big-function
 describe('WebSocket Features Handle', () => {

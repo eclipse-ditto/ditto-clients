@@ -99,8 +99,8 @@ export abstract class IndexedEntityModel<EntryType extends EntityModel> implemen
    * @param mapKey - how to get the key from an objects key.
    */
   static fromPlainObject<T extends EntityModel>(objectToMap: Object | undefined,
-                                                mapValue: (value: any, key: string) => T,
-                                                mapKey: (key: string, value: any) => string = key => key): IndexedEntityModel<T> {
+    mapValue: (value: any, key: string) => T,
+    mapKey: (key: string, value: any) => string = key => key): IndexedEntityModel<T> {
     if (objectToMap) {
       const entries = Object.keys(objectToMap)
         .map(k => {

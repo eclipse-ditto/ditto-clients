@@ -12,8 +12,8 @@
  */
 
 import { ProtocolResponseValue } from '../../../src/client/request-factory/websocket-request-handler';
-import { Features } from '../../../src/model/things.model';
 import { EventsHelper as H } from './events.helper';
+import { Features } from '../../../src/model/things.model';
 
 
 describe('WebSocket Events Handle', () => {

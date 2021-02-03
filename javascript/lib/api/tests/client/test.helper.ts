@@ -11,8 +11,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { AuthProvider, DittoHeaders, DittoURL } from '../../src/auth/auth-provider';
 import { Feature, Thing } from '../../src/model/things.model';
+import { AuthProvider, DittoHeaders, DittoURL } from '../../src/auth/auth-provider';
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 0;
 

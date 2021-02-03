@@ -14,7 +14,7 @@
 /* tslint:disable:no-duplicate-string */
 import { GenericResponse, PutResponse } from '../../model/response';
 import { Acl, AclEntry, Thing } from '../../model/things.model';
-import { DefaultGetThingsOptions, FieldsOptions, GetThingsOptions, MatchOptions } from '../../options/request.options';
+import { FieldsOptions, GetThingsOptions, MatchOptions, DefaultGetThingsOptions } from '../../options/request.options';
 import { RequestSender, RequestSenderFactory } from '../request-factory/request-sender';
 import { HttpThingsHandleV1, HttpThingsHandleV2, WebSocketThingsHandle } from './things.interfaces';
 

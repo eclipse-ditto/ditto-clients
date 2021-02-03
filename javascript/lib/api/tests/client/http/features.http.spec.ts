@@ -14,8 +14,8 @@
 /* tslint:disable:no-big-function */
 import { FeaturesHandle } from '../../../src/client/handles/features.interfaces';
 import { PutResponse } from '../../../src/model/response';
-import { Features } from '../../../src/model/things.model';
 import { HttpHelper as H } from './http.helper';
+import { Features } from '../../../src/model/things.model';
 
 describe('Http Features Handle', () => {
   const baseRequest = `things/${H.thing.thingId}/features`;

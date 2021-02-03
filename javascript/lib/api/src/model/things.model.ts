@@ -21,12 +21,12 @@ export class Thing extends EntityWithId {
   public static readonly NAMESPACE_SEPARATION_REGEX = /([^:]*):(.*)/;
 
   public constructor(private readonly _thingId: string,
-                     private readonly _policyId?: string,
-                     private readonly _attributes?: Record<string, any>,
-                     private readonly _features?: Features,
-                     private readonly __revision?: number,
-                     private readonly __modified?: string,
-                     private readonly _acl?: Acl) {
+    private readonly _policyId?: string,
+    private readonly _attributes?: Record<string, any>,
+    private readonly _features?: Features,
+    private readonly __revision?: number,
+    private readonly __modified?: string,
+    private readonly _acl?: Acl) {
     super();
   }
 
@@ -143,8 +143,8 @@ export class Features extends IndexedEntityModel<Feature> {
 export class Feature extends EntityWithId {
 
   public constructor(private readonly _id: string,
-                     private readonly _definition?: string[],
-                     private readonly _properties?: Record<string, any>) {
+    private readonly _definition?: string[],
+    private readonly _properties?: Record<string, any>) {
     super();
   }
 
@@ -204,9 +204,9 @@ export class Acl extends IndexedEntityModel<AclEntry> {
 export class AclEntry extends EntityWithId {
 
   public constructor(private readonly _id: string,
-                     private readonly _read: boolean,
-                     private readonly _write: boolean,
-                     private readonly _administrate: boolean) {
+    private readonly _read: boolean,
+    private readonly _write: boolean,
+    private readonly _administrate: boolean) {
     super();
   }
 

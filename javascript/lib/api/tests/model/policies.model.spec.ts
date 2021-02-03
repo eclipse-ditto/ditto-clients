@@ -13,8 +13,7 @@
 
 /* tslint:disable:no-duplicate-string */
 import {
-  AccessRight,
-  DittoSubjectIssuer,
+  AccessRight, DittoSubjectIssuer,
   Entries,
   Entry,
   Policy,
@@ -22,7 +21,8 @@ import {
   Resources,
   Subject,
   SubjectId,
-  Subjects
+  Subjects,
+  SubjectType
 } from '../../src/model/policies.model';
 
 const aResourceObj = { grant: ['READ'], revoke: ['READ'] };
@@ -136,10 +136,7 @@ describe('Entry', () => {
     expect(Entry.fromObject(anEntryObj, 'label1').equals(anEntry)).toBe(true);
   });
   it('builds an object', () => {
-    expect(anEntry.toObject()).toEqual({
-      subjects: Subjects.toObject(someSubjects),
-      resources: Resources.toObject(someResources)
-    });
+    expect(anEntry.toObject()).toEqual({ subjects: Subjects.toObject(someSubjects), resources: Resources.toObject(someResources) });
   });
   it('returns its content', () => {
     expect(anEntry.id).toEqual('label1');

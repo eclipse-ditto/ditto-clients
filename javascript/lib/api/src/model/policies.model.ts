@@ -19,7 +19,7 @@ import { EntityModel, EntityWithId, IndexedEntityModel } from './model';
 export class Policy extends EntityWithId {
 
   public constructor(private readonly _id: string,
-                     private readonly _entries: Entries) {
+    private readonly _entries: Entries) {
     super();
   }
 
@@ -82,8 +82,8 @@ export class Entries extends IndexedEntityModel<Entry> {
 export class Entry extends EntityWithId {
 
   public constructor(private readonly _id: string,
-                     private readonly _subjects: Subjects,
-                     private readonly _resources: Resources) {
+    private readonly _subjects: Subjects,
+    private readonly _resources: Resources) {
     super();
   }
 
@@ -103,7 +103,7 @@ export class Entry extends EntityWithId {
   }
 
   public toObject(): Object {
-    const subjectsObj = Subjects.toObject(this.subjects);
+    const subjectsObj = Subjects.toObject(this.subjects) ;
     const resourcesObj = Resources.toObject(this.resources);
     return EntityModel.buildObject(new Map<string, any>([
       ['subjects', subjectsObj],
@@ -196,7 +196,7 @@ export type SubjectType = string;
 export class Subject extends EntityWithId {
 
   public constructor(private readonly _id: SubjectId,
-                     private readonly _type: SubjectType) {
+    private readonly _type: SubjectType) {
     super();
   }
 
@@ -241,8 +241,8 @@ export enum AccessRight {
 export class Resource extends EntityWithId {
 
   public constructor(private readonly _id: string,
-                     private readonly _grant: AccessRight[],
-                     private readonly _revoke: AccessRight[]) {
+    private readonly _grant: AccessRight[],
+    private readonly _revoke: AccessRight[]) {
     super();
   }
 
