@@ -29,7 +29,6 @@ import org.junit.Test;
 
 public final class RetryTest {
 
-    private static final Supplier<Boolean> IS_CANCELLED = () -> false;
     private static ScheduledExecutorService scheduledExecutorService;
 
     @BeforeClass
@@ -50,6 +49,7 @@ public final class RetryTest {
                 .inClientSession(UUID.randomUUID().toString())
                 .withExecutors(scheduledExecutorService, scheduledExecutorService)
                 .completeFutureEventually(new CompletableFuture<>())
+                .toCompletableFuture()
                 .join();
 
         assertThat(actualResult).isEqualTo("foo");
@@ -70,6 +70,7 @@ public final class RetryTest {
                 .inClientSession(UUID.randomUUID().toString())
                 .withExecutors(scheduledExecutorService, scheduledExecutorService)
                 .completeFutureEventually(new CompletableFuture<>())
+                .toCompletableFuture()
                 .join();
 
         assertThat(actualResult).isEqualTo("bar");
@@ -98,6 +99,7 @@ public final class RetryTest {
                     errorConsumerLatch.countDown();
                 })
                 .completeFutureEventually(new CompletableFuture<>())
+                .toCompletableFuture()
                 .join();
 
         assertThat(actualResult).isEqualTo("bar");

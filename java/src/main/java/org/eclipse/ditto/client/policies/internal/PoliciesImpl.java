@@ -16,7 +16,7 @@ import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNu
 
 import java.text.MessageFormat;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import javax.annotation.Nonnull;
 
@@ -76,17 +76,17 @@ public final class PoliciesImpl extends AbstractHandle implements Policies {
     }
 
     @Override
-    public CompletableFuture<Policy> create(final Policy policy, final Option<?>... options) {
+    public CompletionStage<Policy> create(final Policy policy, final Option<?>... options) {
         argumentNotNull(policy);
         assertThatPolicyHasId(policy);
 
         final CreatePolicy command = outgoingMessageFactory.createPolicy(policy, options);
         return askPolicyCommand(command, CreatePolicyResponse.class,
-                response -> response.getPolicyCreated().orElse(null)).toCompletableFuture();
+                response -> response.getPolicyCreated().orElse(null));
     }
 
     @Override
-    public CompletableFuture<Policy> create(final JsonObject jsonObject, final Option<?>... options) {
+    public CompletionStage<Policy> create(final JsonObject jsonObject, final Option<?>... options) {
         argumentNotNull(jsonObject);
 
         final Policy policy = PoliciesModelFactory.newPolicy(jsonObject);
@@ -94,7 +94,7 @@ public final class PoliciesImpl extends AbstractHandle implements Policies {
     }
 
     @Override
-    public CompletableFuture<Optional<Policy>> put(final Policy policy, final Option<?>... options) {
+    public CompletionStage<Optional<Policy>> put(final Policy policy, final Option<?>... options) {
         argumentNotNull(policy);
         assertThatPolicyHasId(policy);
 
@@ -104,11 +104,11 @@ public final class PoliciesImpl extends AbstractHandle implements Policies {
                 response -> response.getEntity(response.getImplementedSchemaVersion())
                         .map(JsonValue::asObject)
                         .map(PoliciesModelFactory::newPolicy)
-        ).toCompletableFuture();
+        );
     }
 
     @Override
-    public CompletableFuture<Optional<Policy>> put(final JsonObject jsonObject, final Option<?>... options) {
+    public CompletionStage<Optional<Policy>> put(final JsonObject jsonObject, final Option<?>... options) {
         argumentNotNull(jsonObject);
 
         final Policy policy = PoliciesModelFactory.newPolicy(jsonObject);
@@ -116,16 +116,16 @@ public final class PoliciesImpl extends AbstractHandle implements Policies {
     }
 
     @Override
-    public CompletableFuture<Void> update(final Policy policy, final Option<?>... options) {
+    public CompletionStage<Void> update(final Policy policy, final Option<?>... options) {
         argumentNotNull(policy);
         assertThatPolicyHasId(policy);
 
         return askPolicyCommand(outgoingMessageFactory.updatePolicy(policy, options), ModifyPolicyResponse.class,
-                this::toVoid).toCompletableFuture();
+                this::toVoid);
     }
 
     @Override
-    public CompletableFuture<Void> update(final JsonObject jsonObject, final Option<?>... options) {
+    public CompletionStage<Void> update(final JsonObject jsonObject, final Option<?>... options) {
         argumentNotNull(jsonObject);
 
         final Policy policy = PoliciesModelFactory.newPolicy(jsonObject);
@@ -133,18 +133,17 @@ public final class PoliciesImpl extends AbstractHandle implements Policies {
     }
 
     @Override
-    public CompletableFuture<Void> delete(final PolicyId policyId, final Option<?>... options) {
+    public CompletionStage<Void> delete(final PolicyId policyId, final Option<?>... options) {
         argumentNotNull(policyId);
 
         final DeletePolicy command = outgoingMessageFactory.deletePolicy(policyId, options);
-        return askPolicyCommand(command, DeletePolicyResponse.class, this::toVoid).toCompletableFuture();
+        return askPolicyCommand(command, DeletePolicyResponse.class, this::toVoid);
     }
 
     @Override
-    public CompletableFuture<Policy> retrieve(PolicyId policyId) {
+    public CompletionStage<Policy> retrieve(PolicyId policyId) {
         final RetrievePolicy command = outgoingMessageFactory.retrievePolicy(policyId);
-        return askPolicyCommand(command, RetrievePolicyResponse.class, RetrievePolicyResponse::getPolicy)
-                .toCompletableFuture();
+        return askPolicyCommand(command, RetrievePolicyResponse.class, RetrievePolicyResponse::getPolicy);
     }
 
     private static void assertThatPolicyHasId(final Policy policy) {

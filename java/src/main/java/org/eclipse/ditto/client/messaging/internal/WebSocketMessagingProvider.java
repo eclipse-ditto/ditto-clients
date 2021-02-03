@@ -335,7 +335,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
         });
     }
 
-    private CompletableFuture<WebSocket> connectWithPotentialRetries(final Supplier<WebSocket> webSocket,
+    private CompletionStage<WebSocket> connectWithPotentialRetries(final Supplier<WebSocket> webSocket,
             final CompletableFuture<WebSocket> future,
             final boolean retry) {
 

@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.management;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.registration.FeaturePropertiesChangeRegistration;
@@ -28,7 +28,7 @@ import org.eclipse.ditto.signals.base.WithFeatureId;
  * {@code FeaturePropertyChange}s.
  * </p>
  * <p>
- * Note: All methods returning a {@link CompletableFuture} are executed non-blocking and asynchronously. Therefore,
+ * Note: All methods returning a {@link CompletionStage} are executed non-blocking and asynchronously. Therefore,
  * these methods return a {@code CompletableFuture} object that will complete either successfully if the operation was
  * executed and confirmed, or exceptionally with a specific {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException}
  * if it was executed but has failed.
@@ -54,26 +54,26 @@ public interface FeatureHandle extends WithFeatureId, FeaturePropertiesManagemen
      *
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return completable future
+     * @return CompletionStage
      */
-    CompletableFuture<Void> delete(Option<?>... options);
+    CompletionStage<Void> delete(Option<?>... options);
 
     /**
      * Retrieve the {@code Feature} being handled by this {@code FeatureHandle}.
      *
-     * @return completable future providing the requested Feature object, when completed successfully or a specific
+     * @return CompletionStage providing the requested Feature object, when completed successfully or a specific
      * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      */
-    CompletableFuture<Feature> retrieve();
+    CompletionStage<Feature> retrieve();
 
     /**
      * Retrieve the {@code Feature} being handled by this {@code FeatureHandle}.
      *
      * @param fieldSelector a field selector object allowing to select a subset of fields on the Feature to be
      * retrieved.
-     * @return completable future providing the requested Feature object, when completed successfully or a specific
+     * @return CompletionStage providing the requested Feature object, when completed successfully or a specific
      * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      */
-    CompletableFuture<Feature> retrieve(JsonFieldSelector fieldSelector);
+    CompletionStage<Feature> retrieve(JsonFieldSelector fieldSelector);
 
 }

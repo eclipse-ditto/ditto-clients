@@ -183,7 +183,9 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
     public void createThingFailsWithExistsOption() {
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(
-                        () -> getManagement().create(THING_ID, Options.Modify.exists(false)).get(TIMEOUT, TIME_UNIT));
+                        () -> getManagement().create(THING_ID, Options.Modify.exists(false))
+                                .toCompletableFuture()
+                                .get(TIMEOUT, TIME_UNIT));
     }
 
     @Test
@@ -230,7 +232,9 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
     @Test
     public void updateThingFailsWithExistsOption() {
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> getManagement().update(THING, Options.Modify.exists(false)).get(TIMEOUT, TIME_UNIT));
+                .isThrownBy(() -> getManagement().update(THING, Options.Modify.exists(false))
+                        .toCompletableFuture()
+                        .get(TIMEOUT, TIME_UNIT));
     }
 
     @Test
@@ -243,7 +247,9 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
     public void deleteThingFailsWithExistsOption() {
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(
-                        () -> getManagement().delete(THING_ID, Options.Modify.exists(false)).get(TIMEOUT, TIME_UNIT));
+                        () -> getManagement().delete(THING_ID, Options.Modify.exists(false))
+                                .toCompletableFuture()
+                                .get(TIMEOUT, TIME_UNIT));
     }
 
     @Test

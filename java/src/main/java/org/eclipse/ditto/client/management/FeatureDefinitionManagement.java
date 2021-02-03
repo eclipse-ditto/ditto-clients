@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.management;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.model.things.FeatureDefinition;
@@ -22,7 +22,7 @@ import org.eclipse.ditto.model.things.FeatureDefinition;
  * org.eclipse.ditto.model.things.FeatureDefinition}s.
  * <p>
  * All the methods are executed non-blocking and asynchronously. Therefore, the methods return a {@code
- * CompletableFuture} object that will complete either successfully if the operation was executed and confirmed, or
+ * CompletionStage} object that will complete either successfully if the operation was executed and confirmed, or
  * exceptionally with a specific {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if it was
  * executed but has failed.
  * </p>
@@ -37,11 +37,11 @@ public interface FeatureDefinitionManagement {
      * @param definition the FeatureDefinition to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a CompletableFuture providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    CompletableFuture<Void> setDefinition(FeatureDefinition definition, Option<?>... options);
+    CompletionStage<Void> setDefinition(FeatureDefinition definition, Option<?>... options);
 
     /**
      * Merge the given definition to the Feature.
@@ -61,9 +61,9 @@ public interface FeatureDefinitionManagement {
      *
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a CompletableFuture providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
      */
-    CompletableFuture<Void> deleteDefinition(Option<?>... options);
+    CompletionStage<Void> deleteDefinition(Option<?>... options);
 
 }

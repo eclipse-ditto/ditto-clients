@@ -14,7 +14,7 @@ package org.eclipse.ditto.client.management;
 
 import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.json.JsonFactory;
@@ -26,8 +26,8 @@ import org.eclipse.ditto.json.JsonValue;
  * {@code ThingAttributeManagement} provides all functionality required for managing {@link
  * org.eclipse.ditto.model.things.Thing} attributes.
  * <p>
- * Note: All methods returning a {@link CompletableFuture} are executed non-blocking and asynchronously. Therefore,
- * these methods return a {@code CompletableFuture} object that will complete either successfully if the operation was
+ * Note: All methods returning a {@link CompletionStage} are executed non-blocking and asynchronously. Therefore,
+ * these methods return a {@code CompletionStage} object that will complete either successfully if the operation was
  * executed and confirmed, or exceptionally with a specific {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException}
  * if it was executed but has failed.
  *
@@ -43,11 +43,11 @@ public interface ThingAttributeManagement {
      * @param value the attribute value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    default CompletableFuture<Void> putAttribute(final CharSequence path, final boolean value,
+    default CompletionStage<Void> putAttribute(final CharSequence path, final boolean value,
             final Option<?>... options) {
         argumentNotNull(path);
         return putAttribute(JsonFactory.newPointer(path), value, options);
@@ -60,11 +60,11 @@ public interface ThingAttributeManagement {
      * @param value the attribute value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    CompletableFuture<Void> putAttribute(JsonPointer path, boolean value, Option<?>... options);
+    CompletionStage<Void> putAttribute(JsonPointer path, boolean value, Option<?>... options);
 
     /**
      * Sets the given attribute to the Thing.
@@ -74,11 +74,11 @@ public interface ThingAttributeManagement {
      * @param value the attribute value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    default CompletableFuture<Void> putAttribute(final CharSequence path, final double value,
+    default CompletionStage<Void> putAttribute(final CharSequence path, final double value,
             final Option<?>... options) {
         argumentNotNull(path);
         return putAttribute(JsonFactory.newPointer(path), value, options);
@@ -91,11 +91,11 @@ public interface ThingAttributeManagement {
      * @param value the attribute value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    CompletableFuture<Void> putAttribute(JsonPointer path, double value, Option<?>... options);
+    CompletionStage<Void> putAttribute(JsonPointer path, double value, Option<?>... options);
 
     /**
      * Sets the given attribute to the Thing.
@@ -105,11 +105,11 @@ public interface ThingAttributeManagement {
      * @param value the attribute value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    default CompletableFuture<Void> putAttribute(final CharSequence path, final int value, final Option<?>... options) {
+    default CompletionStage<Void> putAttribute(final CharSequence path, final int value, final Option<?>... options) {
         argumentNotNull(path);
         return putAttribute(JsonFactory.newPointer(path), value, options);
     }
@@ -121,11 +121,11 @@ public interface ThingAttributeManagement {
      * @param value the attribute value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    CompletableFuture<Void> putAttribute(JsonPointer path, int value, Option<?>... options);
+    CompletionStage<Void> putAttribute(JsonPointer path, int value, Option<?>... options);
 
     /**
      * Sets the given attribute to the Thing.
@@ -135,11 +135,11 @@ public interface ThingAttributeManagement {
      * @param value the attribute value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    default CompletableFuture<Void> putAttribute(final CharSequence path, final long value,
+    default CompletionStage<Void> putAttribute(final CharSequence path, final long value,
             final Option<?>... options) {
         argumentNotNull(path);
         return putAttribute(JsonFactory.newPointer(path), value, options);
@@ -152,11 +152,11 @@ public interface ThingAttributeManagement {
      * @param value the attribute value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    CompletableFuture<Void> putAttribute(JsonPointer path, long value, Option<?>... options);
+    CompletionStage<Void> putAttribute(JsonPointer path, long value, Option<?>... options);
 
     /**
      * Sets the given attribute to the Thing.
@@ -166,11 +166,11 @@ public interface ThingAttributeManagement {
      * @param value the attribute value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    default CompletableFuture<Void> putAttribute(final CharSequence path, final String value,
+    default CompletionStage<Void> putAttribute(final CharSequence path, final String value,
             final Option<?>... options) {
         argumentNotNull(path);
         return putAttribute(JsonFactory.newPointer(path), value, options);
@@ -183,11 +183,11 @@ public interface ThingAttributeManagement {
      * @param value the attribute value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    CompletableFuture<Void> putAttribute(JsonPointer path, String value, Option<?>... options);
+    CompletionStage<Void> putAttribute(JsonPointer path, String value, Option<?>... options);
 
     /**
      * Sets the given attribute to the Thing.
@@ -197,11 +197,11 @@ public interface ThingAttributeManagement {
      * @param value the attribute value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    default CompletableFuture<Void> putAttribute(final CharSequence path, final JsonValue value,
+    default CompletionStage<Void> putAttribute(final CharSequence path, final JsonValue value,
             final Option<?>... options) {
         argumentNotNull(path);
         return putAttribute(JsonFactory.newPointer(path), value, options);
@@ -214,11 +214,11 @@ public interface ThingAttributeManagement {
      * @param value the attribute value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if any argument is {@code null} or if {@code path} is empty.
      */
-    CompletableFuture<Void> putAttribute(JsonPointer path, JsonValue value, Option<?>... options);
+    CompletionStage<Void> putAttribute(JsonPointer path, JsonValue value, Option<?>... options);
 
     /**
      * Merge the given attribute to the Thing.
@@ -354,11 +354,11 @@ public interface ThingAttributeManagement {
      * @param value the attributes to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code value} is {@code null}
      */
-    CompletableFuture<Void> setAttributes(JsonObject value, Option<?>... options);
+    CompletionStage<Void> setAttributes(JsonObject value, Option<?>... options);
 
     /**
      * Merge the given attributes to this Thing.
@@ -380,11 +380,11 @@ public interface ThingAttributeManagement {
      * separator, e. g. {@code "address/city"}.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    default CompletableFuture<Void> deleteAttribute(final CharSequence path, final Option<?>... options) {
+    default CompletionStage<Void> deleteAttribute(final CharSequence path, final Option<?>... options) {
         argumentNotNull(path);
         return deleteAttribute(JsonFactory.newPointer(path), options);
     }
@@ -396,19 +396,19 @@ public interface ThingAttributeManagement {
      * separator, e. g. {@code "address/city"}.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    CompletableFuture<Void> deleteAttribute(JsonPointer path, Option<?>... options);
+    CompletionStage<Void> deleteAttribute(JsonPointer path, Option<?>... options);
 
     /**
      * Deletes all attributes of this thing.
      *
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      */
-    CompletableFuture<Void> deleteAttributes(Option<?>... options);
+    CompletionStage<Void> deleteAttributes(Option<?>... options);
 }

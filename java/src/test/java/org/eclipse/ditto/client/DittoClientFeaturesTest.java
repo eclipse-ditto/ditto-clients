@@ -148,7 +148,7 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
     @Test
     public void testRetrieveFeature() throws Exception {
         final CompletableFuture<Feature> featureFuture =
-                getManagement().forId(THING_ID).forFeature(FEATURE_ID).retrieve();
+                getManagement().forId(THING_ID).forFeature(FEATURE_ID).retrieve().toCompletableFuture();
         reply(RetrieveFeatureResponse.of(THING_ID, FEATURE, expectMsgClass(RetrieveFeature.class).getDittoHeaders()));
         final Feature retrievedFeature = featureFuture.get(1L, TimeUnit.SECONDS);
         assertThat(retrievedFeature).isEqualTo(FEATURE);

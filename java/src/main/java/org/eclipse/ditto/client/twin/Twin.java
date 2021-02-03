@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.twin;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.eclipse.ditto.client.management.CommonManagement;
 import org.eclipse.ditto.client.options.Option;
@@ -28,11 +28,11 @@ public interface Twin extends CommonManagement<TwinThingHandle, TwinFeatureHandl
     /**
      * Start consuming changes on this {@code twin()} channel.
      *
-     * @return a CompletableFuture that terminates when the start operation was successful.
+     * @return a CompletionStage that terminates when the start operation was successful.
      */
     @Override
     // overwritten in order to display a better suiting javadoc for the user
-    CompletableFuture<Void> startConsumption();
+    CompletionStage<Void> startConsumption();
 
     /**
      * Start consuming changes on this {@code twin()} channel with the passed {@code consumptionOptions}.
@@ -42,11 +42,11 @@ public interface Twin extends CommonManagement<TwinThingHandle, TwinFeatureHandl
      * <pre>{@code Options.Consumption.namespaces("org.eclipse.ditto.namespace1","org.eclipse.ditto.namespace2");
      * Options.Consumption.filter("gt(attributes/counter,42)");}
      * </pre>
-     * @return a CompletableFuture that terminates when the start operation was successful.
+     * @return a CompletionStage that terminates when the start operation was successful.
      */
     @Override
     // overwritten in order to display a better suiting javadoc for the user
-    CompletableFuture<Void> startConsumption(Option<?>... consumptionOptions);
+    CompletionStage<Void> startConsumption(Option<?>... consumptionOptions);
 
     /**
      * Retrieve the handle for search operations.

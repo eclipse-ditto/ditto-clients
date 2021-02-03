@@ -17,6 +17,7 @@ import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNu
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -126,7 +127,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
     }
 
     @Override
-    protected CompletableFuture<Void> doStartConsumption(final Map<String, String> consumptionConfig) {
+    protected CompletionStage<Void> doStartConsumption(final Map<String, String> consumptionConfig) {
         final CompletableFuture<Void> completableFutureEvents = new CompletableFuture<>();
         final CompletableFuture<Void> completableFutureMessages = new CompletableFuture<>();
         final CompletableFuture<Void> completableFutureLiveCommands = new CompletableFuture<>();
@@ -175,7 +176,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
     }
 
     @Override
-    public CompletableFuture<Void> suspendConsumption() {
+    public CompletionStage<Void> suspendConsumption() {
         return CompletableFuture.allOf(
                 subscriptionIds.entrySet()
                         .stream()

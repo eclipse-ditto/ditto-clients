@@ -14,7 +14,7 @@ package org.eclipse.ditto.client.management;
 
 import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.json.JsonFactory;
@@ -41,11 +41,11 @@ public interface FeaturePropertiesManagement {
      * @param value the value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    default CompletableFuture<Void> putProperty(final CharSequence path, final boolean value,
+    default CompletionStage<Void> putProperty(final CharSequence path, final boolean value,
             final Option<?>... options) {
         argumentNotNull(path);
         return putProperty(JsonFactory.newPointer(path), value, options);
@@ -58,11 +58,11 @@ public interface FeaturePropertiesManagement {
      * @param value the value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    CompletableFuture<Void> putProperty(JsonPointer path, boolean value, Option<?>... options);
+    CompletionStage<Void> putProperty(JsonPointer path, boolean value, Option<?>... options);
 
     /**
      * Sets the given property of the Feature.
@@ -72,11 +72,11 @@ public interface FeaturePropertiesManagement {
      * @param value the value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    default CompletableFuture<Void> putProperty(final CharSequence path, final double value,
+    default CompletionStage<Void> putProperty(final CharSequence path, final double value,
             final Option<?>... options) {
         argumentNotNull(path);
         return putProperty(JsonFactory.newPointer(path), value, options);
@@ -89,11 +89,11 @@ public interface FeaturePropertiesManagement {
      * @param value the value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    CompletableFuture<Void> putProperty(JsonPointer path, double value, Option<?>... options);
+    CompletionStage<Void> putProperty(JsonPointer path, double value, Option<?>... options);
 
     /**
      * Sets the given property of the Feature.
@@ -103,11 +103,11 @@ public interface FeaturePropertiesManagement {
      * @param value the value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    default CompletableFuture<Void> putProperty(final CharSequence path, final int value, final Option<?>... options) {
+    default CompletionStage<Void> putProperty(final CharSequence path, final int value, final Option<?>... options) {
         argumentNotNull(path);
         return putProperty(JsonFactory.newPointer(path), value, options);
     }
@@ -119,11 +119,11 @@ public interface FeaturePropertiesManagement {
      * @param value the value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    CompletableFuture<Void> putProperty(JsonPointer path, int value, Option<?>... options);
+    CompletionStage<Void> putProperty(JsonPointer path, int value, Option<?>... options);
 
     /**
      * Sets the given property of the Feature.
@@ -133,11 +133,11 @@ public interface FeaturePropertiesManagement {
      * @param value the value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    default CompletableFuture<Void> putProperty(final CharSequence path, final long value, final Option<?>... options) {
+    default CompletionStage<Void> putProperty(final CharSequence path, final long value, final Option<?>... options) {
         argumentNotNull(path);
         return putProperty(JsonFactory.newPointer(path), value, options);
     }
@@ -149,11 +149,11 @@ public interface FeaturePropertiesManagement {
      * @param value the value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    CompletableFuture<Void> putProperty(JsonPointer path, long value, Option<?>... options);
+    CompletionStage<Void> putProperty(JsonPointer path, long value, Option<?>... options);
 
     /**
      * Sets the given property of the Feature.
@@ -163,11 +163,11 @@ public interface FeaturePropertiesManagement {
      * @param value the value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    default CompletableFuture<Void> putProperty(final CharSequence path, final String value,
+    default CompletionStage<Void> putProperty(final CharSequence path, final String value,
             final Option<?>... options) {
         argumentNotNull(path);
         return putProperty(JsonFactory.newPointer(path), value, options);
@@ -180,11 +180,11 @@ public interface FeaturePropertiesManagement {
      * @param value the value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    CompletableFuture<Void> putProperty(JsonPointer path, String value, Option<?>... options);
+    CompletionStage<Void> putProperty(JsonPointer path, String value, Option<?>... options);
 
     /**
      * Sets the given property of the Feature.
@@ -194,11 +194,11 @@ public interface FeaturePropertiesManagement {
      * @param value the value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    default CompletableFuture<Void> putProperty(final CharSequence path, final JsonValue value,
+    default CompletionStage<Void> putProperty(final CharSequence path, final JsonValue value,
             final Option<?>... options) {
         argumentNotNull(path);
         return putProperty(JsonFactory.newPointer(path), value, options);
@@ -211,11 +211,11 @@ public interface FeaturePropertiesManagement {
      * @param value the value to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    CompletableFuture<Void> putProperty(JsonPointer path, JsonValue value, Option<?>... options);
+    CompletionStage<Void> putProperty(JsonPointer path, JsonValue value, Option<?>... options);
 
     /**
      * Merge the given property of the Feature.
@@ -354,10 +354,10 @@ public interface FeaturePropertiesManagement {
      * @param value the properties to be set.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      */
-    CompletableFuture<Void> setProperties(JsonObject value, Option<?>... options);
+    CompletionStage<Void> setProperties(JsonObject value, Option<?>... options);
 
     /**
      * Merge the given properties of the Feature.
@@ -377,11 +377,11 @@ public interface FeaturePropertiesManagement {
      * @param path the hierarchical path to the property to be deleted.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    default CompletableFuture<Void> deleteProperty(final CharSequence path, final Option<?>... options) {
+    default CompletionStage<Void> deleteProperty(final CharSequence path, final Option<?>... options) {
         argumentNotNull(path);
         return deleteProperty(JsonFactory.newPointer(path), options);
     }
@@ -392,20 +392,20 @@ public interface FeaturePropertiesManagement {
      * @param path the hierarchical path to the property to be deleted.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
-    CompletableFuture<Void> deleteProperty(JsonPointer path, Option<?>... options);
+    CompletionStage<Void> deleteProperty(JsonPointer path, Option<?>... options);
 
     /**
      * Deletes the properties of the Feature.
      *
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
+     * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      */
-    CompletableFuture<Void> deleteProperties(Option<?>... options);
+    CompletionStage<Void> deleteProperties(Option<?>... options);
 
 }

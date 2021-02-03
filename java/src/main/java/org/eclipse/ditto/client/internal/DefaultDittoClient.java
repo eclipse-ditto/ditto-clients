@@ -14,7 +14,6 @@ package org.eclipse.ditto.client.internal;
 
 import java.text.MessageFormat;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
@@ -151,7 +150,7 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
     }
 
     @Override
-    public CompletableFuture<Adaptable> sendDittoProtocol(final Adaptable dittoProtocolAdaptable) {
+    public CompletionStage<Adaptable> sendDittoProtocol(final Adaptable dittoProtocolAdaptable) {
 
         final TopicPath.Group group = dittoProtocolAdaptable.getTopicPath().getGroup();
         switch (group) {
@@ -164,7 +163,7 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
         }
     }
 
-    private CompletableFuture<Adaptable> sendDittoProtocolForThingsGroup(final Adaptable dittoProtocolAdaptable) {
+    private CompletionStage<Adaptable> sendDittoProtocolForThingsGroup(final Adaptable dittoProtocolAdaptable) {
         final TopicPath.Channel channel = dittoProtocolAdaptable.getTopicPath().getChannel();
         switch (channel) {
             case TWIN:
@@ -176,7 +175,7 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
         }
     }
 
-    private CompletableFuture<Adaptable> sendDittoProtocolForPoliciesGroup(final Adaptable dittoProtocolAdaptable) {
+    private CompletionStage<Adaptable> sendDittoProtocolForPoliciesGroup(final Adaptable dittoProtocolAdaptable) {
         final TopicPath.Channel channel = dittoProtocolAdaptable.getTopicPath().getChannel();
         if (TopicPath.Channel.NONE.equals(channel)) {
             return policies.getMessagingProvider().sendAdaptable(dittoProtocolAdaptable);

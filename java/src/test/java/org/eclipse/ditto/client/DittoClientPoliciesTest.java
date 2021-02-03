@@ -68,7 +68,8 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
 
     @Test
     public void testCreatePolicy() throws Exception {
-        final CompletableFuture<Policy> policyCompletableFuture = client.policies().create(POLICY);
+        final CompletableFuture<Policy> policyCompletableFuture =
+                client.policies().create(POLICY).toCompletableFuture();
         final CreatePolicy command = expectMsgClass(CreatePolicy.class);
         reply(CreatePolicyResponse.of(command.getEntityId(), command.getPolicy(), command.getDittoHeaders()));
         policyCompletableFuture.get(TIMEOUT, TIME_UNIT);
@@ -77,7 +78,8 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
 
     @Test
     public void testCreatePolicyJsonObject() throws Exception {
-        final CompletableFuture<Policy> policyCompletableFuture = client.policies().create(POLICY_JSON_OBJECT);
+        final CompletableFuture<Policy> policyCompletableFuture =
+                client.policies().create(POLICY_JSON_OBJECT).toCompletableFuture();
         final CreatePolicy command = expectMsgClass(CreatePolicy.class);
         reply(CreatePolicyResponse.of(command.getEntityId(), command.getPolicy(), command.getDittoHeaders()));
         policyCompletableFuture.get(TIMEOUT, TIME_UNIT);
@@ -89,6 +91,7 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> client.policies()
                         .create(POLICY, Options.Modify.exists(false))
+                        .toCompletableFuture()
                         .get(TIMEOUT, TIME_UNIT));
     }
 
@@ -101,11 +104,12 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
                         c -> CreatePolicyResponse.of(POLICY_ID, POLICY, c.getDittoHeaders())
                 ));
 
-        final CompletableFuture<Optional<Policy>> createdResponse = client.policies().put(POLICY_JSON_OBJECT);
+        final CompletableFuture<Optional<Policy>> createdResponse =
+                client.policies().put(POLICY_JSON_OBJECT).toCompletableFuture();
         final CompletableFuture<Optional<Policy>> modifiedResponse =
-                client.policies().put(POLICY_JSON_OBJECT, Options.Modify.exists(true));
+                client.policies().put(POLICY_JSON_OBJECT, Options.Modify.exists(true)).toCompletableFuture();
         final CompletableFuture<Optional<Policy>> createdResponse2 =
-                client.policies().put(POLICY_JSON_OBJECT, Options.Modify.exists(false));
+                client.policies().put(POLICY_JSON_OBJECT, Options.Modify.exists(false)).toCompletableFuture();
         final List<PolicyCommand<?>> commands = Arrays.asList(
                 expectMsgClass(ModifyPolicy.class),
                 expectMsgClass(ModifyPolicy.class),
@@ -131,11 +135,11 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
                         c -> ModifyPolicyResponse.created(POLICY_ID, POLICY, c.getDittoHeaders())
                 ));
 
-        final CompletableFuture<Optional<Policy>> createdResponse = client.policies().put(POLICY);
+        final CompletableFuture<Optional<Policy>> createdResponse = client.policies().put(POLICY).toCompletableFuture();
         final CompletableFuture<Optional<Policy>> modifiedResponse =
-                client.policies().put(POLICY, Options.Modify.exists(true));
+                client.policies().put(POLICY, Options.Modify.exists(true)).toCompletableFuture();
         final CompletableFuture<Optional<Policy>> createdResponse2 =
-                client.policies().put(POLICY, Options.Modify.exists(false));
+                client.policies().put(POLICY, Options.Modify.exists(false)).toCompletableFuture();
         final List<PolicyCommand<?>> commands = Arrays.asList(
                 expectMsgClass(ModifyPolicy.class),
                 expectMsgClass(ModifyPolicy.class),
@@ -161,7 +165,10 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
     @Test
     public void updatePolicyFailsWithExistsOption() {
         assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() ->
-                client.policies().update(POLICY, Options.Modify.exists(false)).get(TIMEOUT, TIME_UNIT)
+                client.policies()
+                        .update(POLICY, Options.Modify.exists(false))
+                        .toCompletableFuture()
+                        .get(TIMEOUT, TIME_UNIT)
         );
     }
 
@@ -176,12 +183,15 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> client.policies()
                         .delete(POLICY_ID, Options.Modify.exists(false))
+                        .toCompletableFuture()
                         .get(TIMEOUT, TIME_UNIT));
     }
 
     @Test
     public void testRetrievePolicy() throws Exception {
-        final CompletableFuture<Policy> retrievePolicyResponse = client.policies().retrieve(POLICY_ID);
+        final CompletableFuture<Policy> retrievePolicyResponse = client.policies()
+                .retrieve(POLICY_ID)
+                .toCompletableFuture();
         reply(RetrievePolicyResponse.of(POLICY_ID, POLICY, expectMsgClass(RetrievePolicy.class).getDittoHeaders()));
         retrievePolicyResponse.get(TIMEOUT, TIME_UNIT);
         Assertions.assertThat(retrievePolicyResponse).isCompletedWithValue(POLICY);

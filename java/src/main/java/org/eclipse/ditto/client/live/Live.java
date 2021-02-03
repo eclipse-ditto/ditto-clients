@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.live;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.eclipse.ditto.client.live.commands.FeaturePropertiesCommandHandling;
 import org.eclipse.ditto.client.live.commands.FeaturesCommandHandling;
@@ -60,11 +60,11 @@ public interface Live extends CommonManagement<LiveThingHandle, LiveFeatureHandl
     /**
      * Start consuming changes, messages and commands on this {@code live()} channel.
      *
-     * @return a CompletableFuture that terminates when the start operation was successful.
+     * @return a CompletionStage that terminates when the start operation was successful.
      */
     @Override
     // overwritten in order to display a better suiting javadoc for the user
-    CompletableFuture<Void> startConsumption();
+    CompletionStage<Void> startConsumption();
 
     /**
      * Start consuming changes, messages and commands on this {@code live()} channel with the passed {@code
@@ -75,10 +75,10 @@ public interface Live extends CommonManagement<LiveThingHandle, LiveFeatureHandl
      * <pre>{@code Options.Consumption.namespaces("org.eclipse.ditto.namespace1","org.eclipse.ditto.namespace2");
      * Options.Consumption.filter("gt(attributes/counter,42)");}
      * </pre>
-     * @return a CompletableFuture that terminates when the start operation was successful.
+     * @return a CompletionStage that terminates when the start operation was successful.
      */
     @Override
     // overwritten in order to display a better suiting javadoc for the user
-    CompletableFuture<Void> startConsumption(Option<?>... consumptionOptions);
+    CompletionStage<Void> startConsumption(Option<?>... consumptionOptions);
 
 }
