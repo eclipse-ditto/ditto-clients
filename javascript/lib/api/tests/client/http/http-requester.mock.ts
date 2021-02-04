@@ -28,6 +28,7 @@ export class TestRequester implements HttpRequester {
       }
       this.requests.forEach((response, request) => {
         if (this.matches(method, url, header, body, request)) {
+          this.requests.delete(request);
           resolve(response);
         }
       });

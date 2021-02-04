@@ -89,7 +89,7 @@ describe('Http Features Handle', () => {
     });
   });
 
-  it('updates a Feature', () => {
+  it('creates a Feature', () => {
     return H.test({
       toTest: () => handle.putFeature(H.feature),
       testBody: H.feature.toObject(),
@@ -97,6 +97,18 @@ describe('Http Features Handle', () => {
       request: `${baseRequest}/${H.feature.id}`,
       method: 'put',
       status: 201,
+      payload: H.feature.toJson()
+    });
+  });
+
+  it('updates a Feature', () => {
+    return H.test({
+      toTest: () => handle.putFeature(H.feature),
+      testBody: H.feature.toObject(),
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/${H.feature.id}`,
+      method: 'put',
+      status: 204,
       payload: H.feature.toJson()
     });
   });

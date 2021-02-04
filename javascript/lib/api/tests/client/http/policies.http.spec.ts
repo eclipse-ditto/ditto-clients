@@ -123,7 +123,7 @@ describe('Http Policies Handle', () => {
     });
   });
 
-  it('puts a Policy', () => {
+  it('creates a Policy', () => {
     return H.test({
       toTest: () => handle.putPolicy(policy),
       testBody: policy.toObject(),
@@ -132,6 +132,30 @@ describe('Http Policies Handle', () => {
       method: 'put',
       status: 201,
       payload: policy.toJson()
+    });
+  });
+
+  it('updates a Policy', () => {
+    return H.test({
+      toTest: () => handle.putPolicy(policy),
+      testBody: policy.toObject(),
+      expected: new PutResponse(null, 204, undefined),
+      request: baseRequest,
+      method: 'put',
+      status: 204,
+      payload: policy.toJson()
+    });
+  });
+
+  it('creates Entries', () => {
+    return H.test({
+      toTest: () => handle.putEntries(policy.id, entries),
+      testBody: Entries.toObject(entries),
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/entries`,
+      method: 'put',
+      status: 204,
+      payload: Entries.toJson(entries)
     });
   });
 
@@ -147,7 +171,7 @@ describe('Http Policies Handle', () => {
     });
   });
 
-  it('updates an Entry', () => {
+  it('creates an Entry', () => {
     return H.test({
       toTest: () => handle.putEntry(policy.id, anEntry),
       testBody: anEntry.toObject(),
@@ -159,7 +183,19 @@ describe('Http Policies Handle', () => {
     });
   });
 
-  it('updates Subjects', () => {
+  it('updates an Entry', () => {
+    return H.test({
+      toTest: () => handle.putEntry(policy.id, anEntry),
+      testBody: anEntry.toObject(),
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/entries/${label}`,
+      method: 'put',
+      status: 204,
+      payload: anEntry.toJson()
+    });
+  });
+
+  it('creates Subjects', () => {
     return H.test({
       toTest: () => handle.putSubjects(policy.id, label, subjects),
       testBody: Subjects.toObject(subjects),
@@ -171,7 +207,19 @@ describe('Http Policies Handle', () => {
     });
   });
 
-  it('updates a Subject', () => {
+  it('updates Subjects', () => {
+    return H.test({
+      toTest: () => handle.putSubjects(policy.id, label, subjects),
+      testBody: Subjects.toObject(subjects),
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/entries/${label}/subjects`,
+      method: 'put',
+      status: 204,
+      payload: Subjects.toJson(subjects)
+    });
+  });
+
+  it('creates a Subject', () => {
     return H.test({
       toTest: () => handle.putSubject(policy.id, label, aSubject),
       testBody: aSubject.toObject(),
@@ -183,7 +231,19 @@ describe('Http Policies Handle', () => {
     });
   });
 
-  it('updates Resources', () => {
+  it('updates a Subject', () => {
+    return H.test({
+      toTest: () => handle.putSubject(policy.id, label, aSubject),
+      testBody: aSubject.toObject(),
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/entries/${label}/subjects/${subjectId}`,
+      method: 'put',
+      status: 204,
+      payload: aSubject.toJson()
+    });
+  });
+
+  it('creates Resources', () => {
     return H.test({
       toTest: () => handle.putResources(policy.id, label, resources),
       testBody: Resources.toObject(resources),
@@ -195,7 +255,19 @@ describe('Http Policies Handle', () => {
     });
   });
 
-  it('updates a Resource', () => {
+  it('updates Resources', () => {
+    return H.test({
+      toTest: () => handle.putResources(policy.id, label, resources),
+      testBody: Resources.toObject(resources),
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/entries/${label}/resources`,
+      method: 'put',
+      status: 204,
+      payload: Resources.toJson(resources)
+    });
+  });
+
+  it('creates a Resource', () => {
     return H.test({
       toTest: () => handle.putResource(policy.id, label, aResource),
       testBody: aResource.toObject(),
@@ -203,6 +275,18 @@ describe('Http Policies Handle', () => {
       request: `${baseRequest}/entries/${label}/resources/${resourcePath}`,
       method: 'put',
       status: 201,
+      payload: aResource.toJson()
+    });
+  });
+
+  it('updates a Resource', () => {
+    return H.test({
+      toTest: () => handle.putResource(policy.id, label, aResource),
+      testBody: aResource.toObject(),
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/entries/${label}/resources/${resourcePath}`,
+      method: 'put',
+      status: 204,
       payload: aResource.toJson()
     });
   });
