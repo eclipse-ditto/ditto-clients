@@ -94,7 +94,7 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Policy if provided by the response
    */
-  putPolicy(policy: Policy, options?: MatchOptions): Promise<PutResponse<Policy> | GenericResponse>;
+  putPolicy(policy: Policy, options?: MatchOptions): Promise<PutResponse<Policy>>;
 
   /**
    * Adds or updates the Entries of a Policy.
@@ -104,7 +104,7 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise a response containing the new Entries if provided by the response
    */
-  putEntries(policyId: string, entries: Entries, options?: MatchOptions): Promise<GenericResponse>;
+  putEntries(policyId: string, entries: Entries, options?: MatchOptions): Promise<PutResponse<Entries>>;
 
   /**
    * Adds or updates an Entry of a Policy.
@@ -114,7 +114,7 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Entry if provided by the response
    */
-  putEntry(policyId: string, entry: Entry, options?: MatchOptions): Promise<PutResponse<Entry> | GenericResponse>;
+  putEntry(policyId: string, entry: Entry, options?: MatchOptions): Promise<PutResponse<Entry>>;
 
   /**
    * Adds or updates the Subjects of an Entry.
@@ -125,7 +125,7 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Subjects if provided by the response
    */
-  putSubjects(policyId: string, label: string, subjects: Subjects, options?: MatchOptions): Promise<GenericResponse>;
+  putSubjects(policyId: string, label: string, subjects: Subjects, options?: MatchOptions): Promise<PutResponse<Subjects>>;
 
   /**
    * Adds or updates a Subject of an Entry.
@@ -136,7 +136,7 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Subject if provided by the response
    */
-  putSubject(policyId: string, label: string, subject: Subject, options?: MatchOptions): Promise<PutResponse<Subject> | GenericResponse>;
+  putSubject(policyId: string, label: string, subject: Subject, options?: MatchOptions): Promise<PutResponse<Subject>>;
 
   /**
    * Adds or updates the Resources of an Entry.
@@ -147,7 +147,7 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Resources if provided by the response
    */
-  putResources(policyId: string, label: string, resources: Resources, options?: MatchOptions): Promise<GenericResponse>;
+  putResources(policyId: string, label: string, resources: Resources, options?: MatchOptions): Promise<PutResponse<Resources>>;
 
   /**
    * Adds or updates a Resource of an Entry.
@@ -161,7 +161,7 @@ export interface PoliciesHandle {
   putResource(policyId: string,
               label: string,
               resource: Resource,
-              options?: MatchOptions): Promise<PutResponse<Resource> | GenericResponse>;
+              options?: MatchOptions): Promise<PutResponse<Resource>>;
 
   /**
    * Deletes a Policy.

@@ -154,12 +154,12 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
       ;
   }
 
-  public putThing(thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing> | GenericResponse> {
+  public putThing(thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>> {
     return this.changeThing('PUT', thing, options);
   }
 
   public createThing(thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>> {
-    return this.changeThing('create', thing, options) as Promise<PutResponse<Thing>>;
+    return this.changeThing('create', thing, options);
   }
 
   public putAttributes(thingId: string, attributes: object, options?: MatchOptions): Promise<PutResponse<object>> {
