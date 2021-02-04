@@ -241,7 +241,7 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
       verb: 'PUT',
       parser: String,
       id: thingId,
-      path: 'policyId',
+      path: 'definition',
       requestOptions: options,
       payload: definition
     });

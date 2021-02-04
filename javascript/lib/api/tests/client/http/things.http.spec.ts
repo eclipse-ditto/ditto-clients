@@ -137,8 +137,7 @@ describe('Http Things Handle', () => {
       expected: 'example:test:definition',
       request: `${baseRequest}/definition`,
       method: 'get',
-      status: 200,
-      api: 1
+      status: 200
     });
   });
 
