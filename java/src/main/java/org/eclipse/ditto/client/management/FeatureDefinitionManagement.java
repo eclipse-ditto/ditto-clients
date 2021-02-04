@@ -44,6 +44,19 @@ public interface FeatureDefinitionManagement {
     CompletableFuture<Void> setDefinition(FeatureDefinition definition, Option<?>... options);
 
     /**
+     * Merge the given definition to the Feature.
+     *
+     * @param definition the FeatureDefinition to be merged.
+     * @param options options to be applied configuring behaviour of this method, see {@link
+     * org.eclipse.ditto.client.options.Options}.
+     * @return a CompletableFuture providing the result of this operation or a specific {@link
+     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws NullPointerException if any argument is {@code null}.
+     * @since 2.0.0
+     */
+    CompletableFuture<Void> mergeDefinition(FeatureDefinition definition, Option<?>... options);
+
+    /**
      * Deletes the definition of the Feature.
      *
      * @param options options to be applied configuring behaviour of this method, see {@link

@@ -41,6 +41,7 @@ import org.eclipse.ditto.signals.commands.things.modify.DeleteFeature;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureDefinition;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperties;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperty;
+import org.eclipse.ditto.signals.commands.things.modify.MergeThing;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDefinition;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperties;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperty;
@@ -148,6 +149,14 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
     }
 
     @Override
+    public CompletableFuture<Void> mergeDefinition(final FeatureDefinition featureDefinition,
+            final Option<?>... options) {
+        final MergeThing command =
+                outgoingMessageFactory.mergeFeatureDefinition(thingId, featureId, featureDefinition, options);
+        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+    }
+
+    @Override
     public CompletableFuture<Void> deleteDefinition(final Option<?>... options) {
         final DeleteFeatureDefinition
                 command = outgoingMessageFactory.deleteFeatureDefinition(thingId, featureId, options);
@@ -195,9 +204,28 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
     }
 
     @Override
+    public CompletableFuture<Void> mergeProperty(final JsonPointer path, final JsonValue value,
+            final Option<?>... options) {
+
+        argumentNotNull(path, "Path");
+        checkArgument(path, p -> !p.isEmpty(), () -> "The path is not allowed to be empty! " +
+                "If you want to update the whole properties object, please use the FeatureHandleImpl.mergeProperties method.");
+
+        final MergeThing command =
+                outgoingMessageFactory.mergeFeatureProperty(thingId, featureId, path, value, options);
+        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+    }
+
+    @Override
     public CompletableFuture<Void> setProperties(final JsonObject value, final Option<?>... options) {
         final ModifyFeatureProperties
                 command = outgoingMessageFactory.setFeatureProperties(thingId, featureId, value, options);
+        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+    }
+
+    @Override
+    public CompletableFuture<Void> mergeProperties(final JsonObject value, final Option<?>... options) {
+        final MergeThing command = outgoingMessageFactory.mergeFeatureProperties(thingId, featureId, value, options);
         return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
     }
 

@@ -18,6 +18,7 @@ import org.eclipse.ditto.client.live.LiveCommandProcessor;
 import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.signals.commands.live.modify.DeleteFeaturePropertiesLiveCommand;
 import org.eclipse.ditto.signals.commands.live.modify.DeleteFeaturePropertyLiveCommand;
+import org.eclipse.ditto.signals.commands.live.modify.MergeThingLiveCommand;
 import org.eclipse.ditto.signals.commands.live.modify.ModifyFeaturePropertiesLiveCommand;
 import org.eclipse.ditto.signals.commands.live.modify.ModifyFeaturePropertyLiveCommand;
 import org.eclipse.ditto.signals.commands.live.query.RetrieveFeaturePropertiesLiveCommand;
@@ -94,8 +95,23 @@ public interface FeaturePropertiesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperty
-     * ModifyFeatureProperty} commands.
+     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.MergeThing
+     * MergeThing} commands for changes on feature properties level.
+     *
+     * @param handler the handler to receive the commands
+     * @throws NullPointerException if {@code handler} is {@code null}
+     * @throws IllegalStateException if there is already a handler registered. Stop the registered handler before
+     * calling this method
+     * @see #stopHandlingModifyFeaturePropertyCommands()
+     */
+    default void handleMergeFeaturePropertyCommands(
+            final Function<MergeThingLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(MergeThingLiveCommand.class, handler));
+    }
+
+    /**
+     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.MergeThing
+     * MergeThing} commands.
      */
     default void stopHandlingModifyFeaturePropertyCommands() {
         unregister(ModifyFeaturePropertyLiveCommand.class);
