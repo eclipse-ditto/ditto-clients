@@ -235,7 +235,9 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
                 });
 
         final SendThingMessage<?> command = expectMsgClass(SendThingMessage.class);
-        final SendThingMessageResponse<?> response = SendThingMessageResponse.of(command.getEntityId(), command.getMessage(), HttpStatus.OK, command.getDittoHeaders());
+        final SendThingMessageResponse<?> response =
+                SendThingMessageResponse.of(command.getEntityId(), command.getMessage(), HttpStatus.OK,
+                        command.getDittoHeaders());
         final Acknowledgement liveResponseAck = Acknowledgement.of(
                 LIVE_RESPONSE,
                 response.getEntityId(),
@@ -399,9 +401,11 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
         client.live().register(LiveCommandHandler.withAcks(
                 CreateThingLiveCommand.class,
                 acknowledgeable -> {
-                    acknowledgeable.handleAcknowledgementRequests(handles -> handles.forEach(handle -> handle.acknowledge(
-                            HttpStatus.tryGetInstance(Integer.parseInt(handle.getAcknowledgementLabel().toString()))
-                                    .orElse(HttpStatus.EXPECTATION_FAILED))));
+                    acknowledgeable.handleAcknowledgementRequests(
+                            handles -> handles.forEach(handle -> handle.acknowledge(
+                                    HttpStatus.tryGetInstance(
+                                            Integer.parseInt(handle.getAcknowledgementLabel().toString()))
+                                            .orElse(HttpStatus.EXPECTATION_FAILED))));
                     return acknowledgeable.answer().withoutResponse().withoutEvent();
                 }
         ));
