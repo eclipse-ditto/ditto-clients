@@ -37,7 +37,7 @@ const thingObj = {
   _revision: 0,
   _modified: '08042019',
   acl: aclObj,
-  _definition: 'example:test:definition'
+  definition: 'example:test:definition'
 };
 const responseObj = { items: [thingObj], nextPageOffset: 0 };
 
