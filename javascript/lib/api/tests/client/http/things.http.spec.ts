@@ -130,6 +130,18 @@ describe('Http Things Handle', () => {
     });
   });
 
+  it('gets the definition', () => {
+    return H.test({
+      toTest: () => handleV2.getDefinition(H.thing.thingId),
+      testBody: 'example:test:definition',
+      expected: 'example:test:definition',
+      request: `${baseRequest}/definition`,
+      method: 'get',
+      status: 200,
+      api: 1
+    });
+  });
+
   it('posts a Thing', () => {
     const thing = H.thing.toObject();
     // @ts-ignore
@@ -267,6 +279,18 @@ describe('Http Things Handle', () => {
     });
   });
 
+  it('updates the definition', () => {
+    return H.test({
+      toTest: () => handleV2.putDefinition(H.thing.thingId, 'example:test:definition'),
+      testBody: 'example:test:definition',
+      expected: new PutResponse('example:test:definition', 201, undefined),
+      request: `${baseRequest}/definition`,
+      method: 'put',
+      status: 201,
+      payload: JSON.stringify('example:test:definition')
+    });
+  });
+
   it('deletes a Thing', () => {
     return H.test({
       toTest: () => handleV2.deleteThing(H.thing.thingId),
@@ -299,6 +323,15 @@ describe('Http Things Handle', () => {
     return H.test({
       toTest: () => handleV2.deleteAttribute(H.thing.thingId, H.attributePath),
       request: `${baseRequest}/attributes/${H.attributePath}`,
+      method: 'delete',
+      status: 204
+    });
+  });
+
+  it('deletes the definition', () => {
+    return H.test({
+      toTest: () => handleV2.deleteDefinition(H.thing.thingId),
+      request: `${baseRequest}/definition`,
       method: 'delete',
       status: 204
     });

@@ -37,7 +37,7 @@ const thingObj = {
   _revision: 0,
   _modified: '08042019',
   acl: aclObj,
-  _definition: 'org.eclipse.ditto:Testthing:0.0.1'
+  _definition: 'example:test:definition'
 };
 const responseObj = { items: [thingObj], nextPageOffset: 0 };
 
@@ -48,7 +48,7 @@ const features = typedFeatureObject;
 const anAclEntry = new AclEntry('ID', true, true, true);
 const anotherAclEntry = new AclEntry('AnotherID', false, false, false);
 const acl = { ID: anAclEntry, AnotherID: anotherAclEntry };
-const thing = new Thing('Testspace:Testthing', 'PolicyId', attributes, features, 0, '08042019', acl, 'org.eclipse.ditto:Testthing:0.0.1');
+const thing = new Thing('Testspace:Testthing', 'PolicyId', attributes, features, 0, '08042019', acl, 'example:test:definition');
 const response = new SearchThingsResponse([thing], 0);
 
 describe('Feature', () => {
@@ -138,7 +138,7 @@ describe('Thing', () => {
     expect(thing._revision).toEqual(0);
     expect(thing.name).toEqual('Testthing');
     expect(thing.acl).toEqual(acl);
-    expect(thing.definition).toEqual('org.eclipse.ditto:Testthing:0.0.1');
+    expect(thing.definition).toEqual('example:test:definition');
   });
   it('handles a minimal thing', () => {
     const minimalThing = new Thing('Tespspace:Minimal');

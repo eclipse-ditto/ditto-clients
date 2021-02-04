@@ -95,6 +95,16 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
     });
   }
 
+  public getDefinition(thingId: string, options?: MatchOptions): Promise<string> {
+    return this.requestFactory.fetchJsonRequest({
+      verb: 'GET',
+      parser: String,
+      id: thingId,
+      path: 'definition',
+      requestOptions: options
+    });
+  }
+
   public deleteThing(thingId: string, options?: MatchOptions): Promise<GenericResponse> {
     return this.requestFactory.fetchRequest({
       verb: 'DELETE',
@@ -130,6 +140,14 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
     });
   }
 
+  public deleteDefinition(thingId: string, options?: MatchOptions): Promise<GenericResponse> {
+    return this.requestFactory.fetchRequest({
+      verb: 'DELETE',
+      id: thingId,
+      path: 'definition',
+      requestOptions: options
+    });
+  }
 
   public getThings(thingIds: string[], options?: GetThingsOptions): Promise<Thing[]> {
     let actualOptions: GetThingsOptions;
@@ -215,6 +233,17 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
       path: `acl/${aclEntry.id}`,
       requestOptions: options,
       payload: aclEntry.toObject()
+    });
+  }
+
+  public putDefinition(thingId: string, definition: string, options?: MatchOptions): Promise<PutResponse<string>> {
+    return this.requestFactory.fetchPutRequest({
+      verb: 'PUT',
+      parser: String,
+      id: thingId,
+      path: 'policyId',
+      requestOptions: options,
+      payload: definition
     });
   }
 
