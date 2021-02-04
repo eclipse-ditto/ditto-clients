@@ -355,7 +355,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Policy if provided by the response
    */
-  putPolicy(policy: Policy, options?: MatchOptions): Promise<PutResponse<Policy> | GenericResponse> {
+  putPolicy(policy: Policy, options?: MatchOptions): Promise<PutResponse<Policy>> {
     return this.requestFactory.fetchPutRequest({
       verb: 'PUT',
       parser: o => Policy.fromObject(o, policy.id),
@@ -373,7 +373,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise a response containing the new Entries if provided by the response
    */
-  putEntries(policyId: string, entries: Entries, options?: MatchOptions): Promise<GenericResponse> {
+  putEntries(policyId: string, entries: Entries, options?: MatchOptions): Promise<PutResponse<Entries>> {
     return this.requestFactory.fetchPutRequest({
       verb: 'PUT',
       parser: Entries.fromObject,
@@ -392,7 +392,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Entry if provided by the response
    */
-  putEntry(policyId: string, entry: Entry, options?: MatchOptions): Promise<PutResponse<Entry> | GenericResponse> {
+  putEntry(policyId: string, entry: Entry, options?: MatchOptions): Promise<PutResponse<Entry>> {
     return this.requestFactory.fetchPutRequest({
       verb: 'PUT',
       parser: o => Entry.fromObject(o, entry.id),
@@ -412,7 +412,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Subjects if provided by the response
    */
-  putSubjects(policyId: string, label: string, subjects: Subjects, options?: MatchOptions): Promise<GenericResponse> {
+  putSubjects(policyId: string, label: string, subjects: Subjects, options?: MatchOptions): Promise<PutResponse<Subjects>> {
     return this.requestFactory.fetchPutRequest({
       verb: 'PUT',
       parser: Subjects.fromObject,
@@ -432,7 +432,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Subject if provided by the response
    */
-  putSubject(policyId: string, label: string, subject: Subject, options?: MatchOptions): Promise<PutResponse<Subject> | GenericResponse> {
+  putSubject(policyId: string, label: string, subject: Subject, options?: MatchOptions): Promise<PutResponse<Subject>> {
     return this.requestFactory.fetchPutRequest({
       verb: 'PUT',
       parser: o => Subject.fromObject(o, subject.id),
@@ -452,7 +452,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Resources if provided by the response
    */
-  putResources(policyId: string, label: string, resources: Resources, options?: MatchOptions): Promise<GenericResponse> {
+  putResources(policyId: string, label: string, resources: Resources, options?: MatchOptions): Promise<PutResponse<Resources>> {
     return this.requestFactory.fetchPutRequest({
       verb: 'PUT',
       parser: Resources.fromObject,
@@ -475,7 +475,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
   putResource(policyId: string,
               label: string,
               resource: Resource,
-              options?: MatchOptions): Promise<PutResponse<Resource> | GenericResponse> {
+              options?: MatchOptions): Promise<PutResponse<Resource>> {
     return this.requestFactory.fetchPutRequest({
       verb: 'PUT',
       parser: o => Resource.fromObject(o, resource.id),

@@ -162,7 +162,7 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
     return this.changeThing('create', thing, options) as Promise<PutResponse<Thing>>;
   }
 
-  public putAttributes(thingId: string, attributes: object, options?: MatchOptions): Promise<PutResponse<object> | GenericResponse> {
+  public putAttributes(thingId: string, attributes: object, options?: MatchOptions): Promise<PutResponse<object>> {
     return this.requestFactory.fetchPutRequest({
       verb: 'PUT',
       parser: o => o,
@@ -184,7 +184,7 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
     });
   }
 
-  public putPolicyId(thingId: string, policyId: string, options?: MatchOptions): Promise<PutResponse<string> | GenericResponse> {
+  public putPolicyId(thingId: string, policyId: string, options?: MatchOptions): Promise<PutResponse<string>> {
     return this.requestFactory.fetchPutRequest({
       verb: 'PUT',
       parser: String,
@@ -205,7 +205,7 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
     });
   }
 
-  public putAclEntry(thingId: string, aclEntry: AclEntry, options?: MatchOptions): Promise<PutResponse<AclEntry> | GenericResponse> {
+  public putAclEntry(thingId: string, aclEntry: AclEntry, options?: MatchOptions): Promise<PutResponse<AclEntry>> {
     return this.requestFactory.fetchPutRequest({
       verb: 'PUT',
       parser: o => AclEntry.fromObject(o, aclEntry.id),
@@ -216,7 +216,7 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
     });
   }
 
-  private changeThing(verb: string, thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing> | GenericResponse> {
+  private changeThing(verb: string, thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>> {
     return this.requestFactory.fetchPutRequest({
       verb,
       parser: Thing.fromObject,

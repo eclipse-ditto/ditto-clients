@@ -38,14 +38,14 @@ export abstract class RequestSender {
    * @param options - The options to use for the request.
    * @returns A Promise for the specified object
    */
-  public fetchPutRequest<T>(options: ParseRequest<T>): Promise<PutResponse<T> | GenericResponse> {
+  public fetchPutRequest<T>(options: ParseRequest<T>): Promise<PutResponse<T>> {
     return this.fetchRequest(options)
       .then(response => {
         if (response.status === 201) {
           return new PutResponse(options.parser(response.body), response.status, response.headers);
         }
         if (response.status === 204) {
-          return response;
+          return new PutResponse<T>(null, response.status, response.headers);
         }
         return Promise.reject(`Received unknown status code: ${response.status}`);
       });

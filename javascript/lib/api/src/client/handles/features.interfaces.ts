@@ -68,7 +68,7 @@ export interface FeaturesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Features if provided by the response
    */
-  putFeatures(features: Features, options?: MatchOptions): Promise<PutResponse<Features> | GenericResponse>;
+  putFeatures(features: Features, options?: MatchOptions): Promise<PutResponse<Features>>;
 
   /**
    * Adds or updates a Feature of this handle's Thing.
@@ -77,7 +77,7 @@ export interface FeaturesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the response
    */
-  putFeature(feature: Feature, options?: MatchOptions): Promise<GenericResponse>;
+  putFeature(feature: Feature, options?: MatchOptions): Promise<PutResponse<Feature>>;
 
   /**
    * Adds or updates the definition of the specified Feature.
@@ -87,7 +87,7 @@ export interface FeaturesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Definition if provided by the response
    */
-  putDefinition(featureId: string, definition: string[], options?: MatchOptions): Promise<PutResponse<string[]> | GenericResponse>;
+  putDefinition(featureId: string, definition: string[], options?: MatchOptions): Promise<PutResponse<string[]>>;
 
   /**
    * Adds or updates the properties of the specified Feature.
@@ -97,8 +97,7 @@ export interface FeaturesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the response
    */
-  putProperties(featureId: string, properties: object, options?: MatchOptions): Promise<GenericResponse>;
-
+  putProperties(featureId: string, properties: object, options?: MatchOptions): Promise<PutResponse<Object>>;
 
   /**
    * Adds or updates a Property of the specified Feature.
@@ -109,7 +108,7 @@ export interface FeaturesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Property if provided by the response
    */
-  putProperty(featureId: string, propertyPath: string, property: any, options?: MatchOptions): Promise<PutResponse<any> | GenericResponse>;
+  putProperty(featureId: string, propertyPath: string, property: any, options?: MatchOptions): Promise<PutResponse<any>>;
 
   /**
    * Deletes all Features of this handle's Thing.
