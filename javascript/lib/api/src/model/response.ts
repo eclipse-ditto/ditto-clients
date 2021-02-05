@@ -33,7 +33,7 @@ export class PutResponse<T> implements GenericResponse {
   }
 
   public wasCreated(): boolean {
-    return this.body !== undefined;
+    return this.body !== undefined && this.body !== null;
   }
 
   public wasUpdated(): boolean {

@@ -77,7 +77,7 @@ describe('Http Features Handle', () => {
     });
   });
 
-  it('updates Features', () => {
+  it('creates Features', () => {
     return H.test({
       toTest: () => handle.putFeatures(H.features),
       testBody: Features.toObject(H.features),
@@ -85,6 +85,18 @@ describe('Http Features Handle', () => {
       request: baseRequest,
       method: 'put',
       status: 201,
+      payload: Features.toJson(H.features)
+    });
+  });
+
+  it('updates Features', () => {
+    return H.test({
+      toTest: () => handle.putFeatures(H.features),
+      testBody: Features.toObject(H.features),
+      expected: new PutResponse(null, 204, undefined),
+      request: baseRequest,
+      method: 'put',
+      status: 204,
       payload: Features.toJson(H.features)
     });
   });
@@ -113,7 +125,7 @@ describe('Http Features Handle', () => {
     });
   });
 
-  it('updates a Definition', () => {
+  it('creates a Definition', () => {
     return H.test({
       toTest: () => handle.putDefinition(H.feature.id, H.definition),
       testBody: H.definition,
@@ -125,7 +137,19 @@ describe('Http Features Handle', () => {
     });
   });
 
-  it('updates Properties', () => {
+  it('updates a Definition', () => {
+    return H.test({
+      toTest: () => handle.putDefinition(H.feature.id, H.definition),
+      testBody: H.definition,
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/${H.feature.id}/definition`,
+      method: 'put',
+      status: 204,
+      payload: JSON.stringify(H.definition)
+    });
+  });
+
+  it('creates Properties', () => {
     return H.test({
       toTest: () => handle.putProperties(H.feature.id, H.properties),
       testBody: H.properties,
@@ -137,7 +161,19 @@ describe('Http Features Handle', () => {
     });
   });
 
-  it('updates a Property', () => {
+  it('updates Properties', () => {
+    return H.test({
+      toTest: () => handle.putProperties(H.feature.id, H.properties),
+      testBody: H.properties,
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/${H.feature.id}/properties`,
+      method: 'put',
+      status: 204,
+      payload: JSON.stringify(H.properties)
+    });
+  });
+
+  it('creates a Property', () => {
     return H.test({
       toTest: () => handle.putProperty(H.feature.id, H.propertyPath, H.property),
       testBody: H.property,
@@ -145,6 +181,18 @@ describe('Http Features Handle', () => {
       request: `${baseRequest}/${H.feature.id}/properties/${H.propertyPath}`,
       method: 'put',
       status: 201,
+      payload: JSON.stringify(H.property)
+    });
+  });
+
+  it('updates a Property', () => {
+    return H.test({
+      toTest: () => handle.putProperty(H.feature.id, H.propertyPath, H.property),
+      testBody: H.property,
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/${H.feature.id}/properties/${H.propertyPath}`,
+      method: 'put',
+      status: 204,
       payload: JSON.stringify(H.property)
     });
   });
