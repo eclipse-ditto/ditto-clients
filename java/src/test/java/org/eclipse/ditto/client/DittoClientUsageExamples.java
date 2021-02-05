@@ -82,8 +82,8 @@ public final class DittoClientUsageExamples {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DittoClientUsageExamples.class);
 
-    //    private static final String PROPERTIES_FILE = "ditto-client-starter-local.properties"; // for local development
-    private static final String PROPERTIES_FILE = "ditto-client-starter-aws-dev.properties";
+        private static final String PROPERTIES_FILE = "ditto-client-starter-local.properties"; // for local development
+//    private static final String PROPERTIES_FILE = "ditto-client-starter-sandbox.properties";
     private static final String PROXY_HOST;
     private static final String PROXY_PORT;
     private static final String DITTO_ENDPOINT_URL;
@@ -151,32 +151,32 @@ public final class DittoClientUsageExamples {
             useTwinCommandsAndEvents(client, client2);
             System.out.println("\n\nFinished with TWIN commands/events demo");
         }
-//
-//        if (shouldNotSkip("live.examples")) {
-//            client.live().startConsumption().get();
-//            client2.live().startConsumption().get();
-//
-//            System.out.println("\n\nAbout to continue with LIVE commands/events demo:");
-//            promptEnterKey();
-//
-//            useLiveCommands(client, client2);
-//            System.out.println("\n\nFinished with LIVE commands/events demo");
-//
-//            System.out.println("\n\nAbout to continue with LIVE messages demo:");
-//            promptEnterKey();
-//
-//            useLiveMessages(client, client2);
-//            System.out.println("\n\nFinished with LIVE messages demo");
-//            Thread.sleep(500);
-//        }
-//
-//        if (shouldNotSkip("search.examples")) {
-//            System.out.println("\n\nAbout to continue with search commands:");
-//            promptEnterKey();
-//            useSearchCommands(client);
-//            System.out.println("\n\nFinished with SEARCH commands demo");
-//            Thread.sleep(500);
-//        }
+
+        if (shouldNotSkip("live.examples")) {
+            client.live().startConsumption().get();
+            client2.live().startConsumption().get();
+
+            System.out.println("\n\nAbout to continue with LIVE commands/events demo:");
+            promptEnterKey();
+
+            useLiveCommands(client, client2);
+            System.out.println("\n\nFinished with LIVE commands/events demo");
+
+            System.out.println("\n\nAbout to continue with LIVE messages demo:");
+            promptEnterKey();
+
+            useLiveMessages(client, client2);
+            System.out.println("\n\nFinished with LIVE messages demo");
+            Thread.sleep(500);
+        }
+
+        if (shouldNotSkip("search.examples")) {
+            System.out.println("\n\nAbout to continue with search commands:");
+            promptEnterKey();
+            useSearchCommands(client);
+            System.out.println("\n\nFinished with SEARCH commands demo");
+            Thread.sleep(500);
+        }
 
         if (shouldNotSkip("load.test")) {
             System.out.println("\n\nAbout to continue with small load test:");
@@ -186,21 +186,21 @@ public final class DittoClientUsageExamples {
             final int loadTestCount = 500;
             subscribeForLoadTestUpdateChanges(client2, loadTestCount * loadTestThings, false);
             performLoadTestUpdate(client, loadTestCount, loadTestThings, Duration.ofMillis(20), true);
-//            performLoadTestRead(client, loadTestCount, true);
+            performLoadTestRead(client, loadTestCount, true);
             Thread.sleep(1000);
         }
 
-//        if (shouldNotSkip("policies.examples")) {
-//            System.out.println("\n\nAbout to continue with policy example:");
-//            promptEnterKey();
-//            addNewSubjectToExistingPolicy(client);
-//            System.out.println("\n\nFinished with policy example");
-//        }
+        if (shouldNotSkip("policies.examples")) {
+            System.out.println("\n\nAbout to continue with policy example:");
+            promptEnterKey();
+            addNewSubjectToExistingPolicy(client);
+            System.out.println("\n\nFinished with policy example");
+        }
 
-//        client.destroy();
-//        client2.destroy();
-//        System.out.println("\n\nDittoClientUsageExamples successfully completed!");
-//        System.exit(0);
+        client.destroy();
+        client2.destroy();
+        System.out.println("\n\nDittoClientUsageExamples successfully completed!");
+        System.exit(0);
     }
 
     private static void addNewSubjectToExistingPolicy(final DittoClient client)
