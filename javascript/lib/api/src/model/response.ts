@@ -27,20 +27,20 @@ export interface GenericResponse {
 }
 
 export class PutResponse<T> implements GenericResponse {
-  public constructor(private readonly _value: T,
+  public constructor(private readonly _value: T | null,
                      private readonly _status: number,
                      private readonly _headers: Map<string, string>) {
   }
 
   public wasCreated(): boolean {
-    return this.body !== undefined;
+    return this.body !== undefined && this.body !== null;
   }
 
   public wasUpdated(): boolean {
     return !this.wasCreated();
   }
 
-  get body(): T {
+  get body(): T | null {
     return this._value;
   }
 

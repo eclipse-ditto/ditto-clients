@@ -174,9 +174,10 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
   }
 
   public putAttribute(thingId: string, attributePath: string,
-                      attributeValue: any, options?: MatchOptions): Promise<GenericResponse> {
-    return this.requestFactory.fetchRequest({
+                      attributeValue: any, options?: MatchOptions): Promise<PutResponse<any>> {
+    return this.requestFactory.fetchPutRequest({
       verb: 'PUT',
+      parser: o => o,
       id: thingId,
       path: `attributes/${attributePath}`,
       requestOptions: options,
@@ -195,9 +196,10 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
     });
   }
 
-  public putAcl(thingId: string, acl: Acl, options?: MatchOptions): Promise<GenericResponse> {
-    return this.requestFactory.fetchRequest({
+  public putAcl(thingId: string, acl: Acl, options?: MatchOptions): Promise<PutResponse<Acl>> {
+    return this.requestFactory.fetchPutRequest({
       verb: 'PUT',
+      parser: o => Acl.fromObject(o),
       id: thingId,
       path: 'acl',
       requestOptions: options,
