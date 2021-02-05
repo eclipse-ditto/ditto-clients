@@ -196,6 +196,34 @@ export interface HttpThingsHandleV2 extends HttpThingsHandle {
    * @returns A Promise for the new PolicyId provided in the response
    */
   putPolicyId(thingId: string, policyId: string, options?: MatchOptions): Promise<PutResponse<string>>;
+
+  /**
+   * Gets the definition of a Thing.
+   *
+   * @param thingId - The ID of the Thing.
+   * @param options - Options to use for the request.
+   * @returns A Promise for the definition
+   */
+  getDefinition(thingId: string, options?: MatchOptions): Promise<string>;
+
+  /**
+   * Adds or updates the definition of a Thing.
+   *
+   * @param thingId - The ID of the Thing.
+   * @param definition - The new definition.
+   * @param options - Options to use for the request.
+   * @returns A Promise for the new definition provided in the response
+   */
+  putDefinition(thingId: string, definition: string, options?: MatchOptions): Promise<PutResponse<string>>;
+
+  /**
+   * Deletes the definition of a Thing.
+   *
+   * @param thingId - The ID of the Thing.
+   * @param options - Options to use for the request.
+   * @returns A Promise for the response
+   */
+  deleteDefinition(thingId: string, options?: MatchOptions): Promise<GenericResponse>;
 }
 
 export interface WebSocketThingsHandle extends ThingsHandle {
