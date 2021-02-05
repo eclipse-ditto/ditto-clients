@@ -5,6 +5,10 @@ All notable changes to the Ditto JavaScript client will be documented in this fi
 
 ### \#166 Refactor model structure: 
 Fixes #114: Refactor model structure to avoid "duplicated paths" like `features.features` for all entities inheriting from `IndexedEntityModel` and simplify type generics.
+
+### \#66 fix PUT request for existing thing
+Fixes #61: Ditto will return an empty body with status `204` for `PUT` requests on already existing things.
+This was not handled correctly by the client.
     
 
 ### Breaking changes
