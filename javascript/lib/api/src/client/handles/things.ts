@@ -66,13 +66,7 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
   }
 
   public getPolicyId(thingId: string, options?: MatchOptions): Promise<string> {
-    return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
-      parser: String,
-      id: thingId,
-      path: 'policyId',
-      requestOptions: options
-    });
+    return this.getStringAtPath(thingId, 'policyId', options);
   }
 
   public getAcl(thingId: string, options?: MatchOptions): Promise<Acl> {
@@ -96,13 +90,7 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
   }
 
   public getDefinition(thingId: string, options?: MatchOptions): Promise<string> {
-    return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
-      parser: String,
-      id: thingId,
-      path: 'definition',
-      requestOptions: options
-    });
+    return this.getStringAtPath(thingId, 'definition', options);
   }
 
   public deleteThing(thingId: string, options?: MatchOptions): Promise<GenericResponse> {
@@ -114,39 +102,19 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
   }
 
   public deleteAttributes(thingId: string, options?: MatchOptions): Promise<GenericResponse> {
-    return this.requestFactory.fetchRequest({
-      verb: 'DELETE',
-      id: thingId,
-      path: 'attributes',
-      requestOptions: options
-    });
+    return this.deleteItemAtPath(thingId, 'attributes', options);
   }
 
   public deleteAttribute(thingId: string, attributePath: string, options?: MatchOptions): Promise<GenericResponse> {
-    return this.requestFactory.fetchRequest({
-      verb: 'DELETE',
-      id: thingId,
-      path: `attributes/${attributePath}`,
-      requestOptions: options
-    });
+    return this.deleteItemAtPath(thingId, `attributes/${attributePath}`, options);
   }
 
   public deleteAclEntry(thingId: string, authorizationSubject: string, options?: MatchOptions): Promise<GenericResponse> {
-    return this.requestFactory.fetchRequest({
-      verb: 'DELETE',
-      id: thingId,
-      path: `acl/${authorizationSubject}`,
-      requestOptions: options
-    });
+    return this.deleteItemAtPath(thingId, `acl/${authorizationSubject}`, options);
   }
 
   public deleteDefinition(thingId: string, options?: MatchOptions): Promise<GenericResponse> {
-    return this.requestFactory.fetchRequest({
-      verb: 'DELETE',
-      id: thingId,
-      path: 'definition',
-      requestOptions: options
-    });
+    return this.deleteItemAtPath(thingId, 'definition', options);
   }
 
   public getThings(thingIds: string[], options?: GetThingsOptions): Promise<Thing[]> {
@@ -253,6 +221,25 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
       id: thing.thingId,
       requestOptions: options,
       payload: thing.toObject()
+    });
+  }
+
+  public getStringAtPath(thingId: string, path: string, options?: MatchOptions): Promise<string> {
+    return this.requestFactory.fetchJsonRequest({
+      path,
+      verb: 'GET',
+      parser: String,
+      id: thingId,
+      requestOptions: options
+    });
+  }
+
+  public deleteItemAtPath(thingId: string, path: string, options?: MatchOptions): Promise<GenericResponse> {
+    return this.requestFactory.fetchRequest({
+      path,
+      verb: 'DELETE',
+      id: thingId,
+      requestOptions: options
     });
   }
 }
