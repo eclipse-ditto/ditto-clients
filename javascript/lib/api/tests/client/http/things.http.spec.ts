@@ -278,7 +278,7 @@ describe('Http Things Handle', () => {
     });
   });
 
-  it('updates the definition', () => {
+  it('creates the definition', () => {
     return H.test({
       toTest: () => handleV2.putDefinition(H.thing.thingId, 'example:test:definition'),
       testBody: 'example:test:definition',
@@ -286,6 +286,18 @@ describe('Http Things Handle', () => {
       request: `${baseRequest}/definition`,
       method: 'put',
       status: 201,
+      payload: JSON.stringify('example:test:definition')
+    });
+  });
+
+  it('updates the definition', () => {
+    return H.test({
+      toTest: () => handleV2.putDefinition(H.thing.thingId, 'example:test:definition'),
+      testBody: 'example:test:definition',
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/definition`,
+      method: 'put',
+      status: 204,
       payload: JSON.stringify('example:test:definition')
     });
   });

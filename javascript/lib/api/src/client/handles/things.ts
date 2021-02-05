@@ -168,8 +168,7 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
       verb: 'POST',
       parser: Thing.fromObject,
       payload: thingWithoutId
-    })
-      ;
+    });
   }
 
   public putThing(thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>> {
