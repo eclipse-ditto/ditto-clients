@@ -10,6 +10,9 @@ Fixes #114: Refactor model structure to avoid "duplicated paths" like `features.
 Fixes #61: Ditto will return an empty body with status `204` for `PUT` requests on already existing things.
 This was not handled correctly by the client.
     
+### \#126 expose definition field of Thing
+Fixes #127: Adds the `definition` field to the Thing representation and adds methods for retrieving, updating
+and deleting the definition of a Thing.
 
 ### Breaking changes
 * `Features`: Needs to be accessed using `thing.features` instead of `thing.features.features`
