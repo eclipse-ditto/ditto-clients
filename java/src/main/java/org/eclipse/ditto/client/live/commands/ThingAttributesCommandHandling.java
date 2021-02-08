@@ -18,6 +18,7 @@ import org.eclipse.ditto.client.live.LiveCommandProcessor;
 import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.signals.commands.live.modify.DeleteAttributeLiveCommand;
 import org.eclipse.ditto.signals.commands.live.modify.DeleteAttributesLiveCommand;
+import org.eclipse.ditto.signals.commands.live.modify.MergeThingLiveCommand;
 import org.eclipse.ditto.signals.commands.live.modify.ModifyAttributeLiveCommand;
 import org.eclipse.ditto.signals.commands.live.modify.ModifyAttributesLiveCommand;
 import org.eclipse.ditto.signals.commands.live.query.RetrieveAttributeLiveCommand;
@@ -98,6 +99,29 @@ public interface ThingAttributesCommandHandling extends LiveCommandProcessor {
      */
     default void stopHandlingModifyAttributeCommands() {
         unregister(ModifyAttributeLiveCommand.class);
+    }
+
+    /**
+     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.MergeThing
+     * MergeThing} commands for changes on attributes level.
+     *
+     * @param handler the handler to receive the commands
+     * @throws NullPointerException if {@code handler} is {@code null}
+     * @throws IllegalStateException if there is already a handler registered. Stop the registered handler before
+     * calling this method
+     * @see #stopHandlingMergeAttributeCommands()
+     */
+    default void handleMergeAttributeCommands(
+            final Function<MergeThingLiveCommand, LiveCommandAnswerBuilder.BuildStep> handler) {
+        register(LiveCommandHandler.of(MergeThingLiveCommand.class, handler));
+    }
+
+    /**
+     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.MergeThing
+     * MergeThing} commands.
+     */
+    default void stopHandlingMergeAttributeCommands() {
+        unregister(MergeThingLiveCommand.class);
     }
 
     /**

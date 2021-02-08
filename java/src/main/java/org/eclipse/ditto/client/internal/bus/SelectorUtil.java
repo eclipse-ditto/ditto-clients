@@ -132,7 +132,6 @@ public final class SelectorUtil {
                                                                     "Payload of event was not present"))
                                                     .getClass()));
 
-            final String address = addressBuilderFunction.apply(event);
             final Change change = changeBuilderFunction.apply(event, message.getExtra().orElse(null));
 
             final List<JsonPointer> jsonPointers = change.getValue()
@@ -142,6 +141,7 @@ public final class SelectorUtil {
                     .orElse(Collections.singletonList(JsonPointer.empty()));
 
             // notify the address where the Change actually happened:
+            String address = addressBuilderFunction.apply(event);
             final JsonPointer jsonPointer = JsonPointer.of(address);
             final JsonPointerWithChangePaths
                     jsonPointerWithChangePaths = new JsonPointerWithChangePaths(jsonPointer, jsonPointers);
@@ -172,7 +172,7 @@ public final class SelectorUtil {
                     if (value.isObject()) {
                         final List<JsonPointer> pointersOnLevel = new ArrayList<>();
                         final JsonObject objectOnLevel = value.asObject();
-                            pointersOnLevel.add(pointerOnLevel);
+                        pointersOnLevel.add(pointerOnLevel);
 
                         // recurse further "down":
                         pointersOnLevel.addAll(calculateJsonPointerHierarchy(pointerOnLevel, objectOnLevel));

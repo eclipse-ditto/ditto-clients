@@ -110,6 +110,19 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
     CompletableFuture<Void> setPolicyId(PolicyId policyId, Option<?>... options);
 
     /**
+     * Merge the given {@code policyId} to this Thing.
+     *
+     * @param policyId the PolicyId of the Policy to be merge.
+     * @param options options to be applied configuring behaviour of this method, see {@link
+     * org.eclipse.ditto.client.options.Options}.
+     * @return completable future for handling the result of the operation or a specific {@link
+     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * @throws IllegalArgumentException if {@code policyId} is {@code null}.
+     * @since 2.0.0
+     */
+    CompletableFuture<Void> mergePolicyId(PolicyId policyId, Option<?>... options);
+
+    /**
      * Sets the given {@code Features} to this Thing. All existing Features are replaced.
      *
      * @param features the Features to be set.
@@ -122,6 +135,19 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
     CompletableFuture<Void> setFeatures(Features features, Option<?>... options);
 
     /**
+     * Merges the given {@code Features} to this Thing.
+     *
+     * @param features the Features to be merged.
+     * @param options options to be applied configuring behaviour of this method, see {@link
+     * org.eclipse.ditto.client.options.Options}.
+     * @return completable future for handling the result of the operation or a specific {@link
+     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * @throws IllegalArgumentException if {@code features} is {@code null}.
+     * @since 2.0.0
+     */
+    CompletableFuture<Void> mergeFeatures(Features features, Option<?>... options);
+
+    /**
      * Updates the given Feature of this Thing or creates a new one if it does not yet exist.
      *
      * @param feature Feature to be set.
@@ -132,6 +158,19 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @throws IllegalArgumentException if {@code feature} is {@code null}.
      */
     CompletableFuture<Void> putFeature(Feature feature, Option<?>... options);
+
+    /**
+     * Merges the given Feature of this Thing or creates a new one if it does not yet exist.
+     *
+     * @param feature Feature to be merged.
+     * @param options options to be applied configuring behaviour of this method, see {@link
+     * org.eclipse.ditto.client.options.Options}.
+     * @return completable future for handling the result of this operation or a specific {@link
+     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * @throws IllegalArgumentException if {@code feature} is {@code null}.
+     * @since 2.0.0
+     */
+    CompletableFuture<Void> mergeFeature(Feature feature, Option<?>... options);
 
     /**
      * Deletes the Feature by the given identifier from this Thing.

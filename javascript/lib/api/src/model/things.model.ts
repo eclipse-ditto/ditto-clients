@@ -26,7 +26,8 @@ export class Thing extends EntityWithId {
     private readonly _features?: Features,
     private readonly __revision?: number,
     private readonly __modified?: string,
-    private readonly _acl?: Acl) {
+    private readonly _acl?: Acl,
+    private readonly _definition?: string) {
     super();
   }
 
@@ -43,7 +44,8 @@ export class Thing extends EntityWithId {
     // @ts-ignore
     return new Thing(o['thingId'], o['policyId'], o['attributes'],
       // @ts-ignore
-      Features.fromObject(o['features']), o['_revision'], o['_modified'], Acl.fromObject(o['acl']));
+      Features.fromObject(o['features']), o['_revision'], o['_modified'], Acl.fromObject(o['acl']),
+      o['definition']);
   }
 
   public static empty(): Thing {
@@ -60,7 +62,8 @@ export class Thing extends EntityWithId {
       ['features', featuresObj],
       ['_revision', this._revision],
       ['_modified', this._modified],
-      ['acl', aclObj]
+      ['acl', aclObj],
+      ['definition', this._definition]
     ]));
   }
 
@@ -102,6 +105,10 @@ export class Thing extends EntityWithId {
 
   get name(): string {
     return this.separateNamespaceAndThingId().name;
+  }
+
+  get definition(): string | undefined {
+    return this._definition;
   }
 
   private separateNamespaceAndThingId(): { namespace: string, name: string } {

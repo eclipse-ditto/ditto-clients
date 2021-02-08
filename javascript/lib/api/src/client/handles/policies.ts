@@ -158,7 +158,10 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Resource if provided by the response
    */
-  putResource(policyId: string, label: string, resource: Resource, options?: MatchOptions): Promise<PutResponse<Resource>>;
+  putResource(policyId: string,
+              label: string,
+              resource: Resource,
+              options?: MatchOptions): Promise<PutResponse<Resource>>;
 
   /**
    * Deletes a Policy.
@@ -469,7 +472,10 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Resource if provided by the response
    */
-  putResource(policyId: string, label: string, resource: Resource, options?: MatchOptions): Promise<PutResponse<Resource>> {
+  putResource(policyId: string,
+              label: string,
+              resource: Resource,
+              options?: MatchOptions): Promise<PutResponse<Resource>> {
     return this.requestFactory.fetchPutRequest({
       verb: 'PUT',
       parser: o => Resource.fromObject(o, resource.id),

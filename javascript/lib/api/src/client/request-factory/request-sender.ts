@@ -45,7 +45,7 @@ export abstract class RequestSender {
           return new PutResponse(options.parser(response.body), response.status, response.headers);
         }
         if (response.status === 204) {
-          return new PutResponse(options.parser(response.body), response.status, response.headers);
+          return new PutResponse<T>(null, response.status, response.headers);
         }
         return Promise.reject(`Received unknown status code: ${response.status}`);
       });

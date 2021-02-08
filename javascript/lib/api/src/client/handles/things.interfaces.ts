@@ -64,7 +64,7 @@ export interface ThingsHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the response
    */
-  putAttribute(thingId: string, attributePath: string, attributeValue: any, options?: MatchOptions): Promise<GenericResponse>;
+  putAttribute(thingId: string, attributePath: string, attributeValue: any, options?: MatchOptions): Promise<PutResponse<any>>;
 
   /**
    * Deletes a Thing.
@@ -163,7 +163,7 @@ export interface HttpThingsHandleV1 extends HttpThingsHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the response
    */
-  putAcl(thingId: string, acl: Acl, options?: MatchOptions): Promise<GenericResponse>;
+  putAcl(thingId: string, acl: Acl, options?: MatchOptions): Promise<PutResponse<Acl>>;
 
   /**
    * Updates an AclEntry of a Thing.
@@ -196,6 +196,34 @@ export interface HttpThingsHandleV2 extends HttpThingsHandle {
    * @returns A Promise for the new PolicyId provided in the response
    */
   putPolicyId(thingId: string, policyId: string, options?: MatchOptions): Promise<PutResponse<string>>;
+
+  /**
+   * Gets the definition of a Thing.
+   *
+   * @param thingId - The ID of the Thing.
+   * @param options - Options to use for the request.
+   * @returns A Promise for the definition
+   */
+  getDefinition(thingId: string, options?: MatchOptions): Promise<string>;
+
+  /**
+   * Adds or updates the definition of a Thing.
+   *
+   * @param thingId - The ID of the Thing.
+   * @param definition - The new definition.
+   * @param options - Options to use for the request.
+   * @returns A Promise for the new definition provided in the response
+   */
+  putDefinition(thingId: string, definition: string, options?: MatchOptions): Promise<PutResponse<string>>;
+
+  /**
+   * Deletes the definition of a Thing.
+   *
+   * @param thingId - The ID of the Thing.
+   * @param options - Options to use for the request.
+   * @returns A Promise for the response
+   */
+  deleteDefinition(thingId: string, options?: MatchOptions): Promise<GenericResponse>;
 }
 
 export interface WebSocketThingsHandle extends ThingsHandle {
