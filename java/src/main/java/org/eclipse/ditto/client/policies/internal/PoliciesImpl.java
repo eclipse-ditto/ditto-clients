@@ -176,4 +176,5 @@ public final class PoliciesImpl extends AbstractHandle implements Policies {
     protected AcknowledgementLabel getThingResponseAcknowledgementLabel() {
         return DittoAcknowledgementLabel.TWIN_PERSISTED;
     }
+
 }

@@ -156,7 +156,6 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
     @Override
     public CompletionStage<Void> putAttribute(final JsonPointer path, final double value,
             final Option<?>... options) {
-
         return putAttribute(path, JsonFactory.newValue(value), options);
     }
 
@@ -278,8 +277,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
     }
 
     @Override
-    public CompletionStage<Void> putAttribute(final JsonPointer path, final String value,
-            final Option<?>... options) {
+    public CompletionStage<Void> putAttribute(final JsonPointer path, final String value, final Option<?>... options) {
         return putAttribute(path, JsonFactory.newValue(value), options);
     }
 
@@ -387,4 +385,5 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
         final RetrieveThing command = outgoingMessageFactory.retrieveThing(thingId, fieldSelector.getPointers());
         return askThingCommand(command, RetrieveThingResponse.class, RetrieveThingResponse::getThing);
     }
+
 }

@@ -33,7 +33,8 @@ public final class RetryTest {
 
     @BeforeClass
     public static void setup() {
-        scheduledExecutorService = Executors.newScheduledThreadPool(1, new DefaultThreadFactory("test"));
+        scheduledExecutorService = Executors.newScheduledThreadPool(1,
+                new DefaultThreadFactory("test"));
     }
 
     @AfterClass

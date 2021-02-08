@@ -55,4 +55,5 @@ public interface Twin extends CommonManagement<TwinThingHandle, TwinFeatureHandl
      * @since 1.1.0
      */
     TwinSearchHandle search();
+
 }

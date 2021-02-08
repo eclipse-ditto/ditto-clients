@@ -21,17 +21,17 @@ import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.signals.base.WithFeatureId;
 
 /**
- * A {@code FeatureHandle} is the entry point to managing and monitoring a <em>specific</em> {@code Feature}. For
- * example, it can be used to manage (create, modify and delete) a Feature's {@code Properties}.
+ * A {@code FeatureHandle} is the entry point to managing and monitoring a <em>specific</em> {@code Feature}.
+ * For example, it can be used to manage (create, modify and delete) a Feature's {@code Properties}.
  * <p>
  * Additionally, it provides the possibility to monitor a {@code Feature} by registering handlers to be notified about
  * {@code FeaturePropertyChange}s.
  * </p>
  * <p>
- * Note: All methods returning a {@link CompletionStage} are executed non-blocking and asynchronously. Therefore,
- * these methods return a {@code CompletableFuture} object that will complete either successfully if the operation was
- * executed and confirmed, or exceptionally with a specific {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException}
- * if it was executed but has failed.
+ * Note: All methods returning a {@link CompletionStage} are executed non-blocking and asynchronously.
+ * Therefore, these methods return a {@code CompletionStage} object that will complete either successfully
+ * if the operation was executed and confirmed, or exceptionally with a specific
+ * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if it was executed but has failed.
  * </p>
  * Example:
  * <pre>
@@ -52,8 +52,8 @@ public interface FeatureHandle extends WithFeatureId, FeaturePropertiesManagemen
     /**
      * Deletes the {@code Feature} being handled by this {@code FeatureHandle}.
      *
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage
      */
     CompletionStage<Void> delete(Option<?>... options);

@@ -16,8 +16,8 @@ import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
 import java.util.Arrays;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Assertions;
@@ -147,10 +147,10 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
 
     @Test
     public void testRetrieveFeature() throws Exception {
-        final CompletableFuture<Feature> featureFuture =
-                getManagement().forId(THING_ID).forFeature(FEATURE_ID).retrieve().toCompletableFuture();
+        final CompletionStage<Feature> featureFuture =
+                getManagement().forId(THING_ID).forFeature(FEATURE_ID).retrieve();
         reply(RetrieveFeatureResponse.of(THING_ID, FEATURE, expectMsgClass(RetrieveFeature.class).getDittoHeaders()));
-        final Feature retrievedFeature = featureFuture.get(1L, TimeUnit.SECONDS);
+        final Feature retrievedFeature = featureFuture.toCompletableFuture().get(1L, TimeUnit.SECONDS);
         assertThat(retrievedFeature).isEqualTo(FEATURE);
     }
 

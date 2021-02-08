@@ -318,7 +318,6 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         return processCreate(thing, initialPolicy, options);
     }
 
-
     @Override
     public CompletionStage<Thing> create(final ThingId thingId, final Policy initialPolicy,
             final Option<?>... options) {
@@ -361,8 +360,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletionStage<Thing> create(final Thing thing, final Policy initialPolicy,
-            final Option<?>... options) {
+    public CompletionStage<Thing> create(final Thing thing, final Policy initialPolicy, final Option<?>... options) {
         argumentNotNull(thing, ARGUMENT_THING);
         assertThatThingHasId(thing);
         argumentNotNull(initialPolicy, ARGUMENT_INITIAL_POLICY);
@@ -555,8 +553,8 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         argumentNotNull(attrPath);
         argumentNotNull(handler);
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
-                SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/attributes{0}", attrPath), Change.class,
-                handler, (change, value, path, params) -> change.withPathAndValue(path, value)
+                SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/attributes{0}", attrPath),
+                Change.class, handler, (change, value, path, params) -> change.withPathAndValue(path, value)
         );
     }
 
@@ -622,8 +620,8 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         argumentNotNull(propertyPath);
         argumentNotNull(handler);
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
-                SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/features/{0}/properties{1}", featureId,
-                        propertyPath),
+                SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/features/{0}/properties{1}",
+                        featureId, propertyPath),
                 Change.class, handler, (change, value, path, params) -> change.withPathAndValue(path, value)
         );
     }
@@ -801,9 +799,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
 
     @FunctionalInterface
     protected interface NotifyMessage {
-
         void accept(final PointerBus pointerBus);
-
     }
 
 }

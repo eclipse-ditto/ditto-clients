@@ -63,8 +63,7 @@ import com.neovisionaries.ws.client.WebSocketFactory;
 import com.neovisionaries.ws.client.WebSocketFrame;
 
 /**
- * Messaging Provider providing messaging access to Ditto WebSocket which is directly provided by Eclipse Ditto
- * Gateway.
+ * Messaging Provider providing messaging access to Ditto WebSocket which is directly provided by Eclipse Ditto Gateway.
  *
  * @since 1.0.0
  */
@@ -115,7 +114,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     private static ScheduledExecutorService createConnectExecutor() {
-        return Executors.newScheduledThreadPool(1, new DefaultThreadFactory("ditto-client-reconnect"));
+        return Executors.newScheduledThreadPool(1,
+                new DefaultThreadFactory("ditto-client-reconnect"));
     }
 
     /**
@@ -215,8 +215,8 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     /**
-     * Initiates the connection to the web socket by using the provided {@code ws} and applying the passed {@code
-     * webSocketListener} for web socket handling and incoming messages.
+     * Initiates the connection to the web socket by using the provided {@code ws} and applying the passed
+     * {@code webSocketListener} for web socket handling and incoming messages.
      *
      * @param ws the WebSocket instance to use for connecting.
      * @return The connected websocket.

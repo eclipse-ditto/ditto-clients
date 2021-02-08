@@ -21,10 +21,10 @@ import org.eclipse.ditto.model.things.FeatureDefinition;
  * {@code FeatureDefinitionManagement} provides create, update and delete functionality for managing {@link
  * org.eclipse.ditto.model.things.FeatureDefinition}s.
  * <p>
- * All the methods are executed non-blocking and asynchronously. Therefore, the methods return a {@code
- * CompletionStage} object that will complete either successfully if the operation was executed and confirmed, or
- * exceptionally with a specific {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if it was
- * executed but has failed.
+ * All the methods are executed non-blocking and asynchronously.
+ * Therefore, the methods return a {@code CompletionStage} object that will complete either successfully
+ * if the operation was executed and confirmed, or exceptionally with a specific
+ * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if it was executed but has failed.
  * </p>
  *
  * @since 1.0.0
@@ -35,10 +35,10 @@ public interface FeatureDefinitionManagement {
      * Sets the given definition to the Feature.
      *
      * @param definition the FeatureDefinition to be set.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return a CompletionStage providing the result of this operation or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
+     * @param options options to be applied configuring behaviour of this method,
+     * see {@link org.eclipse.ditto.client.options.Options}.
+     * @return a CompletionStage providing the result of this operation or a specific
+     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
      * @throws NullPointerException if any argument is {@code null}.
      */
     CompletionStage<Void> setDefinition(FeatureDefinition definition, Option<?>... options);
@@ -59,10 +59,10 @@ public interface FeatureDefinitionManagement {
     /**
      * Deletes the definition of the Feature.
      *
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return a CompletionStage providing the result of this operation or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
+     * @param options options to be applied configuring behaviour of this method,
+     * see {@link org.eclipse.ditto.client.options.Options}.
+     * @return a CompletionStage providing the result of this operation or a specific
+     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
      */
     CompletionStage<Void> deleteDefinition(Option<?>... options);
 

@@ -26,8 +26,8 @@ import org.eclipse.ditto.model.policies.PolicyId;
  * <p>
  * Note: All methods returning a {@link CompletionStage} are executed non-blocking and asynchronously. Therefore,
  * these methods return a {@code CompletionStage} object that will complete either successfully if the operation was
- * executed and confirmed, or exceptionally with a specific {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException}
- * if it was executed but has failed.
+ * executed and confirmed, or exceptionally with a specific
+ * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if it was executed but has failed.
  * </p>
  * Example:
  * <pre>
@@ -47,29 +47,31 @@ public interface Policies {
      * Creates the given {@link org.eclipse.ditto.model.policies.Policy}.
      *
      * @param policy the Policy to be created.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage providing the created Policy object or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * @param options options to be applied configuring behaviour of this method,
+     * see {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing the created Policy object or a specific
+     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code policy} is {@code null} or has no identifier.
      * @throws org.eclipse.ditto.model.policies.PolicyIdInvalidException if the {@code policyId} was invalid.
      */
     CompletionStage<Policy> create(Policy policy, Option<?>... options);
 
     /**
-     * Creates a {@link org.eclipse.ditto.model.policies.Policy} based on the given {@link org.eclipse.ditto.json.JsonObject}.
+     * Creates a {@link org.eclipse.ditto.model.policies.Policy} based on the given
+     * {@link org.eclipse.ditto.json.JsonObject}.
      *
-     * @param jsonObject a JSON object representation of the Policy to be created. The provided JSON object is required to
-     * contain a field named {@code "policyId"} of the basic JSON type String which contains the identifier of the Policy
-     * to be created. It must conform to the namespaced entity ID notation (see Ditto documentation).
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage providing the created Policy object or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * @param jsonObject a JSON object representation of the Policy to be created.
+     * The provided JSON object is required to contain a field named {@code "policyId"} of the basic JSON type String
+     * which contains the identifier of the Policy to be created. It must conform to the namespaced entity ID notation
+     * (see Ditto documentation).
+     * @param options options to be applied configuring behaviour of this method,
+     * see {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing the created Policy object or a specific
+     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code jsonObject} is {@code null} or if it does not contain the field named
      * {@code "policyId"}.
-     * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code jsonObject} cannot be parsed to a {@link
-     * org.eclipse.ditto.model.policies.Policy}.
+     * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code jsonObject} cannot be parsed to a
+     * {@link org.eclipse.ditto.model.policies.Policy}.
      * @throws org.eclipse.ditto.model.policies.PolicyIdInvalidException if the {@code policyId} was invalid.
      */
     CompletionStage<Policy> create(JsonObject jsonObject, Option<?>... options);
@@ -80,11 +82,11 @@ public interface Policies {
      * {@link org.eclipse.ditto.client.options.Options.Modify#exists(boolean)}.
      *
      * @param policy the Policy to be put.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage providing an {@link java.util.Optional} containing the created Policy object, in case the Policy
-     * has been created, or an empty Optional, in case the Policy has been updated. Provides a {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
+     * @param options options to be applied configuring behaviour of this method,
+     * see {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing an {@link java.util.Optional} containing the created Policy object,
+     * in case the Policy has been created, or an empty Optional, in case the Policy has been updated.
+     * Provides a {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code policy} is {@code null} or has no identifier.
      */
     CompletionStage<Optional<Policy>> put(Policy policy, Option<?>... options);
@@ -94,18 +96,18 @@ public interface Policies {
      * the Policy might be created or updated. The behaviour can be restricted with option
      * {@link org.eclipse.ditto.client.options.Options.Modify#exists(boolean)}.
      *
-     * @param jsonObject a JSON object representation of the Policy to be put. The provided JSON object is required to contain
-     * a field named {@code "policyId"} of the basic JSON type String which contains the identifier of the Policy to be
-     * put.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
+     * @param jsonObject a JSON object representation of the Policy to be put. The provided JSON object is required
+     * to contain a field named {@code "policyId"} of the basic JSON type String which contains the identifier of the
+     * Policy to be put.
+     * @param options options to be applied configuring behaviour of this method,
+     * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing an {@link Optional} containing the created Policy object, in case the Policy
-     * has been created, or an empty Optional, in case the Policy has been updated. Provides a {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
+     * has been created, or an empty Optional, in case the Policy has been updated.
+     * Provides a {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code jsonObject} is {@code null} or if it does not contain the field named
      * {@code "policyId"}.
-     * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code jsonObject} cannot be parsed to a {@link
-     * org.eclipse.ditto.model.policies.Policy}.
+     * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code jsonObject} cannot be parsed to a
+     * {@link org.eclipse.ditto.model.policies.Policy}.
      */
     CompletionStage<Optional<Policy>> put(JsonObject jsonObject, Option<?>... options);
 
@@ -113,10 +115,10 @@ public interface Policies {
      * Updates the given {@link org.eclipse.ditto.model.policies.Policy} if it does exist.
      *
      * @param policy the Policy to be updated.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage providing for handling a successful update or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
+     * @param options options to be applied configuring behaviour of this method,
+     * see {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing for handling a successful update or a specific
+     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code policy} is {@code null} or has no identifier.
      */
     CompletionStage<Void> update(Policy policy, Option<?>... options);
@@ -124,17 +126,17 @@ public interface Policies {
     /**
      * Updates a {@link org.eclipse.ditto.model.policies.Policy} if it does exist based on the given {@link JsonObject}.
      *
-     * @param jsonObject a JSON object representation of the Policy to be updated. The provided JSON object is required to
-     * contain a field named {@code "policyId"} of the basic JSON type String which contains the identifier of the Policy
-     * to be updated.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage providing for handling a successful update or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
+     * @param jsonObject a JSON object representation of the Policy to be updated.
+     * The provided JSON object is required to contain a field named {@code "policyId"} of the basic JSON type String
+     * which contains the identifier of the Policy to be updated.
+     * @param options options to be applied configuring behaviour of this method,
+     * see {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing for handling a successful update or a specific
+     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code jsonObject} is {@code null} or if it does not contain the field named
      * {@code "policyId"}.
-     * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code jsonObject} cannot be parsed to a {@link
-     * org.eclipse.ditto.model.policies.Policy}.
+     * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code jsonObject} cannot be parsed to a
+     * {@link org.eclipse.ditto.model.policies.Policy}.
      */
     CompletionStage<Void> update(JsonObject jsonObject, Option<?>... options);
 
@@ -142,10 +144,10 @@ public interface Policies {
      * Deletes the {@link org.eclipse.ditto.model.policies.Policy} specified by the given identifier.
      *
      * @param policyId the identifier of the Policy to be deleted.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage for handling the result of deletion or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * @param options options to be applied configuring behaviour of this method,
+     * see {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage for handling the result of deletion or a specific
+     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code policyId} is {@code null}.
      */
     CompletionStage<Void> delete(PolicyId policyId, Option<?>... options);
@@ -154,8 +156,8 @@ public interface Policies {
      * Gets the {@link org.eclipse.ditto.model.policies.Policy} specified by the given identifier.
      *
      * @param policyId the identifier of the Policy to be retrieved.
-     * @return CompletionStage providing the requested Policy or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * @return CompletionStage providing the requested Policy or a specific
+     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code policyId} is {@code null}.
      */
     CompletionStage<Policy> retrieve(PolicyId policyId);

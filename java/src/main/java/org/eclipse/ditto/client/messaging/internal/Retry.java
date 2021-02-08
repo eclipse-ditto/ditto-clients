@@ -51,7 +51,6 @@ final class Retry<T> {
     private final Consumer<Throwable> errorConsumer;
     private final Predicate<Throwable> isRecoverable;
 
-
     private Retry(final String nameOfAction,
             final String sessionId,
             final Supplier<CompletionStage<T>> retriedSupplier,
@@ -174,8 +173,8 @@ final class Retry<T> {
     interface RetryBuilderStep1<T> {
 
         /**
-         * Configures the session ID that should be used for log statements made by performing the action and its
-         * potential retries.
+         * Configures the session ID that should be used for log statements made by performing the action and
+         * its potential retries.
          *
          * @param sessionId the session ID of the client for which the action is performed.
          * @return the next builder step as a new instance.
@@ -276,8 +275,7 @@ final class Retry<T> {
         @Override
         public RetryBuilderStep2<T> inClientSession(final String sessionId) {
             return new RetryBuilder<>(nameOfAction, retriedSupplier, sessionId, reconnectExecutor, callbackExecutor,
-                    errorConsumer,
-                    isRecoverable
+                    errorConsumer, isRecoverable
             );
         }
 
@@ -305,8 +303,7 @@ final class Retry<T> {
             return new Retry<>(nameOfAction, sessionId, retriedSupplier,
                     checkNotNull(reconnectExecutor, "reconnectExecutor"),
                     checkNotNull(callbackExecutor, "callbackExecutor"),
-                    errorConsumer, isRecoverable)
-                    .completeFutureEventually(future);
+                    errorConsumer, isRecoverable).completeFutureEventually(future);
         }
     }
 
