@@ -14,6 +14,9 @@ This was not handled correctly by the client.
 Fixes #127: Adds the `definition` field to the Thing representation and adds methods for retrieving, updating
 and deleting the definition of a Thing.
 
+### \#111 allow setting custom api-path
+Adds a new builder step for the client, which allows setting a custom path instead of the default `/api` or `/ws`.
+
 ### Breaking changes
 * `Features`: Needs to be accessed using `thing.features` instead of `thing.features.features`
 * `Features`: `toObject` instance method was removed. Use `Features#toObject` and `Features#fromObject` instead.
