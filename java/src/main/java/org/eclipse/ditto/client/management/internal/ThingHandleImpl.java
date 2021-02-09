@@ -182,7 +182,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
     }
 
     @Override
-    public CompletableFuture<Void> mergeAttribute(final JsonPointer path, final JsonValue value,
+    public CompletionStage<Void> mergeAttribute(final JsonPointer path, final JsonValue value,
             final Option<?>... options) {
         argumentNotNull(path);
         argumentNotNull(value);
@@ -191,7 +191,7 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
                 "method.");
 
         final MergeThing command = outgoingMessageFactory.mergeAttribute(thingId, path, value, options);
-        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 
     @Override
@@ -205,13 +205,13 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
     }
 
     @Override
-    public CompletableFuture<Void> mergeAttributes(final JsonObject attributes, final Option<?>... options) {
+    public CompletionStage<Void> mergeAttributes(final JsonObject attributes, final Option<?>... options) {
         argumentNotNull(attributes);
         checkArgument(attributes, v -> v.isObject() || v.isNull(),
                 () -> "The root attributes entry can only be a JSON" + " object or JSON NULL literal!");
 
         final MergeThing command = outgoingMessageFactory.mergeAttributes(thingId, attributes, options);
-        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 
     @Override
@@ -223,11 +223,11 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
     }
 
     @Override
-    public CompletableFuture<Void> mergeFeatures(final Features features, final Option<?>... options) {
+    public CompletionStage<Void> mergeFeatures(final Features features, final Option<?>... options) {
         argumentNotNull(features);
 
         final MergeThing command = outgoingMessageFactory.mergeFeatures(thingId, features, options);
-        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 
     @Override
@@ -239,11 +239,11 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
     }
 
     @Override
-    public CompletableFuture<Void> mergePolicyId(final PolicyId policyId, final Option<?>... options) {
+    public CompletionStage<Void> mergePolicyId(final PolicyId policyId, final Option<?>... options) {
         argumentNotNull(policyId);
 
         final MergeThing command = outgoingMessageFactory.mergePolicyId(thingId, policyId, options);
-        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 
     @Override
@@ -255,11 +255,11 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
     }
 
     @Override
-    public CompletableFuture<Void> mergeFeature(final Feature feature, final Option<?>... options) {
+    public CompletionStage<Void> mergeFeature(final Feature feature, final Option<?>... options) {
         argumentNotNull(feature);
 
         final MergeThing command = outgoingMessageFactory.mergeFeature(thingId, feature, options);
-        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 
     @Override

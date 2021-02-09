@@ -313,7 +313,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @throws IllegalArgumentException if {@code argument} is {@code null}.
      * @since 2.0.0
      */
-    CompletableFuture<Void> merge(ThingId thingId, Thing thing, Option<?>... options);
+    CompletionStage<Void> merge(ThingId thingId, Thing thing, Option<?>... options);
 
     /**
      * Merges a {@link Thing} if it does exist based on the given {@link JsonObject}.
@@ -327,7 +327,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @throws IllegalArgumentException if {@code argument} is {@code null}.
      * @since 2.0.0
      */
-    CompletableFuture<Void> merge(ThingId thingId, JsonObject thing, Option<?>... options);
+    CompletionStage<Void> merge(ThingId thingId, JsonObject thing, Option<?>... options);
 
     /**
      * Puts the given {@link Thing}, which means that the Thing might be created or updated. The behaviour can be

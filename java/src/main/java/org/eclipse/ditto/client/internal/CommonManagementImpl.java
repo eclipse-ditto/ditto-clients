@@ -383,7 +383,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
 
 
     @Override
-    public CompletableFuture<Void> merge(final ThingId thingId, final JsonObject jsonObject,
+    public CompletionStage<Void> merge(final ThingId thingId, final JsonObject jsonObject,
             final Option<?>... options) {
         argumentNotNull(jsonObject);
 
@@ -392,7 +392,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Void> merge(final ThingId thingId, final Thing thing,
+    public CompletionStage<Void> merge(final ThingId thingId, final Thing thing,
             final Option<?>... options) {
         argumentNotNull(thing);
 

@@ -147,11 +147,11 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
     }
 
     @Override
-    public CompletableFuture<Void> mergeDefinition(final FeatureDefinition featureDefinition,
+    public CompletionStage<Void> mergeDefinition(final FeatureDefinition featureDefinition,
             final Option<?>... options) {
         final MergeThing command =
                 outgoingMessageFactory.mergeFeatureDefinition(thingId, featureId, featureDefinition, options);
-        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 
     @Override
@@ -202,7 +202,7 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
     }
 
     @Override
-    public CompletableFuture<Void> mergeProperty(final JsonPointer path, final JsonValue value,
+    public CompletionStage<Void> mergeProperty(final JsonPointer path, final JsonValue value,
             final Option<?>... options) {
 
         argumentNotNull(path, "Path");
@@ -211,7 +211,7 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
 
         final MergeThing command =
                 outgoingMessageFactory.mergeFeatureProperty(thingId, featureId, path, value, options);
-        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 
     @Override
@@ -222,9 +222,9 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
     }
 
     @Override
-    public CompletableFuture<Void> mergeProperties(final JsonObject value, final Option<?>... options) {
+    public CompletionStage<Void> mergeProperties(final JsonObject value, final Option<?>... options) {
         final MergeThing command = outgoingMessageFactory.mergeFeatureProperties(thingId, featureId, value, options);
-        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 
     @Override

@@ -230,7 +230,7 @@ public interface FeaturePropertiesManagement {
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      * @since 2.0.0
      */
-    default CompletableFuture<Void> mergeProperty(final CharSequence path, final boolean value,
+    default CompletionStage<Void> mergeProperty(final CharSequence path, final boolean value,
             final Option<?>... options) {
         argumentNotNull(path);
         return mergeProperty(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
@@ -249,7 +249,7 @@ public interface FeaturePropertiesManagement {
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      * @since 2.0.0
      */
-    default CompletableFuture<Void> mergeProperty(final CharSequence path, final double value,
+    default CompletionStage<Void> mergeProperty(final CharSequence path, final double value,
             final Option<?>... options) {
         argumentNotNull(path);
         return mergeProperty(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
@@ -269,7 +269,7 @@ public interface FeaturePropertiesManagement {
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      * @since 2.0.0
      */
-    default CompletableFuture<Void> mergeProperty(final CharSequence path, final int value,
+    default CompletionStage<Void> mergeProperty(final CharSequence path, final int value,
             final Option<?>... options) {
         argumentNotNull(path);
         return mergeProperty(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
@@ -289,7 +289,7 @@ public interface FeaturePropertiesManagement {
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      * @since 2.0.0
      */
-    default CompletableFuture<Void> mergeProperty(final CharSequence path, final long value,
+    default CompletionStage<Void> mergeProperty(final CharSequence path, final long value,
             final Option<?>... options) {
         argumentNotNull(path);
         return mergeProperty(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
@@ -309,7 +309,7 @@ public interface FeaturePropertiesManagement {
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      * @since 2.0.0
      */
-    default CompletableFuture<Void> mergeProperty(final CharSequence path, final String value,
+    default CompletionStage<Void> mergeProperty(final CharSequence path, final String value,
             final Option<?>... options) {
         argumentNotNull(path);
         return mergeProperty(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
@@ -328,7 +328,7 @@ public interface FeaturePropertiesManagement {
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      * @since 2.0.0
      */
-    default CompletableFuture<Void> mergeProperty(final CharSequence path, final JsonValue value,
+    default CompletionStage<Void> mergeProperty(final CharSequence path, final JsonValue value,
             final Option<?>... options) {
         argumentNotNull(path);
         return mergeProperty(JsonFactory.newPointer(path), value, options);
@@ -346,7 +346,7 @@ public interface FeaturePropertiesManagement {
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      * @since 2.0.0
      */
-    CompletableFuture<Void> mergeProperty(JsonPointer path, JsonValue value, Option<?>... options);
+    CompletionStage<Void> mergeProperty(JsonPointer path, JsonValue value, Option<?>... options);
 
     /**
      * Sets the given properties of the Feature.
@@ -369,7 +369,7 @@ public interface FeaturePropertiesManagement {
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @since 2.0.0
      */
-    CompletableFuture<Void> mergeProperties(JsonObject value, Option<?>... options);
+    CompletionStage<Void> mergeProperties(JsonObject value, Option<?>... options);
 
     /**
      * Deletes the property specified by the given path.

@@ -233,7 +233,7 @@ public interface ThingAttributeManagement {
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      * @since 2.0.0
      */
-    default CompletableFuture<Void> mergeAttribute(final CharSequence path, final boolean value,
+    default CompletionStage<Void> mergeAttribute(final CharSequence path, final boolean value,
             final Option<?>... options) {
         argumentNotNull(path);
         return mergeAttribute(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
@@ -252,7 +252,7 @@ public interface ThingAttributeManagement {
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      * @since 2.0.0
      */
-    default CompletableFuture<Void> mergeAttribute(final CharSequence path, final double value,
+    default CompletionStage<Void> mergeAttribute(final CharSequence path, final double value,
             final Option<?>... options) {
         argumentNotNull(path);
         return mergeAttribute(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
@@ -271,7 +271,7 @@ public interface ThingAttributeManagement {
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      * @since 2.0.0
      */
-    default CompletableFuture<Void> mergeAttribute(final CharSequence path, final int value,
+    default CompletionStage<Void> mergeAttribute(final CharSequence path, final int value,
             final Option<?>... options) {
         argumentNotNull(path);
         return mergeAttribute(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
@@ -290,7 +290,7 @@ public interface ThingAttributeManagement {
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      * @since 2.0.0
      */
-    default CompletableFuture<Void> mergeAttribute(final CharSequence path, final long value,
+    default CompletionStage<Void> mergeAttribute(final CharSequence path, final long value,
             final Option<?>... options) {
         argumentNotNull(path);
         return mergeAttribute(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
@@ -309,7 +309,7 @@ public interface ThingAttributeManagement {
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      * @since 2.0.0
      */
-    default CompletableFuture<Void> mergeAttribute(final CharSequence path, final String value,
+    default CompletionStage<Void> mergeAttribute(final CharSequence path, final String value,
             final Option<?>... options) {
         argumentNotNull(path);
         return mergeAttribute(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
@@ -328,7 +328,7 @@ public interface ThingAttributeManagement {
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      * @since 2.0.0
      */
-    default CompletableFuture<Void> mergeAttribute(final CharSequence path, final JsonValue value,
+    default CompletionStage<Void> mergeAttribute(final CharSequence path, final JsonValue value,
             final Option<?>... options) {
         argumentNotNull(path);
         return mergeAttribute(JsonFactory.newPointer(path), value, options);
@@ -346,7 +346,7 @@ public interface ThingAttributeManagement {
      * @throws IllegalArgumentException if any argument is {@code null} or if {@code path} is empty.
      * @since 2.0.0
      */
-    CompletableFuture<Void> mergeAttribute(JsonPointer path, JsonValue value, Option<?>... options);
+    CompletionStage<Void> mergeAttribute(JsonPointer path, JsonValue value, Option<?>... options);
 
     /**
      * Sets the given attributes to this Thing.
@@ -371,7 +371,7 @@ public interface ThingAttributeManagement {
      * @throws IllegalArgumentException if {@code value} is {@code null}
      * @since 2.0.0
      */
-    CompletableFuture<Void> mergeAttributes(JsonObject value, Option<?>... options);
+    CompletionStage<Void> mergeAttributes(JsonObject value, Option<?>... options);
 
     /**
      * Deletes the attribute specified by the given path.

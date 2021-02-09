@@ -175,7 +175,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
     public void testMergeAttributeFailureDueToThingErrorResponse() throws Exception {
         final CompletableFuture<Void> resultFuture = getManagement()
                 .forId(THING_ID)
-                .mergeAttribute(ATTRIBUTE_KEY_NEW, true);
+                .mergeAttribute(ATTRIBUTE_KEY_NEW, true).toCompletableFuture();
         final Signal<?> command = expectMsgClass(MergeThing.class);
         reply(ThingErrorResponse.of(ThingNotAccessibleException.newBuilder(THING_ID).build(),
                 command.getDittoHeaders()));
