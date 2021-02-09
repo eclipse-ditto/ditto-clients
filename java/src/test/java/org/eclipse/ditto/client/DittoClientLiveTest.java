@@ -21,6 +21,7 @@ import static org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel.LIVE_R
 
 import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -37,6 +38,7 @@ import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.client.management.AcknowledgementsFailedException;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonPointer;
+import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.exceptions.InvalidRqlExpressionException;
@@ -49,6 +51,7 @@ import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 import org.eclipse.ditto.signals.acks.base.Acknowledgements;
+import org.eclipse.ditto.signals.acks.things.ThingAcknowledgementFactory;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommand;
 import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommandAnswerBuilder;
@@ -183,13 +186,7 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
         final SendThingMessageResponse<?> response =
                 SendThingMessageResponse.of(command.getEntityId(), command.getMessage(),
                         HttpStatus.ALREADY_REPORTED, command.getDittoHeaders());
-        final Acknowledgement liveResponseAck = Acknowledgement.of(
-                LIVE_RESPONSE,
-                response.getEntityId(),
-                response.getHttpStatus(),
-                response.getDittoHeaders(),
-                response.toJson().getValueOrThrow(MessageCommand.JsonFields.JSON_MESSAGE)
-        );
+        final Acknowledgement liveResponseAck = toLiveResponseAcknowledgement(response);
         final Acknowledgement customAck = Acknowledgement.of(
                 AcknowledgementLabel.of("custom"),
                 command.getEntityId(),
@@ -202,6 +199,24 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
         } catch (final Exception e) {
             throw new AssertionError(e);
         }
+    }
+
+    private static Acknowledgement toLiveResponseAcknowledgement(final SendThingMessageResponse<?> commandResponse) {
+
+        final DittoHeaders liveResponseAckHeaders = commandResponse.getDittoHeaders().toBuilder()
+                    .putHeaders(((MessageCommandResponse<?, ?>) commandResponse).getMessage().getHeaders())
+                    .build();
+
+        final Optional<JsonValue> payload =
+                commandResponse.toJson().getValue(MessageCommandResponse.JsonFields.JSON_MESSAGE.getPointer()
+                        .append(MessageCommandResponse.JsonFields.JSON_MESSAGE_PAYLOAD.getPointer()));
+
+        return ThingAcknowledgementFactory.newAcknowledgement(
+                LIVE_RESPONSE,
+                commandResponse.getThingEntityId(),
+                commandResponse.getHttpStatus(),
+                liveResponseAckHeaders,
+                payload.orElse(null));
     }
 
     @Test

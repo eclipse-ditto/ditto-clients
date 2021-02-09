@@ -46,7 +46,7 @@ import org.eclipse.ditto.signals.acks.base.Acknowledgements;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.commands.base.ErrorResponse;
 import org.eclipse.ditto.signals.commands.messages.MessageCommandResponse;
-import org.eclipse.ditto.signals.commands.messages.MessageDeserializer;
+import org.eclipse.ditto.signals.commands.messages.MessagePayloadSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -185,7 +185,7 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
                     final AcknowledgementLabel expectedLabel = DittoAcknowledgementLabel.LIVE_RESPONSE;
                     final Optional<Message<?>> messageOptional =
                             ((Acknowledgements) response).getAcknowledgement(expectedLabel)
-                                    .flatMap(ImmutableMessageSender::getMessageResponseInAcknowledgement);
+                                    .map(ImmutableMessageSender::getMessageResponseInAcknowledgement);
                     if (messageOptional.isPresent()) {
                         message = messageOptional.get();
                         errorToPublish = null;
@@ -216,19 +216,14 @@ public final class ImmutableMessageSender<T> implements MessageSender<T> {
         });
     }
 
-    private static Optional<Message<?>> getMessageResponseInAcknowledgement(final Acknowledgement ack) {
-        final Optional<Message<?>> deserializedMessage =
-                ack.getEntity().map(JsonValue::asObject).map(MessageDeserializer::deserializeMessageFromJson);
-
-        return deserializedMessage.map(message ->
-                MessagesModelFactory.newMessageBuilder(message.getHeaders().toBuilder()
-                        .httpStatus(ack.getHttpStatus())
-                        .build())
-                        .payload(message.getPayload().orElse(null))
-                        .rawPayload(message.getRawPayload().orElse(null))
-                        .extra(message.getExtra().orElse(null))
-                        .build()
-        );
+    private static Message<?> getMessageResponseInAcknowledgement(final Acknowledgement ack) {
+        final MessageHeaders messageHeaders = MessageHeaders.of(ack.getDittoHeaders()).toBuilder()
+                .httpStatus(ack.getHttpStatus())
+                .build();
+        final MessageBuilder<Object> messageBuilder = MessagesModelFactory.newMessageBuilder(messageHeaders);
+        @Nullable final JsonValue payload = ack.getEntity().orElse(null);
+        MessagePayloadSerializer.deserialize(payload, messageBuilder, messageHeaders);
+        return messageBuilder.build();
     }
 
     private static <T> void checkPayloadTypeAndAccept(final Class<T> clazz,
