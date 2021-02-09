@@ -120,9 +120,9 @@ public interface MessagingProvider {
      * Send Ditto Protocol {@link Adaptable} using the underlying connection and expect a response.
      *
      * @param adaptable the adaptable to be sent
-     * @return a CompletableFuture containing the correlated response to the sent {@code dittoProtocolAdaptable}
+     * @return a CompletionStage containing the correlated response to the sent {@code dittoProtocolAdaptable}
      */
-    default CompletableFuture<Adaptable> sendAdaptable(Adaptable adaptable) {
+    default CompletionStage<Adaptable> sendAdaptable(Adaptable adaptable) {
         final String correlationId = adaptable.getDittoHeaders()
                 .getCorrelationId()
                 .orElseGet(() -> UUID.randomUUID().toString());
@@ -133,9 +133,8 @@ public interface MessagingProvider {
                         adaptable.getDittoHeaders().toBuilder().correlationId(correlationId).build())
                 );
         final Duration timeout = getMessagingConfiguration().getTimeout();
-        final CompletableFuture<Adaptable> result = getAdaptableBus()
-                .subscribeOnceForAdaptable(Classification.forCorrelationId(correlationId), timeout)
-                .toCompletableFuture();
+        final CompletionStage<Adaptable> result = getAdaptableBus()
+                .subscribeOnceForAdaptable(Classification.forCorrelationId(correlationId), timeout);
         emitAdaptable(adaptableToSend);
         return result;
     }

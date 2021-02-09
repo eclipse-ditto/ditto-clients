@@ -23,6 +23,7 @@ import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
@@ -425,7 +426,7 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
     }
 
     @Override
-    protected CompletableFuture<Void> startConsumptionRequest() {
+    protected CompletionStage<Void> startConsumptionRequest() {
         return client.live().startConsumption();
     }
 
@@ -443,7 +444,7 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
 
     @Override
     protected void startConsumptionAndExpectError() {
-        final CompletableFuture<Void> future = client.live().startConsumption();
+        final CompletionStage<Void> future = client.live().startConsumption();
         final InvalidRqlExpressionException invalidRqlExpressionException =
                 InvalidRqlExpressionException.newBuilder().message("Invalid filter.").build();
 
@@ -460,7 +461,7 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
 
     @Override
     protected void startConsumptionSucceeds() {
-        final CompletableFuture<Void> future = client.live().startConsumption();
+        final CompletableFuture<Void> future = client.live().startConsumption().toCompletableFuture();
 
         reply(Classification.StreamingType.LIVE_EVENT.startAck());
         reply(Classification.StreamingType.LIVE_COMMAND.startAck());
@@ -670,8 +671,8 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
         }
     }
 
-    private CompletableFuture<Void> startConsumption() {
-        final CompletableFuture<Void> result = client.live().startConsumption();
+    private CompletionStage<Void> startConsumption() {
+        final CompletionStage<Void> result = client.live().startConsumption();
         expectProtocolMsgWithCorrelationId("START-SEND-LIVE-EVENTS");
         expectProtocolMsgWithCorrelationId("START-SEND-MESSAGES");
         expectProtocolMsgWithCorrelationId("START-SEND-LIVE-COMMANDS");

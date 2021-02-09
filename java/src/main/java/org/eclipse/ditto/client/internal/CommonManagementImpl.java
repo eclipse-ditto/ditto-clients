@@ -117,13 +117,13 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Void> startConsumption() {
+    public CompletionStage<Void> startConsumption() {
         // do not call doStartConsumption directly
         return startConsumption(new Option[]{});
     }
 
     @Override
-    public CompletableFuture<Void> startConsumption(final Option<?>... consumptionOptions) {
+    public CompletionStage<Void> startConsumption(final Option<?>... consumptionOptions) {
 
         // concurrent consumption requests can have strange effects, so better avoid it
         if (!subscriptionRequestPending.compareAndSet(false, true)) {
@@ -162,9 +162,9 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
      * Starts the consumption of twin events / messages / live events and commands.
      *
      * @param consumptionConfig the configuration Map to apply for the consumption.
-     * @return a CompletableFuture that terminates when the start operation was successful.
+     * @return a CompletionStage that terminates when the start operation was successful.
      */
-    protected abstract CompletableFuture<Void> doStartConsumption(Map<String, String> consumptionConfig);
+    protected abstract CompletionStage<Void> doStartConsumption(Map<String, String> consumptionConfig);
 
     /**
      * Returns the MessagingProvider this CommonManagement uses.
@@ -261,7 +261,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Thing> create(final Option<?>... options) {
+    public CompletionStage<Thing> create(final Option<?>... options) {
         // as the backend adds the default namespace, we can here simply use the empty namespace.
         final Thing thing = ThingsModelFactory.newThingBuilder()
                 .setId(ThingId.generateRandom())
@@ -270,7 +270,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Thing> create(final ThingId thingId, final Option<?>... options) {
+    public CompletionStage<Thing> create(final ThingId thingId, final Option<?>... options) {
         argumentNotNull(thingId);
         argumentNotEmpty(thingId);
 
@@ -281,12 +281,12 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Thing> create(final Thing thing, final Option<?>... options) {
+    public CompletionStage<Thing> create(final Thing thing, final Option<?>... options) {
         return processCreate(thing, null, options);
     }
 
     @Override
-    public CompletableFuture<Thing> create(final JsonObject jsonObject, final Option<?>... options) {
+    public CompletionStage<Thing> create(final JsonObject jsonObject, final Option<?>... options) {
         argumentNotNull(jsonObject);
 
         final Optional<JsonObject> initialPolicy = getInlinePolicyFromThingJson(jsonObject);
@@ -296,7 +296,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Thing> create(final Policy initialPolicy, final Option<?>... options) {
+    public CompletionStage<Thing> create(final Policy initialPolicy, final Option<?>... options) {
         argumentNotNull(initialPolicy, ARGUMENT_INITIAL_POLICY);
         // as the backend adds the default namespace, we can here simply use the empty namespace.
         final Thing thing = ThingsModelFactory.newThingBuilder()
@@ -306,7 +306,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Thing> create(final ThingId thingId, final JsonObject initialPolicy,
+    public CompletionStage<Thing> create(final ThingId thingId, final JsonObject initialPolicy,
             final Option<?>... options) {
         argumentNotNull(thingId, ARGUMENT_THING_ID);
         argumentNotEmpty(thingId);
@@ -318,9 +318,8 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         return processCreate(thing, initialPolicy, options);
     }
 
-
     @Override
-    public CompletableFuture<Thing> create(final ThingId thingId, final Policy initialPolicy,
+    public CompletionStage<Thing> create(final ThingId thingId, final Policy initialPolicy,
             final Option<?>... options) {
         argumentNotNull(thingId, ARGUMENT_THING_ID);
         argumentNotEmpty(thingId);
@@ -333,7 +332,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Thing> create(final JsonObject thing, final JsonObject initialPolicy,
+    public CompletionStage<Thing> create(final JsonObject thing, final JsonObject initialPolicy,
             final Option<?>... options) {
         argumentNotNull(thing, ARGUMENT_THING);
         argumentNotNull(initialPolicy, ARGUMENT_INITIAL_POLICY);
@@ -342,7 +341,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Thing> create(final JsonObject thing, final Policy initialPolicy,
+    public CompletionStage<Thing> create(final JsonObject thing, final Policy initialPolicy,
             final Option<?>... options) {
         argumentNotNull(thing, ARGUMENT_THING);
         argumentNotNull(initialPolicy, ARGUMENT_INITIAL_POLICY);
@@ -351,7 +350,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Thing> create(final Thing thing, final JsonObject initialPolicy,
+    public CompletionStage<Thing> create(final Thing thing, final JsonObject initialPolicy,
             final Option<?>... options) {
         argumentNotNull(thing, ARGUMENT_THING);
         assertThatThingHasId(thing);
@@ -361,8 +360,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Thing> create(final Thing thing, final Policy initialPolicy,
-            final Option<?>... options) {
+    public CompletionStage<Thing> create(final Thing thing, final Policy initialPolicy, final Option<?>... options) {
         argumentNotNull(thing, ARGUMENT_THING);
         assertThatThingHasId(thing);
         argumentNotNull(initialPolicy, ARGUMENT_INITIAL_POLICY);
@@ -370,7 +368,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         return processCreate(thing, initialPolicy.toJson(), options);
     }
 
-    private CompletableFuture<Thing> processCreate(final Thing thing, @Nullable final JsonObject initialPolicy,
+    private CompletionStage<Thing> processCreate(final Thing thing, @Nullable final JsonObject initialPolicy,
             final Option<?>... options) {
         argumentNotNull(thing);
         assertThatThingHasId(thing);
@@ -380,13 +378,12 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         return askThingCommand(command,
                 // response could be CreateThingResponse or ModifyThingResponse or Acknowledgements.
                 CommandResponse.class,
-                CommonManagementImpl::transformModifyResponse)
-                .toCompletableFuture();
+                CommonManagementImpl::transformModifyResponse);
     }
 
 
     @Override
-    public CompletableFuture<Void> merge(final ThingId thingId, final JsonObject jsonObject,
+    public CompletionStage<Void> merge(final ThingId thingId, final JsonObject jsonObject,
             final Option<?>... options) {
         argumentNotNull(jsonObject);
 
@@ -395,7 +392,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Void> merge(final ThingId thingId, final Thing thing,
+    public CompletionStage<Void> merge(final ThingId thingId, final Thing thing,
             final Option<?>... options) {
         argumentNotNull(thing);
 
@@ -405,14 +402,14 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Optional<Thing>> put(final Thing thing, final Option<?>... options) {
+    public CompletionStage<Optional<Thing>> put(final Thing thing, final Option<?>... options) {
         argumentNotNull(thing, ARGUMENT_THING);
         assertThatThingHasId(thing);
         return processPut(thing, null, options);
     }
 
     @Override
-    public CompletableFuture<Optional<Thing>> put(final JsonObject jsonObject, final Option<?>... options) {
+    public CompletionStage<Optional<Thing>> put(final JsonObject jsonObject, final Option<?>... options) {
         argumentNotNull(jsonObject);
 
         final Optional<JsonObject> initialPolicy = getInlinePolicyFromThingJson(jsonObject);
@@ -422,7 +419,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Optional<Thing>> put(final JsonObject thing, final JsonObject initialPolicy,
+    public CompletionStage<Optional<Thing>> put(final JsonObject thing, final JsonObject initialPolicy,
             final Option<?>... options) {
         argumentNotNull(thing, ARGUMENT_THING);
         argumentNotNull(initialPolicy, ARGUMENT_INITIAL_POLICY);
@@ -431,7 +428,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Optional<Thing>> put(final JsonObject thing, final Policy initialPolicy,
+    public CompletionStage<Optional<Thing>> put(final JsonObject thing, final Policy initialPolicy,
             final Option<?>... options) {
         argumentNotNull(thing, ARGUMENT_THING);
         argumentNotNull(initialPolicy, ARGUMENT_INITIAL_POLICY);
@@ -440,7 +437,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Optional<Thing>> put(final Thing thing, final JsonObject initialPolicy,
+    public CompletionStage<Optional<Thing>> put(final Thing thing, final JsonObject initialPolicy,
             final Option<?>... options) {
         argumentNotNull(thing, ARGUMENT_THING);
         assertThatThingHasId(thing);
@@ -450,7 +447,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Optional<Thing>> put(final Thing thing, final Policy initialPolicy,
+    public CompletionStage<Optional<Thing>> put(final Thing thing, final Policy initialPolicy,
             final Option<?>... options) {
         argumentNotNull(thing, ARGUMENT_THING);
         assertThatThingHasId(thing);
@@ -459,7 +456,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         return processPut(thing, initialPolicy.toJson(), options);
     }
 
-    private CompletableFuture<Optional<Thing>> processPut(final Thing thing, @Nullable final JsonObject initialPolicy,
+    private CompletionStage<Optional<Thing>> processPut(final Thing thing, @Nullable final JsonObject initialPolicy,
             final Option<?>... options) {
         argumentNotNull(thing);
         assertThatThingHasId(thing);
@@ -469,20 +466,20 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
                 // response could be CreateThingResponse or ModifyThingResponse or Acknowledgements.
                 CommandResponse.class,
                 response -> Optional.ofNullable(transformModifyResponse(response))
-        ).toCompletableFuture();
+        );
     }
 
     @Override
-    public CompletableFuture<Void> update(final Thing thing, final Option<?>... options) {
+    public CompletionStage<Void> update(final Thing thing, final Option<?>... options) {
         argumentNotNull(thing);
         assertThatThingHasId(thing);
 
         return askThingCommand(outgoingMessageFactory.updateThing(thing, options), CommandResponse.class,
-                this::toVoid).toCompletableFuture();
+                this::toVoid);
     }
 
     @Override
-    public CompletableFuture<Void> update(final JsonObject jsonObject, final Option<?>... options) {
+    public CompletionStage<Void> update(final JsonObject jsonObject, final Option<?>... options) {
         argumentNotNull(jsonObject);
 
         final Thing thing = ThingsModelFactory.newThing(jsonObject);
@@ -490,22 +487,22 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<Void> delete(final ThingId thingId, final Option<?>... options) {
+    public CompletionStage<Void> delete(final ThingId thingId, final Option<?>... options) {
         argumentNotNull(thingId);
 
         final DeleteThing command = outgoingMessageFactory.deleteThing(thingId, options);
-        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 
     @Override
-    public CompletableFuture<List<Thing>> retrieve(final Iterable<ThingId> thingIds) {
+    public CompletionStage<List<Thing>> retrieve(final Iterable<ThingId> thingIds) {
         argumentNotNull(thingIds);
 
         return sendRetrieveThingsMessage(outgoingMessageFactory.retrieveThings(thingIds));
     }
 
     @Override
-    public CompletableFuture<List<Thing>> retrieve(final ThingId thingId, final ThingId... thingIds) {
+    public CompletionStage<List<Thing>> retrieve(final ThingId thingId, final ThingId... thingIds) {
         argumentNotNull(thingId);
         argumentNotNull(thingIds);
 
@@ -517,7 +514,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<List<Thing>> retrieve(final JsonFieldSelector fieldSelector, final ThingId thingId,
+    public CompletionStage<List<Thing>> retrieve(final JsonFieldSelector fieldSelector, final ThingId thingId,
             final ThingId... thingIds) {
 
         argumentNotNull(thingId);
@@ -531,7 +528,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Override
-    public CompletableFuture<List<Thing>> retrieve(final JsonFieldSelector fieldSelector,
+    public CompletionStage<List<Thing>> retrieve(final JsonFieldSelector fieldSelector,
             final Iterable<ThingId> thingIds) {
 
         argumentNotNull(fieldSelector);
@@ -556,8 +553,8 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         argumentNotNull(attrPath);
         argumentNotNull(handler);
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
-                SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/attributes{0}", attrPath), Change.class,
-                handler, (change, value, path, params) -> change.withPathAndValue(path, value)
+                SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/attributes{0}", attrPath),
+                Change.class, handler, (change, value, path, params) -> change.withPathAndValue(path, value)
         );
     }
 
@@ -623,8 +620,8 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         argumentNotNull(propertyPath);
         argumentNotNull(handler);
         SelectorUtil.registerForChanges(handlerRegistry, registrationId,
-                SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/features/{0}/properties{1}", featureId,
-                        propertyPath),
+                SelectorUtil.formatJsonPointer(LOGGER, "/things/'{thingId}'/features/{0}/properties{1}",
+                        featureId, propertyPath),
                 Change.class, handler, (change, value, path, params) -> change.withPathAndValue(path, value)
         );
     }
@@ -783,9 +780,8 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         }
     }
 
-    private CompletableFuture<List<Thing>> sendRetrieveThingsMessage(final RetrieveThings command) {
-        return askThingCommand(command, RetrieveThingsResponse.class, RetrieveThingsResponse::getThings)
-                .toCompletableFuture();
+    private CompletionStage<List<Thing>> sendRetrieveThingsMessage(final RetrieveThings command) {
+        return askThingCommand(command, RetrieveThingsResponse.class, RetrieveThingsResponse::getThings);
     }
 
     @Nullable
@@ -803,9 +799,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
 
     @FunctionalInterface
     protected interface NotifyMessage {
-
         void accept(final PointerBus pointerBus);
-
     }
 
 }

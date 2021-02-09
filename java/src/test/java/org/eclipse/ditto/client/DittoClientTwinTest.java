@@ -16,7 +16,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.model.base.acks.AcknowledgementRequest.parseAcknowledgementRequest;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.json.JsonPointer;
@@ -128,7 +128,7 @@ public final class DittoClientTwinTest extends AbstractConsumptionDittoClientTes
     }
 
     @Override
-    protected CompletableFuture<Void> startConsumptionRequest() {
+    protected CompletionStage<Void> startConsumptionRequest() {
         return client.twin().startConsumption();
     }
 
@@ -140,7 +140,7 @@ public final class DittoClientTwinTest extends AbstractConsumptionDittoClientTes
 
     @Override
     protected void startConsumptionAndExpectError() {
-        final CompletableFuture<Void> future = client.twin().startConsumption();
+        final CompletionStage<Void> future = client.twin().startConsumption();
         final String protocolMessage = messaging.expectEmitted();
         final String correlationId = determineCorrelationId(protocolMessage);
         final DittoHeaders dittoHeaders = DittoHeaders.newBuilder().correlationId(correlationId).build();
@@ -154,9 +154,9 @@ public final class DittoClientTwinTest extends AbstractConsumptionDittoClientTes
 
     @Override
     protected void startConsumptionSucceeds() {
-        final CompletableFuture<Void> future = client.twin().startConsumption();
+        final CompletionStage<Void> future = client.twin().startConsumption();
         reply(Classification.StreamingType.TWIN_EVENT.startAck());
-        future.join();
+        future.toCompletableFuture().join();
     }
 
 }

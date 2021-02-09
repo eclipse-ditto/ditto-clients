@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -38,13 +39,13 @@ abstract class AbstractConsumptionDittoClientTest extends AbstractDittoClientTes
     @Test
     public void concurrentStartConsumptionFails() {
         try {
-            final CompletableFuture<Void> firstRequest = startConsumptionRequest();
-            final CompletableFuture<Void> concurrentRequest = startConsumptionRequest();
+            final CompletionStage<Void> firstRequest = startConsumptionRequest();
+            final CompletionStage<Void> concurrentRequest = startConsumptionRequest();
 
             replyToConsumptionRequest();
 
             assertCompletion(firstRequest);
-            concurrentRequest.get(1, TimeUnit.SECONDS);
+            concurrentRequest.toCompletableFuture().get(1, TimeUnit.SECONDS);
         } catch (final Exception e) {
             assertThat(e)
                     .isInstanceOf(ExecutionException.class)
@@ -52,7 +53,7 @@ abstract class AbstractConsumptionDittoClientTest extends AbstractDittoClientTes
         }
     }
 
-    protected abstract CompletableFuture<Void> startConsumptionRequest();
+    protected abstract CompletionStage<Void> startConsumptionRequest();
 
     protected abstract void replyToConsumptionRequest();
 
@@ -94,10 +95,10 @@ abstract class AbstractConsumptionDittoClientTest extends AbstractDittoClientTes
         return success;
     }
 
-    protected void assertFailedCompletion(final CompletableFuture<Void> future,
+    protected void assertFailedCompletion(final CompletionStage<Void> future,
             final Class<? extends Exception> exception) {
         try {
-            future.get(1L, TimeUnit.SECONDS);
+            future.toCompletableFuture().get(1L, TimeUnit.SECONDS);
         } catch (final Exception e) {
             assertThat(e)
                     .isInstanceOf(ExecutionException.class)
