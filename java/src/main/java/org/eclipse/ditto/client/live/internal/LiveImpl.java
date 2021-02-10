@@ -353,8 +353,9 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
         boolean handled = false;
 
         final ThingId thingId = liveCommand.getThingEntityId();
-        if (getFeatureIdFromResourcePath(liveCommand).isPresent()) {
-            final String featureId = getFeatureIdFromResourcePath(liveCommand).get().toString();
+        final Optional<JsonKey> featureIdFromResourcePath = getFeatureIdFromResourcePath(liveCommand);
+        if (featureIdFromResourcePath.isPresent()) {
+            final String featureId = featureIdFromResourcePath.get().toString();
             handled = getFeatureHandle(thingId, featureId)
                     .filter(h -> h instanceof LiveCommandProcessor)
                     .map(h -> (LiveCommandProcessor) h)

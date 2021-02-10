@@ -19,9 +19,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 import java.util.UUID;
@@ -32,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.client.configuration.BasicAuthenticationConfiguration;
@@ -78,8 +82,8 @@ public final class DittoClientUsageExamples {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DittoClientUsageExamples.class);
 
-    private static final String PROPERTIES_FILE = "ditto-client-starter-local.properties"; // for local development
-    //    private static final String PROPERTIES_FILE = "ditto-client-starter-sandbox.properties";
+        private static final String PROPERTIES_FILE = "ditto-client-starter-local.properties"; // for local development
+//    private static final String PROPERTIES_FILE = "ditto-client-starter-sandbox.properties";
     private static final String PROXY_HOST;
     private static final String PROXY_PORT;
     private static final String DITTO_ENDPOINT_URL;
@@ -184,10 +188,10 @@ public final class DittoClientUsageExamples {
             System.out.println("\n\nAbout to continue with small load test:");
             promptEnterKey();
 
-            final int loadTestThings = 100;
-            final int loadTestCount = 10;
+            final int loadTestThings = 1000;
+            final int loadTestCount = 500;
             subscribeForLoadTestUpdateChanges(client2, loadTestCount * loadTestThings, false);
-            performLoadTestUpdate(client, loadTestCount, loadTestThings, false);
+            performLoadTestUpdate(client, loadTestCount, loadTestThings, Duration.ofMillis(20), true);
             performLoadTestRead(client, loadTestCount, true);
             Thread.sleep(1000);
         }
@@ -501,7 +505,11 @@ public final class DittoClientUsageExamples {
     private static void performLoadTestUpdate(final DittoClient client,
             final int updateCount,
             final int thingCount,
+            final Duration delayBetweenUpdates,
             final boolean log) {
+
+        LOGGER.info("performLoadTestUpdate: About to create '{}' things and doing '{}' updates on each created " +
+                "thing being a total of '{}' updates...", thingCount, updateCount, thingCount*updateCount);
 
         final JsonObject attributesExample = JsonFactory.newObjectBuilder()
                 .set("maker", "ACME Inc.")
@@ -517,6 +525,7 @@ public final class DittoClientUsageExamples {
                 .build();
 
         final ExecutorService executorService = Executors.newFixedThreadPool(16);
+        final List<ThingId> thingIds = new ArrayList<>();
         for (int k = 1; k <= thingCount; k++) {
             final int thingIdx = k;
             executorService.execute(() ->
@@ -534,41 +543,64 @@ public final class DittoClientUsageExamples {
                 if (log) {
                     LOGGER.info("performLoadTestUpdate: Created new thing: {}", thing);
                 }
+                thingIds.add(thingId);
+            });
+        }
 
-                final long startTs = System.nanoTime();
-                final AtomicInteger integer = new AtomicInteger(updateCount);
-                for (int i = updateCount; i >= 0; i--) {
-                    final int counter = i;
+        while (thingIds.size() < thingCount) {
+            try {
+                LOGGER.info("Waiting for things to be created... currently created: '{}'", thingIds.size());
+                Thread.sleep(1000);
+            } catch (final InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException(e);
+            }
+        }
+
+        LOGGER.info("performLoadTestUpdate: starting with attribute updates...");
+
+        final long startTs = System.nanoTime();
+        final AtomicInteger integer = new AtomicInteger(thingCount * updateCount);
+        IntStream.range(0, updateCount)
+                .forEach(counter -> thingIds.forEach(thingId -> executorService.execute(() -> {
                     final long startTs2 = System.nanoTime();
                     client.twin().forId(thingId).putAttribute("counter", counter,
                             Options.Modify.responseRequired(false)).whenComplete((_void, throwable) ->
                     {
                         if (throwable != null) {
-                            LOGGER.warn("performLoadTestUpdate: Updating attribute failed: {}", throwable.getMessage());
+                            LOGGER.debug("performLoadTestUpdate: Updating attribute failed: {}",
+                                    throwable.getMessage());
                         } else {
                             final double duration = getDuration(startTs2);
                             if (log) {
-                                LOGGER.info("performLoadTestUpdate: Single update request ({}) latency: {}ms",
+                                LOGGER.debug("performLoadTestUpdate: Single update request ({}) latency: {}ms",
                                         counter, duration);
                             }
-                            integer.decrementAndGet();
                         }
+                        integer.decrementAndGet();
                     });
-                }
 
-                while (integer.get() > 0) {
-                    try {
-                        Thread.sleep(10);
-                    } catch (final InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        throw new IllegalStateException(e);
+                    if (!delayBetweenUpdates.isZero()) {
+                        try {
+                            TimeUnit.MILLISECONDS.sleep(delayBetweenUpdates.toMillis());
+                        } catch (final InterruptedException e) {
+                            // ignore
+                        }
                     }
-                }
-                final double duration = getDuration(startTs);
-                LOGGER.info("performLoadTestUpdate: Finished updating '{}' attributes after {}ms - " +
-                        "that are ~{}req/s", updateCount, duration, (int) (updateCount / duration * 1000));
-            });
+                })));
+
+        while (integer.get() > 0) {
+            try {
+                Thread.sleep(10);
+            } catch (final InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException(e);
+            }
         }
+        final double duration = getDuration(startTs);
+        LOGGER.info("performLoadTestUpdate: Finished updating '{}' attributes in '{}' things - a total of '{}' " +
+                "updates after {}ms - that are ~{}req/s", updateCount, thingCount, thingCount*updateCount,
+                duration, (int) (thingCount*updateCount / duration * 1000));
     }
 
     private static void subscribeForLoadTestUpdateChanges(final DittoClient client, final int count,
@@ -734,7 +766,7 @@ public final class DittoClientUsageExamples {
                     AuthenticationProviders.dummy(DummyAuthenticationConfiguration.newBuilder()
                             .dummyUsername(DITTO_DUMMY_AUTH_USER)
                             .build());
-        } else if (DITTO_OAUTH_CLIENT_ID != null) {
+        } else if (DITTO_OAUTH_CLIENT_ID != null && !DITTO_OAUTH_CLIENT_ID.isEmpty()) {
             final ClientCredentialsAuthenticationConfiguration.ClientCredentialsAuthenticationConfigurationBuilder
                     authenticationConfigurationBuilder =
                     ClientCredentialsAuthenticationConfiguration.newBuilder()
