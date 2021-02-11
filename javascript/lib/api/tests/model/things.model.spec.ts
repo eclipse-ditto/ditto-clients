@@ -47,6 +47,7 @@ const thingObj = {
 const thingObjWithoutMetadata = {
   attributes,
   thingId: 'Testspace:Testthing',
+  definition: 'example:test:definition',
   policyId: 'PolicyId',
   features: featuresObj,
   _revision: 0,
