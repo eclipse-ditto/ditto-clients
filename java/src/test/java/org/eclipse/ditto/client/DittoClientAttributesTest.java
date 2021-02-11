@@ -23,12 +23,14 @@ import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.internal.AbstractDittoClientThingsTest;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.json.JsonFactory;
+import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
+import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
@@ -37,6 +39,8 @@ import org.eclipse.ditto.signals.commands.things.modify.DeleteAttribute;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributeResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributes;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributesResponse;
+import org.eclipse.ditto.signals.commands.things.modify.MergeThing;
+import org.eclipse.ditto.signals.commands.things.modify.MergeThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyAttribute;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributeResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributes;
@@ -82,6 +86,40 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
     }
 
     @Test
+    public void testMergeStringAttributeWithExistsOptionFalse() {
+        final JsonPointer absolutePath =
+                Thing.JsonFields.ATTRIBUTES.getPointer().append(ATTRIBUTE_KEY_NEW);
+
+        assertEventualCompletion(
+                getManagement()
+                        .forId(THING_ID)
+                        .mergeAttribute(ATTRIBUTE_KEY_NEW, ATTRIBUTE_VALUE, Options.Modify.exists(false))
+        );
+        final Signal<?> command = expectMsgClass(MergeThing.class);
+        assertOnlyIfNoneMatchHeader(command);
+        reply(MergeThingResponse.of(THING_ID,
+                absolutePath,
+                command.getDittoHeaders()));
+    }
+
+    @Test
+    public void testMergeStringAttributeWithExistsOptionTrue() {
+        final JsonPointer absolutePath =
+                Thing.JsonFields.ATTRIBUTES.getPointer().append(ATTRIBUTE_KEY_NEW);
+
+        assertEventualCompletion(
+                getManagement()
+                        .forId(THING_ID)
+                        .mergeAttribute(ATTRIBUTE_KEY_NEW, ATTRIBUTE_VALUE, Options.Modify.exists(true))
+        );
+        final Signal<?> command = expectMsgClass(MergeThing.class);
+        assertOnlyIfMatchHeader(command);
+        reply(MergeThingResponse.of(THING_ID,
+                absolutePath,
+                command.getDittoHeaders()));
+    }
+
+    @Test
     public void testAddBooleanAttribute() {
         assertEventualCompletion(
                 getManagement()
@@ -105,11 +143,39 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
     }
 
     @Test
+    public void testMergeAttribute() {
+        final JsonPointer absolutePath =
+                Thing.JsonFields.ATTRIBUTES.getPointer().append(ATTRIBUTE_KEY_NEW);
+        final JsonObject value = JsonFactory.newObject("{\"id\": 42, \"name\": " +
+                "\"someName\"}");
+
+        assertEventualCompletion(
+                getManagement()
+                        .forId(THING_ID)
+                        .mergeAttribute(ATTRIBUTE_KEY_NEW, value)
+        );
+        final Signal<?> command = expectMsgClass(MergeThing.class);
+        reply(MergeThingResponse.of(THING_ID, absolutePath, command.getDittoHeaders()));
+    }
+
+    @Test
     public void testAddAttributeFailureDueToThingErrorResponse() throws Exception {
         final CompletableFuture<Void> resultFuture = getManagement()
                 .forId(THING_ID)
                 .putAttribute(ATTRIBUTE_KEY_NEW, true);
         final Signal<?> command = expectMsgClass(ModifyAttribute.class);
+        reply(ThingErrorResponse.of(ThingNotAccessibleException.newBuilder(THING_ID).build(),
+                command.getDittoHeaders()));
+        resultFuture.exceptionally(error -> null).get(1L, TimeUnit.SECONDS);
+        assertThat(resultFuture).hasFailedWithThrowableThat().isInstanceOf(ThingNotAccessibleException.class);
+    }
+
+    @Test
+    public void testMergeAttributeFailureDueToThingErrorResponse() throws Exception {
+        final CompletableFuture<Void> resultFuture = getManagement()
+                .forId(THING_ID)
+                .mergeAttribute(ATTRIBUTE_KEY_NEW, true);
+        final Signal<?> command = expectMsgClass(MergeThing.class);
         reply(ThingErrorResponse.of(ThingNotAccessibleException.newBuilder(THING_ID).build(),
                 command.getDittoHeaders()));
         resultFuture.exceptionally(error -> null).get(1L, TimeUnit.SECONDS);

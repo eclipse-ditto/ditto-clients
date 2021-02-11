@@ -4,7 +4,7 @@
   "description": "A library supporting you to work with the APIs of Eclipse Ditto 1.0.x.",
   "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
   "repository": "https://github.com/eclipse/ditto-clients",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "EPL-2.0",
   "private": true,
   "scripts": {
     "postinstall": "npm run bootstrap",

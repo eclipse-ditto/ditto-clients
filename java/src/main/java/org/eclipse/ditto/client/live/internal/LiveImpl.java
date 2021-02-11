@@ -15,6 +15,7 @@ package org.eclipse.ditto.client.live.internal;
 import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -41,6 +42,7 @@ import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.live.messages.PendingMessage;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
+import org.eclipse.ditto.json.JsonKey;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
@@ -51,7 +53,6 @@ import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.Signal;
-import org.eclipse.ditto.signals.base.WithFeatureId;
 import org.eclipse.ditto.signals.commands.live.LiveCommandFactory;
 import org.eclipse.ditto.signals.commands.live.base.LiveCommand;
 import org.eclipse.ditto.signals.commands.messages.MessageCommand;
@@ -351,8 +352,9 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
         boolean handled = false;
 
         final ThingId thingId = liveCommand.getThingEntityId();
-        if (liveCommand instanceof WithFeatureId) {
-            final String featureId = ((WithFeatureId) liveCommand).getFeatureId();
+        final Optional<JsonKey> featureIdFromResourcePath = getFeatureIdFromResourcePath(liveCommand);
+        if (featureIdFromResourcePath.isPresent()) {
+            final String featureId = featureIdFromResourcePath.get().toString();
             handled = getFeatureHandle(thingId, featureId)
                     .filter(h -> h instanceof LiveCommandProcessor)
                     .map(h -> (LiveCommandProcessor) h)
@@ -384,6 +386,10 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                     liveCommand.getType());
         }
 
+    }
+
+    private Optional<JsonKey> getFeatureIdFromResourcePath(final LiveCommand<?, ?> liveCommand) {
+        return liveCommand.getResourcePath().get(1);
     }
 
     private static Message<?> adaptableAsLiveMessage(final Adaptable adaptable) {

@@ -4,7 +4,7 @@
   "description": "Node.js(r) implementation of Eclipse Ditto 1.0.x JavaScript API.",
   "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
   "repository": "https://github.com/eclipse/ditto-clients",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "EPL-2.0",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "publishConfig": {

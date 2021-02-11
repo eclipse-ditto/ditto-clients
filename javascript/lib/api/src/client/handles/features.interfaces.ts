@@ -77,7 +77,7 @@ export interface FeaturesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the response
    */
-  putFeature(feature: Feature, options?: MatchOptions): Promise<GenericResponse>;
+  putFeature(feature: Feature, options?: MatchOptions): Promise<PutResponse<Feature>>;
 
   /**
    * Adds or updates the definition of the specified Feature.
@@ -97,8 +97,7 @@ export interface FeaturesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the response
    */
-  putProperties(featureId: string, properties: object, options?: MatchOptions): Promise<GenericResponse>;
-
+  putProperties(featureId: string, properties: object, options?: MatchOptions): Promise<PutResponse<Object>>;
 
   /**
    * Adds or updates a Property of the specified Feature.

@@ -202,11 +202,11 @@
         <!-- ### Testing dependencies versions -->
         <logback.version>1.2.3</logback.version>
         <junit.version>4.13.1</junit.version>
-        <assertj.version>3.12.0</assertj.version>
-        <mutability-detector.version>0.10.2</mutability-detector.version>
-        <equals-verifier.version>3.0.3</equals-verifier.version>
+        <assertj.version>3.19.0</assertj.version>
+        <mutability-detector.version>0.10.4</mutability-detector.version>
+        <equals-verifier.version>3.1.10</equals-verifier.version>
         <mockito.version>3.1.0</mockito.version>
-        <jsonassert.version>1.2.3</jsonassert.version>
+        <jsonassert.version>1.5.0</jsonassert.version>
         <awaitility.version>4.0.3</awaitility.version>
 
         <!-- reactive streams versions -->
@@ -215,9 +215,8 @@
         <!-- carefully set testng version to one whose junit dependency is equal to ${junit.version} -->
         <reactive-streams-tck.testng.version>6.14.3</reactive-streams-tck.testng.version>
 
-        <json-unit.version>1.28.1</json-unit.version>
-        <pax.exam.version>4.13.3</pax.exam.version>
-        <felix.version>6.0.3</felix.version>
+        <pax.exam.version>4.13.4</pax.exam.version>
+        <felix.version>6.0.4</felix.version>
 
 
         <javac.source>1.8</javac.source>
@@ -240,7 +239,7 @@
         <!-- globally set version for checking binary compatibility against -->
         <!-- whoever changes this to ${revision} or ${project.version} is responsible for API breakage caused by this! -->
         <!-- in other words: never do that here! exclude the 'breakages' locally in the japicmp maven plugin if you intentionally break something -->
-        <binary-compatibility-check.version>1.4.0</binary-compatibility-check.version>
+        <binary-compatibility-check.version>1.5.0</binary-compatibility-check.version>
         <!-- skip until first release: -->
         <binary-compatibility-check.skip>false</binary-compatibility-check.skip>
 
@@ -265,8 +264,11 @@
                 <filtering>false</filtering>
                 <targetPath>META-INF</targetPath>
                 <excludes>
+                    <exclude>README.md</exclude>
                     <exclude>NOTICE-THIRD-PARTY.md</exclude>
                     <exclude>templates/**</exclude>
+                    <exclude>3rd-party-dependencies/**</exclude>
+                    <exclude>headers/**</exclude>
                 </excludes>
             </resource>
         </resources>
@@ -333,7 +335,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M5</version>
+                    <version>3.0.0-M4</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -656,6 +658,7 @@
                     <header>../legal/headers/license-header.txt</header>
                     <validHeaders>
                         <header>../legal/headers/license-header-2019.txt</header>
+                        <header>../legal/headers/license-header-2020.txt</header>
                     </validHeaders>
                     <aggregate>true</aggregate>
                     <quiet>false</quiet>
@@ -946,12 +949,6 @@
             <version>${jsonassert.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>net.javacrumbs.json-unit</groupId>
-            <artifactId>json-unit</artifactId>
-            <version>${json-unit.version}</version>
-            <scope>test</scope>
-        </dependency>
 
         <dependency>
             <groupId>org.ops4j.pax.exam</groupId>
@@ -1161,6 +1158,58 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>attachSources</id>
+            <activation>
+                <property>
+                    <name>attachSources</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>attachJavadocs</id>
+            <activation>
+                <property>
+                    <name>attachJavadocs</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
