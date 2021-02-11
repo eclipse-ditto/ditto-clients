@@ -66,7 +66,15 @@ const anAclEntry = new AclEntry('ID', true, true, true);
 const anotherAclEntry = new AclEntry('AnotherID', false, false, false);
 const acl = { ID: anAclEntry, AnotherID: anotherAclEntry };
 const metadata = new Metadata({ foo: 'bar', bar: 'foo' }, { lamp: new Feature('lamp', undefined, { color: {} }) });
-const thing = new Thing('Testspace:Testthing', 'PolicyId', attributes, features, 0, '08042019', metadata, acl, 'example:test:definition');
+const thing = new Thing('Testspace:Testthing',
+  'PolicyId',
+  attributes,
+  features,
+  0,
+  '08042019',
+  acl,
+  'example:test:definition',
+  metadata);
 const response = new SearchThingsResponse([thing], 0);
 
 describe('Feature', () => {

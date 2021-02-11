@@ -27,9 +27,9 @@ export class Thing extends EntityWithId {
     private readonly _features?: Features,
     private readonly __revision?: number,
     private readonly __modified?: string,
-    private readonly __metadata?: Metadata,
     private readonly _acl?: Acl,
-    private readonly _definition?: string) {
+    private readonly _definition?: string,
+    private readonly __metadata?: Metadata) {
     super();
   }
 
@@ -47,17 +47,16 @@ export class Thing extends EntityWithId {
     return new Thing(o['thingId'],
       o['policyId'],
       o['attributes'],
-      // @ts-ignore
       Features.fromObject(o['features']),
       o['_revision'],
       o['_modified'],
-      Metadata.fromObject(o['_metadata']),
       Acl.fromObject(o['acl']),
-      o['definition']);
+      o['definition'],
+      Metadata.fromObject(o['_metadata']));
   }
 
   public static empty(): Thing {
-    return new Thing('', '', undefined, undefined, 0, '', undefined, undefined);
+    return new Thing('', '', undefined, undefined, 0, '', undefined, undefined, undefined);
   }
 
   public toObject(): object {
