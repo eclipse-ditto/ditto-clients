@@ -14,17 +14,17 @@ package org.eclipse.ditto.client.live.commands;
 
 import java.util.function.Function;
 
-import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswerBuilder;
-import org.eclipse.ditto.signals.commands.live.modify.DeleteFeatureLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.DeleteFeaturesLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.MergeThingLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.ModifyFeatureLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.ModifyFeaturesLiveCommand;
-import org.eclipse.ditto.signals.commands.live.query.RetrieveFeatureLiveCommand;
-import org.eclipse.ditto.signals.commands.live.query.RetrieveFeaturesLiveCommand;
+import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
+import org.eclipse.ditto.client.live.commands.modify.DeleteFeatureLiveCommand;
+import org.eclipse.ditto.client.live.commands.modify.DeleteFeaturesLiveCommand;
+import org.eclipse.ditto.client.live.commands.modify.MergeThingLiveCommand;
+import org.eclipse.ditto.client.live.commands.modify.ModifyFeatureLiveCommand;
+import org.eclipse.ditto.client.live.commands.modify.ModifyFeaturesLiveCommand;
+import org.eclipse.ditto.client.live.commands.query.RetrieveFeatureLiveCommand;
+import org.eclipse.ditto.client.live.commands.query.RetrieveFeaturesLiveCommand;
 
 /**
- * Provides the necessary functionality for registering {@link org.eclipse.ditto.signals.commands.live.base.LiveCommand
+ * Provides the necessary functionality for registering {@link org.eclipse.ditto.client.live.commands.base.LiveCommand
  * LiveCommand} functions to receive commands to manage and retrieve {@link org.eclipse.ditto.model.things.Feature
  * Feature}s.
  *

@@ -17,13 +17,13 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.eclipse.ditto.client.ack.Acknowledgeable;
-import org.eclipse.ditto.client.changes.AcknowledgementRequestHandle;
 import org.eclipse.ditto.client.ack.internal.ImmutableAcknowledgementRequestHandle;
+import org.eclipse.ditto.client.changes.AcknowledgementRequestHandle;
+import org.eclipse.ditto.client.live.commands.base.LiveCommand;
+import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.acks.AcknowledgementRequest;
 import org.eclipse.ditto.signals.base.Signal;
-import org.eclipse.ditto.signals.commands.live.base.LiveCommand;
-import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswerBuilder;
 
 /**
  * Acknowledgeable of a live command.
