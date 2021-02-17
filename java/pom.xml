@@ -1042,13 +1042,6 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-signals-commands-live</artifactId>
-            <type>test-jar</type>
-            <version>${ditto.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-signals-events-base</artifactId>
             <type>test-jar</type>
             <version>${ditto.version}</version>
