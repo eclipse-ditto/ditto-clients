@@ -55,7 +55,6 @@ import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.model.messages.Message;
@@ -709,8 +708,8 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     private static DittoRuntimeException getUnexpectedSignalException(final Signal<?> signal) {
-        return DittoRuntimeException.newBuilder("signal.unexpected", HttpStatus.BAD_REQUEST)
-                .message(() -> String.format("Received unexpected response of type '%s'.", signal.getType()))
+        return UnexpectedSignalException.newBuilder(signal)
+                .dittoHeaders(signal.getDittoHeaders())
                 .build();
     }
 
@@ -799,6 +798,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
 
     @FunctionalInterface
     protected interface NotifyMessage {
+
         void accept(final PointerBus pointerBus);
     }
 

@@ -37,7 +37,6 @@ import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.acks.AcknowledgementRequest;
 import org.eclipse.ditto.model.base.auth.AuthorizationContext;
 import org.eclipse.ditto.model.base.common.HttpStatus;
-import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
@@ -167,9 +166,8 @@ public final class ImmutableRepliableMessage<T, U> implements RepliableMessage<T
                 .thingId(message.getThingEntityId())
                 .featureId(message.getFeatureId().orElse(null))
                 .subject(message.getSubject())
-                .correlationId(message.getCorrelationId().orElseThrow(
-                        () -> DittoRuntimeException.newBuilder("correlation.missing", HttpStatus.BAD_REQUEST)
-                                .build()));
+                .correlationId(message.getCorrelationId()
+                        .orElseThrow(() -> MissingCorrelationIdException.newBuilder().build()));
     }
 
     @Override
