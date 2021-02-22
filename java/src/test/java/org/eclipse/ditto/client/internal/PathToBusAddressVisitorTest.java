@@ -34,18 +34,6 @@ public class PathToBusAddressVisitorTest {
     }
 
     @Test
-    public void visitAcl() {
-        assertThat(UNDER_TEST.visitAcl(newPointer("acl"), THING_ID))
-                .isEqualTo(THING_PATTERN + "/acl");
-    }
-
-    @Test
-    public void visitAclEntry() {
-        assertThat(UNDER_TEST.visitAclEntry(newPointer("acl", "subjectId"), THING_ID))
-                .isEqualTo(THING_PATTERN + "/acl/subjectId");
-    }
-
-    @Test
     public void visitThingDefinition() {
         assertThat(UNDER_TEST.visitThingDefinition(newPointer("definition"), THING_ID))
                 .isEqualTo(THING_PATTERN + "/definition");

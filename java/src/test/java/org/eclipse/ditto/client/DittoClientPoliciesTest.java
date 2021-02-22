@@ -28,11 +28,9 @@ import java.util.function.Function;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
-import org.eclipse.ditto.client.messaging.internal.MockMessagingProvider;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonMissingFieldException;
-import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.policies.Policy;
 import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
 import org.eclipse.ditto.signals.commands.policies.PolicyCommandResponse;
@@ -52,19 +50,6 @@ import org.junit.Test;
  * Test the policies interface.
  */
 public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
-
-    @Test
-    public void verifyClientDefaultsToSchemaVersion2ForPolicyCommands() {
-        messaging = new MockMessagingProvider(JsonSchemaVersion.V_1);
-        final DittoClient client = DittoClients.newInstance(messaging)
-                .connect()
-                .toCompletableFuture()
-                .join();
-        assertEventualCompletion(client.policies().retrieve(POLICY_ID).thenRun(client::destroy));
-        final RetrievePolicy command = expectMsgClass(RetrievePolicy.class);
-        reply(RetrievePolicyResponse.of(POLICY_ID, POLICY, command.getDittoHeaders()));
-        assertThat(command).hasSchemaVersion(JsonSchemaVersion.V_2);
-    }
 
     @Test
     public void testCreatePolicy() throws Exception {

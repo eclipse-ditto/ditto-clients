@@ -56,10 +56,6 @@ import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.base.ErrorResponse;
-import org.eclipse.ditto.signals.events.things.AclEntryCreated;
-import org.eclipse.ditto.signals.events.things.AclEntryDeleted;
-import org.eclipse.ditto.signals.events.things.AclEntryModified;
-import org.eclipse.ditto.signals.events.things.AclModified;
 import org.eclipse.ditto.signals.events.things.AttributeCreated;
 import org.eclipse.ditto.signals.events.things.AttributeDeleted;
 import org.eclipse.ditto.signals.events.things.AttributeModified;
@@ -230,13 +226,6 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
     private static OutgoingMessageFactory getOutgoingMessageFactoryForPolicies(
             final MessagingProvider messagingProvider) {
         final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
-        if (JsonSchemaVersion.V_1.equals(schemaVersion)) {
-            LOGGER.warn("The MessagingProvider was configured with JsonSchemaVersion V_1 which is invalid for policy" +
-                    " commands. Therefore defaulting to V_2 for all policy commands." +
-                    " Please consider upgrading to JsonSchemaVersion V_2 as V_1 is deprecated and will be removed" +
-                    " in an upcoming release.");
-            return OutgoingMessageFactory.newInstance(JsonSchemaVersion.V_2);
-        }
         return OutgoingMessageFactory.newInstance(schemaVersion);
     }
 
@@ -327,48 +316,6 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, ThingDeleted.TYPE, ThingDeleted.class,
                 e -> BusAddressFactory.forThing(e.getThingEntityId()),
                 (e, extra) -> new ImmutableThingChange(e.getThingEntityId(), ChangeAction.DELETED, null,
-                        e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        emitAcknowledgement)
-        );
-
-        /*
-         * ACL - v1 only
-         * @deprecated as part of deprecated API 1
-         */
-        SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AclModified.TYPE, AclModified.class,
-                e -> BusAddressFactory.forAcl(e.getThingEntityId()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.UPDATED,
-                        JsonPointer.empty(),
-                        e.getAccessControlList().toJson(e.getImplementedSchemaVersion()),
-                        e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        emitAcknowledgement)
-        );
-
-        SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AclEntryCreated.TYPE, AclEntryCreated.class,
-                e -> BusAddressFactory.forAclEntry(e.getThingEntityId(),
-                        e.getAclEntry().getAuthorizationSubject().getId()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.CREATED,
-                        JsonPointer.empty(),
-                        e.getAclEntry().toJson(e.getImplementedSchemaVersion()),
-                        e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        emitAcknowledgement)
-        );
-
-        SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AclEntryModified.TYPE, AclEntryModified.class,
-                e -> BusAddressFactory.forAclEntry(e.getThingEntityId(),
-                        e.getAclEntry().getAuthorizationSubject().getId()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.UPDATED,
-                        JsonPointer.empty(),
-                        e.getAclEntry().toJson(e.getImplementedSchemaVersion()),
-                        e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
-                        emitAcknowledgement)
-        );
-
-        SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AclEntryDeleted.TYPE, AclEntryDeleted.class,
-                e -> BusAddressFactory.forAclEntry(e.getThingEntityId(), e.getAuthorizationSubject().getId()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.DELETED,
-                        JsonPointer.empty(),
-                        null,
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
                         emitAcknowledgement)
         );

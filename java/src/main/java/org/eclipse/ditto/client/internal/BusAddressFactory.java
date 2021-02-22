@@ -13,8 +13,6 @@
 
 package org.eclipse.ditto.client.internal;
 
-import static org.eclipse.ditto.client.internal.BusAddressPatterns.ACL_ENTRY_PATTERN;
-import static org.eclipse.ditto.client.internal.BusAddressPatterns.ACL_PATTERN;
 import static org.eclipse.ditto.client.internal.BusAddressPatterns.ATTRIBUTES_PATTERN;
 import static org.eclipse.ditto.client.internal.BusAddressPatterns.ATTRIBUTE_PATTERN;
 import static org.eclipse.ditto.client.internal.BusAddressPatterns.DEFINITION_PATTERN;
@@ -46,26 +44,6 @@ class BusAddressFactory {
      */
     static String forThing(final ThingId thingId) {
         return THING_PATTERN.format(thingId);
-    }
-
-    /**
-     * @param thingId the thingId that is part of the pattern
-     * @return bus pattern for the acl resource
-     * @deprecated Permissions belong to deprecated API version 1. Use API version 2 with policies instead.
-     */
-    @Deprecated
-    static String forAcl(final ThingId thingId) {
-        return ACL_PATTERN.format(thingId);
-    }
-
-    /**
-     * @param thingId the thingId that is part of the pattern
-     * @return bus pattern for the acl entry resource
-     * @deprecated Permissions belong to deprecated API version 1. Use API version 2 with policies instead.
-     */
-    @Deprecated
-    static String forAclEntry(final ThingId thingId, final String subjectId) {
-        return ACL_ENTRY_PATTERN.format(thingId, subjectId);
     }
 
     /**
