@@ -15,17 +15,17 @@ package org.eclipse.ditto.client.live.commands;
 import java.util.function.Function;
 
 import org.eclipse.ditto.client.live.LiveCommandProcessor;
-import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswerBuilder;
-import org.eclipse.ditto.signals.commands.live.modify.DeleteFeaturePropertiesLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.DeleteFeaturePropertyLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.MergeThingLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.ModifyFeaturePropertiesLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.ModifyFeaturePropertyLiveCommand;
-import org.eclipse.ditto.signals.commands.live.query.RetrieveFeaturePropertiesLiveCommand;
-import org.eclipse.ditto.signals.commands.live.query.RetrieveFeaturePropertyLiveCommand;
+import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
+import org.eclipse.ditto.client.live.commands.modify.DeleteFeaturePropertiesLiveCommand;
+import org.eclipse.ditto.client.live.commands.modify.DeleteFeaturePropertyLiveCommand;
+import org.eclipse.ditto.client.live.commands.modify.MergeThingLiveCommand;
+import org.eclipse.ditto.client.live.commands.modify.ModifyFeaturePropertiesLiveCommand;
+import org.eclipse.ditto.client.live.commands.modify.ModifyFeaturePropertyLiveCommand;
+import org.eclipse.ditto.client.live.commands.query.RetrieveFeaturePropertiesLiveCommand;
+import org.eclipse.ditto.client.live.commands.query.RetrieveFeaturePropertyLiveCommand;
 
 /**
- * Provides the necessary functionality for registering {@link org.eclipse.ditto.signals.commands.live.base.LiveCommand
+ * Provides the necessary functionality for registering {@link org.eclipse.ditto.client.live.commands.base.LiveCommand
  * LiveCommand} functions to receive commands to manage and retrieve {@link org.eclipse.ditto.model.things.FeatureProperties
  * FeatureProperties}.
  *

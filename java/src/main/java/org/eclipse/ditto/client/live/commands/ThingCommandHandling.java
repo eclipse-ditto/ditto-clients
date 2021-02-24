@@ -15,15 +15,15 @@ package org.eclipse.ditto.client.live.commands;
 import java.util.function.Function;
 
 import org.eclipse.ditto.client.live.LiveCommandProcessor;
-import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswerBuilder;
-import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.DeleteThingLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.MergeThingLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.ModifyThingLiveCommand;
-import org.eclipse.ditto.signals.commands.live.query.RetrieveThingLiveCommand;
+import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
+import org.eclipse.ditto.client.live.commands.modify.CreateThingLiveCommand;
+import org.eclipse.ditto.client.live.commands.modify.DeleteThingLiveCommand;
+import org.eclipse.ditto.client.live.commands.modify.MergeThingLiveCommand;
+import org.eclipse.ditto.client.live.commands.modify.ModifyThingLiveCommand;
+import org.eclipse.ditto.client.live.commands.query.RetrieveThingLiveCommand;
 
 /**
- * Provides the necessary functionality for registering {@link org.eclipse.ditto.signals.commands.live.base.LiveCommand
+ * Provides the necessary functionality for registering {@link org.eclipse.ditto.client.live.commands.base.LiveCommand
  * LiveCommand} functions to receive commands to manage and retrieve <em>a particular</em> {@link
  * org.eclipse.ditto.model.things.Thing Thing}.
  *

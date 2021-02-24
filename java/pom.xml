@@ -849,11 +849,6 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-signals-commands-live</artifactId>
-            <version>${ditto.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-signals-commands-messages</artifactId>
             <version>${ditto.version}</version>
         </dependency>
@@ -1041,13 +1036,6 @@
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-signals-commands-things</artifactId>
-            <type>test-jar</type>
-            <version>${ditto.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-signals-commands-live</artifactId>
             <type>test-jar</type>
             <version>${ditto.version}</version>
             <scope>test</scope>

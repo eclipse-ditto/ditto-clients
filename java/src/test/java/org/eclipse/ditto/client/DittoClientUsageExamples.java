@@ -45,6 +45,8 @@ import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.configuration.ProxyConfiguration;
 import org.eclipse.ditto.client.configuration.TrustStoreConfiguration;
 import org.eclipse.ditto.client.configuration.WebSocketMessagingConfiguration;
+import org.eclipse.ditto.client.live.commands.modify.CreateThingLiveCommandAnswerBuilder;
+import org.eclipse.ditto.client.live.commands.modify.ModifyFeaturePropertyLiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.messaging.AuthenticationProvider;
 import org.eclipse.ditto.client.messaging.AuthenticationProviders;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
@@ -67,8 +69,6 @@ import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.JsonifiableAdaptable;
 import org.eclipse.ditto.protocoladapter.ProtocolFactory;
-import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommandAnswerBuilder;
-import org.eclipse.ditto.signals.commands.live.modify.ModifyFeaturePropertyLiveCommandAnswerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
