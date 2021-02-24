@@ -48,7 +48,6 @@
                 <include>org.eclipse.ditto:ditto-signals-commands-things</include>
                 <include>org.eclipse.ditto:ditto-signals-commands-policies</include>
                 <include>org.eclipse.ditto:ditto-signals-commands-messages</include>
-                <include>org.eclipse.ditto:ditto-signals-commands-live</include>
                 <include>org.eclipse.ditto:ditto-signals-events-base</include>
                 <include>org.eclipse.ditto:ditto-signals-events-things</include>
                 <include>org.eclipse.ditto:ditto-signals-events-thingsearch</include>

@@ -254,16 +254,6 @@ public class RunOSGiContainerIntegrationTest {
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(MessageCommand.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(MessageCommandResponse.class));
 
-        // ditto-signals-commands-live:
-        LOG.info("Ensuring ditto-signals-commands-live is usable from OSGi..");
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(LiveCommandFactory.class));
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(QueryLiveCommandFactory.class));
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(RetrieveThingLiveCommand.class));
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(ModifyLiveCommandFactory.class));
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(CreateThingLiveCommand.class));
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(LiveCommand.class));
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(LiveEventFactory.class));
-
         // ditto-signals-events-base:
         LOG.info("Ensuring ditto-signals-events-base is usable from OSGi..");
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(Event.class));
