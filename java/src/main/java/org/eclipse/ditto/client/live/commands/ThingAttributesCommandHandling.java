@@ -15,17 +15,17 @@ package org.eclipse.ditto.client.live.commands;
 import java.util.function.Function;
 
 import org.eclipse.ditto.client.live.LiveCommandProcessor;
-import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswerBuilder;
-import org.eclipse.ditto.signals.commands.live.modify.DeleteAttributeLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.DeleteAttributesLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.MergeThingLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.ModifyAttributeLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.ModifyAttributesLiveCommand;
-import org.eclipse.ditto.signals.commands.live.query.RetrieveAttributeLiveCommand;
-import org.eclipse.ditto.signals.commands.live.query.RetrieveAttributesLiveCommand;
+import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
+import org.eclipse.ditto.client.live.commands.modify.DeleteAttributeLiveCommand;
+import org.eclipse.ditto.client.live.commands.modify.DeleteAttributesLiveCommand;
+import org.eclipse.ditto.client.live.commands.modify.MergeThingLiveCommand;
+import org.eclipse.ditto.client.live.commands.modify.ModifyAttributeLiveCommand;
+import org.eclipse.ditto.client.live.commands.modify.ModifyAttributesLiveCommand;
+import org.eclipse.ditto.client.live.commands.query.RetrieveAttributeLiveCommand;
+import org.eclipse.ditto.client.live.commands.query.RetrieveAttributesLiveCommand;
 
 /**
- * Provides the necessary functionality for registering {@link org.eclipse.ditto.signals.commands.live.base.LiveCommand
+ * Provides the necessary functionality for registering {@link org.eclipse.ditto.client.live.commands.base.LiveCommand
  * LiveCommand} function to receive commands to manage and retrieve {@link java.util.jar.Attributes Attributes}.
  *
  * @since 1.0.0

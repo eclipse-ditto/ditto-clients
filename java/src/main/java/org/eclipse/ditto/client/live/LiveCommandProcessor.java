@@ -17,10 +17,10 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import org.eclipse.ditto.client.live.commands.LiveCommandHandler;
+import org.eclipse.ditto.client.live.commands.base.LiveCommand;
+import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswer;
+import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.signals.base.Signal;
-import org.eclipse.ditto.signals.commands.live.base.LiveCommand;
-import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswer;
-import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswerBuilder;
 import org.slf4j.Logger;
 
 /**

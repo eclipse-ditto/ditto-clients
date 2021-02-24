@@ -15,8 +15,8 @@ package org.eclipse.ditto.client.live.commands;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.eclipse.ditto.signals.commands.live.base.LiveCommand;
-import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswerBuilder;
+import org.eclipse.ditto.client.live.commands.base.LiveCommand;
+import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 
 /**
  * Package-private implementation of {@code LiveCommandHandler}.
