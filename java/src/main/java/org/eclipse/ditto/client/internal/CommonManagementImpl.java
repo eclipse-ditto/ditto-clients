@@ -66,9 +66,11 @@ import org.eclipse.ditto.model.things.Features;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
+import org.eclipse.ditto.model.things.WithThingId;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.Signal;
+import org.eclipse.ditto.signals.base.WithEntityId;
 import org.eclipse.ditto.signals.base.WithOptionalEntity;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
@@ -654,12 +656,12 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
             final String protocolCommand,
             final String protocolCommandAck,
             final CompletableFuture<Void> futureToCompleteOrFailAfterAck,
-            final Function<Adaptable, Message<?>> adaptableToMessage) {
+            final Function<Adaptable, Optional<Message<?>>> adaptableToMessage) {
 
         return subscribeAndPublishMessage(previousSubscriptionId, streamingType, protocolCommand, protocolCommandAck,
                 futureToCompleteOrFailAfterAck, adaptable -> bus -> {
-                    final Message<?> message = adaptableToMessage.apply(adaptable);
-                    bus.notify(message.getSubject(), message);
+                    adaptableToMessage.apply(adaptable)
+                            .ifPresent(message -> bus.notify(message.getSubject(), message));
                 });
     }
 
@@ -745,17 +747,29 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         }
     }
 
-    protected static Message<?> asThingMessage(final Adaptable adaptable) {
+    /**
+     * Build a {@link Message} out of the given {@link Adaptable}.
+     *
+     * @param adaptable from which the things {@link Message} shall be build from.
+     * @return empty if the adaptable doesn't provide a thingId, or the build {@link Message}.
+     */
+    protected static Optional<Message<?>> asThingMessage(final Adaptable adaptable) {
         final Signal<?> signal = PROTOCOL_ADAPTER.fromAdaptable(adaptable);
-        final ThingId thingId = ThingId.of(signal.getEntityId());
-        final MessageHeaders messageHeaders =
-                MessageHeaders.newBuilder(MessageDirection.FROM, thingId, signal.getType())
-                        .correlationId(signal.getDittoHeaders().getCorrelationId().orElse(null))
-                        .build();
-        return Message.newBuilder(messageHeaders)
-                .payload(signal)
-                .extra(adaptable.getPayload().getExtra().orElse(null))
-                .build();
+        if (signal instanceof WithThingId) {
+            final ThingId thingId = ((WithThingId) signal).getThingEntityId();
+            final MessageHeaders messageHeaders = MessageHeaders
+                    .newBuilder(MessageDirection.FROM, thingId, signal.getType())
+                    .correlationId(signal.getDittoHeaders().getCorrelationId().orElse(null))
+                    .build();
+            final Message<Object> message = Message.newBuilder(messageHeaders)
+                    .payload(signal)
+                    .extra(adaptable.getPayload().getExtra().orElse(null))
+                    .build();
+            return Optional.of(message);
+        } else {
+            LOGGER.warn("Cannot build ThingMessage out of Signal without an ThingId: <{}>", signal);
+            return Optional.empty();
+        }
     }
 
     private static void adjoin(final CompletionStage<?> stage, final CompletableFuture<Void> future) {
