@@ -64,6 +64,8 @@ import org.eclipse.ditto.model.things.AttributesModelFactory;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.DittoProtocolAdapter;
+import org.eclipse.ditto.signals.announcements.base.Announcement;
+import org.eclipse.ditto.signals.announcements.policies.PolicyAnnouncement;
 import org.eclipse.ditto.signals.base.JsonParsable;
 import org.eclipse.ditto.signals.commands.base.Command;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
@@ -272,6 +274,14 @@ public class RunOSGiContainerIntegrationTest {
         // ditto-signals-events-things:
         LOG.info("Ensuring ditto-signals-events-things is usable from OSGi..");
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(ThingEvent.class));
+
+        // ditto-signals-announcements-base:
+        LOG.info("Ensuring ditto-signals-announcements-base is usable from OSGi..");
+        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(Announcement.class));
+
+        // ditto-signals-announcements-policies:
+        LOG.info("Ensuring ditto-signals-announcements-policies is usable from OSGi..");
+        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(PolicyAnnouncement.class));
 
         // ditto-protocol-adapter:
         LOG.info("Ensuring ditto-protocol-adapter is usable from OSGi..");
