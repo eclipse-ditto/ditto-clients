@@ -19,7 +19,7 @@ import static org.eclipse.ditto.client.TestConstants.Feature.FLUX_CAPACITOR_ID;
 import static org.eclipse.ditto.client.TestConstants.Feature.FLUX_CAPACITOR_PROPERTIES;
 import static org.eclipse.ditto.client.TestConstants.Thing.ATTRIBUTES;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
-import static org.eclipse.ditto.client.TestConstants.Thing.THING_V1;
+import static org.eclipse.ditto.client.TestConstants.Thing.THING_V2;
 import static org.eclipse.ditto.signals.events.things.assertions.ThingEventAssertions.assertThat;
 import static org.mutabilitydetector.unittesting.AllowedReason.provided;
 import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
@@ -64,7 +64,7 @@ import nl.jqno.equalsverifier.EqualsVerifier;
  */
 public final class ImmutableGlobalEventFactoryTest {
 
-    private static final JsonSchemaVersion SCHEMA_VERSION = JsonSchemaVersion.V_1;
+    private static final JsonSchemaVersion SCHEMA_VERSION = JsonSchemaVersion.V_2;
     private static final JsonPointer ATTRIBUTES_POINTER = JsonFactory.newPointer("/attributes");
     private static final JsonPointer ATTRIBUTE_JSON_POINTER = JsonFactory.newPointer("manufacturer/name");
     private static final JsonPointer ATTRIBUTE_RESOURCE_PATH = ATTRIBUTES_POINTER.append(ATTRIBUTE_JSON_POINTER);
@@ -109,13 +109,13 @@ public final class ImmutableGlobalEventFactoryTest {
 
     @Test
     public void thingCreatedReturnsExpected() {
-        final ThingCreated thingCreated = underTest.thingCreated(THING_V1);
+        final ThingCreated thingCreated = underTest.thingCreated(THING_V2);
 
         assertThat(thingCreated)
                 .hasType(ThingCreated.TYPE)
                 .hasId(THING_ID)
                 .hasThingId(THING_ID)
-                .hasEntity(THING_V1.toJson())
+                .hasEntity(THING_V2.toJson())
                 .hasRevision(-1);
         assertThat(thingCreated.getDittoHeaders())
                 .hasCorrelationId()
@@ -139,13 +139,13 @@ public final class ImmutableGlobalEventFactoryTest {
 
     @Test
     public void thingModifiedReturnsExpected() {
-        final ThingModified thingModified = underTest.thingModified(THING_V1);
+        final ThingModified thingModified = underTest.thingModified(THING_V2);
 
         assertThat(thingModified)
                 .hasType(ThingModified.TYPE)
                 .hasId(THING_ID)
                 .hasThingId(THING_ID)
-                .hasEntity(THING_V1.toJson())
+                .hasEntity(THING_V2.toJson())
                 .hasRevision(-1);
         assertThat(thingModified.getDittoHeaders())
                 .hasCorrelationId()

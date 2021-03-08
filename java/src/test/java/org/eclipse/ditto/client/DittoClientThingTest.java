@@ -377,10 +377,8 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
     @Test
     public void testCreateThingWithoutFeatures() {
         final ThingId thingIdWithoutFeatures = ThingId.of("demo:mything1");
-        final AuthorizationSubject authorizationSubject = AuthorizationModelFactory.newAuthSubject("someSubject");
         final Thing thing = ThingsModelFactory.newThingBuilder()
                 .setId(thingIdWithoutFeatures)
-                .setPermissions(authorizationSubject, ThingsModelFactory.allPermissions())
                 .build();
         assertEventualCompletion(getManagement().create(thing));
         final CreateThing command = expectMsgClass(CreateThing.class);

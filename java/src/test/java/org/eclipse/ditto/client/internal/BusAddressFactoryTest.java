@@ -32,17 +32,6 @@ public class BusAddressFactoryTest {
     }
 
     @Test
-    public void forAcl() {
-        assertThat(BusAddressFactory.forAcl(THING_ID)).isEqualTo(THING_PATTERN + "/acl");
-    }
-
-    @Test
-    public void forAclEntry() {
-        assertThat(BusAddressFactory.forAclEntry(THING_ID, "subjectId"))
-                .isEqualTo(THING_PATTERN + "/acl/subjectId");
-    }
-
-    @Test
     public void forThingDefinition() {
         assertThat(BusAddressFactory.forThingDefinition(THING_ID))
                 .isEqualTo(THING_PATTERN + "/definition");
