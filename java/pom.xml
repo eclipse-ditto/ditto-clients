@@ -192,12 +192,12 @@
         <!-- ### Compile dependencies versions -->
         <ditto.version>${revision}</ditto.version>
         <minimal-json.version>0.9.5</minimal-json.version>
-        <nv-websocket-client.version>2.9</nv-websocket-client.version>
+        <nv-websocket-client.version>2.12</nv-websocket-client.version>
         <classindex.version>3.8</classindex.version>
         <slf4j.version>1.7.28</slf4j.version>
 
         <!-- ### Provided dependencies versions -->
-        <jsr305.version>3.0.1</jsr305.version>
+        <jsr305.version>3.0.2</jsr305.version>
 
         <!-- ### Testing dependencies versions -->
         <logback.version>1.2.3</logback.version>
@@ -278,7 +278,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.7.0</version>
+                    <version>3.8.1</version>
                     <configuration>
                         <source>${javac.source}</source>
                         <target>${javac.target}</target>
@@ -288,11 +288,17 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.0.2</version>
+                    <version>3.1.2</version>
                 </plugin>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.0.2</version>
+                    <version>3.2.0</version>
+                    <configuration>
+                        <archive>
+                            <addMavenDescriptor>false</addMavenDescriptor>
+                        </archive>
+                    </configuration>
                 </plugin>
 
                 <plugin>
@@ -335,7 +341,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M5</version>
+                    <version>3.0.0-M4</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -345,7 +351,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>3.0.0-M5</version>
+                    <version>3.0.0-M4</version>
                     <executions>
                         <execution>
                             <id>integration-test</id>
@@ -463,10 +469,14 @@
                 <plugin>
                     <groupId>org.apache.felix</groupId>
                     <artifactId>maven-bundle-plugin</artifactId>
-                    <version>3.5.0</version>
+                    <version>4.2.1</version>
                     <configuration>
+                        <archive>
+                            <addMavenDescriptor>false</addMavenDescriptor>
+                        </archive>
                         <instructions>
                             <Bundle-Vendor>Eclipse Ditto</Bundle-Vendor>
+                            <Bundle-License>EPL-2.0</Bundle-License>
                             <Bundle-DocURL>https://eclipse.org/ditto/</Bundle-DocURL>
                             <_noee>true</_noee>
                             <Bundle-RequiredExecutionEnvironment>JavaSE-1.8</Bundle-RequiredExecutionEnvironment>
@@ -875,6 +885,17 @@
 
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
+            <artifactId>ditto-signals-announcements-base</artifactId>
+            <version>${ditto.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.ditto</groupId>
+            <artifactId>ditto-signals-announcements-policies</artifactId>
+            <version>${ditto.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-protocol-adapter</artifactId>
             <version>${ditto.version}</version>
         </dependency>
@@ -891,7 +912,7 @@
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-utils-jsr305</artifactId>
-            <version>1.0.0</version>
+            <version>${ditto.version}</version>
             <scope>provided</scope>
         </dependency>
 

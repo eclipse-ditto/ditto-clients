@@ -51,6 +51,8 @@
                 <include>org.eclipse.ditto:ditto-signals-events-base</include>
                 <include>org.eclipse.ditto:ditto-signals-events-things</include>
                 <include>org.eclipse.ditto:ditto-signals-events-thingsearch</include>
+                <include>org.eclipse.ditto:ditto-signals-announcements-base</include>
+                <include>org.eclipse.ditto:ditto-signals-announcements-policies</include>
                 <include>org.eclipse.ditto:ditto-protocol-adapter</include>
                 <include>org.eclipse.ditto:ditto-client</include>
             </includes>
