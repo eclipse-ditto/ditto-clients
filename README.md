@@ -25,3 +25,9 @@ Implemented in Java, targeted for use in Java and all JVM based languages (sourc
 
 Implemented in TypeScript, this SDK contains a JavaScript library for usage of Ditto in both browser and Node.JS 
 based environments.
+
+## [Go](https://github.com/eclipse/ditto-clients-golang)
+
+[![Build Status](https://github.com/eclipse/ditto-clients-golang/workflows/Go/badge.svg)](https://github.com/eclipse/ditto-clients-golang/actions?query=workflow%3AGo)
+
+Implemented in Go, target for use in Go. Source is contained in separate GitHub repository because of Go specific GitHub based versioning/dependency mechanisms.
