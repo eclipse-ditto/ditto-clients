@@ -70,9 +70,9 @@ import org.eclipse.ditto.model.things.WithThingId;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.Signal;
-import org.eclipse.ditto.signals.base.WithEntityId;
 import org.eclipse.ditto.signals.base.WithOptionalEntity;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
+import org.eclipse.ditto.signals.commands.base.ErrorResponse;
 import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
@@ -794,7 +794,8 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     private CompletionStage<List<Thing>> sendRetrieveThingsMessage(final RetrieveThings command) {
-        return askThingCommand(command, RetrieveThingsResponse.class, RetrieveThingsResponse::getThings);
+        return sendSignalAndExpectResponse(command, RetrieveThingsResponse.class, RetrieveThingsResponse::getThings, ErrorResponse.class,
+                ErrorResponse::getDittoRuntimeException);
     }
 
     @Nullable

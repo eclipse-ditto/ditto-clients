@@ -20,6 +20,7 @@ import javax.annotation.Nonnull;
 import org.eclipse.ditto.client.live.commands.base.LiveCommand;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.signals.commands.base.WithNamespace;
+import org.eclipse.ditto.signals.commands.things.WithSelectedFields;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThings;
 import org.eclipse.ditto.signals.commands.things.query.ThingQueryCommand;
 
@@ -32,7 +33,7 @@ import org.eclipse.ditto.signals.commands.things.query.ThingQueryCommand;
  */
 public interface RetrieveThingsLiveCommand
         extends LiveCommand<RetrieveThingsLiveCommand, RetrieveThingsLiveCommandAnswerBuilder>,
-        ThingQueryCommand<RetrieveThingsLiveCommand>, WithNamespace {
+        WithNamespace, WithSelectedFields {
 
     /**
      * Returns the identifiers of the {@code Thing}s to be retrieved.

@@ -13,6 +13,7 @@
 package org.eclipse.ditto.client.live.commands;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,8 @@ import org.eclipse.ditto.client.live.commands.base.LiveCommand;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.acks.AcknowledgementRequest;
+import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.model.things.WithThingId;
 import org.eclipse.ditto.signals.base.Signal;
 
 /**
@@ -76,27 +79,31 @@ public final class LiveCommandAcknowledgeable<L extends LiveCommand<L, B>, B ext
     @Override
     public void handleAcknowledgementRequest(final AcknowledgementLabel acknowledgementLabel,
             final Consumer<AcknowledgementRequestHandle> acknowledgementHandle) {
-
-        if (liveCommand.getDittoHeaders().getAcknowledgementRequests()
-                .contains(AcknowledgementRequest.of(acknowledgementLabel))) {
+        final DittoHeaders dittoHeaders = liveCommand.getDittoHeaders();
+        if (dittoHeaders.getAcknowledgementRequests().contains(AcknowledgementRequest.of(acknowledgementLabel))
+                && liveCommand instanceof WithThingId) {
             acknowledgementHandle.accept(new ImmutableAcknowledgementRequestHandle(
                     acknowledgementLabel,
-                    liveCommand.getThingEntityId(),
-                    liveCommand.getDittoHeaders(),
+                    ((WithThingId) liveCommand).getThingEntityId(),
+                    dittoHeaders,
                     signalPublisher::accept
             ));
         }
     }
 
     private Collection<AcknowledgementRequestHandle> getHandles() {
-        return liveCommand.getDittoHeaders()
-                .getAcknowledgementRequests()
-                .stream()
-                .map(ackRequest -> new ImmutableAcknowledgementRequestHandle(ackRequest.getLabel(),
-                        liveCommand.getThingEntityId(),
-                        liveCommand.getDittoHeaders(),
-                        signalPublisher::accept)
-                )
-                .collect(Collectors.toList());
+        if (liveCommand instanceof WithThingId) {
+            return liveCommand.getDittoHeaders()
+                    .getAcknowledgementRequests()
+                    .stream()
+                    .map(ackRequest -> new ImmutableAcknowledgementRequestHandle(ackRequest.getLabel(),
+                            ((WithThingId) liveCommand).getThingEntityId(),
+                            liveCommand.getDittoHeaders(),
+                            signalPublisher::accept)
+                    )
+                    .collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
+        }
     }
 }
