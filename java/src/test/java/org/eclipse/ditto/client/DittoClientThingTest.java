@@ -21,6 +21,7 @@ import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID_COPY_POLICY;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_WITH_INLINE_POLICY;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CountDownLatch;
@@ -37,8 +38,6 @@ import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.acks.AcknowledgementRequest;
-import org.eclipse.ditto.model.base.auth.AuthorizationModelFactory;
-import org.eclipse.ditto.model.base.auth.AuthorizationSubject;
 import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
@@ -269,7 +268,8 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
                 MessageHeaders.newBuilder(MessageDirection.FROM, THING_ID, ThingCreated.TYPE).build();
 
         final Message<ThingEvent> thingCreated = MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders)
-                .payload(ThingCreated.of(Thing.newBuilder().setId(THING_ID).build(), 1, headersWithChannel()))
+                .payload(ThingCreated.of(Thing.newBuilder().setId(THING_ID).build(), 1, Instant.now(),
+                        headersWithChannel(), null))
                 .build();
 
         messaging.receiveEvent(thingCreated);
@@ -301,7 +301,7 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
                 MessageHeaders.newBuilder(MessageDirection.FROM, THING_ID, ThingDeleted.TYPE).build();
 
         return MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders)
-                .payload(ThingDeleted.of(THING_ID, 1, headersWithChannel()))
+                .payload(ThingDeleted.of(THING_ID, 1, Instant.now(), headersWithChannel(), null))
                 .build();
     }
 
