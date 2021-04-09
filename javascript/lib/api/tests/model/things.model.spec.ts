@@ -53,6 +53,7 @@ const thingObjWithoutMetadata = {
   features: featuresObj,
   _revision: 0,
   _modified: '08042019',
+  _created: '2017-06-01T00:01:57Z',
   acl: aclObj
 };
 
