@@ -11,7 +11,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { HttpClientBuilder, WebSocketClientBuilder } from '@eclipse-ditto/ditto-javascript-client-api_1.0';
+import { HttpClientBuilder } from '../../api/src/client/http-client-builder';
+import { WebSocketClientBuilder } from '../../api/src/client/websocket-client-builder';
 import { DittoNodeClient } from '../src/ditto-node-client';
 import { NodeRequester } from '../src/node-http';
 import { NodeWebSocketBuilder } from '../src/node-websocket';

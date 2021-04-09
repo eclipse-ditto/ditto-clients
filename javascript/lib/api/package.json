@@ -1,12 +1,13 @@
 {
-  "name": "@eclipse-ditto/ditto-javascript-client-api_1.0",
+  "name": "@eclipse-ditto/ditto-javascript-client-api",
   "version": "2.0.0",
-  "description": "API interfaces for implementing TypeScript clients for Eclipse Ditto 1.0.x.",
+  "description": "API interfaces for implementing TypeScript clients for Eclipse Ditto",
   "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
   "repository": "https://github.com/eclipse/ditto-clients",
   "license": "SEE LICENSE IN LICENSE",
   "main": "dist/index.js",
-  "module": "dist/index.es.js",
+  "type": "module",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "publishConfig": {
     "access": "public"
@@ -15,27 +16,24 @@
     "dist"
   ],
   "devDependencies": {
-    "@types/jest": "^24.0.18",
-    "@types/lodash": "^4.14.134",
+    "@jest/globals": "25.5.2",
+    "@types/jest": "^25.2.3",
     "barrelsby": "^2.1.1",
-    "jest": "^24.9.0",
+    "jest": "^25.4.0",
     "lodash": "^4.17.11",
-    "rollup": "^1.20.3",
-    "rollup-plugin-typescript2": "^0.24.0",
-    "ts-jest": "^24.0.2",
+    "ts-jest": "^25.5.1",
     "tslint": "^5.18.x",
     "tslint-config-airbnb": "^5.11.1",
     "tslint-sonarts": "^1.8.0",
     "typescript": "^3.4.3"
   },
   "scripts": {
-    "build": "npm run build:tsc && npm run build:barrels && npm run build:modules",
+    "build": "npm run build:tsc && npm run build:barrels",
     "build:tsc": "tsc -p tsconfig.json",
     "build:barrels": "npm run build:barrels:generate-sources && npm run build:barrels:copyright-header && npm run build:barrels:compile",
     "build:barrels:generate-sources": "barrelsby --config barrelsby.json",
     "build:barrels:copyright-header": "tslint --config tslint.json --project tsconfig-barrels.json --quiet --fix dist/index.ts",
     "build:barrels:compile": "tsc --project tsconfig-barrels.json",
-    "build:modules": "rollup -c",
     "lint": "tslint --project tsconfig.json",
     "test": "jest",
     "test:watch": "jest --watch"
