@@ -29,7 +29,8 @@ export class Thing extends EntityWithId {
     private readonly __modified?: string,
     private readonly _acl?: Acl,
     private readonly _definition?: string,
-    private readonly __metadata?: Metadata) {
+    private readonly __metadata?: Metadata,
+    private readonly __created?: string) {
     super();
   }
 
@@ -52,11 +53,13 @@ export class Thing extends EntityWithId {
       o['_modified'],
       Acl.fromObject(o['acl']),
       o['definition'],
-      Metadata.fromObject(o['_metadata']));
+      Metadata.fromObject(o['_metadata']),
+      o['_created']
+    );
   }
 
   public static empty(): Thing {
-    return new Thing('', '', undefined, undefined, 0, '', undefined, undefined, undefined);
+    return new Thing('', '', undefined, undefined, 0, '', undefined, undefined, undefined, undefined);
   }
 
   public toObject(): object {
@@ -70,7 +73,8 @@ export class Thing extends EntityWithId {
       ['_revision', this._revision],
       ['_modified', this._modified],
       ['acl', aclObj],
-      ['definition', this._definition]
+      ['definition', this._definition],
+      ['_created', this.__created]
     ]));
   }
 
@@ -120,6 +124,10 @@ export class Thing extends EntityWithId {
 
   get definition(): string | undefined {
     return this._definition;
+  }
+
+  get created(): string | undefined {
+    return this.__created;
   }
 
   private separateNamespaceAndThingId(): { namespace: string, name: string } {
