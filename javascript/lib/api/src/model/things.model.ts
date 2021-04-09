@@ -63,8 +63,8 @@ export class Thing extends EntityWithId {
   }
 
   public toObject(): object {
-    const featuresObj = Features.toObject(this.features);
-    const aclObj = Acl.toObject(this._acl);
+    const featuresObj = this.features ? Features.toObject(this.features) : undefined;
+    const aclObj = this._acl ? Acl.toObject(this._acl) : undefined;
     return EntityModel.buildObject(new Map<string, any>([
       ['thingId', this.thingId],
       ['policyId', this.policyId],
