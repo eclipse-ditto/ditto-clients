@@ -39,6 +39,7 @@ const thingObj = {
   features: featuresObj,
   _revision: 0,
   _modified: '08042019',
+  _created: '2017-06-01T00:01:57Z',
   definition: 'example:test:definition',
   _metadata: metadataObject,
   acl: aclObj
@@ -74,7 +75,8 @@ const thing = new Thing('Testspace:Testthing',
   '08042019',
   acl,
   'example:test:definition',
-  metadata);
+  metadata,
+  '2017-06-01T00:01:57Z');
 const response = new SearchThingsResponse([thing], 0);
 
 describe('Feature', () => {
@@ -181,6 +183,7 @@ describe('Thing', () => {
     expect(thing.name).toEqual('Testthing');
     expect(thing.acl).toEqual(acl);
     expect(thing.definition).toEqual('example:test:definition');
+    expect(thing.created).toEqual('2017-06-01T00:01:57Z');
   });
   it('handles a minimal thing', () => {
     const minimalThing = new Thing('Tespspace:Minimal');
