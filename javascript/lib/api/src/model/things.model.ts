@@ -126,7 +126,7 @@ export class Thing extends EntityWithId {
     return this._definition;
   }
 
-  get created(): string | undefined {
+  get _created(): string | undefined {
     return this.__created;
   }
 
