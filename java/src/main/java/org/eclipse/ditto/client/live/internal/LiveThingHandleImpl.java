@@ -94,7 +94,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
     @Override
     public <T> PendingMessageWithThingId<T> message() {
         return PendingMessageImpl.<T>of(LOGGER, outgoingMessageFactory, messageSerializerRegistry, PROTOCOL_ADAPTER,
-                messagingProvider).withThingId(getThingEntityId());
+                messagingProvider).withThingId(getEntityId());
     }
 
     @Override
@@ -113,17 +113,17 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
         // selector for thing messages:
         final JsonPointerSelector thingSelector = "*".equals(subject)
                 ? SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/'{subject}'",
-                getThingEntityId())
+                getEntityId())
                 :
-                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/{1}", getThingEntityId(),
+                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/{1}", getEntityId(),
                         subject);
         // selector for feature messages:
         final JsonPointerSelector featureSelector = "*".equals(subject)
                 ? SelectorUtil.formatJsonPointer(LOGGER,
-                "/things/{0}/features/'{featureId}'/'{direction}'/messages/'{subject}'", getThingEntityId())
+                "/things/{0}/features/'{featureId}'/'{direction}'/messages/'{subject}'", getEntityId())
                 :
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/'{featureId}'/'{direction}'/messages/{0}",
-                        getThingEntityId(), subject);
+                        getEntityId(), subject);
 
         getHandlerRegistry().register(registrationId, SelectorUtil.or(thingSelector, featureSelector),
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
@@ -141,18 +141,18 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
         // selector for thing messages:
         final JsonPointerSelector thingSelector = "*".equals(subject)
                 ? SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/'{subject}'",
-                getThingEntityId())
+                getEntityId())
                 :
-                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/{1}", getThingEntityId(),
+                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/{1}", getEntityId(),
                         subject);
         // selector for feature messages:
         final JsonPointerSelector featureSelector = "*".equals(subject)
                 ? SelectorUtil.formatJsonPointer(LOGGER,
                 "/things/{0}/features/'{featureId}'/'{direction}'/messages/'{subject}'",
-                getThingEntityId())
+                getEntityId())
                 :
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/'{featureId}'/'{direction}'/messages/{1}",
-                        getThingEntityId(), subject);
+                        getEntityId(), subject);
 
         getHandlerRegistry().register(registrationId, SelectorUtil.or(thingSelector, featureSelector),
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
@@ -171,7 +171,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
         LiveMessagesUtil.checkSerializerExistForMessageType(messageSerializerRegistry, type);
 
         final JsonPointerSelector selector =
-                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/{1}", getThingEntityId(),
+                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/{1}", getEntityId(),
                         KnownMessageSubjects.CLAIM_SUBJECT);
 
         getHandlerRegistry().register(registrationId, selector,
@@ -187,7 +187,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
         argumentNotNull(handler, "handler");
 
         final JsonPointerSelector selector =
-                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/inbox/messages/{1}", getThingEntityId(),
+                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/inbox/messages/{1}", getEntityId(),
                         KnownMessageSubjects.CLAIM_SUBJECT);
 
         getHandlerRegistry().register(registrationId, selector,
@@ -205,7 +205,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
     public void emitEvent(final Function<ThingEventFactory, Event<?>> eventFunction) {
         argumentNotNull(eventFunction);
         final ThingEventFactory thingEventFactory =
-                ImmutableThingEventFactory.getInstance(schemaVersion, getThingEntityId());
+                ImmutableThingEventFactory.getInstance(schemaVersion, getEntityId());
         final Event<?> eventToEmit = eventFunction.apply(thingEventFactory);
         getMessagingProvider().emit(signalToJsonString(adjustHeadersForLiveSignal(eventToEmit)));
     }

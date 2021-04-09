@@ -47,7 +47,7 @@ public final class MergeThingLiveCommandAnswerBuilderImplTest {
      */
     @Before
     public void setUp() {
-        Mockito.when(commandMock.getThingEntityId()).thenReturn(TestConstants.Thing.THING_ID);
+        Mockito.when(commandMock.getEntityId()).thenReturn(TestConstants.Thing.THING_ID);
         Mockito.when(commandMock.getDittoHeaders()).thenReturn(DittoHeaders.empty());
         Mockito.when(commandMock.getPath()).thenReturn(TestConstants.PATH);
         Mockito.when(commandMock.getValue()).thenReturn(TestConstants.VALUE);

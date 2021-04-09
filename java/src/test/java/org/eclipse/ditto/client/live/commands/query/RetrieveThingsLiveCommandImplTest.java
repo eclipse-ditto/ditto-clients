@@ -111,7 +111,7 @@ public final class RetrieveThingsLiveCommandImplTest {
                 .withDittoHeaders(retrieveThingsTwinCommand.getDittoHeaders())
                 .withManifest(retrieveThingsTwinCommand.getManifest())
                 .withResourcePath(retrieveThingsTwinCommand.getResourcePath());
-        assertThat(underTest.getThingEntityIds()).isEqualTo(retrieveThingsTwinCommand.getThingEntityIds());
+        assertThat(underTest.getEntityIds()).isEqualTo(retrieveThingsTwinCommand.getEntityIds());
     }
 
     /** */

@@ -144,8 +144,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                     streamingType,
                     subscriptionMessage,
                     streamingType.startAck(),
-                    completableFutureEvents,
-                    CommonManagementImpl::asThingMessage
+                    completableFutureEvents
             );
         });
 
@@ -393,7 +392,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
     private static Optional<ThingId> extractThingId(final LiveCommand<?, ?> liveCommand) {
         return Optional.of(liveCommand)
                 .map(WithThingId.class::cast)
-                .map(WithThingId::getThingEntityId);
+                .map(WithThingId::getEntityId);
     }
 
     private Optional<JsonKey> getFeatureIdFromResourcePath(final LiveCommand<?, ?> liveCommand) {

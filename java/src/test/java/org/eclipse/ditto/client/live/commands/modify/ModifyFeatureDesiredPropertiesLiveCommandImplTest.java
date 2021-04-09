@@ -92,7 +92,7 @@ public final class ModifyFeatureDesiredPropertiesLiveCommandImplTest {
         assertThat(underTest)
                 .withType(twinCommand.getType())
                 .withDittoHeaders(twinCommand.getDittoHeaders())
-                .withId(twinCommand.getThingEntityId())
+                .withId(twinCommand.getEntityId())
                 .withManifest(twinCommand.getManifest())
                 .withResourcePath(twinCommand.getResourcePath());
         assertThat(underTest.getDesiredProperties()).isEqualTo(twinCommand.getDesiredProperties());

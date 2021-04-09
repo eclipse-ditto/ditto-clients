@@ -49,7 +49,7 @@ final class RetrieveThingLiveCommandImpl extends AbstractQueryLiveCommand<Retrie
 
     @Override
     public RetrieveThingLiveCommand setDittoHeaders(final DittoHeaders dittoHeaders) {
-        final RetrieveThing twinCommand = RetrieveThing.getBuilder(getThingEntityId(), dittoHeaders)
+        final RetrieveThing twinCommand = RetrieveThing.getBuilder(getEntityId(), dittoHeaders)
                 .withSelectedFields(getSelectedFields().orElse(null))
                 .build();
         return of(twinCommand);

@@ -65,7 +65,7 @@ final class ModifyThingLiveCommandImpl
 
     @Override
     public ModifyThingLiveCommand setDittoHeaders(final DittoHeaders dittoHeaders) {
-        return new ModifyThingLiveCommandImpl(ModifyThing.of(getThingEntityId(), getThing(), null, dittoHeaders));
+        return new ModifyThingLiveCommandImpl(ModifyThing.of(getEntityId(), getThing(), null, dittoHeaders));
     }
 
     @Override

@@ -242,7 +242,7 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
             LOGGER.trace("Received Message: '{}'", message);
 
             final String subject = message.getSubject();
-            final ThingId thingId = message.getThingEntityId();
+            final ThingId thingId = message.getEntityId();
             final MessageDirection direction = message.getDirection();
 
             // Direction is set to "TO" -> Message is put in the "inbox"
@@ -291,8 +291,8 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
          * resource paths.
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, ThingMerged.TYPE, ThingMerged.class,
-                e -> BusAddressFactory.forThingMergedEvent(e.getThingEntityId(), e.getResourcePath()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.MERGED,
+                e -> BusAddressFactory.forThingMergedEvent(e.getEntityId(), e.getResourcePath()),
+                (e, extra) -> new ImmutableChange(e.getEntityId(), ChangeAction.MERGED,
                         e.getResourcePath(), e.getValue(), e.getRevision(), e.getTimestamp().orElse(null),
                         extra, e.getDittoHeaders(), emitAcknowledgement));
 
@@ -300,22 +300,22 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
          * Thing
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, ThingCreated.TYPE, ThingCreated.class,
-                e -> BusAddressFactory.forThing(e.getThingEntityId()),
-                (e, extra) -> new ImmutableThingChange(e.getThingEntityId(), ChangeAction.CREATED, e.getThing(),
+                e -> BusAddressFactory.forThing(e.getEntityId()),
+                (e, extra) -> new ImmutableThingChange(e.getEntityId(), ChangeAction.CREATED, e.getThing(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
                         emitAcknowledgement)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, ThingModified.TYPE, ThingModified.class,
-                e -> BusAddressFactory.forThing(e.getThingEntityId()),
-                (e, extra) -> new ImmutableThingChange(e.getThingEntityId(), ChangeAction.UPDATED, e.getThing(),
+                e -> BusAddressFactory.forThing(e.getEntityId()),
+                (e, extra) -> new ImmutableThingChange(e.getEntityId(), ChangeAction.UPDATED, e.getThing(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
                         emitAcknowledgement)
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, ThingDeleted.TYPE, ThingDeleted.class,
-                e -> BusAddressFactory.forThing(e.getThingEntityId()),
-                (e, extra) -> new ImmutableThingChange(e.getThingEntityId(), ChangeAction.DELETED, null,
+                e -> BusAddressFactory.forThing(e.getEntityId()),
+                (e, extra) -> new ImmutableThingChange(e.getEntityId(), ChangeAction.DELETED, null,
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
                         emitAcknowledgement)
         );
@@ -324,8 +324,8 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
          * Attributes
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributesCreated.TYPE, AttributesCreated.class,
-                e -> BusAddressFactory.forAttributes(e.getThingEntityId()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.CREATED,
+                e -> BusAddressFactory.forAttributes(e.getEntityId()),
+                (e, extra) -> new ImmutableChange(e.getEntityId(), ChangeAction.CREATED,
                         JsonPointer.empty(),
                         e.getCreatedAttributes(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -333,8 +333,8 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributesModified.TYPE, AttributesModified.class,
-                e -> BusAddressFactory.forAttributes(e.getThingEntityId()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.UPDATED,
+                e -> BusAddressFactory.forAttributes(e.getEntityId()),
+                (e, extra) -> new ImmutableChange(e.getEntityId(), ChangeAction.UPDATED,
                         JsonPointer.empty(),
                         e.getModifiedAttributes(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -342,8 +342,8 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributesDeleted.TYPE, AttributesDeleted.class,
-                e -> BusAddressFactory.forAttributes(e.getThingEntityId()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.DELETED,
+                e -> BusAddressFactory.forAttributes(e.getEntityId()),
+                (e, extra) -> new ImmutableChange(e.getEntityId(), ChangeAction.DELETED,
                         JsonPointer.empty(),
                         null,
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -354,24 +354,24 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
          * Attribute
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributeCreated.TYPE, AttributeCreated.class,
-                e -> BusAddressFactory.forAttribute(e.getThingEntityId(), e.getAttributePointer()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.CREATED,
+                e -> BusAddressFactory.forAttribute(e.getEntityId(), e.getAttributePointer()),
+                (e, extra) -> new ImmutableChange(e.getEntityId(), ChangeAction.CREATED,
                         e.getAttributePointer(),
                         e.getAttributeValue(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
                         emitAcknowledgement));
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributeModified.TYPE, AttributeModified.class,
-                e -> BusAddressFactory.forAttribute(e.getThingEntityId(), e.getAttributePointer()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.UPDATED,
+                e -> BusAddressFactory.forAttribute(e.getEntityId(), e.getAttributePointer()),
+                (e, extra) -> new ImmutableChange(e.getEntityId(), ChangeAction.UPDATED,
                         e.getAttributePointer(),
                         e.getAttributeValue(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
                         emitAcknowledgement));
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, AttributeDeleted.TYPE, AttributeDeleted.class,
-                e -> BusAddressFactory.forAttribute(e.getThingEntityId(), e.getAttributePointer()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.DELETED,
+                e -> BusAddressFactory.forAttribute(e.getEntityId(), e.getAttributePointer()),
+                (e, extra) -> new ImmutableChange(e.getEntityId(), ChangeAction.DELETED,
                         e.getAttributePointer(),
                         null,
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -381,8 +381,8 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
          * Features
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturesCreated.TYPE, FeaturesCreated.class,
-                e -> BusAddressFactory.forFeatures(e.getThingEntityId()),
-                (e, extra) -> new ImmutableFeaturesChange(e.getThingEntityId(), ChangeAction.CREATED,
+                e -> BusAddressFactory.forFeatures(e.getEntityId()),
+                (e, extra) -> new ImmutableFeaturesChange(e.getEntityId(), ChangeAction.CREATED,
                         e.getFeatures(),
                         JsonPointer.empty(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -390,8 +390,8 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturesModified.TYPE, FeaturesModified.class,
-                e -> BusAddressFactory.forFeatures(e.getThingEntityId()),
-                (e, extra) -> new ImmutableFeaturesChange(e.getThingEntityId(), ChangeAction.UPDATED,
+                e -> BusAddressFactory.forFeatures(e.getEntityId()),
+                (e, extra) -> new ImmutableFeaturesChange(e.getEntityId(), ChangeAction.UPDATED,
                         e.getFeatures(),
                         JsonPointer.empty(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -399,8 +399,8 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturesDeleted.TYPE, FeaturesDeleted.class,
-                e -> BusAddressFactory.forFeatures(e.getThingEntityId()),
-                (e, extra) -> new ImmutableFeaturesChange(e.getThingEntityId(), ChangeAction.DELETED,
+                e -> BusAddressFactory.forFeatures(e.getEntityId()),
+                (e, extra) -> new ImmutableFeaturesChange(e.getEntityId(), ChangeAction.DELETED,
                         null,
                         JsonPointer.empty(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -411,8 +411,8 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
          * Feature
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureCreated.TYPE, FeatureCreated.class,
-                e -> BusAddressFactory.forFeature(e.getThingEntityId(), e.getFeatureId()),
-                (e, extra) -> new ImmutableFeatureChange(e.getThingEntityId(), ChangeAction.CREATED,
+                e -> BusAddressFactory.forFeature(e.getEntityId(), e.getFeatureId()),
+                (e, extra) -> new ImmutableFeatureChange(e.getEntityId(), ChangeAction.CREATED,
                         e.getFeature(),
                         JsonPointer.empty(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -420,8 +420,8 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureModified.TYPE, FeatureModified.class,
-                e -> BusAddressFactory.forFeature(e.getThingEntityId(), e.getFeatureId()),
-                (e, extra) -> new ImmutableFeatureChange(e.getThingEntityId(), ChangeAction.UPDATED,
+                e -> BusAddressFactory.forFeature(e.getEntityId(), e.getFeatureId()),
+                (e, extra) -> new ImmutableFeatureChange(e.getEntityId(), ChangeAction.UPDATED,
                         e.getFeature(),
                         JsonPointer.empty(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -429,8 +429,8 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
         );
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureDeleted.TYPE, FeatureDeleted.class,
-                e -> BusAddressFactory.forFeature(e.getThingEntityId(), e.getFeatureId()),
-                (e, extra) -> new ImmutableFeatureChange(e.getThingEntityId(), ChangeAction.DELETED,
+                e -> BusAddressFactory.forFeature(e.getEntityId(), e.getFeatureId()),
+                (e, extra) -> new ImmutableFeatureChange(e.getEntityId(), ChangeAction.DELETED,
                         null,
                         JsonPointer.empty(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -442,8 +442,8 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertiesCreated.TYPE,
                 FeaturePropertiesCreated.class,
-                e -> BusAddressFactory.forFeatureProperties(e.getThingEntityId(), e.getFeatureId()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.CREATED,
+                e -> BusAddressFactory.forFeatureProperties(e.getEntityId(), e.getFeatureId()),
+                (e, extra) -> new ImmutableChange(e.getEntityId(), ChangeAction.CREATED,
                         JsonPointer.empty(),
                         e.getProperties().toJson(e.getImplementedSchemaVersion()),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -452,8 +452,8 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertiesModified.TYPE,
                 FeaturePropertiesModified.class,
-                e -> BusAddressFactory.forFeatureProperties(e.getThingEntityId(), e.getFeatureId()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.UPDATED,
+                e -> BusAddressFactory.forFeatureProperties(e.getEntityId(), e.getFeatureId()),
+                (e, extra) -> new ImmutableChange(e.getEntityId(), ChangeAction.UPDATED,
                         JsonPointer.empty(),
                         e.getProperties().toJson(e.getImplementedSchemaVersion()),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -462,8 +462,8 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertiesDeleted.TYPE,
                 FeaturePropertiesDeleted.class,
-                e -> BusAddressFactory.forFeatureProperties(e.getThingEntityId(), e.getFeatureId()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.DELETED,
+                e -> BusAddressFactory.forFeatureProperties(e.getEntityId(), e.getFeatureId()),
+                (e, extra) -> new ImmutableChange(e.getEntityId(), ChangeAction.DELETED,
                         JsonPointer.empty(),
                         null,
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -475,9 +475,9 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertyCreated.TYPE,
                 FeaturePropertyCreated.class,
-                e -> BusAddressFactory.forFeatureProperty(e.getThingEntityId(), e.getFeatureId(),
+                e -> BusAddressFactory.forFeatureProperty(e.getEntityId(), e.getFeatureId(),
                         e.getPropertyPointer()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.CREATED,
+                (e, extra) -> new ImmutableChange(e.getEntityId(), ChangeAction.CREATED,
                         e.getPropertyPointer(),
                         e.getPropertyValue(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -486,9 +486,9 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertyModified.TYPE,
                 FeaturePropertyModified.class,
-                e -> BusAddressFactory.forFeatureProperty(e.getThingEntityId(), e.getFeatureId(),
+                e -> BusAddressFactory.forFeatureProperty(e.getEntityId(), e.getFeatureId(),
                         e.getPropertyPointer()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.UPDATED,
+                (e, extra) -> new ImmutableChange(e.getEntityId(), ChangeAction.UPDATED,
                         e.getPropertyPointer(),
                         e.getPropertyValue(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -497,9 +497,9 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeaturePropertyDeleted.TYPE,
                 FeaturePropertyDeleted.class,
-                e -> BusAddressFactory.forFeatureProperty(e.getThingEntityId(), e.getFeatureId(),
+                e -> BusAddressFactory.forFeatureProperty(e.getEntityId(), e.getFeatureId(),
                         e.getPropertyPointer()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.DELETED,
+                (e, extra) -> new ImmutableChange(e.getEntityId(), ChangeAction.DELETED,
                         e.getPropertyPointer(),
                         null,
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -511,8 +511,8 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureDesiredPropertiesCreated.TYPE,
                 FeatureDesiredPropertiesCreated.class,
-                e -> BusAddressFactory.forFeatureDesiredProperties(e.getThingEntityId(), e.getFeatureId()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.CREATED,
+                e -> BusAddressFactory.forFeatureDesiredProperties(e.getEntityId(), e.getFeatureId()),
+                (e, extra) -> new ImmutableChange(e.getEntityId(), ChangeAction.CREATED,
                         JsonPointer.empty(),
                         e.getDesiredProperties().toJson(e.getImplementedSchemaVersion()),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -521,8 +521,8 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureDesiredPropertiesModified.TYPE,
                 FeatureDesiredPropertiesModified.class,
-                e -> BusAddressFactory.forFeatureDesiredProperties(e.getThingEntityId(), e.getFeatureId()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.UPDATED,
+                e -> BusAddressFactory.forFeatureDesiredProperties(e.getEntityId(), e.getFeatureId()),
+                (e, extra) -> new ImmutableChange(e.getEntityId(), ChangeAction.UPDATED,
                         JsonPointer.empty(),
                         e.getDesiredProperties().toJson(e.getImplementedSchemaVersion()),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -531,8 +531,8 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureDesiredPropertiesDeleted.TYPE,
                 FeatureDesiredPropertiesDeleted.class,
-                e -> BusAddressFactory.forFeatureDesiredProperties(e.getThingEntityId(), e.getFeatureId()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.DELETED,
+                e -> BusAddressFactory.forFeatureDesiredProperties(e.getEntityId(), e.getFeatureId()),
+                (e, extra) -> new ImmutableChange(e.getEntityId(), ChangeAction.DELETED,
                         JsonPointer.empty(),
                         null,
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -544,9 +544,9 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
          */
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureDesiredPropertyCreated.TYPE,
                 FeatureDesiredPropertyCreated.class,
-                e -> BusAddressFactory.forFeatureDesiredProperty(e.getThingEntityId(), e.getFeatureId(),
+                e -> BusAddressFactory.forFeatureDesiredProperty(e.getEntityId(), e.getFeatureId(),
                         e.getDesiredPropertyPointer()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.CREATED,
+                (e, extra) -> new ImmutableChange(e.getEntityId(), ChangeAction.CREATED,
                         e.getDesiredPropertyPointer(),
                         e.getDesiredPropertyValue(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -555,9 +555,9 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureDesiredPropertyModified.TYPE,
                 FeatureDesiredPropertyModified.class,
-                e -> BusAddressFactory.forFeatureDesiredProperty(e.getThingEntityId(), e.getFeatureId(),
+                e -> BusAddressFactory.forFeatureDesiredProperty(e.getEntityId(), e.getFeatureId(),
                         e.getDesiredPropertyPointer()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.UPDATED,
+                (e, extra) -> new ImmutableChange(e.getEntityId(), ChangeAction.UPDATED,
                         e.getDesiredPropertyPointer(),
                         e.getDesiredPropertyValue(),
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),
@@ -566,9 +566,9 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
 
         SelectorUtil.addHandlerForThingEvent(LOGGER, bus, FeatureDesiredPropertyDeleted.TYPE,
                 FeatureDesiredPropertyDeleted.class,
-                e -> BusAddressFactory.forFeatureDesiredProperty(e.getThingEntityId(), e.getFeatureId(),
+                e -> BusAddressFactory.forFeatureDesiredProperty(e.getEntityId(), e.getFeatureId(),
                         e.getDesiredPropertyPointer()),
-                (e, extra) -> new ImmutableChange(e.getThingEntityId(), ChangeAction.DELETED,
+                (e, extra) -> new ImmutableChange(e.getEntityId(), ChangeAction.DELETED,
                         e.getDesiredPropertyPointer(),
                         null,
                         e.getRevision(), e.getTimestamp().orElse(null), extra, e.getDittoHeaders(),

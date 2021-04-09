@@ -71,7 +71,7 @@ final class RetrieveThingLiveCommandAnswerBuilderImpl
         @Override
         public RetrieveThingResponse retrieved(final Thing thing, final Predicate<JsonField> predicate) {
             final DittoHeaders dittoHeaders = command.getDittoHeaders();
-            final ThingId thingId = command.getThingEntityId();
+            final ThingId thingId = command.getEntityId();
             final Function<JsonFieldSelector, RetrieveThingResponse> fieldSelectorToResponse =
                     fieldSelector -> RetrieveThingResponse.of(thingId, thing, fieldSelector, predicate, dittoHeaders);
 
@@ -89,8 +89,8 @@ final class RetrieveThingLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public ThingErrorResponse thingNotAccessibleError() {
-            return errorResponse(command.getThingEntityId(),
-                    ThingNotAccessibleException.newBuilder(command.getThingEntityId())
+            return errorResponse(command.getEntityId(),
+                    ThingNotAccessibleException.newBuilder(command.getEntityId())
                             .dittoHeaders(command.getDittoHeaders())
                     .build());
         }

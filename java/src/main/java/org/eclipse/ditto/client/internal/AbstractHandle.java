@@ -306,7 +306,7 @@ public abstract class AbstractHandle {
             }
 
             @Override
-            public ThingId getThingEntityId() {
+            public ThingId getEntityId() {
                 return (ThingId) ack.getEntityId();
             }
 

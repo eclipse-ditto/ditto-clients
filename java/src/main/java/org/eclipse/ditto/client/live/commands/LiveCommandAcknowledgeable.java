@@ -24,7 +24,9 @@ import org.eclipse.ditto.client.live.commands.base.LiveCommand;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.acks.AcknowledgementRequest;
+import org.eclipse.ditto.model.base.entity.id.WithEntityId;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.WithThingId;
 import org.eclipse.ditto.signals.base.Signal;
 
@@ -80,30 +82,29 @@ public final class LiveCommandAcknowledgeable<L extends LiveCommand<L, B>, B ext
     public void handleAcknowledgementRequest(final AcknowledgementLabel acknowledgementLabel,
             final Consumer<AcknowledgementRequestHandle> acknowledgementHandle) {
         final DittoHeaders dittoHeaders = liveCommand.getDittoHeaders();
-        if (dittoHeaders.getAcknowledgementRequests().contains(AcknowledgementRequest.of(acknowledgementLabel))
-                && liveCommand instanceof WithThingId) {
-            acknowledgementHandle.accept(new ImmutableAcknowledgementRequestHandle(
-                    acknowledgementLabel,
-                    ((WithThingId) liveCommand).getThingEntityId(),
-                    dittoHeaders,
-                    signalPublisher::accept
-            ));
+        if (dittoHeaders.getAcknowledgementRequests().contains(AcknowledgementRequest.of(acknowledgementLabel))) {
+            WithEntityId.getEntityIdOfType(ThingId.class, liveCommand).ifPresent(thingId -> {
+                acknowledgementHandle.accept(new ImmutableAcknowledgementRequestHandle(
+                        acknowledgementLabel,
+                        ((WithThingId) liveCommand).getEntityId(),
+                        dittoHeaders,
+                        signalPublisher::accept
+                ));
+            });
         }
     }
 
     private Collection<AcknowledgementRequestHandle> getHandles() {
-        if (liveCommand instanceof WithThingId) {
-            return liveCommand.getDittoHeaders()
-                    .getAcknowledgementRequests()
-                    .stream()
-                    .map(ackRequest -> new ImmutableAcknowledgementRequestHandle(ackRequest.getLabel(),
-                            ((WithThingId) liveCommand).getThingEntityId(),
-                            liveCommand.getDittoHeaders(),
-                            signalPublisher::accept)
-                    )
-                    .collect(Collectors.toList());
-        } else {
-            return Collections.emptyList();
-        }
+        return WithEntityId.getEntityIdOfType(ThingId.class, liveCommand)
+                .map(thingId -> liveCommand.getDittoHeaders()
+                        .getAcknowledgementRequests()
+                        .stream()
+                        .map(ackRequest -> (AcknowledgementRequestHandle) new ImmutableAcknowledgementRequestHandle(
+                                ackRequest.getLabel(),
+                                thingId,
+                                liveCommand.getDittoHeaders(),
+                                signalPublisher::accept)
+                        ).collect(Collectors.toList()))
+                .orElseGet(Collections::emptyList);
     }
 }

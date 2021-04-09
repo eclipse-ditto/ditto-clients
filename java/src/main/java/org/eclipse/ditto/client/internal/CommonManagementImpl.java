@@ -66,10 +66,10 @@ import org.eclipse.ditto.model.things.Features;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
-import org.eclipse.ditto.model.things.WithThingId;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.Signal;
+import org.eclipse.ditto.model.base.entity.id.WithEntityId;
 import org.eclipse.ditto.signals.base.WithOptionalEntity;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.commands.base.ErrorResponse;
@@ -647,7 +647,6 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
      * @param protocolCommandAck the expected acknowledgement.
      * @param futureToCompleteOrFailAfterAck the future to complete or fail after receiving the expected acknowledgement
      * or not.
-     * @param adaptableToMessage function to convert an adaptable into a message.
      * @return the subscription ID.
      */
     protected AdaptableBus.SubscriptionId subscribe(
@@ -655,13 +654,11 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
             final Classification.StreamingType streamingType,
             final String protocolCommand,
             final String protocolCommandAck,
-            final CompletableFuture<Void> futureToCompleteOrFailAfterAck,
-            final Function<Adaptable, Optional<Message<?>>> adaptableToMessage) {
+            final CompletableFuture<Void> futureToCompleteOrFailAfterAck) {
 
         return subscribeAndPublishMessage(previousSubscriptionId, streamingType, protocolCommand, protocolCommandAck,
                 futureToCompleteOrFailAfterAck, adaptable -> bus -> {
-                    adaptableToMessage.apply(adaptable)
-                            .ifPresent(message -> bus.notify(message.getSubject(), message));
+                    asThingMessage(adaptable).ifPresent(message -> bus.notify(message.getSubject(), message));
                 });
     }
 
@@ -753,23 +750,25 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
      * @param adaptable from which the things {@link Message} shall be build from.
      * @return empty if the adaptable doesn't provide a thingId, or the build {@link Message}.
      */
-    protected static Optional<Message<?>> asThingMessage(final Adaptable adaptable) {
+    private static Optional<Message<?>> asThingMessage(final Adaptable adaptable) {
         final Signal<?> signal = PROTOCOL_ADAPTER.fromAdaptable(adaptable);
-        if (signal instanceof WithThingId) {
-            final ThingId thingId = ((WithThingId) signal).getThingEntityId();
+        final Optional<ThingId> thingIdOptional = WithEntityId.getEntityIdOfType(ThingId.class, signal);
+        final Message<?> message;
+        if (thingIdOptional.isPresent()) {
+            final ThingId thingId = thingIdOptional.get();
             final MessageHeaders messageHeaders = MessageHeaders
                     .newBuilder(MessageDirection.FROM, thingId, signal.getType())
                     .correlationId(signal.getDittoHeaders().getCorrelationId().orElse(null))
                     .build();
-            final Message<Object> message = Message.newBuilder(messageHeaders)
+            message = Message.newBuilder(messageHeaders)
                     .payload(signal)
                     .extra(adaptable.getPayload().getExtra().orElse(null))
                     .build();
-            return Optional.of(message);
         } else {
             LOGGER.warn("Cannot build ThingMessage out of Signal without an ThingId: <{}>", signal);
-            return Optional.empty();
+            message = null;
         }
+        return Optional.ofNullable(message);
     }
 
     private static void adjoin(final CompletionStage<?> stage, final CompletableFuture<Void> future) {
@@ -794,7 +793,8 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     private CompletionStage<List<Thing>> sendRetrieveThingsMessage(final RetrieveThings command) {
-        return sendSignalAndExpectResponse(command, RetrieveThingsResponse.class, RetrieveThingsResponse::getThings, ErrorResponse.class,
+        return sendSignalAndExpectResponse(command, RetrieveThingsResponse.class, RetrieveThingsResponse::getThings,
+                ErrorResponse.class,
                 ErrorResponse::getDittoRuntimeException);
     }
 

@@ -43,7 +43,7 @@ final class RetrieveThingsLiveCommandImpl extends AbstractLiveCommand<RetrieveTh
 
     private RetrieveThingsLiveCommandImpl(final RetrieveThings command) {
         super(command);
-        thingIds = command.getThingEntityIds();
+        thingIds = command.getEntityIds();
         namespace = command.getNamespace().orElse(null);
     }
 
@@ -62,7 +62,7 @@ final class RetrieveThingsLiveCommandImpl extends AbstractLiveCommand<RetrieveTh
 
     @Nonnull
     @Override
-    public List<ThingId> getThingEntityIds() {
+    public List<ThingId> getEntityIds() {
         return thingIds;
     }
 
@@ -84,7 +84,7 @@ final class RetrieveThingsLiveCommandImpl extends AbstractLiveCommand<RetrieveTh
 
     @Override
     public RetrieveThingsLiveCommand setDittoHeaders(final DittoHeaders dittoHeaders) {
-        final RetrieveThings retrieveThingsCommand = RetrieveThings.getBuilder(getThingEntityIds())
+        final RetrieveThings retrieveThingsCommand = RetrieveThings.getBuilder(getEntityIds())
                 .dittoHeaders(dittoHeaders)
                 .selectedFields(getSelectedFields().orElse(null))
                 .build();

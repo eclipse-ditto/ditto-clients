@@ -69,15 +69,15 @@ final class RetrieveFeatureDefinitionLiveCommandAnswerBuilderImpl
 
         @Override
         public RetrieveFeatureDefinitionResponse retrieved(final FeatureDefinition featureProperties) {
-            return RetrieveFeatureDefinitionResponse.of(command.getThingEntityId(), command.getFeatureId(),
+            return RetrieveFeatureDefinitionResponse.of(command.getEntityId(), command.getFeatureId(),
                     featureProperties,
                     command.getDittoHeaders());
         }
 
         @Override
         public ThingErrorResponse featureDefinitionNotAccessibleError() {
-            return errorResponse(command.getThingEntityId(),
-                    FeatureDefinitionNotAccessibleException.newBuilder(command.getThingEntityId(),
+            return errorResponse(command.getEntityId(),
+                    FeatureDefinitionNotAccessibleException.newBuilder(command.getEntityId(),
                             command.getFeatureId())
                             .dittoHeaders(command.getDittoHeaders())
                             .build());

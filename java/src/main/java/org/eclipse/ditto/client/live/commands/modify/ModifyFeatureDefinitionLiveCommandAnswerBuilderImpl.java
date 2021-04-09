@@ -78,7 +78,7 @@ final class ModifyFeatureDefinitionLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public ModifyFeatureDefinitionResponse created() {
-            return ModifyFeatureDefinitionResponse.created(command.getThingEntityId(), command.getFeatureId(),
+            return ModifyFeatureDefinitionResponse.created(command.getEntityId(), command.getFeatureId(),
                     command.getDefinition(),
                     command.getDittoHeaders());
         }
@@ -86,15 +86,15 @@ final class ModifyFeatureDefinitionLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public ModifyFeatureDefinitionResponse modified() {
-            return ModifyFeatureDefinitionResponse.modified(command.getThingEntityId(), command.getFeatureId(),
+            return ModifyFeatureDefinitionResponse.modified(command.getEntityId(), command.getFeatureId(),
                     command.getDittoHeaders());
         }
 
         @Nonnull
         @Override
         public ThingErrorResponse featureDefinitionNotAccessibleError() {
-            return errorResponse(command.getThingEntityId(),
-                    FeatureDefinitionNotAccessibleException.newBuilder(command.getThingEntityId(),
+            return errorResponse(command.getEntityId(),
+                    FeatureDefinitionNotAccessibleException.newBuilder(command.getEntityId(),
                             command.getFeatureId())
                             .dittoHeaders(command.getDittoHeaders())
                             .build());
@@ -103,8 +103,8 @@ final class ModifyFeatureDefinitionLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public ThingErrorResponse featureDefinitionNotModifiableError() {
-            return errorResponse(command.getThingEntityId(),
-                    FeatureDefinitionNotModifiableException.newBuilder(command.getThingEntityId(),
+            return errorResponse(command.getEntityId(),
+                    FeatureDefinitionNotModifiableException.newBuilder(command.getEntityId(),
                             command.getFeatureId())
                             .dittoHeaders(command.getDittoHeaders())
                             .build());
@@ -118,14 +118,14 @@ final class ModifyFeatureDefinitionLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public FeatureDefinitionCreated created() {
-            return FeatureDefinitionCreated.of(command.getThingEntityId(), command.getFeatureId(),
+            return FeatureDefinitionCreated.of(command.getEntityId(), command.getFeatureId(),
                     command.getDefinition(), -1, Instant.now(), command.getDittoHeaders(), null);
         }
 
         @Nonnull
         @Override
         public FeatureDefinitionModified modified() {
-            return FeatureDefinitionModified.of(command.getThingEntityId(), command.getFeatureId(),
+            return FeatureDefinitionModified.of(command.getEntityId(), command.getFeatureId(),
                     command.getDefinition(), -1, Instant.now(), command.getDittoHeaders(), null);
         }
 

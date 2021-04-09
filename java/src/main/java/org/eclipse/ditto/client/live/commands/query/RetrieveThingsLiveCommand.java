@@ -39,15 +39,15 @@ public interface RetrieveThingsLiveCommand
      * Returns the identifiers of the {@code Thing}s to be retrieved.
      *
      * @return the identifiers
-     * @deprecated the thing ID is now typed. Use {@link #getThingEntityIds()} instead.
+     * @deprecated the thing ID is now typed. Use {@link #getEntityIds()} instead.
      */
     @Nonnull
     @Deprecated
     default List<String> getThingIds() {
-        return getThingEntityIds().stream().map(String::valueOf).collect(Collectors.toList());
+        return getEntityIds().stream().map(String::valueOf).collect(Collectors.toList());
     }
 
     @Nonnull
-    List<ThingId> getThingEntityIds();
+    List<ThingId> getEntityIds();
 
 }

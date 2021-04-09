@@ -69,7 +69,7 @@ final class ModifyFeatureLiveCommandImpl extends AbstractModifyLiveCommand<Modif
 
     @Override
     public ModifyFeatureLiveCommand setDittoHeaders(final DittoHeaders dittoHeaders) {
-        return new ModifyFeatureLiveCommandImpl(ModifyFeature.of(getThingEntityId(), getFeature(), dittoHeaders));
+        return new ModifyFeatureLiveCommandImpl(ModifyFeature.of(getEntityId(), getFeature(), dittoHeaders));
     }
 
     @Override

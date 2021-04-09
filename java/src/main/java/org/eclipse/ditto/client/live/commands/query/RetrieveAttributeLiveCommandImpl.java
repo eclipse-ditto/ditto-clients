@@ -59,7 +59,7 @@ final class RetrieveAttributeLiveCommandImpl extends AbstractQueryLiveCommand<Re
 
     @Override
     public RetrieveAttributeLiveCommand setDittoHeaders(final DittoHeaders dittoHeaders) {
-        return of(RetrieveAttribute.of(getThingEntityId(), getAttributePointer(), dittoHeaders));
+        return of(RetrieveAttribute.of(getEntityId(), getAttributePointer(), dittoHeaders));
     }
 
     @Nonnull

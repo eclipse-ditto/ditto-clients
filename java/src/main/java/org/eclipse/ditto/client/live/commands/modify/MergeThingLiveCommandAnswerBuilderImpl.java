@@ -76,14 +76,14 @@ final class MergeThingLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public MergeThingResponse merged() {
-            return MergeThingResponse.of(command.getThingEntityId(), command.getPath(), command.getDittoHeaders());
+            return MergeThingResponse.of(command.getEntityId(), command.getPath(), command.getDittoHeaders());
         }
 
         @Nonnull
         @Override
         public ThingErrorResponse thingNotAccessibleError() {
-            return errorResponse(command.getThingEntityId(),
-                    ThingNotAccessibleException.newBuilder(command.getThingEntityId())
+            return errorResponse(command.getEntityId(),
+                    ThingNotAccessibleException.newBuilder(command.getEntityId())
                             .dittoHeaders(command.getDittoHeaders())
                             .build());
         }
@@ -91,8 +91,8 @@ final class MergeThingLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public ThingErrorResponse thingNotModifiableError() {
-            return errorResponse(command.getThingEntityId(),
-                    ThingNotModifiableException.newBuilder(command.getThingEntityId())
+            return errorResponse(command.getEntityId(),
+                    ThingNotModifiableException.newBuilder(command.getEntityId())
                             .dittoHeaders(command.getDittoHeaders())
                             .build());
         }
@@ -104,7 +104,7 @@ final class MergeThingLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public ThingMerged merged() {
-            return ThingMerged.of(command.getThingEntityId(), command.getPath(), command.getValue(), -1, Instant.now(),
+            return ThingMerged.of(command.getEntityId(), command.getPath(), command.getValue(), -1, Instant.now(),
                     command.getDittoHeaders(), null);
         }
     }
