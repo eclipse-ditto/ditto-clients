@@ -184,7 +184,7 @@ describe('Thing', () => {
     expect(thing.name).toEqual('Testthing');
     expect(thing.acl).toEqual(acl);
     expect(thing.definition).toEqual('example:test:definition');
-    expect(thing.created).toEqual('2017-06-01T00:01:57Z');
+    expect(thing._created).toEqual('2017-06-01T00:01:57Z');
   });
   it('handles a minimal thing', () => {
     const minimalThing = new Thing('Tespspace:Minimal');
