@@ -26,20 +26,25 @@ class DummyAuthProvider implements AuthProvider {
   constructor(private readonly username: string, private readonly password: string) {
 
   }
+
   authenticateWithHeaders(originalHeaders: DittoHeaders): DittoHeaders {
     return originalHeaders;
   }
+
   authenticateWithUrl(originalUrl: DittoURL): DittoURL {
     return originalUrl;
   }
 
 }
+
 const dummyAuthProvider1: AuthProvider = new DummyAuthProvider('a', 'b');
 const dummyAuthProvider2: AuthProvider = new DummyAuthProvider('a', 'b');
 const dummyAuthProviders: AuthProvider[] = [dummyAuthProvider1, dummyAuthProvider2];
 const expectedUrl = ImmutableURL.newInstance('https', 'eclipse.ditto.org', '/api/2');
+const expectedCustomUrl = ImmutableURL.newInstance('https', 'eclipse.ditto.org', '/secure-api/2');
 const requester = new TestRequester('a', {} as GenericResponse);
 const requestSenderFactory = new HttpRequestSenderBuilder(requester, expectedUrl, dummyAuthProviders);
+const customUrlRequestSenderFactory = new HttpRequestSenderBuilder(requester, expectedCustomUrl, dummyAuthProviders);
 
 
 describe('HttpClientBuilder', () => {
@@ -47,6 +52,20 @@ describe('HttpClientBuilder', () => {
     const expectedClient = DefaultDittoHttpClient.getInstance(requestSenderFactory);
     const dittoHttpClientV2 = HttpClientBuilder.newBuilder(requester)
       .withTls()
+      .withDomain('eclipse.ditto.org')
+      .withAuthProvider(dummyAuthProvider1, dummyAuthProvider2)
+      .apiVersion2()
+      .build();
+
+    expect(dittoHttpClientV2).toBeTruthy();
+    expect(dittoHttpClientV2).toEqual(expectedClient);
+  });
+
+  it('builds a new http client with custom path', () => {
+    const expectedClient = DefaultDittoHttpClient.getInstance(customUrlRequestSenderFactory);
+    const dittoHttpClientV2 = HttpClientBuilder.newBuilder(requester)
+      .withTls()
+      .withCustomPath('/secure-api')
       .withDomain('eclipse.ditto.org')
       .withAuthProvider(dummyAuthProvider1, dummyAuthProvider2)
       .apiVersion2()

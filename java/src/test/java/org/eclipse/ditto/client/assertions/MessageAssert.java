@@ -34,8 +34,8 @@ import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.policies.PolicyId;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
-
-import net.javacrumbs.jsonunit.JsonAssert;
+import org.json.JSONException;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 /**
  * An Assert for {@link Message}.
@@ -113,7 +113,11 @@ public final class MessageAssert extends AbstractAssert<MessageAssert, Message<?
 
         final String bodyAsString = AbstractDittoClientTest.extractUtf8StringFromBody(actualBody);
 
-        JsonAssert.assertJsonEquals(expectedBody.toString(), bodyAsString);
+        try {
+            JSONAssert.assertEquals(expectedBody.toString(), bodyAsString, false);
+        } catch (final JSONException e) {
+            throw new AssertionError("JSONAssert failed to assert equality of actual and expected JSON string.", e);
+        }
 
         return this;
     }
@@ -141,7 +145,11 @@ public final class MessageAssert extends AbstractAssert<MessageAssert, Message<?
             throw new RuntimeException(e);
         }
 
-        JsonAssert.assertJsonEquals(result, bodyAsStringOptional.orElse(""));
+        try {
+            JSONAssert.assertEquals(result, bodyAsStringOptional.orElse(""), false);
+        } catch (final JSONException e) {
+            throw new AssertionError("JSONAssert failed to assert equality of actual and expected JSON string.", e);
+        }
 
         return this;
     }

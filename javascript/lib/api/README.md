@@ -19,7 +19,7 @@ Basically it makes sense to trigger the build process once from
 the [parent module](../../README.md). Then you'll be able to
 use the default build process in here:
 
-```
+```shell
 npm install
 npm run build
 npm run lint
@@ -35,20 +35,20 @@ the variable `client` to be an instance of `ThingsClient` for the following usag
 explanations.
 
 The client provides different handles to handle requests for specific parts of the Things API:
-```
+```typescript
 const thingsHandle = client.getThingsHandle();
 ```
 
 The handles' methods will send requests and return their responses asynchronously.
 For example the code to update a Thing would look like this:
-```
+```typescript
 const thing = new Thing('the:thing');
 thingsHandle.putThing(thing)
     .then(result => console.log(`Finished putting thing with result: ${JSON.stringify(result)}`));
 ```
 
 Additionally options for requests can be specified and passed on to the methods:
-```
+```typescript
 const options = DefaultFieldsOptions.getInstance();
 options.ifMatch('A Tag').withFields('thingId', 'policyId', '_modified');
 thingsHandle.getThing('Testthing:TestId', options)
@@ -63,10 +63,12 @@ Each implementation will provide an HTTP implementation of the `ThingsClient` an
 will use HTTP requests to communicate with Eclipse Ditto. The builder for the
 client will guide you through the following steps.
 
-```
+```typescript
 client = builder
   // You can decide whether the client will use a TLS (https) connection or not:
   .withTls() // or .withoutTls()
+  // Optional step if path to the api is not simply /api 
+  //.withCustomPath('/custom/path/to/api')
   // which domain the client will connect to
   .withDomain('localhost:8080')
   // Which auth provider to use. E.g. for basic auth there are different versions
@@ -83,7 +85,7 @@ Similar to the HTTP Client, each implementation will provide an WebSocket implem
 of the `ThingsClient` that will use a WebSocket connection to communicate with
 Eclipse Ditto. The builder for the client will guide you through the following steps.
 
-```
+```typescript
 client = builder
   // You can decide whether the client will use a TLS (https) connection or not:
   .withTls() // or .withoutTls()
@@ -106,7 +108,7 @@ client = builder
 ### Errors
 There are a few error responses that are not defined within the Eclipse Ditto API. These mainly relate to problems
 with the web socket connection.
-```
+```json5
 {
   status: 0,
   error: 'connection.unavailable',
@@ -116,7 +118,7 @@ with the web socket connection.
 ```
 This error is returned when the buffer is turned off and the WebSocket connection is not currently established.
 A connection is still being attempted.
-```
+```json5
 {
   status: 1,
   error: 'connection.interrupted',
@@ -126,7 +128,7 @@ A connection is still being attempted.
 ```
 This error is returned when the WebSocket connection failed while a request was waiting for it's response.
 It's not possible to tell whether the request was received by the service or not.
-```
+```json5
 {
   status: 2,
   error: 'connection.lost',
@@ -136,7 +138,7 @@ It's not possible to tell whether the request was received by the service or not
 ```
 This error is returned when the connection to the service could not be established/reestablished.
 Any future requests will return the same error.
-```
+```json5
 {
   status: 3,
   error: 'buffer.overflow',

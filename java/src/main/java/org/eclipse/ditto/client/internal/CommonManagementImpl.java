@@ -55,7 +55,7 @@ import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.model.messages.Message;
@@ -377,11 +377,31 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
 
         final CreateThing command = outgoingMessageFactory.createThing(thing, initialPolicy, options);
 
-        return this.askThingCommand(command,
+        return askThingCommand(command,
                 // response could be CreateThingResponse or ModifyThingResponse or Acknowledgements.
                 CommandResponse.class,
-                this::transformModifyResponse)
+                CommonManagementImpl::transformModifyResponse)
                 .toCompletableFuture();
+    }
+
+
+    @Override
+    public CompletableFuture<Void> merge(final ThingId thingId, final JsonObject jsonObject,
+            final Option<?>... options) {
+        argumentNotNull(jsonObject);
+
+        final Thing thing = ThingsModelFactory.newThing(jsonObject);
+        return merge(thingId, thing, options);
+    }
+
+    @Override
+    public CompletableFuture<Void> merge(final ThingId thingId, final Thing thing,
+            final Option<?>... options) {
+        argumentNotNull(thing);
+
+        return askThingCommand(outgoingMessageFactory.mergeThing(thingId, thing, options),
+                CommandResponse.class,
+                this::toVoid).toCompletableFuture();
     }
 
     @Override
@@ -691,14 +711,13 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         return subscriptionId;
     }
 
-    private DittoRuntimeException getUnexpectedSignalException(final Signal<?> signal) {
-        return DittoRuntimeException
-                .newBuilder("signal.unexpected", HttpStatusCode.BAD_REQUEST)
+    private static DittoRuntimeException getUnexpectedSignalException(final Signal<?> signal) {
+        return DittoRuntimeException.newBuilder("signal.unexpected", HttpStatus.BAD_REQUEST)
                 .message(() -> String.format("Received unexpected response of type '%s'.", signal.getType()))
                 .build();
     }
 
-    private String appendCorrelationIdParameter(final String protocolCommand, final String correlationId) {
+    private static String appendCorrelationIdParameter(final String protocolCommand, final String correlationId) {
         final String separator = protocolCommand.contains("?") ? "&" : "?";
         return String.format("%s%s%s=%s", protocolCommand, separator,
                 DittoHeaderDefinition.CORRELATION_ID.getKey(), correlationId);
@@ -713,8 +732,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
      * @param futureToCompleteOrFailAfterAck the future to complete or fail after receiving the expected acknowledgement
      * or not.
      */
-    protected void unsubscribe(
-            @Nullable final AdaptableBus.SubscriptionId subscriptionId,
+    protected void unsubscribe(@Nullable final AdaptableBus.SubscriptionId subscriptionId,
             final String protocolCommand,
             final String protocolCommandAck,
             final CompletableFuture<Void> futureToCompleteOrFailAfterAck) {
@@ -771,7 +789,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     @Nullable
-    private Thing transformModifyResponse(final CommandResponse<?> response) {
+    private static Thing transformModifyResponse(final CommandResponse<?> response) {
         if (response instanceof WithOptionalEntity) {
             return ((WithOptionalEntity) response).getEntity(response.getImplementedSchemaVersion())
                     .filter(JsonValue::isObject)
@@ -787,5 +805,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     protected interface NotifyMessage {
 
         void accept(final PointerBus pointerBus);
+
     }
+
 }

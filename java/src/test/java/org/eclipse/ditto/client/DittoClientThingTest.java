@@ -39,7 +39,7 @@ import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.acks.AcknowledgementRequest;
 import org.eclipse.ditto.model.base.auth.AuthorizationModelFactory;
 import org.eclipse.ditto.model.base.auth.AuthorizationSubject;
-import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
@@ -60,6 +60,8 @@ import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThingResponse;
+import org.eclipse.ditto.signals.commands.things.modify.MergeThing;
+import org.eclipse.ditto.signals.commands.things.modify.MergeThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyId;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyPolicyIdResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyThing;
@@ -99,6 +101,15 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
     }
 
     @Test
+    public void testMergeThing() {
+        assertEventualCompletion(getManagement().merge(THING_ID, THING));
+        final MergeThing command = expectMsgClass(MergeThing.class);
+        reply(MergeThingResponse.of(command.getThingEntityId(), command.getPath(), command.getDittoHeaders()));
+        assertOnlyIfMatchHeader(command);
+    }
+
+
+    @Test
     public void testCreateThingWithCustomAcknowledgementsOnly() {
         final AcknowledgementLabel label1 = AcknowledgementLabel.of("custom-ack-1");
         assertThatExceptionOfType(IllegalArgumentException.class)
@@ -124,8 +135,8 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
         final DittoHeaders sentDittoHeaders = expectMsgClass(CreateThing.class).getDittoHeaders();
         reply(Acknowledgements.of(
                 Arrays.asList(
-                        Acknowledgement.of(label1, THING_ID, HttpStatusCode.OK, DittoHeaders.empty()),
-                        Acknowledgement.of(label2, THING_ID, HttpStatusCode.ACCEPTED, DittoHeaders.empty())
+                        Acknowledgement.of(label1, THING_ID, HttpStatus.OK, DittoHeaders.empty()),
+                        Acknowledgement.of(label2, THING_ID, HttpStatus.ACCEPTED, DittoHeaders.empty())
                 ),
                 sentDittoHeaders
         ));
@@ -140,8 +151,8 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
         final AcknowledgementLabel label2 = getChannelAcknowledgementLabel();
         final Acknowledgements expectedAcknowledgements = Acknowledgements.of(
                 Arrays.asList(
-                        Acknowledgement.of(label1, THING_ID, HttpStatusCode.FORBIDDEN, DittoHeaders.empty()),
-                        Acknowledgement.of(label2, THING_ID, HttpStatusCode.ACCEPTED, DittoHeaders.empty())
+                        Acknowledgement.of(label1, THING_ID, HttpStatus.FORBIDDEN, DittoHeaders.empty()),
+                        Acknowledgement.of(label2, THING_ID, HttpStatus.ACCEPTED, DittoHeaders.empty())
                 ),
                 DittoHeaders.empty()
         );
@@ -292,6 +303,14 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
     public void testSetPolicyId() {
         assertEventualCompletion(getManagement().forId(THING_ID).setPolicyId(POLICY_ID));
         reply(ModifyPolicyIdResponse.modified(THING_ID, expectMsgClass(ModifyPolicyId.class).getDittoHeaders()));
+    }
+
+    @Test
+    public void testMergePolicyId() {
+        assertEventualCompletion(getManagement().forId(THING_ID).mergePolicyId(POLICY_ID));
+        final MergeThing mergeThing = expectMsgClass(MergeThing.class);
+        reply(MergeThingResponse.of(THING_ID, Thing.JsonFields.POLICY_ID.getPointer(),
+                mergeThing.getDittoHeaders()));
     }
 
     @Test

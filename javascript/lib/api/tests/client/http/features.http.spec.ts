@@ -15,6 +15,7 @@
 import { FeaturesHandle } from '../../../src/client/handles/features.interfaces';
 import { PutResponse } from '../../../src/model/response';
 import { HttpHelper as H } from './http.helper';
+import { Features } from '../../../src/model/things.model';
 
 describe('Http Features Handle', () => {
   const baseRequest = `things/${H.thing.thingId}/features`;
@@ -24,7 +25,7 @@ describe('Http Features Handle', () => {
   it('gets Features', () => {
     return H.test({
       toTest: () => handle.getFeatures(),
-      testBody: H.features.toObject(),
+      testBody: Features.toObject(H.features),
       expected: H.features,
       request: baseRequest,
       method: 'get',
@@ -76,19 +77,31 @@ describe('Http Features Handle', () => {
     });
   });
 
-  it('updates Features', () => {
+  it('creates Features', () => {
     return H.test({
       toTest: () => handle.putFeatures(H.features),
-      testBody: H.features.toObject(),
+      testBody: Features.toObject(H.features),
       expected: new PutResponse(H.features, 201, undefined),
       request: baseRequest,
       method: 'put',
       status: 201,
-      payload: H.features.toJson()
+      payload: Features.toJson(H.features)
     });
   });
 
-  it('updates a Feature', () => {
+  it('updates Features', () => {
+    return H.test({
+      toTest: () => handle.putFeatures(H.features),
+      testBody: Features.toObject(H.features),
+      expected: new PutResponse(null, 204, undefined),
+      request: baseRequest,
+      method: 'put',
+      status: 204,
+      payload: Features.toJson(H.features)
+    });
+  });
+
+  it('creates a Feature', () => {
     return H.test({
       toTest: () => handle.putFeature(H.feature),
       testBody: H.feature.toObject(),
@@ -100,7 +113,19 @@ describe('Http Features Handle', () => {
     });
   });
 
-  it('updates a Definition', () => {
+  it('updates a Feature', () => {
+    return H.test({
+      toTest: () => handle.putFeature(H.feature),
+      testBody: H.feature.toObject(),
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/${H.feature.id}`,
+      method: 'put',
+      status: 204,
+      payload: H.feature.toJson()
+    });
+  });
+
+  it('creates a Definition', () => {
     return H.test({
       toTest: () => handle.putDefinition(H.feature.id, H.definition),
       testBody: H.definition,
@@ -112,7 +137,19 @@ describe('Http Features Handle', () => {
     });
   });
 
-  it('updates Properties', () => {
+  it('updates a Definition', () => {
+    return H.test({
+      toTest: () => handle.putDefinition(H.feature.id, H.definition),
+      testBody: H.definition,
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/${H.feature.id}/definition`,
+      method: 'put',
+      status: 204,
+      payload: JSON.stringify(H.definition)
+    });
+  });
+
+  it('creates Properties', () => {
     return H.test({
       toTest: () => handle.putProperties(H.feature.id, H.properties),
       testBody: H.properties,
@@ -124,7 +161,19 @@ describe('Http Features Handle', () => {
     });
   });
 
-  it('updates a Property', () => {
+  it('updates Properties', () => {
+    return H.test({
+      toTest: () => handle.putProperties(H.feature.id, H.properties),
+      testBody: H.properties,
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/${H.feature.id}/properties`,
+      method: 'put',
+      status: 204,
+      payload: JSON.stringify(H.properties)
+    });
+  });
+
+  it('creates a Property', () => {
     return H.test({
       toTest: () => handle.putProperty(H.feature.id, H.propertyPath, H.property),
       testBody: H.property,
@@ -132,6 +181,18 @@ describe('Http Features Handle', () => {
       request: `${baseRequest}/${H.feature.id}/properties/${H.propertyPath}`,
       method: 'put',
       status: 201,
+      payload: JSON.stringify(H.property)
+    });
+  });
+
+  it('updates a Property', () => {
+    return H.test({
+      toTest: () => handle.putProperty(H.feature.id, H.propertyPath, H.property),
+      testBody: H.property,
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/${H.feature.id}/properties/${H.propertyPath}`,
+      method: 'put',
+      status: 204,
       payload: JSON.stringify(H.property)
     });
   });

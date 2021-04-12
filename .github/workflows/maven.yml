@@ -18,6 +18,9 @@ on:
     branches:
       - master
       - release-*
+  
+  # Enable manually triggering
+  workflow_dispatch:
 
   # Run build for any PR
   pull_request:

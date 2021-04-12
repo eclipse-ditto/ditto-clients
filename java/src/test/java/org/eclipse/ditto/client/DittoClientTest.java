@@ -20,14 +20,14 @@ import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
-import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
 import org.junit.Test;
 
-public class DittoClientTest extends AbstractDittoClientTest {
+public final class DittoClientTest extends AbstractDittoClientTest {
 
     @Test
     public void concurrentTwinAndLiveSubscriptionWorks() {
@@ -84,9 +84,9 @@ public class DittoClientTest extends AbstractDittoClientTest {
         assertCompletion(liveConsumption);
     }
 
-    private Signal<?> getErrorResponse(final String correlationId, final String s) {
+    private static Signal<?> getErrorResponse(final CharSequence correlationId, final String s) {
         final DittoHeaders dittoHeaders = DittoHeaders.newBuilder().correlationId(correlationId).build();
-        return ThingErrorResponse.of(DittoRuntimeException.newBuilder("unexpected", HttpStatusCode.BAD_REQUEST)
+        return ThingErrorResponse.of(DittoRuntimeException.newBuilder("unexpected", HttpStatus.BAD_REQUEST)
                 .message(s)
                 .dittoHeaders(dittoHeaders)
                 .build());
@@ -102,4 +102,5 @@ public class DittoClientTest extends AbstractDittoClientTest {
                     .matches(t -> s.equals(t.getCause().getMessage()));
         }
     }
+
 }

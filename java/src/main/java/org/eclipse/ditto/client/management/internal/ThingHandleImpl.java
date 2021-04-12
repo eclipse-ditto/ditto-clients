@@ -51,6 +51,7 @@ import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributes;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeature;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatures;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
+import org.eclipse.ditto.signals.commands.things.modify.MergeThing;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyAttribute;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributes;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeature;
@@ -181,12 +182,35 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
     }
 
     @Override
+    public CompletableFuture<Void> mergeAttribute(final JsonPointer path, final JsonValue value,
+            final Option<?>... options) {
+        argumentNotNull(path);
+        argumentNotNull(value);
+        checkArgument(path, p -> !p.isEmpty(), () -> "The path is not allowed to be empty! " +
+                "If you want to merge the whole attributes object, please use the ThingHandleImpl.mergeAttributes() " +
+                "method.");
+
+        final MergeThing command = outgoingMessageFactory.mergeAttribute(thingId, path, value, options);
+        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+    }
+
+    @Override
     public CompletableFuture<Void> setAttributes(final JsonObject attributes, final Option<?>... options) {
         argumentNotNull(attributes);
         checkArgument(attributes, v -> v.isObject() || v.isNull(),
                 () -> "The root attributes entry can only be a JSON" + " object or JSON NULL literal!");
 
         final ModifyAttributes command = outgoingMessageFactory.setAttributes(thingId, attributes, options);
+        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+    }
+
+    @Override
+    public CompletableFuture<Void> mergeAttributes(final JsonObject attributes, final Option<?>... options) {
+        argumentNotNull(attributes);
+        checkArgument(attributes, v -> v.isObject() || v.isNull(),
+                () -> "The root attributes entry can only be a JSON" + " object or JSON NULL literal!");
+
+        final MergeThing command = outgoingMessageFactory.mergeAttributes(thingId, attributes, options);
         return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
     }
 
@@ -199,6 +223,14 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
     }
 
     @Override
+    public CompletableFuture<Void> mergeFeatures(final Features features, final Option<?>... options) {
+        argumentNotNull(features);
+
+        final MergeThing command = outgoingMessageFactory.mergeFeatures(thingId, features, options);
+        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+    }
+
+    @Override
     public CompletableFuture<Void> setPolicyId(final PolicyId policyId, final Option<?>... options) {
         argumentNotNull(policyId);
 
@@ -207,10 +239,26 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
     }
 
     @Override
+    public CompletableFuture<Void> mergePolicyId(final PolicyId policyId, final Option<?>... options) {
+        argumentNotNull(policyId);
+
+        final MergeThing command = outgoingMessageFactory.mergePolicyId(thingId, policyId, options);
+        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+    }
+
+    @Override
     public CompletableFuture<Void> putFeature(final Feature feature, final Option<?>... options) {
         argumentNotNull(feature);
 
         final ModifyFeature command = outgoingMessageFactory.setFeature(thingId, feature, options);
+        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+    }
+
+    @Override
+    public CompletableFuture<Void> mergeFeature(final Feature feature, final Option<?>... options) {
+        argumentNotNull(feature);
+
+        final MergeThing command = outgoingMessageFactory.mergeFeature(thingId, feature, options);
         return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
     }
 

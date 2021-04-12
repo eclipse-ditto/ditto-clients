@@ -13,15 +13,15 @@
 
 /* tslint:disable:no-big-function */
 import {
-  AccessRight, DittoSubjectIssuer,
+  AccessRight,
   Entries,
   Entry,
   Policy,
   Resource,
   Resources,
-  Subject, SubjectId,
-  Subjects,
-  SubjectType
+  Subject,
+  SubjectId,
+  Subjects
 } from '../../../src/model/policies.model';
 import { PutResponse } from '../../../src/model/response';
 import { HttpHelper as H } from './http.helper';
@@ -32,15 +32,15 @@ describe('Http Policies Handle', () => {
   const resourcePath = 'aResource';
   const aResource = new Resource(resourcePath, [AccessRight.Read], [AccessRight.Write]);
   const anotherResource = new Resource('anotherResource', [AccessRight.Write], [AccessRight.Write]);
-  const resources = new Resources({ aResource, anotherResource });
+  const resources = { aResource, anotherResource };
   const subjectId = 'nginx:aSubject';
   const aSubject = new Subject(SubjectId.fromString(subjectId), 'my default nginx user');
   const anotherSubject = new Subject(SubjectId.fromString('anotherSubject'), 'my other nginx user');
-  const subjects = new Subjects({ [aSubject.id]: aSubject, [anotherSubject.id]: anotherSubject });
+  const subjects = { [aSubject.id]: aSubject, [anotherSubject.id]: anotherSubject };
   const label = 'anEntry';
   const anEntry = new Entry(label, subjects, resources);
   const anotherEntry = new Entry('anotherEntry', subjects, resources);
-  const entries = new Entries({ anEntry, anotherEntry });
+  const entries = { anEntry, anotherEntry };
   const policyId = 'Testspace:Testpolicy';
   const policy = new Policy(policyId, entries);
   const baseRequest = `policies/${policy.id}`;
@@ -60,7 +60,7 @@ describe('Http Policies Handle', () => {
   it('gets Entries', () => {
     return H.test({
       toTest: () => handle.getEntries(policy.id),
-      testBody: entries.toObject(),
+      testBody: Entries.toObject(entries),
       expected: entries,
       request: `${baseRequest}/entries`,
       method: 'get',
@@ -82,7 +82,7 @@ describe('Http Policies Handle', () => {
   it('gets Subjects', () => {
     return H.test({
       toTest: () => handle.getSubjects(policy.id, label),
-      testBody: subjects.toObject(),
+      testBody: Subjects.toObject(subjects),
       expected: subjects,
       request: `${baseRequest}/entries/${label}/subjects`,
       method: 'get',
@@ -104,7 +104,7 @@ describe('Http Policies Handle', () => {
   it('gets Resources', () => {
     return H.test({
       toTest: () => handle.getResources(policy.id, label),
-      testBody: resources.toObject(),
+      testBody: Resources.toObject(resources),
       expected: resources,
       request: `${baseRequest}/entries/${label}/resources`,
       method: 'get',
@@ -123,7 +123,7 @@ describe('Http Policies Handle', () => {
     });
   });
 
-  it('puts a Policy', () => {
+  it('creates a Policy', () => {
     return H.test({
       toTest: () => handle.putPolicy(policy),
       testBody: policy.toObject(),
@@ -135,19 +135,43 @@ describe('Http Policies Handle', () => {
     });
   });
 
+  it('updates a Policy', () => {
+    return H.test({
+      toTest: () => handle.putPolicy(policy),
+      testBody: policy.toObject(),
+      expected: new PutResponse(null, 204, undefined),
+      request: baseRequest,
+      method: 'put',
+      status: 204,
+      payload: policy.toJson()
+    });
+  });
+
+  it('creates Entries', () => {
+    return H.test({
+      toTest: () => handle.putEntries(policy.id, entries),
+      testBody: Entries.toObject(entries),
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/entries`,
+      method: 'put',
+      status: 204,
+      payload: Entries.toJson(entries)
+    });
+  });
+
   it('updates Entries', () => {
     return H.test({
       toTest: () => handle.putEntries(policy.id, entries),
-      testBody: entries.toObject(),
+      testBody: Entries.toObject(entries),
       expected: new PutResponse(entries, 201, undefined),
       request: `${baseRequest}/entries`,
       method: 'put',
       status: 201,
-      payload: entries.toJson()
+      payload: Entries.toJson(entries)
     });
   });
 
-  it('updates an Entry', () => {
+  it('creates an Entry', () => {
     return H.test({
       toTest: () => handle.putEntry(policy.id, anEntry),
       testBody: anEntry.toObject(),
@@ -159,19 +183,43 @@ describe('Http Policies Handle', () => {
     });
   });
 
-  it('updates Subjects', () => {
+  it('updates an Entry', () => {
+    return H.test({
+      toTest: () => handle.putEntry(policy.id, anEntry),
+      testBody: anEntry.toObject(),
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/entries/${label}`,
+      method: 'put',
+      status: 204,
+      payload: anEntry.toJson()
+    });
+  });
+
+  it('creates Subjects', () => {
     return H.test({
       toTest: () => handle.putSubjects(policy.id, label, subjects),
-      testBody: subjects.toObject(),
+      testBody: Subjects.toObject(subjects),
       expected: new PutResponse(subjects, 201, undefined),
       request: `${baseRequest}/entries/${label}/subjects`,
       method: 'put',
       status: 201,
-      payload: subjects.toJson()
+      payload: Subjects.toJson(subjects)
     });
   });
 
-  it('updates a Subject', () => {
+  it('updates Subjects', () => {
+    return H.test({
+      toTest: () => handle.putSubjects(policy.id, label, subjects),
+      testBody: Subjects.toObject(subjects),
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/entries/${label}/subjects`,
+      method: 'put',
+      status: 204,
+      payload: Subjects.toJson(subjects)
+    });
+  });
+
+  it('creates a Subject', () => {
     return H.test({
       toTest: () => handle.putSubject(policy.id, label, aSubject),
       testBody: aSubject.toObject(),
@@ -183,19 +231,43 @@ describe('Http Policies Handle', () => {
     });
   });
 
-  it('updates Resources', () => {
+  it('updates a Subject', () => {
+    return H.test({
+      toTest: () => handle.putSubject(policy.id, label, aSubject),
+      testBody: aSubject.toObject(),
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/entries/${label}/subjects/${subjectId}`,
+      method: 'put',
+      status: 204,
+      payload: aSubject.toJson()
+    });
+  });
+
+  it('creates Resources', () => {
     return H.test({
       toTest: () => handle.putResources(policy.id, label, resources),
-      testBody: resources.toObject(),
+      testBody: Resources.toObject(resources),
       expected: new PutResponse(resources, 201, undefined),
       request: `${baseRequest}/entries/${label}/resources`,
       method: 'put',
       status: 201,
-      payload: resources.toJson()
+      payload: Resources.toJson(resources)
     });
   });
 
-  it('updates a Resource', () => {
+  it('updates Resources', () => {
+    return H.test({
+      toTest: () => handle.putResources(policy.id, label, resources),
+      testBody: Resources.toObject(resources),
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/entries/${label}/resources`,
+      method: 'put',
+      status: 204,
+      payload: Resources.toJson(resources)
+    });
+  });
+
+  it('creates a Resource', () => {
     return H.test({
       toTest: () => handle.putResource(policy.id, label, aResource),
       testBody: aResource.toObject(),
@@ -203,6 +275,18 @@ describe('Http Policies Handle', () => {
       request: `${baseRequest}/entries/${label}/resources/${resourcePath}`,
       method: 'put',
       status: 201,
+      payload: aResource.toJson()
+    });
+  });
+
+  it('updates a Resource', () => {
+    return H.test({
+      toTest: () => handle.putResource(policy.id, label, aResource),
+      testBody: aResource.toObject(),
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/entries/${label}/resources/${resourcePath}`,
+      method: 'put',
+      status: 204,
       payload: aResource.toJson()
     });
   });

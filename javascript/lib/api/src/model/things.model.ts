@@ -16,17 +16,20 @@ import { EntityModel, EntityWithId, IndexedEntityModel } from './model';
 /**
  * Representation of a Thing
  */
-export class Thing extends EntityWithId<Thing> {
+export class Thing extends EntityWithId {
 
   public static readonly NAMESPACE_SEPARATION_REGEX = /([^:]*):(.*)/;
 
-  public constructor(private readonly _thingId: string,
-                     private readonly _policyId?: string,
-                     private readonly _attributes?: object,
-                     private readonly _features?: Features,
-                     private readonly __revision?: number,
-                     private readonly __modified?: string,
-                     private readonly _acl?: Acl) {
+  public constructor(
+    private readonly _thingId: string,
+    private readonly _policyId?: string,
+    private readonly _attributes?: Record<string, any>,
+    private readonly _features?: Features,
+    private readonly __revision?: number,
+    private readonly __modified?: string,
+    private readonly _acl?: Acl,
+    private readonly _definition?: string,
+    private readonly __metadata?: Metadata) {
     super();
   }
 
@@ -41,18 +44,24 @@ export class Thing extends EntityWithId<Thing> {
       return o;
     }
     // @ts-ignore
-    return new Thing(o['thingId'], o['policyId'], o['attributes'],
-      // @ts-ignore
-      Features.fromObject(o['features']), o['_revision'], o['_modified'], Acl.fromObject(o['acl']));
+    return new Thing(o['thingId'],
+      o['policyId'],
+      o['attributes'],
+      Features.fromObject(o['features']),
+      o['_revision'],
+      o['_modified'],
+      Acl.fromObject(o['acl']),
+      o['definition'],
+      Metadata.fromObject(o['_metadata']));
   }
 
   public static empty(): Thing {
-    return new Thing('', '', undefined, undefined, 0, '', undefined);
+    return new Thing('', '', undefined, undefined, 0, '', undefined, undefined, undefined);
   }
 
   public toObject(): object {
-    const featuresObj = this.features ? this.features.toObject() : undefined;
-    const aclObj = this._acl ? this._acl.toObject() : undefined;
+    const featuresObj = Features.toObject(this.features);
+    const aclObj = Acl.toObject(this._acl);
     return EntityModel.buildObject(new Map<string, any>([
       ['thingId', this.thingId],
       ['policyId', this.policyId],
@@ -60,7 +69,8 @@ export class Thing extends EntityWithId<Thing> {
       ['features', featuresObj],
       ['_revision', this._revision],
       ['_modified', this._modified],
-      ['acl', aclObj]
+      ['acl', aclObj],
+      ['definition', this._definition]
     ]));
   }
 
@@ -92,6 +102,10 @@ export class Thing extends EntityWithId<Thing> {
     return this.__revision;
   }
 
+  get _metadata(): Metadata | undefined {
+    return this.__metadata;
+  }
+
   get namespace(): string {
     return this.separateNamespaceAndThingId().namespace;
   }
@@ -102,6 +116,10 @@ export class Thing extends EntityWithId<Thing> {
 
   get name(): string {
     return this.separateNamespaceAndThingId().name;
+  }
+
+  get definition(): string | undefined {
+    return this._definition;
   }
 
   private separateNamespaceAndThingId(): { namespace: string, name: string } {
@@ -115,18 +133,13 @@ export class Thing extends EntityWithId<Thing> {
   }
 }
 
-interface FeaturesType {
-  [featureId: string]: Feature;
-}
 
 /**
  * Representation of Features
  */
-export class Features extends IndexedEntityModel<Features, Feature> {
+export class Features extends IndexedEntityModel<Feature> {
 
-  public constructor(readonly features?: FeaturesType) {
-    super(features);
-  }
+  [featureId: string]: Feature
 
   /**
    * Parses Features.
@@ -138,18 +151,56 @@ export class Features extends IndexedEntityModel<Features, Feature> {
     if (o === undefined) {
       return o;
     }
-    return new Features(IndexedEntityModel.fromPlainObject(o, Feature.fromObject));
+    return IndexedEntityModel.fromPlainObject<Feature>(o, Feature.fromObject);
   }
+
 }
+
+
+export class Metadata extends EntityModel {
+
+  public constructor(
+    private readonly _attributes?: Record<string, any>,
+    private readonly _features?: Features) {
+    super();
+  }
+
+
+  get attributes(): Record<string, any> | undefined {
+    return this._attributes;
+  }
+
+  get features(): Features | undefined {
+    return this._features;
+  }
+
+  public static fromObject(o: any): Metadata {
+    if (o === undefined) {
+      return o;
+    }
+    return new Metadata(o.attributes, Features.fromObject(o.features));
+  }
+
+  toObject(): Object | undefined {
+    const features = this.features ? Features.toObject(this.features) : undefined;
+
+    return EntityModel.buildObject(new Map<string, any>([
+      ['features', features],
+      ['attributes', this.attributes]
+    ]));
+  }
+
+}
+
 
 /**
  * Representation of a Feature
  */
-export class Feature extends EntityWithId<Feature> {
+export class Feature extends EntityWithId {
 
   public constructor(private readonly _id: string,
-                     private readonly _definition?: string[],
-                     private readonly _properties?: object) {
+    private readonly _definition?: string[],
+    private readonly _properties?: Record<string, any>) {
     super();
   }
 
@@ -183,20 +234,14 @@ export class Feature extends EntityWithId<Feature> {
     return this._definition;
   }
 
-  get properties(): object | undefined {
+  get properties(): Record<string, any> | undefined {
     return this._properties;
   }
 }
 
-interface AclType {
-  [aclEntryId: string]: AclEntry;
-}
+export class Acl extends IndexedEntityModel<AclEntry> {
 
-export class Acl extends IndexedEntityModel<Acl, AclEntry> {
-
-  public constructor(readonly aclEntries?: AclType) {
-    super(aclEntries);
-  }
+  [entryId: string]: AclEntry
 
   /**
    * Parses Acl.
@@ -208,16 +253,16 @@ export class Acl extends IndexedEntityModel<Acl, AclEntry> {
     if (o === undefined) {
       return o;
     }
-    return new Acl(IndexedEntityModel.fromPlainObject(o, AclEntry.fromObject));
+    return IndexedEntityModel.fromPlainObject<AclEntry>(o, AclEntry.fromObject);
   }
 }
 
-export class AclEntry extends EntityWithId<AclEntry> {
+export class AclEntry extends EntityWithId {
 
   public constructor(private readonly _id: string,
-                     private readonly _read: boolean,
-                     private readonly _write: boolean,
-                     private readonly _administrate: boolean) {
+    private readonly _read: boolean,
+    private readonly _write: boolean,
+    private readonly _administrate: boolean) {
     super();
   }
 

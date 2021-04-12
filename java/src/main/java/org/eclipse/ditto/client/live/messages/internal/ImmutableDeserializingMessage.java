@@ -28,12 +28,11 @@ import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.live.messages.MessageSerializers;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.model.base.auth.AuthorizationContext;
-import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.model.messages.MessageResponseConsumer;
-import org.eclipse.ditto.client.ack.ResponseConsumer;
 import org.eclipse.ditto.model.things.ThingId;
 
 /**
@@ -53,6 +52,7 @@ public final class ImmutableDeserializingMessage<T> implements Message<T> {
 
     private ImmutableDeserializingMessage(final Message<T> delegateMessage, final Class<T> payloadType,
             final MessageSerializerRegistry serializerRegistry) {
+
         this.delegateMessage = delegateMessage;
         this.payloadType = payloadType;
         this.serializerRegistry = serializerRegistry;
@@ -188,8 +188,8 @@ public final class ImmutableDeserializingMessage<T> implements Message<T> {
     }
 
     @Override
-    public Optional<HttpStatusCode> getStatusCode() {
-        return delegateMessage.getStatusCode();
+    public Optional<HttpStatus> getHttpStatus() {
+        return delegateMessage.getHttpStatus();
     }
 
     @Override
@@ -201,8 +201,9 @@ public final class ImmutableDeserializingMessage<T> implements Message<T> {
             return false;
         }
         final ImmutableDeserializingMessage<?> that = (ImmutableDeserializingMessage<?>) o;
-        return Objects.equals(delegateMessage, that.delegateMessage) && Objects.equals(payloadType, that.payloadType)
-                && Objects.equals(serializerRegistry, that.serializerRegistry);
+        return Objects.equals(delegateMessage, that.delegateMessage) &&
+                Objects.equals(payloadType, that.payloadType) &&
+                Objects.equals(serializerRegistry, that.serializerRegistry);
     }
 
     @Override
@@ -225,4 +226,5 @@ public final class ImmutableDeserializingMessage<T> implements Message<T> {
                 ", correlationId=" + getCorrelationId().orElse(null) +
                 "]";
     }
+
 }

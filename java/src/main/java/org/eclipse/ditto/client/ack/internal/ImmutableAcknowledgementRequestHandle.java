@@ -23,7 +23,7 @@ import javax.annotation.concurrent.Immutable;
 import org.eclipse.ditto.client.changes.AcknowledgementRequestHandle;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
-import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.entity.id.EntityIdWithType;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.base.headers.DittoHeadersBuilder;
@@ -83,17 +83,17 @@ public final class ImmutableAcknowledgementRequestHandle implements Acknowledgem
     }
 
     @Override
-    public void acknowledge(final HttpStatusCode statusCode) {
-        acknowledge(statusCode, null);
+    public void acknowledge(final HttpStatus httpStatus) {
+        acknowledge(httpStatus, null);
     }
 
     @Override
-    public void acknowledge(final HttpStatusCode statusCode, @Nullable final JsonValue payload) {
+    public void acknowledge(final HttpStatus httpStatus, @Nullable final JsonValue payload) {
         // only retain the bare minimum of received DittoHeaders by default:
         final DittoHeadersBuilder<?, ?> dittoHeadersBuilder = DittoHeaders.newBuilder();
         dittoHeaders.getCorrelationId().ifPresent(dittoHeadersBuilder::correlationId);
         final DittoHeaders minimizedDittoHeaders = dittoHeadersBuilder.build();
-        acknowledge(Acknowledgement.of(acknowledgementLabel, entityId, statusCode, minimizedDittoHeaders, payload));
+        acknowledge(Acknowledgement.of(acknowledgementLabel, entityId, httpStatus, minimizedDittoHeaders, payload));
     }
 
     @Override
@@ -128,4 +128,5 @@ public final class ImmutableAcknowledgementRequestHandle implements Acknowledgem
                 ", dittoHeaders=" + dittoHeaders +
                 "]";
     }
+
 }

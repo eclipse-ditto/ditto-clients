@@ -4,7 +4,7 @@
   "description": "API interfaces for implementing TypeScript clients for Eclipse Ditto",
   "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
   "repository": "https://github.com/eclipse/ditto-clients",
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "EPL-2.0",
   "main": "dist/index.js",
   "type": "module",
   "module": "dist/index.js",

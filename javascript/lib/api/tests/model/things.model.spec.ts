@@ -14,7 +14,7 @@
 /* tslint:disable:no-duplicate-string */
 
 import { PutResponse, SearchThingsResponse } from '../../src/model/response';
-import { Acl, AclEntry, Feature, Features, Thing } from '../../src/model/things.model';
+import { Acl, AclEntry, Feature, Features, Metadata, Thing } from '../../src/model/things.model';
 
 const aDefinition = ['aDefinition', 'aSecondOne'];
 const anotherDefinition = ['anotherDefinition'];
@@ -29,6 +29,9 @@ const attributes = { anAttribute, anotherAttribute };
 const anAclEntryObj = { READ: true, WRITE: true, ADMINISTRATE: true };
 const anotherAclEntryObj = { READ: false, WRITE: false, ADMINISTRATE: false };
 const aclObj = { ID: anAclEntryObj, AnotherID: anotherAclEntryObj };
+const metadataObject = {
+  features: { lamp: { properties: { color: {} } } }, attributes: { foo: 'bar', bar: 'foo' }
+};
 const thingObj = {
   attributes,
   thingId: 'Testspace:Testthing',
@@ -36,21 +39,46 @@ const thingObj = {
   features: featuresObj,
   _revision: 0,
   _modified: '08042019',
+  definition: 'example:test:definition',
+  _metadata: metadataObject,
   acl: aclObj
 };
+
+const thingObjWithoutMetadata = {
+  attributes,
+  thingId: 'Testspace:Testthing',
+  definition: 'example:test:definition',
+  policyId: 'PolicyId',
+  features: featuresObj,
+  _revision: 0,
+  _modified: '08042019',
+  acl: aclObj
+};
+
 const responseObj = { items: [thingObj], nextPageOffset: 0 };
+const responseObjWithoutMetadata = { items: [thingObjWithoutMetadata], nextPageOffset: 0 };
 
 const aFeature = new Feature('additionalProp1', aDefinition, someProperties);
 const anotherFeature = new Feature('additionalProp2', anotherDefinition, moreProperties);
 const typedFeatureObject = { additionalProp1: aFeature, additionalProp2: anotherFeature };
-const features = new Features(typedFeatureObject);
+const features = typedFeatureObject;
 const anAclEntry = new AclEntry('ID', true, true, true);
 const anotherAclEntry = new AclEntry('AnotherID', false, false, false);
-const acl = new Acl({ ID: anAclEntry, AnotherID: anotherAclEntry });
-const thing = new Thing('Testspace:Testthing', 'PolicyId', attributes, features, 0, '08042019', acl);
+const acl = { ID: anAclEntry, AnotherID: anotherAclEntry };
+const metadata = new Metadata({ foo: 'bar', bar: 'foo' }, { lamp: new Feature('lamp', undefined, { color: {} }) });
+const thing = new Thing('Testspace:Testthing',
+  'PolicyId',
+  attributes,
+  features,
+  0,
+  '08042019',
+  acl,
+  'example:test:definition',
+  metadata);
 const response = new SearchThingsResponse([thing], 0);
 
 describe('Feature', () => {
+
   it('parses an object', () => {
     expect(Feature.fromObject(aFeatureObj, 'additionalProp1')).toEqual(aFeature);
     expect(Feature.fromObject(aFeatureObj, 'additionalProp1').equals(aFeature)).toBe(true);
@@ -67,20 +95,37 @@ describe('Feature', () => {
     expect(Feature.fromObject(undefined, '')).toEqual(undefined);
   });
 });
+
 describe('Features', () => {
   it('parses an object', () => {
     expect(Features.fromObject(featuresObj)).toEqual(features);
-    expect(Features.fromObject(featuresObj).equals(features)).toBe(true);
+    expect(Features.equals(Features.fromObject(featuresObj), features)).toBe(true);
   });
   it('builds an object', () => {
-    expect(features.toObject()).toEqual(featuresObj);
+    expect(Features.toObject(features)).toEqual(featuresObj);
   });
   it('returns its content', () => {
-    expect(features.features).toEqual(typedFeatureObject);
+    expect(features).toEqual(typedFeatureObject);
   });
   it('handles an undefined object', () => {
     expect(Features.fromObject(undefined)).toEqual(undefined);
   });
+});
+
+describe('Metadata', () => {
+  it('parses an object', () => {
+    expect(Metadata.fromObject(metadataObject)).toEqual(metadata);
+    expect(metadata.equals(Metadata.fromObject(metadataObject))).toBe(true);
+  });
+
+  it('parses an object', () => {
+    expect(metadata.toObject()).toEqual(metadataObject);
+  });
+
+  it('handles undefined objects', () => {
+    expect(Metadata.fromObject(undefined)).toEqual(undefined);
+  });
+
 });
 
 describe('AclEntry', () => {
@@ -104,13 +149,13 @@ describe('AclEntry', () => {
 describe('Acl', () => {
   it('parses an object', () => {
     expect(Acl.fromObject(aclObj)).toEqual(acl);
-    expect(Acl.fromObject(aclObj).equals(acl)).toBe(true);
+    expect(Acl.equals(Acl.fromObject(aclObj), acl)).toBe(true);
   });
   it('builds an object', () => {
-    expect(acl.toObject()).toEqual(aclObj);
+    expect(Acl.toObject(acl)).toEqual(aclObj);
   });
   it('returns its content', () => {
-    expect(acl.aclEntries).toEqual({ [anAclEntry.id]: anAclEntry, [anotherAclEntry.id]: anotherAclEntry });
+    expect(acl).toEqual({ [anAclEntry.id]: anAclEntry, [anotherAclEntry.id]: anotherAclEntry });
   });
   it('handles an undefined object', () => {
     expect(Acl.fromObject(undefined)).toEqual(undefined);
@@ -123,7 +168,7 @@ describe('Thing', () => {
     expect(Thing.fromObject(thingObj).equals(thing)).toBe(true);
   });
   it('builds an object', () => {
-    expect(thing.toObject()).toEqual(thingObj);
+    expect(thing.toObject()).toEqual(thingObjWithoutMetadata);
   });
   it('returns its content', () => {
     expect(thing.thingId).toEqual('Testspace:Testthing');
@@ -135,6 +180,7 @@ describe('Thing', () => {
     expect(thing._revision).toEqual(0);
     expect(thing.name).toEqual('Testthing');
     expect(thing.acl).toEqual(acl);
+    expect(thing.definition).toEqual('example:test:definition');
   });
   it('handles a minimal thing', () => {
     const minimalThing = new Thing('Tespspace:Minimal');
@@ -159,7 +205,7 @@ describe('SearchThingsResponse', () => {
     expect(SearchThingsResponse.fromObject(responseObj).equals(response)).toBe(true);
   });
   it('builds an object', () => {
-    expect(response.toObject()).toEqual(responseObj);
+    expect(response.toObject()).toEqual(responseObjWithoutMetadata);
   });
   it('returns its content', () => {
     expect(response.items).toEqual([thing]);

@@ -15,7 +15,11 @@
 import { HttpThingsHandleV1, HttpThingsHandleV2 } from '../../../src/client/handles/things.interfaces';
 import { PutResponse } from '../../../src/model/response';
 import { Acl, AclEntry } from '../../../src/model/things.model';
-import { DefaultFieldsOptions, DefaultGetThingsOptions, DefaultMatchOptions } from '../../../src/options/request.options';
+import {
+  DefaultFieldsOptions,
+  DefaultGetThingsOptions,
+  DefaultMatchOptions
+} from '../../../src/options/request.options';
 import { HttpHelper as H } from './http.helper';
 
 describe('Http Things Handle', () => {
@@ -27,7 +31,7 @@ describe('Http Things Handle', () => {
   const authorizationSubject = 'Id';
   const anAclEntry = new AclEntry(authorizationSubject, true, true, true);
   const anotherAclEntry = new AclEntry('Test', false, false, false);
-  const acl = new Acl({ [anAclEntry.id]: anAclEntry, [anotherAclEntry.id]: anotherAclEntry });
+  const acl = { [anAclEntry.id]: anAclEntry, [anotherAclEntry.id]: anotherAclEntry };
 
   it('sends options and gets a Thing', () => {
     const options = DefaultFieldsOptions.getInstance().withFields('A', 'B').ifMatch('C').ifNoneMatch('D');
@@ -105,7 +109,7 @@ describe('Http Things Handle', () => {
   it('gets an Acl', () => {
     return H.test({
       toTest: () => handleV1.getAcl(H.thing.thingId),
-      testBody: acl.toObject(),
+      testBody: Acl.toObject(acl),
       expected: acl,
       request: `${baseRequest}/acl`,
       method: 'get',
@@ -126,6 +130,17 @@ describe('Http Things Handle', () => {
     });
   });
 
+  it('gets the definition', () => {
+    return H.test({
+      toTest: () => handleV2.getDefinition(H.thing.thingId),
+      testBody: 'example:test:definition',
+      expected: 'example:test:definition',
+      request: `${baseRequest}/definition`,
+      method: 'get',
+      status: 200
+    });
+  });
+
   it('posts a Thing', () => {
     const thing = H.thing.toObject();
     // @ts-ignore
@@ -141,7 +156,7 @@ describe('Http Things Handle', () => {
     });
   });
 
-  it('puts a Thing', () => {
+  it('puts a new Thing', () => {
     return H.test({
       toTest: () => handleV2.putThing(H.thing),
       testBody: H.thing.toObject(),
@@ -149,6 +164,18 @@ describe('Http Things Handle', () => {
       request: `${baseRequest}`,
       method: 'put',
       status: 201,
+      payload: H.thing.toJson()
+    });
+  });
+
+  it('puts a Thing that already exists', () => {
+    return H.test({
+      toTest: () => handleV2.putThing(H.thing),
+      testBody: H.thing.toObject(),
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}`,
+      method: 'put',
+      status: 204,
       payload: H.thing.toJson()
     });
   });
@@ -165,7 +192,7 @@ describe('Http Things Handle', () => {
     });
   });
 
-  it('updates an Attribute', () => {
+  it('creates Attributes', () => {
     return H.test({
       toTest: () => handleV2.putAttributes(H.thing.thingId, H.attributes),
       testBody: H.attributes,
@@ -177,14 +204,38 @@ describe('Http Things Handle', () => {
     });
   });
 
+  it('updates Attributes', () => {
+    return H.test({
+      toTest: () => handleV2.putAttributes(H.thing.thingId, H.attributes),
+      testBody: H.attributes,
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/attributes`,
+      method: 'put',
+      status: 204,
+      payload: JSON.stringify(H.attributes)
+    });
+  });
+
+  it('creates an Attribute', () => {
+    return H.test({
+      toTest: () => handleV2.putAttribute(H.thing.thingId, H.attributePath, H.attribute),
+      testBody: H.attribute,
+      expected: new PutResponse(H.attribute, 201, undefined),
+      request: `${baseRequest}/attributes/${H.attributePath}`,
+      method: 'put',
+      status: 201,
+      payload: JSON.stringify(H.attribute)
+    });
+  });
+
   it('updates an Attribute', () => {
     return H.test({
       toTest: () => handleV2.putAttribute(H.thing.thingId, H.attributePath, H.attribute),
       testBody: H.attribute,
-      expected: { status: 201, headers: undefined, body: H.attribute },
+      expected: new PutResponse(null, 204, undefined),
       request: `${baseRequest}/attributes/${H.attributePath}`,
       method: 'put',
-      status: 201,
+      status: 204,
       payload: JSON.stringify(H.attribute)
     });
   });
@@ -193,14 +244,15 @@ describe('Http Things Handle', () => {
     return H.test({
       toTest: () => handleV1.putAcl(H.thing.thingId, acl),
       request: `${baseRequest}/acl`,
+      expected: new PutResponse(null, 204, undefined),
       method: 'put',
       status: 204,
-      payload: acl.toJson(),
+      payload: Acl.toJson(acl),
       api: 1
     });
   });
 
-  it('updates an AclEntry', () => {
+  it('creates an AclEntry', () => {
     return H.test({
       toTest: () => handleV1.putAclEntry(H.thing.thingId, anAclEntry),
       testBody: anAclEntry.toObject(),
@@ -210,6 +262,43 @@ describe('Http Things Handle', () => {
       status: 201,
       payload: anAclEntry.toJson(),
       api: 1
+    });
+  });
+
+  it('updates an AclEntry', () => {
+    return H.test({
+      toTest: () => handleV1.putAclEntry(H.thing.thingId, anAclEntry),
+      testBody: anAclEntry.toObject(),
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/acl/${authorizationSubject}`,
+      method: 'put',
+      status: 204,
+      payload: anAclEntry.toJson(),
+      api: 1
+    });
+  });
+
+  it('creates the definition', () => {
+    return H.test({
+      toTest: () => handleV2.putDefinition(H.thing.thingId, 'example:test:definition'),
+      testBody: 'example:test:definition',
+      expected: new PutResponse('example:test:definition', 201, undefined),
+      request: `${baseRequest}/definition`,
+      method: 'put',
+      status: 201,
+      payload: JSON.stringify('example:test:definition')
+    });
+  });
+
+  it('updates the definition', () => {
+    return H.test({
+      toTest: () => handleV2.putDefinition(H.thing.thingId, 'example:test:definition'),
+      testBody: 'example:test:definition',
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/definition`,
+      method: 'put',
+      status: 204,
+      payload: JSON.stringify('example:test:definition')
     });
   });
 
@@ -245,6 +334,15 @@ describe('Http Things Handle', () => {
     return H.test({
       toTest: () => handleV2.deleteAttribute(H.thing.thingId, H.attributePath),
       request: `${baseRequest}/attributes/${H.attributePath}`,
+      method: 'delete',
+      status: 204
+    });
+  });
+
+  it('deletes the definition', () => {
+    return H.test({
+      toTest: () => handleV2.deleteDefinition(H.thing.thingId),
+      request: `${baseRequest}/definition`,
       method: 'delete',
       status: 204
     });

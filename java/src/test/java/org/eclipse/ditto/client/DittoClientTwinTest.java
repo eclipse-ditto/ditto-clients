@@ -21,7 +21,7 @@ import java.util.concurrent.CompletableFuture;
 import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.base.common.HttpStatusCode;
+import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.exceptions.InvalidRqlExpressionException;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.protocoladapter.TopicPath;
@@ -45,8 +45,8 @@ public final class DittoClientTwinTest extends AbstractConsumptionDittoClientTes
         client.twin().registerForThingChanges("Ackermann", change ->
                 change.handleAcknowledgementRequests(handles ->
                         handles.forEach(handle -> handle.acknowledge(
-                                HttpStatusCode.forInt(Integer.parseInt(handle.getAcknowledgementLabel().toString()))
-                                        .orElse(HttpStatusCode.EXPECTATION_FAILED)
+                                HttpStatus.tryGetInstance(Integer.parseInt(handle.getAcknowledgementLabel().toString()))
+                                        .orElse(HttpStatus.EXPECTATION_FAILED)
                         ))
                 )
         );
@@ -63,9 +63,9 @@ public final class DittoClientTwinTest extends AbstractConsumptionDittoClientTes
                 .build()
         ));
 
-        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.CONTINUE);
-        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.MOVED_PERMANENTLY);
-        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.FORBIDDEN);
+        assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.CONTINUE);
+        assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.MOVED_PERMANENTLY);
+        assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     @Test
@@ -74,8 +74,8 @@ public final class DittoClientTwinTest extends AbstractConsumptionDittoClientTes
         client.twin().registerForAttributesChanges("Attributes", change ->
                 change.handleAcknowledgementRequests(handles ->
                         handles.forEach(handle -> handle.acknowledge(
-                                HttpStatusCode.forInt(Integer.parseInt(handle.getAcknowledgementLabel().toString()))
-                                        .orElse(HttpStatusCode.EXPECTATION_FAILED)
+                                HttpStatus.tryGetInstance(Integer.parseInt(handle.getAcknowledgementLabel().toString()))
+                                        .orElse(HttpStatus.EXPECTATION_FAILED)
                         ))
                 )
         );
@@ -92,10 +92,10 @@ public final class DittoClientTwinTest extends AbstractConsumptionDittoClientTes
                         )
                         .build())
         );
-        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.OK);
-        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.FORBIDDEN);
-        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(
-                HttpStatusCode.INTERNAL_SERVER_ERROR);
+        assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.OK);
+        assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(
+                HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Test
@@ -104,8 +104,8 @@ public final class DittoClientTwinTest extends AbstractConsumptionDittoClientTes
         client.twin().registerForFeatureChanges("Features", change ->
                 change.handleAcknowledgementRequests(handles ->
                         handles.forEach(handle -> handle.acknowledge(
-                                HttpStatusCode.forInt(Integer.parseInt(handle.getAcknowledgementLabel().toString()))
-                                        .orElse(HttpStatusCode.EXPECTATION_FAILED)
+                                HttpStatus.tryGetInstance(Integer.parseInt(handle.getAcknowledgementLabel().toString()))
+                                        .orElse(HttpStatus.EXPECTATION_FAILED)
                         ))
                 )
         );
@@ -122,9 +122,9 @@ public final class DittoClientTwinTest extends AbstractConsumptionDittoClientTes
                         )
                         .build())
         );
-        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.CONFLICT);
-        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.CREATED);
-        assertThat(expectMsgClass(Acknowledgement.class).getStatusCode()).isEqualTo(HttpStatusCode.FORBIDDEN);
+        assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.CONFLICT);
+        assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.CREATED);
+        assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 
     @Override

@@ -32,6 +32,11 @@ public enum ChangeAction {
     /**
      * An already existing entry was deleted.
      */
-    DELETED
+    DELETED,
+
+    /**
+     * An already existing entry was merged.
+     */
+    MERGED
 
 }
