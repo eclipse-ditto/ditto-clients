@@ -59,7 +59,7 @@ final class RetrieveFeatureDesiredPropertiesLiveCommandImpl
 
     @Override
     public RetrieveFeatureDesiredPropertiesLiveCommand setDittoHeaders(final DittoHeaders dittoHeaders) {
-        return of(RetrieveFeatureDesiredProperties.of(getThingEntityId(), getFeatureId(),
+        return of(RetrieveFeatureDesiredProperties.of(getEntityId(), getFeatureId(),
                 getSelectedFields().orElse(null),
                 dittoHeaders));
     }

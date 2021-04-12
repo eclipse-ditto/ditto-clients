@@ -69,15 +69,15 @@ final class RetrieveFeatureDesiredPropertiesLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public RetrieveFeatureDesiredPropertiesResponse retrieved(final FeatureProperties desiredProperties) {
-            return RetrieveFeatureDesiredPropertiesResponse.of(command.getThingEntityId(), command.getFeatureId(),
+            return RetrieveFeatureDesiredPropertiesResponse.of(command.getEntityId(), command.getFeatureId(),
                     desiredProperties, command.getDittoHeaders());
         }
 
         @Nonnull
         @Override
         public ThingErrorResponse featureDesiredPropertiesNotAccessibleError() {
-            return errorResponse(command.getThingEntityId(),
-                    FeatureDesiredPropertiesNotAccessibleException.newBuilder(command.getThingEntityId(),
+            return errorResponse(command.getEntityId(),
+                    FeatureDesiredPropertiesNotAccessibleException.newBuilder(command.getEntityId(),
                             command.getFeatureId())
                             .dittoHeaders(command.getDittoHeaders())
                             .build());

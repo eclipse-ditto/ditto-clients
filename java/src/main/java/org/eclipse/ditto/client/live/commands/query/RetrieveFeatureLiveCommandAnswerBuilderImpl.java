@@ -67,14 +67,14 @@ final class RetrieveFeatureLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public RetrieveFeatureResponse retrieved(final Feature feature) {
-            return RetrieveFeatureResponse.of(command.getThingEntityId(), feature, command.getDittoHeaders());
+            return RetrieveFeatureResponse.of(command.getEntityId(), feature, command.getDittoHeaders());
         }
 
         @Nonnull
         @Override
         public ThingErrorResponse featureNotAccessibleError() {
-            return errorResponse(command.getThingEntityId(),
-                    FeatureNotAccessibleException.newBuilder(command.getThingEntityId(), command.getFeatureId())
+            return errorResponse(command.getEntityId(),
+                    FeatureNotAccessibleException.newBuilder(command.getEntityId(), command.getFeatureId())
                             .dittoHeaders(command.getDittoHeaders())
                             .build());
         }

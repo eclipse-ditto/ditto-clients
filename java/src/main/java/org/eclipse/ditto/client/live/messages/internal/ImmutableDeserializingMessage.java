@@ -128,8 +128,8 @@ public final class ImmutableDeserializingMessage<T> implements Message<T> {
     }
 
     @Override
-    public ThingId getThingEntityId() {
-        return delegateMessage.getThingEntityId();
+    public ThingId getEntityId() {
+        return delegateMessage.getEntityId();
     }
 
     @Override
@@ -215,7 +215,7 @@ public final class ImmutableDeserializingMessage<T> implements Message<T> {
     public String toString() {
         return getClass().getSimpleName() + " [" +
                 "direction=" + getDirection() +
-                ", thingId=" + getThingEntityId() +
+                ", thingId=" + getEntityId() +
                 ", featureId=" + getFeatureId().orElse(null) +
                 ", subject=" + getSubject() +
                 ", contentType=" + getContentType().orElse(null) +

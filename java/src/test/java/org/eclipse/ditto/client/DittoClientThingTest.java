@@ -104,7 +104,7 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
     public void testMergeThing() {
         assertEventualCompletion(getManagement().merge(THING_ID, THING));
         final MergeThing command = expectMsgClass(MergeThing.class);
-        reply(MergeThingResponse.of(command.getThingEntityId(), command.getPath(), command.getDittoHeaders()));
+        reply(MergeThingResponse.of(command.getEntityId(), command.getPath(), command.getDittoHeaders()));
         assertOnlyIfMatchHeader(command);
     }
 
@@ -383,7 +383,7 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
         assertEventualCompletion(getManagement().create(thing));
         final CreateThing command = expectMsgClass(CreateThing.class);
         reply(CreateThingResponse.of(command.getThing(), command.getDittoHeaders()));
-        assertThat((CharSequence) command.getThingEntityId()).isEqualTo(thingIdWithoutFeatures);
+        assertThat((CharSequence) command.getEntityId()).isEqualTo(thingIdWithoutFeatures);
     }
 
     @Test
@@ -424,7 +424,7 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
         assertEventualCompletion(getManagement().put(THING, POLICY_JSON_OBJECT));
         final ModifyThing createThing = expectMsgClass(ModifyThing.class);
         reply(CreateThingResponse.of(Thing.newBuilder().setId(THING_ID).build(), createThing.getDittoHeaders()));
-        assertThat((CharSequence) createThing.getThingEntityId()).isEqualTo(THING_ID);
+        assertThat((CharSequence) createThing.getEntityId()).isEqualTo(THING_ID);
         assertThat(createThing.getInitialPolicy()).isNotEmpty();
     }
 

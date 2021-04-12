@@ -84,7 +84,7 @@ final class ModifyFeatureDesiredPropertyLiveCommandImpl
     @Override
     public ModifyFeatureDesiredPropertyLiveCommand setDittoHeaders(final DittoHeaders dittoHeaders) {
         return new ModifyFeatureDesiredPropertyLiveCommandImpl(
-                ModifyFeatureDesiredProperty.of(getThingEntityId(), getFeatureId(),
+                ModifyFeatureDesiredProperty.of(getEntityId(), getFeatureId(),
                         getDesiredPropertyPointer(), getDesiredPropertyValue(), dittoHeaders));
     }
 

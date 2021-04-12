@@ -163,7 +163,7 @@ final class LiveMessagesUtil {
         optionalCorrelationId.ifPresent(headersBuilder::correlationId);
         final DittoHeaders dittoHeaders = headersBuilder.build();
 
-        final ThingId thingId = message.getThingEntityId();
+        final ThingId thingId = message.getEntityId();
         final Optional<HttpStatus> httpStatusOptional = message.getHttpStatus();
         final Optional<String> featureIdOptional = message.getFeatureId();
         final Adaptable adaptable;

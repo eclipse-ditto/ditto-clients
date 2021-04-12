@@ -94,7 +94,7 @@ public final class RetrieveFeaturePropertyLiveCommandImplTest {
         assertThat(underTest)
                 .withType(retrieveFeaturePropertyTwinCommand.getType())
                 .withDittoHeaders(retrieveFeaturePropertyTwinCommand.getDittoHeaders())
-                .withId(retrieveFeaturePropertyTwinCommand.getThingEntityId())
+                .withId(retrieveFeaturePropertyTwinCommand.getEntityId())
                 .withManifest(retrieveFeaturePropertyTwinCommand.getManifest())
                 .withResourcePath(retrieveFeaturePropertyTwinCommand.getResourcePath());
         assertThat(underTest.getFeatureId()).isEqualTo(retrieveFeaturePropertyTwinCommand.getFeatureId());

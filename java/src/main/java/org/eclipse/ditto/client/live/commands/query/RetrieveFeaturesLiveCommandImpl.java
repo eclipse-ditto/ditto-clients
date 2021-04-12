@@ -49,7 +49,7 @@ final class RetrieveFeaturesLiveCommandImpl extends AbstractQueryLiveCommand<Ret
 
     @Override
     public RetrieveFeaturesLiveCommand setDittoHeaders(final DittoHeaders dittoHeaders) {
-        return of(RetrieveFeatures.of(getThingEntityId(), getSelectedFields().orElse(null), dittoHeaders));
+        return of(RetrieveFeatures.of(getEntityId(), getSelectedFields().orElse(null), dittoHeaders));
     }
 
     @Nonnull

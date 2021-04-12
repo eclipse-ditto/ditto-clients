@@ -77,7 +77,7 @@ final class DeleteFeatureDesiredPropertyLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public DeleteFeatureDesiredPropertyResponse deleted() {
-            return DeleteFeatureDesiredPropertyResponse.of(command.getThingEntityId(), command.getFeatureId(),
+            return DeleteFeatureDesiredPropertyResponse.of(command.getEntityId(), command.getFeatureId(),
                     command.getDesiredPropertyPointer(),
                     command.getDittoHeaders());
         }
@@ -85,8 +85,8 @@ final class DeleteFeatureDesiredPropertyLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public ThingErrorResponse featureDesiredPropertyNotAccessibleError() {
-            return errorResponse(command.getThingEntityId(),
-                    FeatureDesiredPropertyNotAccessibleException.newBuilder(command.getThingEntityId(),
+            return errorResponse(command.getEntityId(),
+                    FeatureDesiredPropertyNotAccessibleException.newBuilder(command.getEntityId(),
                             command.getFeatureId(),
                             command.getDesiredPropertyPointer())
                             .dittoHeaders(command.getDittoHeaders())
@@ -96,8 +96,8 @@ final class DeleteFeatureDesiredPropertyLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public ThingErrorResponse featureDesiredPropertyNotModifiableError() {
-            return errorResponse(command.getThingEntityId(),
-                    FeatureDesiredPropertyNotModifiableException.newBuilder(command.getThingEntityId(),
+            return errorResponse(command.getEntityId(),
+                    FeatureDesiredPropertyNotModifiableException.newBuilder(command.getEntityId(),
                             command.getFeatureId(),
                             command.getDesiredPropertyPointer())
                             .dittoHeaders(command.getDittoHeaders())
@@ -111,7 +111,7 @@ final class DeleteFeatureDesiredPropertyLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public FeatureDesiredPropertyDeleted deleted() {
-            return FeatureDesiredPropertyDeleted.of(command.getThingEntityId(), command.getFeatureId(),
+            return FeatureDesiredPropertyDeleted.of(command.getEntityId(), command.getFeatureId(),
                     command.getDesiredPropertyPointer(), -1, Instant.now(), command.getDittoHeaders(), null);
         }
     }

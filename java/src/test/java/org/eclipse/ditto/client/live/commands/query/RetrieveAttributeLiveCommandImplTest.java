@@ -92,7 +92,7 @@ public final class RetrieveAttributeLiveCommandImplTest {
         assertThat(underTest)
                 .withType(retrieveAttributeTwinCommand.getType())
                 .withDittoHeaders(retrieveAttributeTwinCommand.getDittoHeaders())
-                .withId(retrieveAttributeTwinCommand.getThingEntityId())
+                .withId(retrieveAttributeTwinCommand.getEntityId())
                 .withManifest(retrieveAttributeTwinCommand.getManifest())
                 .withResourcePath(retrieveAttributeTwinCommand.getResourcePath());
         assertThat(underTest.getAttributePointer()).isEqualTo(retrieveAttributeTwinCommand.getAttributePointer());

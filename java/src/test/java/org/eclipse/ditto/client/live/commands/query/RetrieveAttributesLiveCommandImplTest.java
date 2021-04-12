@@ -93,7 +93,7 @@ public final class RetrieveAttributesLiveCommandImplTest {
         assertThat(underTest)
                 .withType(retrieveAttributesTwinCommand.getType())
                 .withDittoHeaders(retrieveAttributesTwinCommand.getDittoHeaders())
-                .withId(retrieveAttributesTwinCommand.getThingEntityId())
+                .withId(retrieveAttributesTwinCommand.getEntityId())
                 .withManifest(retrieveAttributesTwinCommand.getManifest())
                 .withResourcePath(retrieveAttributesTwinCommand.getResourcePath());
     }

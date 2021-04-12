@@ -113,7 +113,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(thingCreated)
                 .hasType(ThingCreated.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasEntity(THING_V2.toJson())
                 .hasRevision(-1);
@@ -128,7 +127,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(thingDeleted)
                 .hasType(ThingDeleted.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasNoEntity()
                 .hasRevision(-1);
@@ -143,7 +141,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(thingModified)
                 .hasType(ThingModified.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasEntity(THING_V2.toJson())
                 .hasRevision(-1);
@@ -159,7 +156,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(attributeCreated)
                 .hasType(AttributeCreated.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasEntity(ATTRIBUTE_VALUE)
                 .hasResourcePath(JsonFactory.newPointer("/attributes" + ATTRIBUTE_JSON_POINTER))
@@ -175,7 +171,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(attributeDeleted)
                 .hasType(AttributeDeleted.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasNoEntity()
                 .hasResourcePath(ATTRIBUTE_RESOURCE_PATH)
@@ -192,7 +187,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(attributeModified)
                 .hasType(AttributeModified.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasEntity(ATTRIBUTE_VALUE)
                 .hasResourcePath(ATTRIBUTE_RESOURCE_PATH)
@@ -208,7 +202,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(attributesCreated)
                 .hasType(AttributesCreated.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasEntity(ATTRIBUTES.toJson(SCHEMA_VERSION, FieldType.regularOrSpecial()))
                 .hasResourcePath(ATTRIBUTES_POINTER)
@@ -224,7 +217,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(attributesDeleted)
                 .hasType(AttributesDeleted.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasNoEntity()
                 .hasResourcePath(ATTRIBUTES_POINTER)
@@ -240,7 +232,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(attributesModified)
                 .hasType(AttributesModified.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasEntity(ATTRIBUTES.toJson(SCHEMA_VERSION, FieldType.regularOrSpecial()))
                 .hasResourcePath(ATTRIBUTES_POINTER)
@@ -256,7 +247,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(featureCreated)
                 .hasType(FeatureCreated.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasEntity(FLUX_CAPACITOR.toJson(SCHEMA_VERSION, FieldType.notHidden()))
                 .hasResourcePath(FEATURES_POINTER.append(JsonPointer.of(FLUX_CAPACITOR_ID)))
@@ -272,7 +262,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(featureDeleted)
                 .hasType(FeatureDeleted.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasNoEntity()
                 .hasResourcePath(FEATURES_POINTER.append(JsonPointer.of(FLUX_CAPACITOR_ID)))
@@ -288,7 +277,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(featureModified)
                 .hasType(FeatureModified.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasEntity(FLUX_CAPACITOR.toJson(SCHEMA_VERSION, FieldType.notHidden()))
                 .hasResourcePath(FEATURES_POINTER.append(JsonPointer.of(FLUX_CAPACITOR_ID)))
@@ -304,7 +292,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(featuresCreated)
                 .hasType(FeaturesCreated.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasEntity(FEATURES.toJson(SCHEMA_VERSION, FieldType.notHidden()))
                 .hasResourcePath(FEATURES_POINTER)
@@ -320,7 +307,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(featuresDeleted)
                 .hasType(FeaturesDeleted.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasNoEntity()
                 .hasResourcePath(FEATURES_POINTER)
@@ -336,7 +322,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(featuresModified)
                 .hasType(FeaturesModified.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasEntity(FEATURES.toJson(SCHEMA_VERSION, FieldType.notHidden()))
                 .hasResourcePath(FEATURES_POINTER)
@@ -353,7 +338,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(featurePropertiesCreated)
                 .hasType(FeaturePropertiesCreated.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasEntity(FLUX_CAPACITOR_PROPERTIES.toJson(SCHEMA_VERSION, FieldType.regularOrSpecial()))
                 .hasResourcePath(JsonFactory.newPointer(FEATURES_POINTER + "/" + FLUX_CAPACITOR_ID + "/properties"))
@@ -370,7 +354,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(featurePropertiesDeleted)
                 .hasType(FeaturePropertiesDeleted.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasNoEntity()
                 .hasResourcePath(JsonFactory.newPointer(FEATURES_POINTER + "/" + FLUX_CAPACITOR_ID + "/properties"))
@@ -387,7 +370,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(featurePropertiesModified)
                 .hasType(FeaturePropertiesModified.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasEntity(FLUX_CAPACITOR_PROPERTIES.toJson(SCHEMA_VERSION, FieldType.regularOrSpecial()))
                 .hasResourcePath(JsonFactory.newPointer(FEATURES_POINTER + "/" + FLUX_CAPACITOR_ID + "/properties"))
@@ -404,7 +386,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(featurePropertyCreated)
                 .hasType(FeaturePropertyCreated.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasEntity(PROPERTY_VALUE)
                 .hasResourcePath(JsonFactory.newPointer(FEATURES_POINTER + "/" + FLUX_CAPACITOR_ID + "/properties"
@@ -422,7 +403,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(featurePropertyDeleted)
                 .hasType(FeaturePropertyDeleted.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasNoEntity()
                 .hasResourcePath(JsonFactory.newPointer(FEATURES_POINTER + "/" + FLUX_CAPACITOR_ID + "/properties"
@@ -440,7 +420,6 @@ public final class ImmutableGlobalEventFactoryTest {
 
         assertThat(featurePropertyModified)
                 .hasType(FeaturePropertyModified.TYPE)
-                .hasId(THING_ID)
                 .hasThingId(THING_ID)
                 .hasEntity(PROPERTY_VALUE)
                 .hasResourcePath(JsonFactory.newPointer(FEATURES_POINTER + "/" + FLUX_CAPACITOR_ID + "/properties"

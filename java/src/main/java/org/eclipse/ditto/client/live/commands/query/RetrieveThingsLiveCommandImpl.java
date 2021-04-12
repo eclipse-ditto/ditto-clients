@@ -20,9 +20,12 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.concurrent.Immutable;
 
+import org.eclipse.ditto.client.live.commands.base.AbstractLiveCommand;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.model.base.json.Jsonifiable;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.signals.commands.base.Command;
+import org.eclipse.ditto.signals.commands.things.ThingCommand;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThings;
 
 /**
@@ -32,7 +35,7 @@ import org.eclipse.ditto.signals.commands.things.query.RetrieveThings;
  */
 @ParametersAreNonnullByDefault
 @Immutable
-final class RetrieveThingsLiveCommandImpl extends AbstractQueryLiveCommand<RetrieveThingsLiveCommand,
+final class RetrieveThingsLiveCommandImpl extends AbstractLiveCommand<RetrieveThingsLiveCommand,
         RetrieveThingsLiveCommandAnswerBuilder> implements RetrieveThingsLiveCommand {
 
     private final List<ThingId> thingIds;
@@ -40,7 +43,7 @@ final class RetrieveThingsLiveCommandImpl extends AbstractQueryLiveCommand<Retri
 
     private RetrieveThingsLiveCommandImpl(final RetrieveThings command) {
         super(command);
-        thingIds = command.getThingEntityIds();
+        thingIds = command.getEntityIds();
         namespace = command.getNamespace().orElse(null);
     }
 
@@ -59,7 +62,7 @@ final class RetrieveThingsLiveCommandImpl extends AbstractQueryLiveCommand<Retri
 
     @Nonnull
     @Override
-    public List<ThingId> getThingEntityIds() {
+    public List<ThingId> getEntityIds() {
         return thingIds;
     }
 
@@ -70,8 +73,18 @@ final class RetrieveThingsLiveCommandImpl extends AbstractQueryLiveCommand<Retri
     }
 
     @Override
+    public String getTypePrefix() {
+        return ThingCommand.TYPE_PREFIX;
+    }
+
+    @Override
+    public Category getCategory() {
+        return Category.QUERY;
+    }
+
+    @Override
     public RetrieveThingsLiveCommand setDittoHeaders(final DittoHeaders dittoHeaders) {
-        final RetrieveThings retrieveThingsCommand = RetrieveThings.getBuilder(getThingEntityIds())
+        final RetrieveThings retrieveThingsCommand = RetrieveThings.getBuilder(getEntityIds())
                 .dittoHeaders(dittoHeaders)
                 .selectedFields(getSelectedFields().orElse(null))
                 .build();
@@ -91,4 +104,8 @@ final class RetrieveThingsLiveCommandImpl extends AbstractQueryLiveCommand<Retri
         return getClass().getSimpleName() + "[" + super.toString() + ", namespace=" + namespace + "]";
     }
 
+    @Override
+    public String getResourceType() {
+        return ThingCommand.RESOURCE_TYPE;
+    }
 }
