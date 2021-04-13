@@ -68,7 +68,7 @@ final class RetrieveAttributeLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public RetrieveAttributeResponse retrieved(final JsonValue attributeValue) {
-            return RetrieveAttributeResponse.of(command.getThingEntityId(), command.getAttributePointer(),
+            return RetrieveAttributeResponse.of(command.getEntityId(), command.getAttributePointer(),
                     attributeValue,
                     command.getDittoHeaders());
         }
@@ -76,8 +76,8 @@ final class RetrieveAttributeLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public ThingErrorResponse attributeNotAccessibleError() {
-            return errorResponse(command.getThingEntityId(),
-                    AttributeNotAccessibleException.newBuilder(command.getThingEntityId(),
+            return errorResponse(command.getEntityId(),
+                    AttributeNotAccessibleException.newBuilder(command.getEntityId(),
                             command.getAttributePointer())
                             .dittoHeaders(command.getDittoHeaders())
                             .build());

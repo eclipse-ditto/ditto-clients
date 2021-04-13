@@ -48,8 +48,8 @@ abstract class AbstractModifyLiveCommand<T extends LiveCommand<T, B> & ThingModi
     }
 
     @Override
-    public ThingId getThingEntityId() {
-        return thingModifyCommand.getThingEntityId();
+    public ThingId getEntityId() {
+        return thingModifyCommand.getEntityId();
     }
 
     @Override

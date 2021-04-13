@@ -45,7 +45,7 @@ public final class ModifyFeaturesLiveCommandAnswerBuilderImplTest {
     /** */
     @Before
     public void setUp() {
-        Mockito.when(commandMock.getThingEntityId()).thenReturn(TestConstants.Thing.THING_ID);
+        Mockito.when(commandMock.getEntityId()).thenReturn(TestConstants.Thing.THING_ID);
         Mockito.when(commandMock.getDittoHeaders()).thenReturn(DittoHeaders.empty());
         Mockito.when(commandMock.getFeatures()).thenReturn(TestConstants.Feature.FEATURES);
 

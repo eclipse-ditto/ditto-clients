@@ -68,14 +68,14 @@ final class RetrieveAttributesLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public RetrieveAttributesResponse retrieved(final Attributes attributes) {
-            return RetrieveAttributesResponse.of(command.getThingEntityId(), attributes, command.getDittoHeaders());
+            return RetrieveAttributesResponse.of(command.getEntityId(), attributes, command.getDittoHeaders());
         }
 
         @Nonnull
         @Override
         public ThingErrorResponse attributesNotAccessibleError() {
-            return errorResponse(command.getThingEntityId(),
-                    AttributesNotAccessibleException.newBuilder(command.getThingEntityId())
+            return errorResponse(command.getEntityId(),
+                    AttributesNotAccessibleException.newBuilder(command.getEntityId())
                     .dittoHeaders(command.getDittoHeaders())
                     .build());
         }

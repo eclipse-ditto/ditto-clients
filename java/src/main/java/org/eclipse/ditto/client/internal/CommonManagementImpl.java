@@ -69,8 +69,10 @@ import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.Signal;
+import org.eclipse.ditto.model.base.entity.id.WithEntityId;
 import org.eclipse.ditto.signals.base.WithOptionalEntity;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
+import org.eclipse.ditto.signals.commands.base.ErrorResponse;
 import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
@@ -645,7 +647,6 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
      * @param protocolCommandAck the expected acknowledgement.
      * @param futureToCompleteOrFailAfterAck the future to complete or fail after receiving the expected acknowledgement
      * or not.
-     * @param adaptableToMessage function to convert an adaptable into a message.
      * @return the subscription ID.
      */
     protected AdaptableBus.SubscriptionId subscribe(
@@ -653,13 +654,11 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
             final Classification.StreamingType streamingType,
             final String protocolCommand,
             final String protocolCommandAck,
-            final CompletableFuture<Void> futureToCompleteOrFailAfterAck,
-            final Function<Adaptable, Message<?>> adaptableToMessage) {
+            final CompletableFuture<Void> futureToCompleteOrFailAfterAck) {
 
         return subscribeAndPublishMessage(previousSubscriptionId, streamingType, protocolCommand, protocolCommandAck,
                 futureToCompleteOrFailAfterAck, adaptable -> bus -> {
-                    final Message<?> message = adaptableToMessage.apply(adaptable);
-                    bus.notify(message.getSubject(), message);
+                    asThingMessage(adaptable).ifPresent(message -> bus.notify(message.getSubject(), message));
                 });
     }
 
@@ -745,17 +744,31 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
         }
     }
 
-    protected static Message<?> asThingMessage(final Adaptable adaptable) {
+    /**
+     * Build a {@link Message} out of the given {@link Adaptable}.
+     *
+     * @param adaptable from which the things {@link Message} shall be build from.
+     * @return empty if the adaptable doesn't provide a thingId, or the build {@link Message}.
+     */
+    private static Optional<Message<?>> asThingMessage(final Adaptable adaptable) {
         final Signal<?> signal = PROTOCOL_ADAPTER.fromAdaptable(adaptable);
-        final ThingId thingId = ThingId.of(signal.getEntityId());
-        final MessageHeaders messageHeaders =
-                MessageHeaders.newBuilder(MessageDirection.FROM, thingId, signal.getType())
-                        .correlationId(signal.getDittoHeaders().getCorrelationId().orElse(null))
-                        .build();
-        return Message.newBuilder(messageHeaders)
-                .payload(signal)
-                .extra(adaptable.getPayload().getExtra().orElse(null))
-                .build();
+        final Optional<ThingId> thingIdOptional = WithEntityId.getEntityIdOfType(ThingId.class, signal);
+        final Message<?> message;
+        if (thingIdOptional.isPresent()) {
+            final ThingId thingId = thingIdOptional.get();
+            final MessageHeaders messageHeaders = MessageHeaders
+                    .newBuilder(MessageDirection.FROM, thingId, signal.getType())
+                    .correlationId(signal.getDittoHeaders().getCorrelationId().orElse(null))
+                    .build();
+            message = Message.newBuilder(messageHeaders)
+                    .payload(signal)
+                    .extra(adaptable.getPayload().getExtra().orElse(null))
+                    .build();
+        } else {
+            LOGGER.warn("Cannot build ThingMessage out of Signal without an ThingId: <{}>", signal);
+            message = null;
+        }
+        return Optional.ofNullable(message);
     }
 
     private static void adjoin(final CompletionStage<?> stage, final CompletableFuture<Void> future) {
@@ -780,7 +793,9 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     private CompletionStage<List<Thing>> sendRetrieveThingsMessage(final RetrieveThings command) {
-        return askThingCommand(command, RetrieveThingsResponse.class, RetrieveThingsResponse::getThings);
+        return sendSignalAndExpectResponse(command, RetrieveThingsResponse.class, RetrieveThingsResponse::getThings,
+                ErrorResponse.class,
+                ErrorResponse::getDittoRuntimeException);
     }
 
     @Nullable

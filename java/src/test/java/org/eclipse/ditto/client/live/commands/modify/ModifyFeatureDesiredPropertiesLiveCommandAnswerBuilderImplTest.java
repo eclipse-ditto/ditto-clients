@@ -45,7 +45,7 @@ public final class ModifyFeatureDesiredPropertiesLiveCommandAnswerBuilderImplTes
     /** */
     @Before
     public void setUp() {
-        Mockito.when(commandMock.getThingEntityId()).thenReturn(TestConstants.Thing.THING_ID);
+        Mockito.when(commandMock.getEntityId()).thenReturn(TestConstants.Thing.THING_ID);
         Mockito.when(commandMock.getDittoHeaders()).thenReturn(DittoHeaders.empty());
         Mockito.when(commandMock.getFeatureId()).thenReturn(TestConstants.Feature.HOVER_BOARD_ID);
         Mockito.when(commandMock.getDesiredProperties()).thenReturn(TestConstants.Feature.HOVER_BOARD_PROPERTIES);

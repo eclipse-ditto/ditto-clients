@@ -105,8 +105,7 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
                     streamingType,
                     subscriptionMessage,
                     streamingType.startAck(),
-                    ackFuture,
-                    CommonManagementImpl::asThingMessage
+                    ackFuture
             ));
         }
         return ackFuture;

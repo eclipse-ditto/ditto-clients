@@ -89,7 +89,7 @@ public final class RetrieveThingLiveCommandImplTest {
         assertThat(underTest)
                 .withType(retrieveThingTwinCommand.getType())
                 .withDittoHeaders(retrieveThingTwinCommand.getDittoHeaders())
-                .withId(retrieveThingTwinCommand.getThingEntityId())
+                .withId(retrieveThingTwinCommand.getEntityId())
                 .withManifest(retrieveThingTwinCommand.getManifest())
                 .withResourcePath(retrieveThingTwinCommand.getResourcePath());
     }

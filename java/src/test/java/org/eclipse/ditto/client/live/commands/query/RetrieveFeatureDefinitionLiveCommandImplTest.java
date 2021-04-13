@@ -80,7 +80,7 @@ public final class RetrieveFeatureDefinitionLiveCommandImplTest {
         assertThat(underTest)
                 .withType(retrieveFeatureDefinitionTwinCommand.getType())
                 .withDittoHeaders(retrieveFeatureDefinitionTwinCommand.getDittoHeaders())
-                .withId(retrieveFeatureDefinitionTwinCommand.getThingEntityId())
+                .withId(retrieveFeatureDefinitionTwinCommand.getEntityId())
                 .withManifest(retrieveFeatureDefinitionTwinCommand.getManifest())
                 .withResourcePath(retrieveFeatureDefinitionTwinCommand.getResourcePath());
         assertThat(underTest.getFeatureId()).isEqualTo(retrieveFeatureDefinitionTwinCommand.getFeatureId());

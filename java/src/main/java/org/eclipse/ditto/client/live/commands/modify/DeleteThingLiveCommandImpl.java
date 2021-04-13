@@ -54,7 +54,7 @@ final class DeleteThingLiveCommandImpl extends AbstractModifyLiveCommand<DeleteT
 
     @Override
     public DeleteThingLiveCommand setDittoHeaders(final DittoHeaders dittoHeaders) {
-        return new DeleteThingLiveCommandImpl(DeleteThing.of(getThingEntityId(), dittoHeaders));
+        return new DeleteThingLiveCommandImpl(DeleteThing.of(getEntityId(), dittoHeaders));
     }
 
     @Override

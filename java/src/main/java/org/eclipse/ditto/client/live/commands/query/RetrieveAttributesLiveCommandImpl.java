@@ -49,7 +49,7 @@ final class RetrieveAttributesLiveCommandImpl extends AbstractQueryLiveCommand<R
 
     @Override
     public RetrieveAttributesLiveCommand setDittoHeaders(final DittoHeaders dittoHeaders) {
-        return of(RetrieveAttributes.of(getThingEntityId(), getSelectedFields().orElse(null), dittoHeaders));
+        return of(RetrieveAttributes.of(getEntityId(), getSelectedFields().orElse(null), dittoHeaders));
     }
 
     @Nonnull

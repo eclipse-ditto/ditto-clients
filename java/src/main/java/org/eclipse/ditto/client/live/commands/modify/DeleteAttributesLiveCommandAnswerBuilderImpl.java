@@ -76,27 +76,27 @@ final class DeleteAttributesLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public DeleteAttributesResponse deleted() {
-            return DeleteAttributesResponse.of(command.getThingEntityId(), command.getDittoHeaders());
+            return DeleteAttributesResponse.of(command.getEntityId(), command.getDittoHeaders());
         }
 
         @Nonnull
         @Override
         public ThingErrorResponse attributesNotAccessibleError() {
             final DittoRuntimeException exception =
-                    AttributesNotAccessibleException.newBuilder(command.getThingEntityId())
+                    AttributesNotAccessibleException.newBuilder(command.getEntityId())
                             .dittoHeaders(command.getDittoHeaders())
                             .build();
-            return errorResponse(command.getThingEntityId(), exception);
+            return errorResponse(command.getEntityId(), exception);
         }
 
         @Nonnull
         @Override
         public ThingErrorResponse attributesNotModifiableError() {
             final DittoRuntimeException exception =
-                    AttributesNotModifiableException.newBuilder(command.getThingEntityId())
+                    AttributesNotModifiableException.newBuilder(command.getEntityId())
                             .dittoHeaders(command.getDittoHeaders())
                             .build();
-            return errorResponse(command.getThingEntityId(), exception);
+            return errorResponse(command.getEntityId(), exception);
         }
     }
 
@@ -106,7 +106,7 @@ final class DeleteAttributesLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public AttributesDeleted deleted() {
-            return AttributesDeleted.of(command.getThingEntityId(), -1, Instant.now(), command.getDittoHeaders(),
+            return AttributesDeleted.of(command.getEntityId(), -1, Instant.now(), command.getDittoHeaders(),
                     null);
         }
     }
