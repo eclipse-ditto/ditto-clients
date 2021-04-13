@@ -111,7 +111,7 @@ describe('Count Options', () => {
   });
   it('sets filter', () => {
     countOptions.withFilter(And(Ne('Prop', 7)));
-    expect(countOptions.getOptions().get('filter')).toEqual(encodeURIComponent('and(ne(Prop,"7"))'));
+    expect(countOptions.getOptions().get('filter')).toEqual(encodeURIComponent('and(ne(Prop,7))'));
   });
   it('overrides filter', () => {
     countOptions.withFilter(And(Ne('Prop', 7)));
@@ -169,7 +169,7 @@ describe('Search Options', () => {
   });
   it('sets filter', () => {
     searchOptions.withFilter(And(Ne('Prop', 7)));
-    expect(searchOptions.getOptions().get('filter')).toEqual(encodeURIComponent('and(ne(Prop,"7"))'));
+    expect(searchOptions.getOptions().get('filter')).toEqual(encodeURIComponent('and(ne(Prop,7))'));
   });
   it('overrides filter', () => {
     searchOptions.withFilter(And(Ne('Prop', 7)));
