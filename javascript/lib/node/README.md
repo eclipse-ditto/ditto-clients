@@ -22,7 +22,7 @@ npm test
 
 ```shell
 # replace <ditto-major.minor> with the major and minor version number of Eclipse Ditto you are using.
-npm i --save  @eclipse/ditto-javascript-client-api_<ditto-major.minor> @eclipse/ditto-javascript-client-node_<ditto-major.minor>
+npm i --save  @eclipse-ditto/ditto-javascript-client-api_<ditto-major.minor> @eclipse-ditto/ditto-javascript-client-node_<ditto-major.minor>
 ```
 
 Create an instance of a client:

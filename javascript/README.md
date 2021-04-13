@@ -3,7 +3,7 @@ This module is a TypeScript library to facilitate working the the REST-like HTTP
 
 ### How to use it
 Install `@eclipse-ditto/ditto-javascript-client-dom` for the DOM (browser) implementation, 
-`@eclipse-ditto/ditto-javascript-client-node` for the NodeJS implementation, or `@eclipse/ditto-javascript-client-api-ditto` for
+`@eclipse-ditto/ditto-javascript-client-node` for the NodeJS implementation, or `@eclipse-ditto/ditto-javascript-client-api-ditto` for
 the API and build your own client implementation.
 
 More information can be found in the descriptions of the subpackages:

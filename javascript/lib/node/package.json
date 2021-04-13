@@ -6,8 +6,7 @@
   "repository": "https://github.com/eclipse/ditto-clients",
   "license": "EPL-2.0",
   "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "type": "module",
+  "type": "commonjs",
   "types": "./dist/index.d.ts",
   "publishConfig": {
     "access": "public"
