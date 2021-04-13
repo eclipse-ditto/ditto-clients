@@ -1,5 +1,5 @@
 # Ditto JavaScript client API
-This module is a TypeScript library to facilitate working the the REST-like HTTP API and web socket API of Eclipse Ditto.
+This module is a TypeScript library to facilitate working the REST-like HTTP API and web socket API of Eclipse Ditto.
 
 It is published with three different module types to the npm registry:
 * IIFE (`dist/index.bundle.js`), for using it directly in a browser. The API is available under the base name
