@@ -154,7 +154,7 @@ export const Le: (property: string, value: any) => Filter =
  */
 export const In: (property: string, ...value: any[]) => Filter =
   (property: string, ...value: any[]) => {
-    return new DefaultFilter(`in(${property},${value.map(v => `"${v}"`).join()})`);
+    return new DefaultFilter(`in(${property},${value.map(stringify).join()})`);
   };
 
 /**
@@ -193,6 +193,25 @@ const toList: (filter: Filter[]) => string =
   };
 
 /**
+ * Returns a string representation that can be used as a filter value:
+ * number & boolean -> string representation
+ * object -> JSON string
+ * string -> string in quotes
+ *
+ * @param value The value of arbitrary type to stringify
+ */
+const stringify: (value: any) => string =
+  (value => {
+    if (typeof value === 'boolean' || typeof value === 'number') {
+      return value.toString();
+    }
+    if (typeof value === 'object') {
+      return JSON.stringify(value);
+    }
+    return `"${value}"`;
+  });
+
+/**
  * Standard operation for building Filters.
  *
  * @param operation - The type of Filter to build.
@@ -200,7 +219,7 @@ const toList: (filter: Filter[]) => string =
  * @param value - The body to check for.
  * @return The Filter.
  */
-const standardFilter: (operation: string, property: string, value: string) => Filter =
-  (operation: string, property: string, value: string) => {
-    return new DefaultFilter(`${operation}(${property},"${value}")`);
+const standardFilter: (operation: string, property: string, value: any) => Filter =
+  (operation: string, property: string, value: any) => {
+    return new DefaultFilter(`${operation}(${property},${stringify(value)})`);
   };

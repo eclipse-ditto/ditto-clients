@@ -20,13 +20,17 @@ export class Thing extends EntityWithId {
 
   public static readonly NAMESPACE_SEPARATION_REGEX = /([^:]*):(.*)/;
 
-  public constructor(private readonly _thingId: string,
+  public constructor(
+    private readonly _thingId: string,
     private readonly _policyId?: string,
     private readonly _attributes?: Record<string, any>,
     private readonly _features?: Features,
     private readonly __revision?: number,
     private readonly __modified?: string,
-    private readonly _acl?: Acl) {
+    private readonly _acl?: Acl,
+    private readonly _definition?: string,
+    private readonly __metadata?: Metadata,
+    private readonly __created?: string) {
     super();
   }
 
@@ -41,13 +45,21 @@ export class Thing extends EntityWithId {
       return o;
     }
     // @ts-ignore
-    return new Thing(o['thingId'], o['policyId'], o['attributes'],
-      // @ts-ignore
-      Features.fromObject(o['features']), o['_revision'], o['_modified'], Acl.fromObject(o['acl']));
+    return new Thing(o['thingId'],
+      o['policyId'],
+      o['attributes'],
+      Features.fromObject(o['features']),
+      o['_revision'],
+      o['_modified'],
+      Acl.fromObject(o['acl']),
+      o['definition'],
+      Metadata.fromObject(o['_metadata']),
+      o['_created']
+    );
   }
 
   public static empty(): Thing {
-    return new Thing('', '', undefined, undefined, 0, '', undefined);
+    return new Thing('', '', undefined, undefined, 0, '', undefined, undefined, undefined, undefined);
   }
 
   public toObject(): object {
@@ -60,7 +72,9 @@ export class Thing extends EntityWithId {
       ['features', featuresObj],
       ['_revision', this._revision],
       ['_modified', this._modified],
-      ['acl', aclObj]
+      ['acl', aclObj],
+      ['definition', this._definition],
+      ['_created', this.__created]
     ]));
   }
 
@@ -92,6 +106,10 @@ export class Thing extends EntityWithId {
     return this.__revision;
   }
 
+  get _metadata(): Metadata | undefined {
+    return this.__metadata;
+  }
+
   get namespace(): string {
     return this.separateNamespaceAndThingId().namespace;
   }
@@ -102,6 +120,14 @@ export class Thing extends EntityWithId {
 
   get name(): string {
     return this.separateNamespaceAndThingId().name;
+  }
+
+  get definition(): string | undefined {
+    return this._definition;
+  }
+
+  get _created(): string | undefined {
+    return this.__created;
   }
 
   private separateNamespaceAndThingId(): { namespace: string, name: string } {
@@ -135,7 +161,45 @@ export class Features extends IndexedEntityModel<Feature> {
     }
     return IndexedEntityModel.fromPlainObject<Feature>(o, Feature.fromObject);
   }
+
 }
+
+
+export class Metadata extends EntityModel {
+
+  public constructor(
+    private readonly _attributes?: Record<string, any>,
+    private readonly _features?: Features) {
+    super();
+  }
+
+
+  get attributes(): Record<string, any> | undefined {
+    return this._attributes;
+  }
+
+  get features(): Features | undefined {
+    return this._features;
+  }
+
+  public static fromObject(o: any): Metadata {
+    if (o === undefined) {
+      return o;
+    }
+    return new Metadata(o.attributes, Features.fromObject(o.features));
+  }
+
+  toObject(): Object | undefined {
+    const features = this.features ? Features.toObject(this.features) : undefined;
+
+    return EntityModel.buildObject(new Map<string, any>([
+      ['features', features],
+      ['attributes', this.attributes]
+    ]));
+  }
+
+}
+
 
 /**
  * Representation of a Feature

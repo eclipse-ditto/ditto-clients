@@ -33,6 +33,8 @@ import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.FeatureDefinition;
+import org.eclipse.ditto.model.things.Features;
+import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 import org.eclipse.ditto.signals.acks.base.Acknowledgements;
@@ -47,6 +49,8 @@ import org.eclipse.ditto.signals.commands.things.modify.DeleteFeaturePropertyRes
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureResponse;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatures;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeaturesResponse;
+import org.eclipse.ditto.signals.commands.things.modify.MergeThing;
+import org.eclipse.ditto.signals.commands.things.modify.MergeThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeature;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDefinition;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDefinitionResponse;
@@ -97,6 +101,38 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
     }
 
     @Test
+    public void testMergeFeatureWithExistsOptionFalse() {
+        final JsonPointer path = Thing.JsonFields.FEATURES.getPointer().append(JsonPointer.of(FEATURE_ID));
+
+        assertEventualCompletion(
+                getManagement().forId(THING_ID).mergeFeature(FEATURE, Options.Modify.exists(false))
+        );
+        final MergeThing command = expectMsgClass(MergeThing.class);
+        reply(MergeThingResponse.of(THING_ID,
+                path,
+                command.getDittoHeaders()));
+        assertThat(command.getResourcePath().toFieldSelector())
+                .isEqualTo(path.toFieldSelector());
+        assertOnlyIfNoneMatchHeader(command);
+    }
+
+    @Test
+    public void testMergeFeatureWithExistsOptionTrue() {
+        final JsonPointer path = Thing.JsonFields.FEATURES.getPointer().append(JsonPointer.of(FEATURE_ID));
+
+        assertEventualCompletion(
+                getManagement().forId(THING_ID).mergeFeature(FEATURE, Options.Modify.exists(true))
+        );
+        final MergeThing command = expectMsgClass(MergeThing.class);
+        reply(MergeThingResponse.of(THING_ID,
+                path,
+                command.getDittoHeaders()));
+        assertThat(command.getResourcePath().toFieldSelector())
+                .isEqualTo(path.toFieldSelector());
+        assertOnlyIfMatchHeader(command);
+    }
+
+    @Test
     public void testDeleteFeature() {
         assertEventualCompletion(getManagement().forId(THING_ID).deleteFeature(FEATURE_ID));
         reply(DeleteFeatureResponse.of(THING_ID, FEATURE_ID, expectMsgClass(DeleteFeature.class).getDittoHeaders()));
@@ -125,6 +161,15 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
     }
 
     @Test
+    public void testMergeFeatures() {
+        final Features features = ThingsModelFactory.newFeatures(FEATURE);
+        assertEventualCompletion(getManagement().forId(THING_ID).mergeFeatures(features));
+        reply(MergeThingResponse.of(THING_ID,
+                Thing.JsonFields.FEATURES.getPointer(),
+                expectMsgClass(MergeThing.class).getDittoHeaders()));
+    }
+
+    @Test
     public void setFeatureDefinition() {
         final FeatureDefinition definition = FeatureDefinition.fromIdentifier("org.eclipse.ditto:test:0.1.0");
         assertEventualCompletion(
@@ -136,6 +181,26 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
         final ModifyFeatureDefinition command = expectMsgClass(ModifyFeatureDefinition.class);
         reply(ModifyFeatureDefinitionResponse.modified(THING_ID, FEATURE_ID, command.getDittoHeaders()));
         Assertions.assertThat(command.getDefinition()).isEqualTo(definition);
+    }
+
+    @Test
+    public void mergeFeatureDefinition() {
+        final FeatureDefinition definition = FeatureDefinition.fromIdentifier("org.eclipse.ditto:test:0.1.0");
+        final JsonPointer path = Thing.JsonFields.FEATURES.getPointer()
+                .append(JsonPointer.of(FEATURE_ID))
+                .append(Feature.JsonFields.DEFINITION.getPointer());
+
+        assertEventualCompletion(
+                getManagement()
+                        .forId(THING_ID)
+                        .forFeature(FEATURE_ID)
+                        .mergeDefinition(definition)
+        );
+        final MergeThing command = expectMsgClass(MergeThing.class);
+        reply(MergeThingResponse.of(THING_ID,
+                path,
+                command.getDittoHeaders()));
+        Assertions.assertThat(FeatureDefinition.fromJson(command.getValue().asArray())).isEqualTo(definition);
     }
 
     @Test
@@ -162,6 +227,24 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
     }
 
     @Test
+    public void testMergeFeatureProperty() {
+        final JsonPointer path = JsonFactory.newPointer("density");
+        final JsonPointer completePath = Thing.JsonFields.FEATURES.getPointer()
+                .append(JsonPointer.of(FEATURE_ID))
+                .append(Feature.JsonFields.PROPERTIES.getPointer())
+                .append(ThingsModelFactory.validateFeaturePropertyPointer(path));
+
+        final int value = 42;
+        assertEventualCompletion(
+                getManagement().forId(THING_ID).forFeature(FEATURE_ID).mergeProperty(path, value)
+        );
+        final MergeThing mergeThing = expectMsgClass(MergeThing.class);
+        reply(MergeThingResponse.of(THING_ID,
+                completePath,
+                mergeThing.getDittoHeaders()));
+    }
+
+    @Test
     public void testDeleteFeatureProperty() {
         final JsonPointer path = JsonFactory.newPointer("density");
         assertEventualCompletion(
@@ -177,6 +260,20 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
         assertEventualCompletion(getManagement().forId(THING_ID).forFeature(FEATURE_ID).setProperties(properties));
         reply(ModifyFeaturePropertiesResponse.modified(THING_ID, FEATURE_ID,
                 expectMsgClass(ModifyFeatureProperties.class).getDittoHeaders()));
+    }
+
+    @Test
+    public void testMergeFeatureProperties() {
+        final JsonPointer path = Thing.JsonFields.FEATURES.getPointer()
+                .append(JsonPointer.of(FEATURE_ID))
+                .append(Feature.JsonFields.PROPERTIES.getPointer());
+
+        final JsonObject properties = JsonFactory.newObjectBuilder().set("density", 42).build();
+        assertEventualCompletion(getManagement().forId(THING_ID).forFeature(FEATURE_ID).mergeProperties(properties));
+
+        final MergeThing mergeThing = expectMsgClass(MergeThing.class);
+        reply(MergeThingResponse.of(THING_ID, path,
+                mergeThing.getDittoHeaders()));
     }
 
     @Test

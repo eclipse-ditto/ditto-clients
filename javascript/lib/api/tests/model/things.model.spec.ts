@@ -14,7 +14,7 @@
 /* tslint:disable:no-duplicate-string */
 
 import { PutResponse, SearchThingsResponse } from '../../src/model/response';
-import { Acl, AclEntry, Feature, Features, Thing } from '../../src/model/things.model';
+import { Acl, AclEntry, Feature, Features, Metadata, Thing } from '../../src/model/things.model';
 
 const aDefinition = ['aDefinition', 'aSecondOne'];
 const anotherDefinition = ['anotherDefinition'];
@@ -29,6 +29,9 @@ const attributes = { anAttribute, anotherAttribute };
 const anAclEntryObj = { READ: true, WRITE: true, ADMINISTRATE: true };
 const anotherAclEntryObj = { READ: false, WRITE: false, ADMINISTRATE: false };
 const aclObj = { ID: anAclEntryObj, AnotherID: anotherAclEntryObj };
+const metadataObject = {
+  features: { lamp: { properties: { color: {} } } }, attributes: { foo: 'bar', bar: 'foo' }
+};
 const thingObj = {
   attributes,
   thingId: 'Testspace:Testthing',
@@ -36,9 +39,26 @@ const thingObj = {
   features: featuresObj,
   _revision: 0,
   _modified: '08042019',
+  _created: '2017-06-01T00:01:57Z',
+  definition: 'example:test:definition',
+  _metadata: metadataObject,
   acl: aclObj
 };
+
+const thingObjWithoutMetadata = {
+  attributes,
+  thingId: 'Testspace:Testthing',
+  definition: 'example:test:definition',
+  policyId: 'PolicyId',
+  features: featuresObj,
+  _revision: 0,
+  _modified: '08042019',
+  _created: '2017-06-01T00:01:57Z',
+  acl: aclObj
+};
+
 const responseObj = { items: [thingObj], nextPageOffset: 0 };
+const responseObjWithoutMetadata = { items: [thingObjWithoutMetadata], nextPageOffset: 0 };
 
 const aFeature = new Feature('additionalProp1', aDefinition, someProperties);
 const anotherFeature = new Feature('additionalProp2', anotherDefinition, moreProperties);
@@ -47,7 +67,17 @@ const features = typedFeatureObject;
 const anAclEntry = new AclEntry('ID', true, true, true);
 const anotherAclEntry = new AclEntry('AnotherID', false, false, false);
 const acl = { ID: anAclEntry, AnotherID: anotherAclEntry };
-const thing = new Thing('Testspace:Testthing', 'PolicyId', attributes, features, 0, '08042019', acl);
+const metadata = new Metadata({ foo: 'bar', bar: 'foo' }, { lamp: new Feature('lamp', undefined, { color: {} }) });
+const thing = new Thing('Testspace:Testthing',
+  'PolicyId',
+  attributes,
+  features,
+  0,
+  '08042019',
+  acl,
+  'example:test:definition',
+  metadata,
+  '2017-06-01T00:01:57Z');
 const response = new SearchThingsResponse([thing], 0);
 
 describe('Feature', () => {
@@ -83,6 +113,22 @@ describe('Features', () => {
   it('handles an undefined object', () => {
     expect(Features.fromObject(undefined)).toEqual(undefined);
   });
+});
+
+describe('Metadata', () => {
+  it('parses an object', () => {
+    expect(Metadata.fromObject(metadataObject)).toEqual(metadata);
+    expect(metadata.equals(Metadata.fromObject(metadataObject))).toBe(true);
+  });
+
+  it('parses an object', () => {
+    expect(metadata.toObject()).toEqual(metadataObject);
+  });
+
+  it('handles undefined objects', () => {
+    expect(Metadata.fromObject(undefined)).toEqual(undefined);
+  });
+
 });
 
 describe('AclEntry', () => {
@@ -125,7 +171,7 @@ describe('Thing', () => {
     expect(Thing.fromObject(thingObj).equals(thing)).toBe(true);
   });
   it('builds an object', () => {
-    expect(thing.toObject()).toEqual(thingObj);
+    expect(thing.toObject()).toEqual(thingObjWithoutMetadata);
   });
   it('returns its content', () => {
     expect(thing.thingId).toEqual('Testspace:Testthing');
@@ -137,6 +183,8 @@ describe('Thing', () => {
     expect(thing._revision).toEqual(0);
     expect(thing.name).toEqual('Testthing');
     expect(thing.acl).toEqual(acl);
+    expect(thing.definition).toEqual('example:test:definition');
+    expect(thing._created).toEqual('2017-06-01T00:01:57Z');
   });
   it('handles a minimal thing', () => {
     const minimalThing = new Thing('Tespspace:Minimal');
@@ -161,7 +209,7 @@ describe('SearchThingsResponse', () => {
     expect(SearchThingsResponse.fromObject(responseObj).equals(response)).toBe(true);
   });
   it('builds an object', () => {
-    expect(response.toObject()).toEqual(responseObj);
+    expect(response.toObject()).toEqual(responseObjWithoutMetadata);
   });
   it('returns its content', () => {
     expect(response.items).toEqual([thing]);

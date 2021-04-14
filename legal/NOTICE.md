@@ -21,10 +21,11 @@ SPDX-License-Identifier: EPL-2.0
 
 # Copyright holders
 
-* Copyright 2019 Bosch Software Innovations GmbH
 * Copyright 2020-2021 Bosch.IO GmbH
+* Copyright 2020-2021 Othermo GmbH
+* Copyright 2020-2021 Aloxy NV
+* Copyright 2019 Bosch Software Innovations GmbH
 * Copyright 2020 Zeptio AB
-* Copyright 2020-2021 Othermo GmBH
 
 All content is the property of the respective authors or their employers.
 For more information regarding authorship of content, please consult the

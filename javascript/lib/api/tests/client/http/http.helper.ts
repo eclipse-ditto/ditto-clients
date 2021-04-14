@@ -22,27 +22,35 @@ export class HttpHelper extends Helper {
   private static readonly matcher = `http://${HttpHelper.domain}/api/`;
   private static readonly errorDomain = 'error.web';
   private static readonly errorUrl = `http://${HttpHelper.errorDomain}`;
-  private static readonly errorResponse: GenericResponse = { status: 403, headers: new Map<string, string>(), body: HttpHelper.errorBody };
+  private static readonly errorResponse: GenericResponse = {
+    status: 403,
+    headers: new Map<string, string>(),
+    body: HttpHelper.errorBody
+  };
   // TODO: having this statically is causing problems between tests. it should really be not static
   private static readonly requester: TestRequester = new TestRequester(HttpHelper.errorUrl, HttpHelper.errorResponse);
+
   public static readonly thingsClientV2: DittoHttpClientV2 = HttpHelper.buildHttpClient(HttpHelper.requester)
     .withoutTls()
     .withDomain(HttpHelper.domain)
     .withAuthProvider(HttpHelper.basicAuthProvider(HttpHelper.testName, HttpHelper.password))
     .apiVersion2()
     .build();
+
   public static readonly thingsClientV1: DittoHttpClientV1 = HttpHelper.buildHttpClient(HttpHelper.requester)
     .withoutTls()
     .withDomain(HttpHelper.domain)
     .withAuthProvider(HttpHelper.basicAuthProvider(HttpHelper.testName, HttpHelper.password))
     .apiVersion1()
     .build();
+
   public static readonly errorThingsClientV2: DittoHttpClientV2 = HttpHelper.buildHttpClient(HttpHelper.requester)
     .withoutTls()
     .withDomain(HttpHelper.errorDomain)
     .withAuthProvider(HttpHelper.basicAuthProvider(HttpHelper.testName, HttpHelper.password))
     .apiVersion2()
     .build();
+
   public static readonly errorThingsClientV1: DittoHttpClientV1 = HttpHelper.buildHttpClient(HttpHelper.requester)
     .withoutTls()
     .withDomain(HttpHelper.errorDomain)

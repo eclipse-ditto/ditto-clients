@@ -66,6 +66,7 @@ import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperties;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperty;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatures;
 import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
+import org.eclipse.ditto.signals.commands.things.modify.MergeThing;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyAttribute;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributes;
 import org.eclipse.ditto.signals.commands.things.modify.ModifyFeature;
@@ -183,6 +184,27 @@ public final class OutgoingMessageFactory {
                 .build();
 
         return ModifyThing.of(thingId, thing, null, headers);
+    }
+
+    /**
+     * @param thingId the thing to be merged.
+     * @param thing which should be used for merged.
+     * @param options options to be applied configuring behaviour of this method.
+     * @return the ThingCommand
+     * @throws NullPointerException if any argument is {@code null}.
+     * @throws IllegalArgumentException if {@code thing} has no identifier.
+     * @throws UnsupportedOperationException if an invalid option has been specified.
+     */
+    MergeThing mergeThing(final ThingId thingId, final Thing thing, final Option<?>[] options) {
+        checkNotNull(thing, "thing");
+        logWarningsForAclPolicyUsage(thing);
+
+        final DittoHeaders headersWithoutIfMatch = buildDittoHeaders(false, options);
+        final DittoHeaders headers = headersWithoutIfMatch.toBuilder()
+                .ifMatch(ASTERISK)
+                .build();
+
+        return MergeThing.withThing(thingId, thing, headers);
     }
 
     private void logWarningsForAclPolicyUsage(final Thing thing) {
@@ -317,9 +339,22 @@ public final class OutgoingMessageFactory {
         return ModifyAttribute.of(thingId, path, value, buildDittoHeaders(true, options));
     }
 
+    public MergeThing mergeAttribute(final ThingId thingId,
+            final JsonPointer path,
+            final JsonValue value,
+            final Option<?>... options) {
+
+        return MergeThing.withAttribute(thingId, path, value, buildDittoHeaders(true, options));
+    }
+
     public ModifyAttributes setAttributes(final ThingId thingId, final JsonObject attributes,
             final Option<?>... options) {
         return ModifyAttributes.of(thingId, ThingsModelFactory.newAttributes(attributes),
+                buildDittoHeaders(true, options));
+    }
+
+    public MergeThing mergeAttributes(final ThingId thingId, final JsonObject attributes, final Option<?>[] options) {
+        return MergeThing.withAttributes(thingId, ThingsModelFactory.newAttributes(attributes),
                 buildDittoHeaders(true, options));
     }
 
@@ -335,12 +370,24 @@ public final class OutgoingMessageFactory {
         return ModifyFeature.of(thingId, feature, buildDittoHeaders(true, options));
     }
 
+    public MergeThing mergeFeature(final ThingId thingId, final Feature feature, final Option<?>... options) {
+        return MergeThing.withFeature(thingId, feature, buildDittoHeaders(true, options));
+    }
+
     public ModifyFeatures setFeatures(final ThingId thingId, final Features features, final Option<?>... options) {
         return ModifyFeatures.of(thingId, features, buildDittoHeaders(true, options));
     }
 
+    public MergeThing mergeFeatures(final ThingId thingId, final Features features, final Option<?>[] options) {
+        return MergeThing.withFeatures(thingId, features, buildDittoHeaders(true, options));
+    }
+
     public ModifyPolicyId setPolicyId(final ThingId thingId, final PolicyId policyId, final Option<?>... options) {
         return ModifyPolicyId.of(thingId, policyId, buildDittoHeaders(true, options));
+    }
+
+    public MergeThing mergePolicyId(final ThingId thingId, final PolicyId policyId, final Option<?>... options) {
+        return MergeThing.withPolicyId(thingId, policyId, buildDittoHeaders(true, options));
     }
 
     public RetrieveFeature retrieveFeature(final ThingId thingId, final String featureId, final Option<?>... options) {
@@ -383,6 +430,25 @@ public final class OutgoingMessageFactory {
     }
 
     /**
+     * Creates a new {@link MergeThing} object to merge FeatureDefinition.
+     *
+     * @param thingId ID of the thing to which the feature belongs to.
+     * @param featureId ID of the feature to set the definition for.
+     * @param featureDefinition the FeatureDefinition to be merged.
+     * @param options options to be applied configuring behaviour of this method, see {@link Option}s.
+     * @return the command object.
+     * @throws NullPointerException if any argument is {@code null}.
+     */
+    public MergeThing mergeFeatureDefinition(final ThingId thingId,
+            final String featureId,
+            final FeatureDefinition featureDefinition,
+            final Option<?>... options) {
+
+        return MergeThing.withFeatureDefinition(thingId, featureId, featureDefinition,
+                buildDittoHeaders(true, options));
+    }
+
+    /**
      * Creates a new {@link DeleteFeatureDefinition} object.
      *
      * @param thingId ID of the thing to which the feature belongs to.
@@ -406,12 +472,30 @@ public final class OutgoingMessageFactory {
         return ModifyFeatureProperty.of(thingId, featureId, path, value, buildDittoHeaders(true, options));
     }
 
+    public MergeThing mergeFeatureProperty(final ThingId thingId,
+            final String featureId,
+            final JsonPointer path,
+            final JsonValue value,
+            final Option<?>... options) {
+
+        return MergeThing.withFeatureProperty(thingId, featureId, path, value, buildDittoHeaders(true, options));
+    }
+
     public ModifyFeatureProperties setFeatureProperties(final ThingId thingId,
             final String featureId,
             final JsonObject properties,
             final Option<?>... options) {
 
         return ModifyFeatureProperties.of(thingId, featureId, ThingsModelFactory.newFeatureProperties(properties),
+                buildDittoHeaders(true, options));
+    }
+
+    public MergeThing mergeFeatureProperties(final ThingId thingId,
+            final String featureId,
+            final JsonObject properties,
+            final Option<?>... options) {
+
+        return MergeThing.withFeatureProperties(thingId, featureId, ThingsModelFactory.newFeatureProperties(properties),
                 buildDittoHeaders(true, options));
     }
 
