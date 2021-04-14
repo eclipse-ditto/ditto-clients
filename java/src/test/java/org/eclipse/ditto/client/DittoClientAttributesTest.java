@@ -15,6 +15,7 @@ package org.eclipse.ditto.client;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
+import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -238,7 +239,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
 
         final Message<ThingEvent> attributeModified = MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders)
                 .payload(AttributeModified.of(THING_ID, ATTRIBUTE_KEY_NEW, JsonFactory.newValue("value"), 1,
-                        headersWithChannel()))
+                        Instant.now(), headersWithChannel(), null))
                 .build();
 
         messaging.receiveEvent(attributeModified);
@@ -267,7 +268,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
 
         final Message<ThingEvent> attributeCreated = MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders)
                 .payload(AttributeCreated.of(THING_ID, ATTRIBUTE_KEY_REALLY_NEW, JsonFactory.newValue("value"), 1,
-                        headersWithChannel()))
+                        Instant.now(), headersWithChannel(), null))
                 .build();
 
         messaging.receiveEvent(attributeCreated);

@@ -192,7 +192,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
 
     private static String getPointerBusKey(final Adaptable adaptable) {
         final TopicPath topic = adaptable.getTopicPath();
-        return String.format("/things/%s:%s%s", topic.getNamespace(), topic.getId(), adaptable.getPayload().getPath());
+        return String.format("/things/%s:%s%s", topic.getNamespace(), topic.getEntityName(), adaptable.getPayload().getPath());
     }
 
     /*
