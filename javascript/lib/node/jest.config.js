@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-export default {
+module.exports = {
     roots: [
         "tests"
     ],
