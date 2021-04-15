@@ -88,11 +88,6 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
   public deleteAttribute(thingId: string, attributePath: string, options?: MatchOptions): Promise<GenericResponse> {
     return this.deleteItemAtPath(thingId, `attributes/${attributePath}`, options);
   }
-
-  public deleteAclEntry(thingId: string, authorizationSubject: string, options?: MatchOptions): Promise<GenericResponse> {
-    return this.deleteItemAtPath(thingId, `acl/${authorizationSubject}`, options);
-  }
-
   public deleteDefinition(thingId: string, options?: MatchOptions): Promise<GenericResponse> {
     return this.deleteItemAtPath(thingId, 'definition', options);
   }

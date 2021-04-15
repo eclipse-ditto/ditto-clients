@@ -14,7 +14,7 @@
 /* tslint:disable:no-duplicate-string */
 
 import { PutResponse, SearchThingsResponse } from '../../src/model/response';
-import { Acl, AclEntry, Feature, Features, Metadata, Thing } from '../../src/model/things.model';
+import { Feature, Features, Metadata, Thing } from '../../src/model/things.model';
 
 const aDefinition = ['aDefinition', 'aSecondOne'];
 const anotherDefinition = ['anotherDefinition'];
