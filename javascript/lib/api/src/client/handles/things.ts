@@ -13,15 +13,15 @@
 
 /* tslint:disable:no-duplicate-string */
 import { GenericResponse, PutResponse } from '../../model/response';
-import { Acl, AclEntry, Thing } from '../../model/things.model';
+import { Thing } from '../../model/things.model';
 import { FieldsOptions, GetThingsOptions, MatchOptions, DefaultGetThingsOptions } from '../../options/request.options';
 import { RequestSender, RequestSenderFactory } from '../request-factory/request-sender';
-import { HttpThingsHandleV1, HttpThingsHandleV2, WebSocketThingsHandle } from './things.interfaces';
+import { HttpThingsHandle, WebSocketThingsHandle } from './things.interfaces';
 
 /**
  * Handle to send Things requests.
  */
-export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHandleV1, HttpThingsHandleV2 {
+export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHandle {
 
   protected constructor(protected readonly requestFactory: RequestSender) {
   }
@@ -67,26 +67,6 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
 
   public getPolicyId(thingId: string, options?: MatchOptions): Promise<string> {
     return this.getStringAtPath(thingId, 'policyId', options);
-  }
-
-  public getAcl(thingId: string, options?: MatchOptions): Promise<Acl> {
-    return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
-      parser: Acl.fromObject,
-      id: thingId,
-      path: 'acl',
-      requestOptions: options
-    });
-  }
-
-  public getAclEntry(thingId: string, authorizationSubject: string, options?: MatchOptions): Promise<AclEntry> {
-    return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
-      parser: o => AclEntry.fromObject(o, authorizationSubject),
-      id: thingId,
-      path: `acl/${authorizationSubject}`,
-      requestOptions: options
-    });
   }
 
   public getDefinition(thingId: string, options?: MatchOptions): Promise<string> {
@@ -178,28 +158,6 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
       path: 'policyId',
       requestOptions: options,
       payload: policyId
-    });
-  }
-
-  public putAcl(thingId: string, acl: Acl, options?: MatchOptions): Promise<PutResponse<Acl>> {
-    return this.requestFactory.fetchPutRequest({
-      verb: 'PUT',
-      parser: o => Acl.fromObject(o),
-      id: thingId,
-      path: 'acl',
-      requestOptions: options,
-      payload: Acl.toObject(acl)
-    });
-  }
-
-  public putAclEntry(thingId: string, aclEntry: AclEntry, options?: MatchOptions): Promise<PutResponse<AclEntry>> {
-    return this.requestFactory.fetchPutRequest({
-      verb: 'PUT',
-      parser: o => AclEntry.fromObject(o, aclEntry.id),
-      id: thingId,
-      path: `acl/${aclEntry.id}`,
-      requestOptions: options,
-      payload: aclEntry.toObject()
     });
   }
 

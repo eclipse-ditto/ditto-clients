@@ -14,8 +14,8 @@
 import { HttpHelper as H } from './http.helper';
 
 describe('Http Messages Handle', () => {
-  const handle = H.thingsClientV2.getMessagesHandle();
-  const errorHandle = H.errorThingsClientV2.getMessagesHandle();
+  const handle = H.thingsClient.getMessagesHandle();
+  const errorHandle = H.errorThingsClient.getMessagesHandle();
   const baseRequest = `things/${H.thing.thingId}`;
   const messageSubject = 'Subject!';
   const message = 'Hello :)';

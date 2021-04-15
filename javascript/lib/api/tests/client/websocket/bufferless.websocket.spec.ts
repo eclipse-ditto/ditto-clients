@@ -51,7 +51,6 @@ describe('WebSocket Resilience Handler without buffer', () => {
       .withTls()
       .withDomain(H.url)
       .withAuthProvider(H.basicAuthProvider(H.testName, H.password))
-      .apiVersion2()
       .withoutBuffer()
       .liveChannel()
       .withStateHandler(stateTracker)

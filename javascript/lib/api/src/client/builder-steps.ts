@@ -23,7 +23,6 @@ import { ApiVersion } from '../model/ditto-protocol';
 
 export {
   AbstractBuilder,
-  ApiVersionStep,
   AuthenticationStep,
   BuildStep,
   CustomBuilderContext,
@@ -47,19 +46,18 @@ interface BuildStep {
 
 /**
  * Interface to choose which protocol to use.
- * @param <T> - type of API 1 Build steps.
- * @param <U> - type of API 2 Build steps.
+ * @param <U> - type of build steps.
  */
-interface ProtocolStep<T extends BuildStep, U extends BuildStep> extends BuildStep {
+interface ProtocolStep<U extends BuildStep> extends BuildStep {
   /**
    * Use with TLS (e.g. wss:// or https://).
    */
-  withTls(): EnvironmentStep<T, U>;
+  withTls(): EnvironmentStep<U>;
 
   /**
    * Use without TLS (e.g. ws:// or http://).
    */
-  withoutTls(): EnvironmentStep<T, U>;
+  withoutTls(): EnvironmentStep<U>;
 }
 
 /**
@@ -67,14 +65,14 @@ interface ProtocolStep<T extends BuildStep, U extends BuildStep> extends BuildSt
  * @param <T> - type of API 1 Build steps.
  * @param <U> - type of API 2 Build steps.
  */
-interface EnvironmentStep<T extends BuildStep, U extends BuildStep> extends BuildStep {
+interface EnvironmentStep<U extends BuildStep> extends BuildStep {
 
   /**
    * Sets a custom path for the api endpoint (optional step)
    *
    * @param path custom ditto api path, e.g. /custom - will be used instead of the default /api
    */
-  withCustomPath(path: string): EnvironmentStep<T, U>;
+  withCustomPath(path: string): EnvironmentStep<U>;
 
   /**
    * Sets a custom domain to use for requests.
@@ -82,44 +80,21 @@ interface EnvironmentStep<T extends BuildStep, U extends BuildStep> extends Buil
    * @param domain - The domain where Ditto is hosted, e.g. ditto.eclipse.org, localhost:8080, ...
    * @returns The next step to take
    */
-  withDomain(domain: string): AuthenticationStep<T, U>;
+  withDomain(domain: string): AuthenticationStep<U>;
 }
 
 /**
  * Interface to select the authentication type and credentials to use for requests.
- * @param <T> - type of API 1 Build steps.
  * @param <U> - type of API 2 Build steps.
  */
-interface AuthenticationStep<T extends BuildStep, U extends BuildStep> extends BuildStep {
+interface AuthenticationStep<U extends BuildStep> extends BuildStep {
   /**
    * Sets the auth providers for the client.
    *
    * @param authProvider The authentication to use.
    * @param additionalAuthProviders Additional auth providers to use.
    */
-  withAuthProvider(authProvider: AuthProvider, ...additionalAuthProviders: AuthProvider[]): ApiVersionStep<T, U>;
-}
-
-/**
- * Interface to select the API version to use for requests.
- * @param <T> - type of API 1 Build steps.
- * @param <U> - type of API 2 Build steps.
- */
-interface ApiVersionStep<T extends BuildStep, U extends BuildStep> extends BuildStep {
-
-  /**
-   * Sets the API version to 1.
-   *
-   * @returns The next step to take
-   */
-  apiVersion1(): T;
-
-  /**
-   * Sets the API version to 2.
-   *
-   * @returns The next step to take
-   */
-  apiVersion2(): U;
+  withAuthProvider(authProvider: AuthProvider, ...additionalAuthProviders: AuthProvider[]): U;
 }
 
 /**
@@ -128,7 +103,6 @@ interface ApiVersionStep<T extends BuildStep, U extends BuildStep> extends Build
 // tslint:disable-next-line:no-empty-interface
 interface CustomBuilderContext {
 }
-
 
 /**
  * @param <R> - Type of the request sender builder.
@@ -217,42 +191,38 @@ interface CustomSearchHandleStep<R, H extends SearchHandle> extends BuildStep {
 /**
  * Abstract implementation of the relevant builder steps that are probably the same for all builder implementations.
  */
-abstract class AbstractBuilder<T extends BuildStep, U extends BuildStep> implements ProtocolStep<T, U>, EnvironmentStep<T, U>,
-  AuthenticationStep<T, U>, ApiVersionStep<T, U> {
+abstract class AbstractBuilder<U extends BuildStep> implements ProtocolStep<U>, EnvironmentStep<U>, AuthenticationStep<U> {
   protected domain!: string;
   protected customPath?: string;
-  protected apiVersion!: ApiVersion;
+  protected apiVersion: ApiVersion = ApiVersion.V2;
   protected authProviders!: AuthProvider[];
   protected tls!: boolean;
 
 
-  withTls(): EnvironmentStep<T, U> {
+  withTls(): EnvironmentStep<U> {
     this.tls = true;
     return this;
   }
 
-  withoutTls(): EnvironmentStep<T, U> {
+  withoutTls(): EnvironmentStep<U> {
     this.tls = false;
     return this;
   }
 
-  withCustomPath(path: string): EnvironmentStep<T, U> {
+  withCustomPath(path: string): EnvironmentStep<U> {
     this.customPath = path;
     return this;
   }
 
-  withDomain(url: string): AuthenticationStep<T, U> {
+  withDomain(url: string): AuthenticationStep<U> {
     this.domain = url;
     return this;
   }
 
-  withAuthProvider(authProvider: AuthProvider, ...additionalAuthProviders: AuthProvider[]):
-    ApiVersionStep<T, U> {
+  withAuthProvider(authProvider: AuthProvider, ...additionalAuthProviders: AuthProvider[]): U {
     this.authProviders = [authProvider, ...additionalAuthProviders];
-    return this;
+    return this.finalize();
   }
 
-  abstract apiVersion1(): T;
-
-  abstract apiVersion2(): U;
+  abstract finalize(): U;
 }
