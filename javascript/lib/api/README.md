@@ -74,8 +74,6 @@ client = builder
   // Which auth provider to use. E.g. for basic auth there are different versions
   // depending on the client implementation. With the node client it might look like this:
   .withAuthProvider(NodeHttpBasicAuth.newInstance(username, password))
-  // select the API version of Eclipse Ditto that is used
-  .apiVersion2()
   // build it
   .build()
 ```
@@ -94,8 +92,6 @@ client = builder
   // Which auth provider to use. E.g. for basic auth there are different versions
   // depending on the client implementation. With the node client it might look like this:
   .withAuthProvider(NodeWebSocketBasicAuth.newInstance(username, password))
-  // select the API version of Eclipse Ditto that is used
-  .apiVersion2()
   // You can enable a local buffer of a specific size to handle backpressure and
   // connection problems.
   .withBuffer(15) // or withoutBuffer()

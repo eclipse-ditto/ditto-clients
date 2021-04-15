@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { HttpThingsHandle, HttpThingsHandleV1, HttpThingsHandleV2 } from './handles/things.interfaces';
+import { HttpThingsHandle } from './handles/things.interfaces';
 import { FeaturesHandle } from './handles/features.interfaces';
 import { DefaultHttpMessagesHandle, HttpMessagesHandle } from './handles/messages-http';
 import { DefaultSearchHandle, SearchHandle } from './handles/search';
@@ -22,7 +22,7 @@ import { DefaultThingsHandle } from './handles/things';
 import { DefaultFeaturesHandle } from './handles/features';
 import { CustomBuilderContext } from './builder-steps';
 
-export interface DittoHttpClient<T extends HttpThingsHandle> extends DittoClient<T, FeaturesHandle> {
+export interface DittoHttpClient extends DittoClient<HttpThingsHandle, FeaturesHandle> {
 
   /**
    * Builds a handle to handle Messages requests.
@@ -38,19 +38,6 @@ export interface DittoHttpClient<T extends HttpThingsHandle> extends DittoClient
    */
   getSearchHandle(customBuildContext?: CustomBuilderContext): SearchHandle;
 
-}
-
-export interface DittoHttpClientHandles extends DittoClientHandles<HttpRequestSenderBuilder> {
-  thingsHandle?: (requestSenderBuilder: HttpRequestSenderBuilder, customBuildContext?: CustomBuilderContext) => HttpThingsHandle;
-  messagesHandle?: (requestSenderBuilder: HttpRequestSenderBuilder, customBuildContext?: CustomBuilderContext) => HttpMessagesHandle;
-  searchHandle?: (requestSenderBuilder: HttpRequestSenderBuilder, customBuildContext?: CustomBuilderContext) => SearchHandle;
-}
-
-export interface DittoHttpClientV1 extends DittoHttpClient<HttpThingsHandleV1> {
-}
-
-export interface DittoHttpClientV2 extends DittoHttpClient<HttpThingsHandleV2> {
-
   /**
    * Builds a handle to handle Policies requests.
    *
@@ -59,17 +46,14 @@ export interface DittoHttpClientV2 extends DittoHttpClient<HttpThingsHandleV2> {
   getPoliciesHandle(customBuildContext?: CustomBuilderContext): PoliciesHandle;
 }
 
-export interface DittoHttpClientV1Handles extends DittoHttpClientHandles {
-  thingsHandle?: (requestSenderBuilder: HttpRequestSenderBuilder, customBuildContext?: CustomBuilderContext) => HttpThingsHandleV1;
-}
-export interface DittoHttpClientV2Handles extends DittoHttpClientHandles {
-  thingsHandle?: (requestSenderBuilder: HttpRequestSenderBuilder, customBuildContext?: CustomBuilderContext) => HttpThingsHandleV2;
+export interface DittoHttpClientHandles extends DittoClientHandles<HttpRequestSenderBuilder> {
+  thingsHandle?: (requestSenderBuilder: HttpRequestSenderBuilder, customBuildContext?: CustomBuilderContext) => HttpThingsHandle;
+  messagesHandle?: (requestSenderBuilder: HttpRequestSenderBuilder, customBuildContext?: CustomBuilderContext) => HttpMessagesHandle;
+  searchHandle?: (requestSenderBuilder: HttpRequestSenderBuilder, customBuildContext?: CustomBuilderContext) => SearchHandle;
   policiesHandle?: (requestSenderBuilder: HttpRequestSenderBuilder, customBuildContext?: CustomBuilderContext) => PoliciesHandle;
 }
 
-export type AllDittoHttpHandles = DittoHttpClientV1Handles & DittoHttpClientV2Handles;
-
-class DefaultHandles implements DittoHttpClientV1Handles, DittoHttpClientV2Handles {
+class DefaultHandles implements DittoHttpClientHandles {
   thingsHandle = DefaultThingsHandle.getInstance;
   featuresHandle = DefaultFeaturesHandle.getInstance;
   messagesHandle = DefaultHttpMessagesHandle.getInstance;
@@ -77,10 +61,10 @@ class DefaultHandles implements DittoHttpClientV1Handles, DittoHttpClientV2Handl
   searchHandle = DefaultSearchHandle.getInstance;
 }
 
-export class DefaultDittoHttpClient extends AbstractDittoClient<HttpRequestSenderBuilder, AllDittoHttpHandles>
-  implements DittoHttpClientV1, DittoHttpClientV2 {
+export class DefaultDittoHttpClient extends AbstractDittoClient<HttpRequestSenderBuilder, DittoHttpClientHandles>
+  implements DittoHttpClient {
 
-  private constructor(builder: HttpRequestSenderBuilder, handles: AllDittoHttpHandles) {
+  private constructor(builder: HttpRequestSenderBuilder, handles: DittoHttpClientHandles) {
     super(builder, handles);
   }
 
@@ -91,8 +75,8 @@ export class DefaultDittoHttpClient extends AbstractDittoClient<HttpRequestSende
    * @param customHandles - Custom handles to use instead of the default ones.
    * @return the DittoClient instance.
    */
-  public static getInstance(builder: HttpRequestSenderBuilder, customHandles?: AllDittoHttpHandles): DefaultDittoHttpClient {
-    const handles: AllDittoHttpHandles = Object.assign(new DefaultHandles(), customHandles);
+  public static getInstance(builder: HttpRequestSenderBuilder, customHandles?: DittoHttpClientHandles): DefaultDittoHttpClient {
+    const handles: DittoHttpClientHandles = Object.assign(new DefaultHandles(), customHandles);
     return new DefaultDittoHttpClient(builder, handles);
   }
 
@@ -100,8 +84,8 @@ export class DefaultDittoHttpClient extends AbstractDittoClient<HttpRequestSende
     return this.handles.featuresHandle!(this.builder, thingId, customBuildContext);
   }
 
-  public getThingsHandle(customBuildContext?: CustomBuilderContext): HttpThingsHandleV1 & HttpThingsHandleV2 {
-    return this.handles.thingsHandle!(this.builder, customBuildContext) as HttpThingsHandleV1 & HttpThingsHandleV2;
+  public getThingsHandle(customBuildContext?: CustomBuilderContext): HttpThingsHandle {
+    return this.handles.thingsHandle!(this.builder, customBuildContext);
   }
 
   public getMessagesHandle(customBuildContext?: CustomBuilderContext): HttpMessagesHandle {

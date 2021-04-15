@@ -37,7 +37,6 @@ const client = DittoNodeClient.newHttpClient()
             .withoutTls()
             .withDomain(domain)
             .withAuthProvider(NodeHttpBasicAuth.newInstance(username, password))
-            .apiVersion2()
             .build();
 ```
 To use a path other than `/api` to connect to ditto, the optional step `.withCustomPath('/path/to/api')` can be used.

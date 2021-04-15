@@ -17,8 +17,8 @@ import { HttpHelper as H } from './http.helper';
 
 describe('Http Search Handle', () => {
   const baseRequest = 'search/things';
-  const handle: SearchHandle = H.thingsClientV2.getSearchHandle();
-  const errorHandle: SearchHandle = H.errorThingsClientV2.getSearchHandle();
+  const handle: SearchHandle = H.thingsClient.getSearchHandle();
+  const errorHandle: SearchHandle = H.errorThingsClient.getSearchHandle();
 
   it('gets the Thing', () => {
     const response = new SearchThingsResponse([H.thing], -1);

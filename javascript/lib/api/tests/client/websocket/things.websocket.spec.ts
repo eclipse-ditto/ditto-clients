@@ -14,7 +14,7 @@
 /* tslint:disable:no-duplicate-string */
 import { PutResponse } from '../../../src/model/response';
 import {  DefaultFieldsOptions } from '../../../src/options/request.options';
-import { WebSocketHelper, WebSocketHelper as H } from './websocket.helper';
+import { WebSocketHelper as H } from './websocket.helper';
 
 describe('WebSocket Things Handle', () => {
   const handle = H.thingsClient.getThingsHandle();

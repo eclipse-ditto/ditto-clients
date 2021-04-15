@@ -47,7 +47,7 @@ import {
   ProtocolStep
 } from './builder-steps';
 
-export interface WebSocketBuilderInitialStep extends ProtocolStep<WebSocketBufferStep, WebSocketBufferStep> {
+export interface WebSocketBuilderInitialStep extends ProtocolStep<WebSocketBufferStep> {
 }
 
 export interface WebSocketBufferStep extends BuildStep {
@@ -98,7 +98,7 @@ export interface WebSocketBuildStepTwin extends WebSocketCustomHandlesBuildStep 
 /**
  * Implementation of all the methods to build a Context.
  */
-export class WebSocketClientBuilder extends AbstractBuilder<WebSocketBufferStep, WebSocketBufferStep>
+export class WebSocketClientBuilder extends AbstractBuilder<WebSocketBufferStep>
   implements WebSocketBufferStep, WebSocketChannelStep, WebSocketBuildStepLive,
     WebSocketBuildStepTwin {
 
@@ -122,13 +122,7 @@ export class WebSocketClientBuilder extends AbstractBuilder<WebSocketBufferStep,
     return new WebSocketClientBuilder(urlBuilder);
   }
 
-  apiVersion1(): WebSocketBufferStep {
-    this.apiVersion = ApiVersion.V1;
-    return this;
-  }
-
-  apiVersion2(): WebSocketBufferStep {
-    this.apiVersion = ApiVersion.V2;
+  finalize(): WebSocketBufferStep {
     return this;
   }
 

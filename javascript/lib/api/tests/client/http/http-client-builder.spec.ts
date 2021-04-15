@@ -50,29 +50,27 @@ const customUrlRequestSenderFactory = new HttpRequestSenderBuilder(requester, ex
 describe('HttpClientBuilder', () => {
   it('builds a new http client', () => {
     const expectedClient = DefaultDittoHttpClient.getInstance(requestSenderFactory);
-    const dittoHttpClientV2 = HttpClientBuilder.newBuilder(requester)
+    const dittoHttpClient = HttpClientBuilder.newBuilder(requester)
       .withTls()
       .withDomain('eclipse.ditto.org')
       .withAuthProvider(dummyAuthProvider1, dummyAuthProvider2)
-      .apiVersion2()
       .build();
 
-    expect(dittoHttpClientV2).toBeTruthy();
-    expect(dittoHttpClientV2).toEqual(expectedClient);
+    expect(dittoHttpClient).toBeTruthy();
+    expect(dittoHttpClient).toEqual(expectedClient);
   });
 
   it('builds a new http client with custom path', () => {
     const expectedClient = DefaultDittoHttpClient.getInstance(customUrlRequestSenderFactory);
-    const dittoHttpClientV2 = HttpClientBuilder.newBuilder(requester)
+    const dittoHttpClient = HttpClientBuilder.newBuilder(requester)
       .withTls()
       .withCustomPath('/secure-api')
       .withDomain('eclipse.ditto.org')
       .withAuthProvider(dummyAuthProvider1, dummyAuthProvider2)
-      .apiVersion2()
       .build();
 
-    expect(dittoHttpClientV2).toBeTruthy();
-    expect(dittoHttpClientV2).toEqual(expectedClient);
+    expect(dittoHttpClient).toBeTruthy();
+    expect(dittoHttpClient).toEqual(expectedClient);
   });
 
   it('passes custom handle factories through to the client', () => {
@@ -86,15 +84,14 @@ describe('HttpClientBuilder', () => {
         return dummySearchHandle;
       };
 
-    const dittoHttpClientV2 = HttpClientBuilder.newBuilder(requester)
+    const dittoHttpClient = HttpClientBuilder.newBuilder(requester)
       .withTls()
       .withDomain('eclipse.ditto.org')
       .withAuthProvider(dummyAuthProvider1, dummyAuthProvider2)
-      .apiVersion2()
       .withCustomSearchHandle(createCustomSearchHandle)
       .build();
 
-    expect(dittoHttpClientV2.getSearchHandle(dummyCustomContext)).toEqual(dummySearchHandle);
+    expect(dittoHttpClient.getSearchHandle(dummyCustomContext)).toEqual(dummySearchHandle);
     expect(called).toHaveBeenCalledWith(dummyCustomContext);
   });
 
