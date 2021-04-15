@@ -11,7 +11,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { GenericResponse, HttpRequester } from '@eclipse-ditto/ditto-javascript-client-api_1.0';
+import { GenericResponse } from '../../api/src/model/response';
+import { HttpRequester } from '../../api/src/client/request-factory/http-request-sender';
 import { IncomingMessage } from 'http';
 import * as https from 'https';
 import { ProxyAgent } from './proxy-settings';

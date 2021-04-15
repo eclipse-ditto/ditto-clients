@@ -12,7 +12,7 @@
  */
 
 import { GenericResponse, PutResponse } from '../../model/response';
-import { Acl, AclEntry, Thing } from '../../model/things.model';
+import { Thing } from '../../model/things.model';
 import { FieldsOptions, GetThingsOptions, MatchOptions } from '../../options/request.options';
 
 export interface ThingsHandle {
@@ -122,61 +122,6 @@ export interface HttpThingsHandle extends ThingsHandle {
    * @returns A Promise for a response containing the new Thing if provided by the response
    */
   putThing(thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>>;
-}
-
-export interface HttpThingsHandleV1 extends HttpThingsHandle {
-
-  /**
-   * Gets the Acl of a Thing.
-   *
-   * @param thingId - The ID of the Thing.
-   * @param options - Options to use for the request.
-   * @returns A Promise for the Acl
-   */
-  getAcl(thingId: string, options?: MatchOptions): Promise<Acl>;
-
-  /**
-   * Gets an AclEntry of a Thing.
-   *
-   * @param thingId - The ID of the Thing.
-   * @param authorizationSubject - The subject of the AclEntry to get.
-   * @param options - Options to use for the request.
-   * @returns A Promise for the AclEntry
-   */
-  getAclEntry(thingId: string, authorizationSubject: string, options?: MatchOptions): Promise<AclEntry>;
-
-  /**
-   * Deletes and AclEntry of a Thing.
-   *
-   * @param thingId - The ID of the Thing.
-   * @param authorizationSubject - The subject of the AclEntry to delete.
-   * @param options - Options to use for the request.
-   * @returns A Promise for the response
-   */
-  deleteAclEntry(thingId: string, authorizationSubject: string, options?: MatchOptions): Promise<GenericResponse>;
-
-  /**
-   * Updates the Acl of a Thing.
-   *
-   * @param thingId - The ID of the Thing.
-   * @param acl - The new Acl.
-   * @param options - Options to use for the request.
-   * @returns A Promise for the response
-   */
-  putAcl(thingId: string, acl: Acl, options?: MatchOptions): Promise<PutResponse<Acl>>;
-
-  /**
-   * Updates an AclEntry of a Thing.
-   *
-   * @param thingId - The ID of the Thing.
-   * @param aclEntry - The ID of the Thing.
-   * @param options - Options to use for the request.
-   * @returns A Promise for a response containing the new AclEntry if provided by the response
-   */
-  putAclEntry(thingId: string, aclEntry: AclEntry, options?: MatchOptions): Promise<PutResponse<AclEntry>>;
-}
-
-export interface HttpThingsHandleV2 extends HttpThingsHandle {
 
   /**
    * Gets the PolicyId of a Thing.

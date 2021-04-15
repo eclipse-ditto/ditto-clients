@@ -18,7 +18,7 @@ import {
 import { MockWebSocketStates, MockWebSocketStateTracker, WebSocketHelper as H } from './websocket.helper';
 import { DefaultMockWebSocket } from './websocket.mock';
 import { DittoWebSocketLiveClient } from '../../../src/client/ditto-client-websocket';
-import { removeDisabledFailures } from 'tslint';
+import { jest } from '@jest/globals';
 
 describe('WebSocket Resilience Handler without buffer', () => {
   jest.setTimeout(5000); // we need to tell jest, that it should also wait on promises ... default is 0 ms
@@ -51,7 +51,6 @@ describe('WebSocket Resilience Handler without buffer', () => {
       .withTls()
       .withDomain(H.url)
       .withAuthProvider(H.basicAuthProvider(H.testName, H.password))
-      .apiVersion2()
       .withoutBuffer()
       .liveChannel()
       .withStateHandler(stateTracker)

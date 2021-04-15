@@ -11,15 +11,17 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { WebSocketImplementationBuilderUrl } from '../../api/src/client/request-factory/websocket-request-handler';
+import {
+  ResponseHandler,
+  WebSocketImplementation,
+  WebSocketImplementationBuilderHandler
+} from '../../api/src/client/request-factory/resilience/websocket-resilience-interfaces';
 import {
   authenticateWithUrl,
   AuthProvider,
-  DittoURL,
-  ResponseHandler,
-  WebSocketImplementation,
-  WebSocketImplementationBuilderHandler,
-  WebSocketImplementationBuilderUrl
-} from '@eclipse-ditto/ditto-javascript-client-api_1.0';
+  DittoURL
+} from '../../api/src/auth/auth-provider';
 
 /**
  * Browser implementation of a web socket requester.

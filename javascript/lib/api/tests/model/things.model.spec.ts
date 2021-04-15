@@ -14,7 +14,7 @@
 /* tslint:disable:no-duplicate-string */
 
 import { PutResponse, SearchThingsResponse } from '../../src/model/response';
-import { Acl, AclEntry, Feature, Features, Metadata, Thing } from '../../src/model/things.model';
+import { Feature, Features, Metadata, Thing } from '../../src/model/things.model';
 
 const aDefinition = ['aDefinition', 'aSecondOne'];
 const anotherDefinition = ['anotherDefinition'];
@@ -26,9 +26,6 @@ const featuresObj = { additionalProp1: aFeatureObj, additionalProp2: anotherFeat
 const anAttribute = 7;
 const anotherAttribute = 'ABS';
 const attributes = { anAttribute, anotherAttribute };
-const anAclEntryObj = { READ: true, WRITE: true, ADMINISTRATE: true };
-const anotherAclEntryObj = { READ: false, WRITE: false, ADMINISTRATE: false };
-const aclObj = { ID: anAclEntryObj, AnotherID: anotherAclEntryObj };
 const metadataObject = {
   features: { lamp: { properties: { color: {} } } }, attributes: { foo: 'bar', bar: 'foo' }
 };
@@ -41,8 +38,7 @@ const thingObj = {
   _modified: '08042019',
   _created: '2017-06-01T00:01:57Z',
   definition: 'example:test:definition',
-  _metadata: metadataObject,
-  acl: aclObj
+  _metadata: metadataObject
 };
 
 const thingObjWithoutMetadata = {
@@ -53,8 +49,7 @@ const thingObjWithoutMetadata = {
   features: featuresObj,
   _revision: 0,
   _modified: '08042019',
-  _created: '2017-06-01T00:01:57Z',
-  acl: aclObj
+  _created: '2017-06-01T00:01:57Z'
 };
 
 const responseObj = { items: [thingObj], nextPageOffset: 0 };
@@ -64,9 +59,6 @@ const aFeature = new Feature('additionalProp1', aDefinition, someProperties);
 const anotherFeature = new Feature('additionalProp2', anotherDefinition, moreProperties);
 const typedFeatureObject = { additionalProp1: aFeature, additionalProp2: anotherFeature };
 const features = typedFeatureObject;
-const anAclEntry = new AclEntry('ID', true, true, true);
-const anotherAclEntry = new AclEntry('AnotherID', false, false, false);
-const acl = { ID: anAclEntry, AnotherID: anotherAclEntry };
 const metadata = new Metadata({ foo: 'bar', bar: 'foo' }, { lamp: new Feature('lamp', undefined, { color: {} }) });
 const thing = new Thing('Testspace:Testthing',
   'PolicyId',
@@ -74,7 +66,6 @@ const thing = new Thing('Testspace:Testthing',
   features,
   0,
   '08042019',
-  acl,
   'example:test:definition',
   metadata,
   '2017-06-01T00:01:57Z');
@@ -131,40 +122,6 @@ describe('Metadata', () => {
 
 });
 
-describe('AclEntry', () => {
-  it('parses an object', () => {
-    expect(AclEntry.fromObject(anAclEntryObj, 'ID')).toEqual(anAclEntry);
-    expect(AclEntry.fromObject(anAclEntryObj, 'ID').equals(anAclEntry)).toBe(true);
-  });
-  it('builds an object', () => {
-    expect(anAclEntry.toObject()).toEqual(anAclEntryObj);
-  });
-  it('returns its content', () => {
-    expect(anAclEntry.id).toEqual('ID');
-    expect(anAclEntry.read).toEqual(true);
-    expect(anAclEntry.write).toEqual(true);
-    expect(anAclEntry.administrate).toEqual(true);
-  });
-  it('handles an undefined object', () => {
-    expect(AclEntry.fromObject(undefined, '')).toEqual(undefined);
-  });
-});
-describe('Acl', () => {
-  it('parses an object', () => {
-    expect(Acl.fromObject(aclObj)).toEqual(acl);
-    expect(Acl.equals(Acl.fromObject(aclObj), acl)).toBe(true);
-  });
-  it('builds an object', () => {
-    expect(Acl.toObject(acl)).toEqual(aclObj);
-  });
-  it('returns its content', () => {
-    expect(acl).toEqual({ [anAclEntry.id]: anAclEntry, [anotherAclEntry.id]: anotherAclEntry });
-  });
-  it('handles an undefined object', () => {
-    expect(Acl.fromObject(undefined)).toEqual(undefined);
-  });
-});
-
 describe('Thing', () => {
   it('parses an object', () => {
     expect(Thing.fromObject(thingObj)).toEqual(thing);
@@ -182,7 +139,6 @@ describe('Thing', () => {
     expect(thing.policyId).toEqual('PolicyId');
     expect(thing._revision).toEqual(0);
     expect(thing.name).toEqual('Testthing');
-    expect(thing.acl).toEqual(acl);
     expect(thing.definition).toEqual('example:test:definition');
     expect(thing._created).toEqual('2017-06-01T00:01:57Z');
   });

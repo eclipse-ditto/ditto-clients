@@ -3,7 +3,7 @@ This module is a TypeScript library to facilitate working the the REST-like HTTP
 
 ### How to use it
 Install `@eclipse-ditto/ditto-javascript-client-dom` for the DOM (browser) implementation, 
-`@eclipse-ditto/ditto-javascript-client-node` for the NodeJS implementation, or `@eclipse/ditto-javascript-client-api-ditto` for
+`@eclipse-ditto/ditto-javascript-client-node` for the NodeJS implementation, or `@eclipse-ditto/ditto-javascript-client-api-ditto` for
 the API and build your own client implementation.
 
 More information can be found in the descriptions of the subpackages:
@@ -52,8 +52,7 @@ subprojects (`api`, `dom` and `node`) but still are able to control dependencies
 build processes or release processes globally.
 
 Furthermore we use [rollup.js](https://rollupjs.org/) for providing multiple
-module types of the packages, e.g. the `api` will be published as IIFE,
-ES Module and CommonJS module.
+module types of the packages, e.g. the `api` will be published as ES6 Module and CommonJS module.
 
 For automatically generating barrel files, [barrelsby](https://github.com/bencoveney/barrelsby)
 is used during the build process.

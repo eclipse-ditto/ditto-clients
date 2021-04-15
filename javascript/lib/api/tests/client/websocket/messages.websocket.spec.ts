@@ -15,6 +15,7 @@
 import { ProtocolResponseValue } from '../../../src/client/request-factory/websocket-request-handler';
 import { EventsHelper as H } from './events.helper';
 import { GenericResponse } from '../../../src/model/response';
+import { jest } from '@jest/globals';
 
 const testWithoutResponse: (method: () => void, request: Request) => Promise<void> = (method: () => void, request: Request) => {
   return new Promise<void>(resolve => {

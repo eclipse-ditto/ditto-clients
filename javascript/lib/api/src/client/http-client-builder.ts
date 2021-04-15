@@ -11,14 +11,12 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { HttpThingsHandle, HttpThingsHandleV1, HttpThingsHandleV2 } from './handles/things.interfaces';
+import { HttpThingsHandle } from './handles/things.interfaces';
 import { HttpRequester, HttpRequestSenderBuilder } from './request-factory/http-request-sender';
 import {
-  AllDittoHttpHandles,
   DefaultDittoHttpClient,
   DittoHttpClient,
-  DittoHttpClientV1,
-  DittoHttpClientV2
+  DittoHttpClientHandles
 } from './ditto-client-http';
 import { HttpMessagesHandle } from './handles/messages-http';
 import { PoliciesHandle } from './handles/policies';
@@ -28,7 +26,6 @@ import { AuthProvider, DittoURL, ImmutableURL } from '../auth/auth-provider';
 import { ApiVersion } from '../model/ditto-protocol';
 import {
   AbstractBuilder,
-  ApiVersionStep,
   AuthenticationStep,
   BuildStep,
   CustomBuilderContext,
@@ -41,10 +38,10 @@ import {
   ProtocolStep
 } from './builder-steps';
 
-export interface HttpBuilderInitialStep extends ProtocolStep<BuildStepApi1, BuildStepApi2> {
+export interface HttpBuilderInitialStep extends ProtocolStep<HttpClientBuildStep> {
 }
 
-export interface HttpBuildStep<H extends HttpThingsHandle, C extends DittoHttpClient<H>> extends BuildStep {
+export interface HttpBuildStep<C extends DittoHttpClient> extends BuildStep {
 
   /**
    * Builds a DittoClient for the selected API.
@@ -59,8 +56,8 @@ export interface HttpBuildStep<H extends HttpThingsHandle, C extends DittoHttpCl
  * @param <H> - Type of the things handle.
  * @param <C> - Type of the client.
  */
-export interface HttpCustomHandlesBuildStep<H extends HttpThingsHandle, C extends DittoHttpClient<H>>
-  extends HttpBuildStep<H, C>,
+export interface HttpCustomHandlesBuildStep<H extends HttpThingsHandle, C extends DittoHttpClient>
+  extends HttpBuildStep<C>,
     BuildStep,
     CustomThingsHandleStep<HttpRequestSenderBuilder, H>,
     CustomFeaturesHandleStep<HttpRequestSenderBuilder, FeaturesHandle>,
@@ -69,25 +66,19 @@ export interface HttpCustomHandlesBuildStep<H extends HttpThingsHandle, C extend
     CustomSearchHandleStep<HttpRequestSenderBuilder, SearchHandle> {
 }
 
-/**
- * Interface to build the Context.
- */
-export interface BuildStepApi1 extends HttpCustomHandlesBuildStep<HttpThingsHandleV1, DittoHttpClientV1>, BuildStep {
-}
 
 /**
  * Interface to build the Context.
  */
-export interface BuildStepApi2 extends HttpCustomHandlesBuildStep<HttpThingsHandleV2, DittoHttpClientV2>, BuildStep {
+export interface HttpClientBuildStep extends HttpCustomHandlesBuildStep<HttpThingsHandle, DittoHttpClient> {
 }
 
 /**
  * Implementation of all the methods to build a Context.
  */
-export class HttpClientBuilder extends AbstractBuilder<BuildStepApi1, BuildStepApi2> implements HttpBuilderInitialStep,
-  EnvironmentStep<BuildStepApi1, BuildStepApi2>, ApiVersionStep<BuildStepApi1, BuildStepApi2>,
-  AuthenticationStep<BuildStepApi1, BuildStepApi2>, BuildStepApi1, BuildStepApi2 {
-  private customHandles: AllDittoHttpHandles = {};
+export class HttpClientBuilder extends AbstractBuilder<HttpClientBuildStep> implements HttpBuilderInitialStep,
+  EnvironmentStep<HttpClientBuildStep>, AuthenticationStep<HttpClientBuildStep>, HttpClientBuildStep {
+  private customHandles: DittoHttpClientHandles = {};
 
   private constructor(private readonly requester: HttpRequester) {
     super();
@@ -102,13 +93,7 @@ export class HttpClientBuilder extends AbstractBuilder<BuildStepApi1, BuildStepA
     return new HttpClientBuilder(requester);
   }
 
-  apiVersion1(): BuildStepApi1 {
-    this.apiVersion = ApiVersion.V1;
-    return this;
-  }
-
-  apiVersion2(): BuildStepApi2 {
-    this.apiVersion = ApiVersion.V2;
+  finalize(): HttpClientBuildStep {
     return this;
   }
 

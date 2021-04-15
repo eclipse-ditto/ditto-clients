@@ -19,8 +19,8 @@ import { Features } from '../../../src/model/things.model';
 
 describe('Http Features Handle', () => {
   const baseRequest = `things/${H.thing.thingId}/features`;
-  const handle: FeaturesHandle = H.thingsClientV2.getFeaturesHandle(H.thing.thingId);
-  const errorHandle: FeaturesHandle = H.errorThingsClientV2.getFeaturesHandle(H.thing.thingId);
+  const handle: FeaturesHandle = H.thingsClient.getFeaturesHandle(H.thing.thingId);
+  const errorHandle: FeaturesHandle = H.errorThingsClient.getFeaturesHandle(H.thing.thingId);
 
   it('gets Features', () => {
     return H.test({

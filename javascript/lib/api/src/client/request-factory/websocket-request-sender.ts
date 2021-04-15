@@ -26,7 +26,7 @@ export class WebSocketRequestSender extends RequestSender {
   constructor(private readonly requester: WebSocketRequestHandler,
               public readonly group: string,
               public readonly channel: 'twin' | 'live',
-              public readonly apiVersion: 1 | 2) {
+              public readonly apiVersion: 2) {
     super();
   }
 
