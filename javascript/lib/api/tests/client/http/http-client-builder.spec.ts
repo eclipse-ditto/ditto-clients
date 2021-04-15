@@ -19,6 +19,7 @@ import { CustomBuilderContext } from '../../../src/client/builder-steps';
 import { HttpRequestSenderBuilder } from '../../../src/client/request-factory/http-request-sender';
 import { DefaultDittoHttpClient } from '../../../src/client/ditto-client-http';
 import { GenericResponse } from '../../../src/model/response';
+import { jest } from '@jest/globals';
 
 class DummyAuthProvider implements AuthProvider {
 

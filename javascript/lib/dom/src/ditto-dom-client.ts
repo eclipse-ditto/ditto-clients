@@ -11,14 +11,10 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {
-  HttpBuilderInitialStep,
-  HttpClientBuilder,
-  WebSocketBuilderInitialStep,
-  WebSocketClientBuilder
-} from '@eclipse-ditto/ditto-javascript-client-api_1.0';
 import { FetchRequester } from './fetch-http';
 import { FetchWebSocketBuilder } from './fetch-websocket';
+import { HttpBuilderInitialStep, HttpClientBuilder } from '../../api/src/client/http-client-builder';
+import { WebSocketBuilderInitialStep, WebSocketClientBuilder } from '../../api/src/client/websocket-client-builder';
 
 /**
  * Starting point to build clients that can be used to get handles for browsers.

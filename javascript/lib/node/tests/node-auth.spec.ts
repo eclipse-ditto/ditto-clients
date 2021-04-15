@@ -11,14 +11,9 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-
-import {
-  BasicAuth,
-  DefaultTokenSupplier,
-  DittoURL,
-  ImmutableURL,
-  TokenSupplier
-} from '@eclipse-ditto/ditto-javascript-client-api_1.0';
+import { BasicAuth } from '../../api/src/auth/basic-auth';
+import { DefaultTokenSupplier, TokenSupplier } from '../../api/src/auth/bearer-auth';
+import { DittoURL, ImmutableURL } from '../../api/src/auth/auth-provider';
 import { NodeBase64Encoder, NodeHttpBasicAuth, NodeHttpBearerAuth, NodeWebSocketBasicAuth } from '../src/node-auth';
 
 const USERNAME = 'ditto';

@@ -14,7 +14,7 @@
 import { ProtocolResponseValue } from '../../../src/client/request-factory/websocket-request-handler';
 import { EventsHelper as H } from './events.helper';
 import { Features } from '../../../src/model/things.model';
-
+import { jest } from '@jest/globals';
 
 describe('WebSocket Commands Handle', () => {
   jest.setTimeout(5000); // we need to tell jest, that it should also wait on promises ... default is 0 ms
@@ -156,6 +156,7 @@ describe('WebSocket Commands Handle', () => {
     await handle.requestCommands();
     await handle.stopCommands();
     await handle.stopCommands();
-    expect(() => handle.subscribeToAllCommands(() => {})).toThrowError();
+    expect(() => handle.subscribeToAllCommands(() => {
+    })).toThrowError();
   });
 });
