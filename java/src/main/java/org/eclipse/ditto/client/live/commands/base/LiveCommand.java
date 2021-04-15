@@ -15,7 +15,6 @@ package org.eclipse.ditto.client.live.commands.base;
 import javax.annotation.Nonnull;
 
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.model.things.WithThingId;
 import org.eclipse.ditto.signals.commands.base.Command;
 
 /**
@@ -28,7 +27,7 @@ import org.eclipse.ditto.signals.commands.base.Command;
  *
  * @since 2.0.0
  */
-public interface LiveCommand<T extends Command<T>, B extends LiveCommandAnswerBuilder> extends Command<T>, WithThingId {
+public interface LiveCommand<T extends Command<T>, B extends LiveCommandAnswerBuilder> extends Command<T> {
 
     /**
      * Returns a builder for an answer to this command which could include a {@code CommandResponse}s or an {@code

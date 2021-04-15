@@ -214,7 +214,7 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
 
         return ThingAcknowledgementFactory.newAcknowledgement(
                 LIVE_RESPONSE,
-                commandResponse.getThingEntityId(),
+                commandResponse.getEntityId(),
                 commandResponse.getHttpStatus(),
                 liveResponseAckHeaders,
                 payload.orElse(null));
@@ -650,7 +650,7 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
     private void assertFeatureDeletedEmitted() {
         final FeatureDeleted featureDeleted = expectMsgClass(FeatureDeleted.class);
         assertThat(featureDeleted.getDittoHeaders().getChannel()).contains(TopicPath.Channel.LIVE.getName());
-        assertThat((CharSequence) featureDeleted.getThingEntityId()).isEqualTo(THING_ID);
+        assertThat((CharSequence) featureDeleted.getEntityId()).isEqualTo(THING_ID);
     }
 
     private void testMessageSending(final MessageSender.SetSubject<Object> sender,

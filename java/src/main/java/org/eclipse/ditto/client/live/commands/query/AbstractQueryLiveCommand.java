@@ -50,8 +50,8 @@ abstract class AbstractQueryLiveCommand<T extends LiveCommand<T, B> & ThingQuery
     }
 
     @Override
-    public ThingId getThingEntityId() {
-        return thingQueryCommand.getThingEntityId();
+    public ThingId getEntityId() {
+        return thingQueryCommand.getEntityId();
     }
 
     @Override

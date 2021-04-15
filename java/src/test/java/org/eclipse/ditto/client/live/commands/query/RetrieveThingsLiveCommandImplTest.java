@@ -43,7 +43,7 @@ public final class RetrieveThingsLiveCommandImplTest {
 
     private static List<ThingId> thingIds;
 
-    private RetrieveThings retrieveThingTwinCommand;
+    private RetrieveThings retrieveThingsTwinCommand;
     private RetrieveThingsLiveCommand underTest;
 
     @BeforeClass
@@ -56,11 +56,11 @@ public final class RetrieveThingsLiveCommandImplTest {
 
     @Before
     public void setUp() {
-        retrieveThingTwinCommand = RetrieveThings.getBuilder(thingIds)
+        retrieveThingsTwinCommand = RetrieveThings.getBuilder(thingIds)
                 .selectedFields(TestConstants.JSON_FIELD_SELECTOR_ATTRIBUTES)
                 .dittoHeaders(DittoHeaders.empty())
                 .build();
-        underTest = RetrieveThingsLiveCommandImpl.of(retrieveThingTwinCommand);
+        underTest = RetrieveThingsLiveCommandImpl.of(retrieveThingsTwinCommand);
     }
 
     @Test
@@ -74,7 +74,7 @@ public final class RetrieveThingsLiveCommandImplTest {
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(RetrieveThingsLiveCommandImpl.class)
                 .withRedefinedSuperclass()
-                .withIgnoredFields("thingQueryCommand", "thingIds", "namespace")
+                .withIgnoredFields("thingIds", "namespace")
                 .verify();
     }
 
@@ -100,12 +100,11 @@ public final class RetrieveThingsLiveCommandImplTest {
     @Test
     public void getRetrieveThingsLiveCommandReturnsExpected() {
         assertThat(underTest)
-                .withType(retrieveThingTwinCommand.getType())
-                .withDittoHeaders(retrieveThingTwinCommand.getDittoHeaders())
-//                .withId(retrieveThingTwinCommand.getEntityId()) // TODO TJ
-                .withManifest(retrieveThingTwinCommand.getManifest())
-                .withResourcePath(retrieveThingTwinCommand.getResourcePath());
-        assertThat(underTest.getThingEntityIds()).isEqualTo(retrieveThingTwinCommand.getEntityIds());
+                .withType(retrieveThingsTwinCommand.getType())
+                .withDittoHeaders(retrieveThingsTwinCommand.getDittoHeaders())
+                .withManifest(retrieveThingsTwinCommand.getManifest())
+                .withResourcePath(retrieveThingsTwinCommand.getResourcePath());
+        assertThat(underTest.getEntityIds()).isEqualTo(retrieveThingsTwinCommand.getEntityIds());
     }
 
     @Test
@@ -127,7 +126,7 @@ public final class RetrieveThingsLiveCommandImplTest {
         assertThat(underTest.toString())
                 .contains(underTest.getClass().getSimpleName())
                 .contains("command=")
-                .contains(retrieveThingTwinCommand.toString())
+                .contains(retrieveThingsTwinCommand.toString())
                 .contains("namespace=null");
     }
 

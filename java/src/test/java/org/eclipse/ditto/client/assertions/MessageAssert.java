@@ -58,7 +58,7 @@ public final class MessageAssert extends AbstractAssert<MessageAssert, Message<?
     }
 
     public MessageAssert hasThingId(final ThingId expectedThingId) {
-        return assertThatEqual(expectedThingId, actual.getThingEntityId(), "Thing identifier");
+        return assertThatEqual(expectedThingId, actual.getEntityId(), "Thing identifier");
     }
 
     public MessageAssert hasInitialPolicy() {

@@ -75,7 +75,7 @@ final class DeleteFeaturePropertyLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public DeleteFeaturePropertyResponse deleted() {
-            return DeleteFeaturePropertyResponse.of(command.getThingEntityId(), command.getFeatureId(),
+            return DeleteFeaturePropertyResponse.of(command.getEntityId(), command.getFeatureId(),
                     command.getPropertyPointer(),
                     command.getDittoHeaders());
         }
@@ -83,8 +83,8 @@ final class DeleteFeaturePropertyLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public ThingErrorResponse featurePropertyNotAccessibleError() {
-            return errorResponse(command.getThingEntityId(),
-                    FeaturePropertyNotAccessibleException.newBuilder(command.getThingEntityId(),
+            return errorResponse(command.getEntityId(),
+                    FeaturePropertyNotAccessibleException.newBuilder(command.getEntityId(),
                             command.getFeatureId(),
                             command.getPropertyPointer())
                             .dittoHeaders(command.getDittoHeaders())
@@ -94,8 +94,8 @@ final class DeleteFeaturePropertyLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public ThingErrorResponse featurePropertyNotModifiableError() {
-            return errorResponse(command.getThingEntityId(),
-                    FeaturePropertyNotModifiableException.newBuilder(command.getThingEntityId(),
+            return errorResponse(command.getEntityId(),
+                    FeaturePropertyNotModifiableException.newBuilder(command.getEntityId(),
                             command.getFeatureId(),
                             command.getPropertyPointer())
                             .dittoHeaders(command.getDittoHeaders())
@@ -109,7 +109,7 @@ final class DeleteFeaturePropertyLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public FeaturePropertyDeleted deleted() {
-            return FeaturePropertyDeleted.of(command.getThingEntityId(), command.getFeatureId(),
+            return FeaturePropertyDeleted.of(command.getEntityId(), command.getFeatureId(),
                     command.getPropertyPointer(), -1, Instant.now(), command.getDittoHeaders(), null);
         }
     }

@@ -54,7 +54,7 @@ final class CreateThingLiveCommandImpl
     }
 
     @Override
-    public ThingId getThingEntityId() {
+    public ThingId getEntityId() {
         return thing.getEntityId().orElse(null);
     }
 

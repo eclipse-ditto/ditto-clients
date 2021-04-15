@@ -19,6 +19,7 @@ import static org.eclipse.ditto.json.JsonFactory.newObjectBuilder;
 import static org.eclipse.ditto.json.JsonFactory.newPointer;
 import static org.junit.Assert.assertEquals;
 
+import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -410,7 +411,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
         // delete the Feature
         final Message<ThingEvent> featureDeleted =
                 MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders).payload(
-                        FeatureDeleted.of(thingId1, FEATURE_ID_1, 1, DittoHeaders.empty())).build();
+                        FeatureDeleted.of(thingId1, FEATURE_ID_1, 1, Instant.now(), DittoHeaders.empty(), null)).build();
 
         messaging.receiveEvent(featureDeleted);
 
@@ -464,8 +465,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
         final Message<ThingEvent> featurePropertyCreated =
                 MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders).payload(
                         FeaturePropertyCreated.of(thingId1, FEATURE_ID_1, fooPointer, JsonValue.of(fooValue),
-                                1,
-                                DittoHeaders.empty())).build();
+                                1, Instant.now(), DittoHeaders.empty(), null)).build();
 
         messaging.receiveEvent(featurePropertyCreated);
 
@@ -510,8 +510,8 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
         final Message<ThingEvent> featurePropertyModified =
                 MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders).payload(
                         FeaturePropertyModified.of(thingId3, FEATURE_ID_2, fooPointer, JsonValue.of(fooValue),
-                                1,
-                                DittoHeaders.empty())).build();
+                                1, Instant.now(),
+                                DittoHeaders.empty(), null)).build();
 
         messaging.receiveEvent(featurePropertyModified);
 
@@ -593,7 +593,8 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
         // change attributes
         final Message<ThingEvent> attributesModified =
                 MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders).payload(
-                        AttributesModified.of(thingId2, newAttributes, 1, DittoHeaders.empty())).build();
+                        AttributesModified.of(thingId2, newAttributes, 1, Instant.now(), DittoHeaders.empty(),
+                                null)).build();
 
         messaging.receiveEvent(attributesModified);
 
@@ -634,7 +635,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
         // modify the feature
         final Message<ThingEvent> featureModified =
                 MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders).payload(
-                        FeatureModified.of(thingId3, FEATURE2, 1, DittoHeaders.empty())).build();
+                        FeatureModified.of(thingId3, FEATURE2, 1, Instant.now(), DittoHeaders.empty(), null)).build();
 
         messaging.receiveEvent(featureModified);
 

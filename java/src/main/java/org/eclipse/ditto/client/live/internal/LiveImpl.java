@@ -52,13 +52,14 @@ import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.messages.KnownMessageSubjects;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.model.things.WithThingId;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.ProtocolFactory;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.Signal;
+import org.eclipse.ditto.signals.commands.base.Command;
 import org.eclipse.ditto.signals.commands.messages.MessageCommand;
 import org.eclipse.ditto.signals.commands.messages.MessageCommandResponse;
-import org.eclipse.ditto.signals.commands.things.ThingCommand;
 import org.eclipse.ditto.signals.events.base.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,8 +144,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                     streamingType,
                     subscriptionMessage,
                     streamingType.startAck(),
-                    completableFutureEvents,
-                    CommonManagementImpl::asThingMessage
+                    completableFutureEvents
             );
         });
 
@@ -345,7 +345,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                     .publish(ProtocolFactory.wrapAsJsonifiableAdaptable(adaptable).toJsonString());
         } else {
             // throw ClassCastException when called on signal of incorrect type
-            final ThingCommand<?> command = (ThingCommand<?>) PROTOCOL_ADAPTER.fromAdaptable(adaptable);
+            final Command<?> command = (Command<?>) PROTOCOL_ADAPTER.fromAdaptable(adaptable);
             handleLiveCommand(LiveCommandFactory.getInstance().getLiveCommand(command));
         }
     }
@@ -353,11 +353,11 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
     private void handleLiveCommand(final LiveCommand<?, ?> liveCommand) {
         boolean handled = false;
 
-        final ThingId thingId = liveCommand.getEntityId();
+        final Optional<ThingId> thingId = extractThingId(liveCommand);
         final Optional<JsonKey> featureIdFromResourcePath = getFeatureIdFromResourcePath(liveCommand);
-        if (featureIdFromResourcePath.isPresent()) {
+        if (thingId.isPresent() && featureIdFromResourcePath.isPresent()) {
             final String featureId = featureIdFromResourcePath.get().toString();
-            handled = getFeatureHandle(thingId, featureId)
+            handled = getFeatureHandle(thingId.get(), featureId)
                     .filter(h -> h instanceof LiveCommandProcessor)
                     .map(LiveCommandProcessor.class::cast)
                     .map(h -> h.processLiveCommand(liveCommand))
@@ -366,8 +366,8 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                     liveCommand.getType(), handled);
         }
 
-        if (!handled) {
-            handled = getThingHandle(thingId)
+        if (!handled && thingId.isPresent()) {
+            handled = getThingHandle(thingId.get())
                     .filter(h -> h instanceof LiveCommandProcessor)
                     .map(LiveCommandProcessor.class::cast)
                     .map(h -> h.processLiveCommand(liveCommand))
@@ -388,6 +388,12 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                     liveCommand.getType());
         }
 
+    }
+
+    private static Optional<ThingId> extractThingId(final LiveCommand<?, ?> liveCommand) {
+        return Optional.of(liveCommand)
+                .map(WithThingId.class::cast)
+                .map(WithThingId::getEntityId);
     }
 
     private Optional<JsonKey> getFeatureIdFromResourcePath(final LiveCommand<?, ?> liveCommand) {

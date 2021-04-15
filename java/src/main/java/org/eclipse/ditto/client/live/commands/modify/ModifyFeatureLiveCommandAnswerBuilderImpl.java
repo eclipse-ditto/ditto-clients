@@ -75,22 +75,22 @@ final class ModifyFeatureLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public ModifyFeatureResponse created() {
-            return ModifyFeatureResponse.created(command.getThingEntityId(), command.getFeature(),
+            return ModifyFeatureResponse.created(command.getEntityId(), command.getFeature(),
                     command.getDittoHeaders());
         }
 
         @Nonnull
         @Override
         public ModifyFeatureResponse modified() {
-            return ModifyFeatureResponse.modified(command.getThingEntityId(), command.getFeatureId(),
+            return ModifyFeatureResponse.modified(command.getEntityId(), command.getFeatureId(),
                     command.getDittoHeaders());
         }
 
         @Nonnull
         @Override
         public ThingErrorResponse featureNotAccessibleError() {
-            return errorResponse(command.getThingEntityId(),
-                    FeatureNotAccessibleException.newBuilder(command.getThingEntityId(), command.getFeatureId())
+            return errorResponse(command.getEntityId(),
+                    FeatureNotAccessibleException.newBuilder(command.getEntityId(), command.getFeatureId())
                             .dittoHeaders(command.getDittoHeaders())
                             .build());
         }
@@ -98,8 +98,8 @@ final class ModifyFeatureLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public ThingErrorResponse featureNotModifiableError() {
-            return errorResponse(command.getThingEntityId(),
-                    FeatureNotModifiableException.newBuilder(command.getThingEntityId(), command.getFeatureId())
+            return errorResponse(command.getEntityId(),
+                    FeatureNotModifiableException.newBuilder(command.getEntityId(), command.getFeatureId())
                             .dittoHeaders(command.getDittoHeaders())
                             .build());
         }
@@ -111,14 +111,14 @@ final class ModifyFeatureLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public FeatureCreated created() {
-            return FeatureCreated.of(command.getThingEntityId(), command.getFeature(), -1, Instant.now(),
+            return FeatureCreated.of(command.getEntityId(), command.getFeature(), -1, Instant.now(),
                     command.getDittoHeaders(), null);
         }
 
         @Nonnull
         @Override
         public FeatureModified modified() {
-            return FeatureModified.of(command.getThingEntityId(), command.getFeature(), -1, Instant.now(),
+            return FeatureModified.of(command.getEntityId(), command.getFeature(), -1, Instant.now(),
                     command.getDittoHeaders(), null);
         }
     }

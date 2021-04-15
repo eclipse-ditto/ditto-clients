@@ -23,6 +23,7 @@ import org.eclipse.ditto.signals.commands.base.assertions.CommandResponseAssert;
 import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
 import org.eclipse.ditto.signals.commands.things.modify.MergeThingResponse;
 import org.eclipse.ditto.signals.commands.things.modify.ThingModifyCommandResponse;
+import org.eclipse.ditto.signals.commands.things.query.RetrieveThingsResponse;
 import org.eclipse.ditto.signals.commands.things.query.ThingQueryCommandResponse;
 import org.eclipse.ditto.signals.events.base.Event;
 import org.eclipse.ditto.signals.events.things.ThingModifiedEvent;
@@ -161,6 +162,22 @@ public class LiveCommandAnswerAssert extends AbstractAssert<LiveCommandAnswerAss
                 .isInstanceOf(ThingModifiedEvent.class);
 
         return ThingEventAssertions.assertThat((ThingModifiedEvent) event);
+    }
+
+    public CommandResponseAssert hasRetrieveThingsResponse() {
+        isNotNull();
+        final Optional<CommandResponse> actualResponse = actual.getResponse();
+        Assertions.assertThat(actualResponse)
+                .overridingErrorMessage("Expected LiveCommandAnswer to have a response but it had none")
+                .isPresent();
+
+        final CommandResponse commandResponse = actualResponse.orElse(null);
+        Assertions.assertThat(commandResponse)
+                .overridingErrorMessage("Expected LiveCommandAnswer has a\n<RetrieveThingsResponse> but it " +
+                        "had a\n<%s>", commandResponse.getClass().getSimpleName())
+                .isInstanceOf(RetrieveThingsResponse.class);
+
+        return CommandAssertions.assertThat((RetrieveThingsResponse) commandResponse);
     }
 
 }

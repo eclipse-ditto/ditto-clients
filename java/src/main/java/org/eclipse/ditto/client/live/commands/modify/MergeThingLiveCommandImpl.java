@@ -72,7 +72,7 @@ final class MergeThingLiveCommandImpl extends AbstractModifyLiveCommand<MergeThi
 
     @Override
     public MergeThingLiveCommand setDittoHeaders(final DittoHeaders dittoHeaders) {
-        return new MergeThingLiveCommandImpl(MergeThing.of(getThingEntityId(), getPath(), getValue(), dittoHeaders));
+        return new MergeThingLiveCommandImpl(MergeThing.of(getEntityId(), getPath(), getValue(), dittoHeaders));
     }
 
     @Override

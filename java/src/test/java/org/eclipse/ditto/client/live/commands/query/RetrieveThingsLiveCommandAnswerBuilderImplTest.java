@@ -93,7 +93,7 @@ public final class RetrieveThingsLiveCommandAnswerBuilderImplTest {
 
         LiveCommandAssertions.assertThat(liveCommandAnswer)
                 .hasNoEvent()
-                .hasThingQueryCommandResponse()
+                .hasRetrieveThingsResponse()
                 .hasType(RetrieveThingsResponse.TYPE)
                 .hasDittoHeaders(DittoHeaders.newBuilder().responseRequired(false).build())
                 .hasResourcePath(JsonPointer.empty());

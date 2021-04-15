@@ -81,10 +81,10 @@ final class CreateThingLiveCommandAnswerBuilderImpl
         @Nonnull
         @Override
         public ThingErrorResponse thingConflictError() {
-            final DittoRuntimeException exception = ThingConflictException.newBuilder(command.getThingEntityId())
+            final DittoRuntimeException exception = ThingConflictException.newBuilder(command.getEntityId())
                     .dittoHeaders(command.getDittoHeaders())
                     .build();
-            return errorResponse(command.getThingEntityId(), exception);
+            return errorResponse(command.getEntityId(), exception);
         }
     }
 
