@@ -2,11 +2,10 @@
 This module is a TypeScript library to facilitate working the the REST-like HTTP API and web socket API of Eclipse Ditto.
 
 It is published with three different module types to the npm registry:
-* IIFE (`dist/index.bundle.js`), for using it directly in a browser. The API is available under the base name
-`EclipseDittoJavascriptClientApi`. You can use a CDN like [UNPKG](https://unpkg.com/) to directly
-use it in a HTML document without the need to compile or pack anything.
 * CommonJS (`dist/index.js`), typical module type for using in Node.js
-* ES Module (`dist/index.es.js`)
+* ES6 Module (`dist/index.es.js`), typical module type for browsers. You could also use a CDN like
+  [UNPKG](https://unpkg.com/) to directly use it in an HTML document (although "_very experimental_",
+  use the `?module`-flag when importing from UNPKG)
 
 ## Implementation
 The already existing implementations can be found in the [parent module](../../README.md).

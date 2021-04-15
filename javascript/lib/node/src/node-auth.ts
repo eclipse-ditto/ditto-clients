@@ -11,13 +11,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import {
-  Base64Encoder,
-  BasicAuth,
-  HttpBasicAuth,
-  HttpBearerAuth,
-  TokenSupplier
-} from '@eclipse-ditto/ditto-javascript-client-api_1.0';
+import { Base64Encoder, BasicAuth, HttpBasicAuth } from '../../api/src/auth/basic-auth';
+import { HttpBearerAuth, TokenSupplier } from '../../api/src/auth/bearer-auth';
 
 /**
  * Node implementation of base64 encoding.
