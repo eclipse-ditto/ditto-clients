@@ -86,7 +86,7 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
     @Override
     public <T> PendingMessageWithFeatureId<T> message() {
         return PendingMessageImpl.<T>of(LOGGER, outgoingMessageFactory, messageSerializerRegistry, PROTOCOL_ADAPTER,
-                messagingProvider).withThingAndFeatureIds(getThingEntityId(), getFeatureId());
+                messagingProvider).withThingAndFeatureIds(getEntityId(), getFeatureId());
     }
 
     @Override
@@ -103,9 +103,9 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
 
         final JsonPointerSelector selector = "*".equals(subject) ?
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/{1}/'{direction}'/messages/'{subject}'",
-                        getThingEntityId(), getFeatureId())
+                        getEntityId(), getFeatureId())
                 : SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/{1}/'{direction}'/messages/{2}",
-                getThingEntityId(), getFeatureId(), subject);
+                getEntityId(), getFeatureId(), subject);
 
         getHandlerRegistry().register(registrationId, selector,
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
@@ -123,9 +123,9 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
 
         final JsonPointerSelector selector = "*".equals(subject)
                 ? SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/{1}/'{direction}'/messages/'{subject}'",
-                getThingEntityId(), getFeatureId())
+                getEntityId(), getFeatureId())
                 : SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/{1}/'{direction}'/messages/{2}",
-                getThingEntityId(), getFeatureId(), subject);
+                getEntityId(), getFeatureId(), subject);
 
         getHandlerRegistry().register(registrationId, selector,
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
@@ -143,7 +143,7 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
     public void emitEvent(final Function<FeatureEventFactory, Event<?>> eventFunction) {
         argumentNotNull(eventFunction);
         final FeatureEventFactory featureEventFactory =
-                ImmutableFeatureEventFactory.getInstance(schemaVersion, getThingEntityId(), getFeatureId());
+                ImmutableFeatureEventFactory.getInstance(schemaVersion, getEntityId(), getFeatureId());
         final Event<?> eventToEmit = eventFunction.apply(featureEventFactory);
         getMessagingProvider().emit(signalToJsonString(adjustHeadersForLiveSignal(eventToEmit)));
     }

@@ -42,10 +42,9 @@ public final class ModifyFeatureDesiredPropertyLiveCommandAnswerBuilderImplTest 
 
     private ModifyFeatureDesiredPropertyLiveCommandAnswerBuilderImpl underTest;
 
-    /** */
     @Before
     public void setUp() {
-        Mockito.when(commandMock.getThingEntityId()).thenReturn(TestConstants.Thing.THING_ID);
+        Mockito.when(commandMock.getEntityId()).thenReturn(TestConstants.Thing.THING_ID);
         Mockito.when(commandMock.getDittoHeaders()).thenReturn(DittoHeaders.empty());
         Mockito.when(commandMock.getFeatureId()).thenReturn(TestConstants.Feature.HOVER_BOARD_ID);
         Mockito.when(commandMock.getDesiredPropertyPointer())
@@ -55,7 +54,6 @@ public final class ModifyFeatureDesiredPropertyLiveCommandAnswerBuilderImplTest 
         underTest = ModifyFeatureDesiredPropertyLiveCommandAnswerBuilderImpl.newInstance(commandMock);
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetNewInstanceWithNullCommand() {
@@ -65,7 +63,6 @@ public final class ModifyFeatureDesiredPropertyLiveCommandAnswerBuilderImplTest 
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void buildAnswerWithModifyFeatureDesiredPropertyCreatedResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -78,7 +75,6 @@ public final class ModifyFeatureDesiredPropertyLiveCommandAnswerBuilderImplTest 
                 .hasThingModifyCommandResponse();
     }
 
-    /** */
     @Test
     public void buildAnswerWithModifyFeatureDesiredPropertyModifiedResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -91,7 +87,6 @@ public final class ModifyFeatureDesiredPropertyLiveCommandAnswerBuilderImplTest 
                 .hasThingModifyCommandResponse();
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeatureDesiredPropertyNotAccessibleErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -109,7 +104,6 @@ public final class ModifyFeatureDesiredPropertyLiveCommandAnswerBuilderImplTest 
                 .withDittoRuntimeExceptionOfType(FeatureDesiredPropertyNotAccessibleException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeatureDesiredPropertyNotModifiableErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -127,7 +121,6 @@ public final class ModifyFeatureDesiredPropertyLiveCommandAnswerBuilderImplTest 
                 .withDittoRuntimeExceptionOfType(FeatureDesiredPropertyNotModifiableException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeatureDesiredPropertyCreatedEventOnly() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse()
@@ -139,7 +132,6 @@ public final class ModifyFeatureDesiredPropertyLiveCommandAnswerBuilderImplTest 
                 .hasThingModifiedEvent();
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeatureDesiredPropertyModifiedEventOnly() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse()

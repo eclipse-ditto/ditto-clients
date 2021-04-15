@@ -44,17 +44,15 @@ public final class RetrieveAttributeLiveCommandAnswerBuilderImplTest {
 
     private RetrieveAttributeLiveCommandAnswerBuilderImpl underTest;
 
-    /** */
     @Before
     public void setUp() {
-        Mockito.when(commandMock.getThingEntityId()).thenReturn(TestConstants.Thing.THING_ID);
+        Mockito.when(commandMock.getEntityId()).thenReturn(TestConstants.Thing.THING_ID);
         Mockito.when(commandMock.getDittoHeaders()).thenReturn(DittoHeaders.empty());
         Mockito.when(commandMock.getAttributePointer()).thenReturn(TestConstants.Thing.LOCATION_ATTRIBUTE_POINTER);
 
         underTest = RetrieveAttributeLiveCommandAnswerBuilderImpl.newInstance(commandMock);
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetNewInstanceWithNullCommand() {
@@ -64,7 +62,6 @@ public final class RetrieveAttributeLiveCommandAnswerBuilderImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void buildAnswerWithoutResponse() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse().build();
@@ -74,7 +71,6 @@ public final class RetrieveAttributeLiveCommandAnswerBuilderImplTest {
                 .hasNoEvent();
     }
 
-    /** */
     @Test
     public void buildAnswerWithRetrieveAttributeResponseOnly() {
         final JsonValue attributeValue = TestConstants.Thing.LOCATION_ATTRIBUTE_VALUE;
@@ -91,7 +87,6 @@ public final class RetrieveAttributeLiveCommandAnswerBuilderImplTest {
                 .hasResourcePath(JsonPointer.of("/attributes" + TestConstants.Thing.LOCATION_ATTRIBUTE_POINTER));
     }
 
-    /** */
     @Test
     public void buildAnswerWithAttributeNotAccessibleErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =

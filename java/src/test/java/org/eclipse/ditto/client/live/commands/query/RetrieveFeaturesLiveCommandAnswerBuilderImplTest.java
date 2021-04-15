@@ -44,16 +44,14 @@ public final class RetrieveFeaturesLiveCommandAnswerBuilderImplTest {
 
     private RetrieveFeaturesLiveCommandAnswerBuilderImpl underTest;
 
-    /** */
     @Before
     public void setUp() {
-        Mockito.when(commandMock.getThingEntityId()).thenReturn(TestConstants.Thing.THING_ID);
+        Mockito.when(commandMock.getEntityId()).thenReturn(TestConstants.Thing.THING_ID);
         Mockito.when(commandMock.getDittoHeaders()).thenReturn(DittoHeaders.empty());
 
         underTest = RetrieveFeaturesLiveCommandAnswerBuilderImpl.newInstance(commandMock);
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetNewInstanceWithNullCommand() {
@@ -63,7 +61,6 @@ public final class RetrieveFeaturesLiveCommandAnswerBuilderImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void buildAnswerWithoutResponse() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse().build();
@@ -73,7 +70,6 @@ public final class RetrieveFeaturesLiveCommandAnswerBuilderImplTest {
                 .hasNoEvent();
     }
 
-    /** */
     @Test
     public void buildAnswerWithRetrieveFeaturesResponseOnly() {
         final Features features = TestConstants.Feature.FEATURES;
@@ -90,7 +86,6 @@ public final class RetrieveFeaturesLiveCommandAnswerBuilderImplTest {
                 .hasResourcePath(JsonPointer.of("features"));
     }
 
-    /** */
     @Test
     public void buildAnswerWithAttributeNotAccessibleErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =

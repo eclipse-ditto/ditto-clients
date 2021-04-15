@@ -33,7 +33,7 @@ public class AcknowledgementsFailedException extends RuntimeException {
     private final Acknowledgements acknowledgements;
 
     private AcknowledgementsFailedException(final Acknowledgements acknowledgements) {
-        super(String.format(MESSAGE_TEMPLATE, checkNotNull(acknowledgements, "acknowledgements").getStatusCodeValue()));
+        super(String.format(MESSAGE_TEMPLATE, checkNotNull(acknowledgements, "acknowledgements").getHttpStatus().getCode()));
         this.acknowledgements = acknowledgements;
     }
 

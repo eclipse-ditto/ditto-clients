@@ -44,10 +44,9 @@ public final class RetrieveFeatureDesiredPropertyLiveCommandAnswerBuilderImplTes
 
     private RetrieveFeatureDesiredPropertyLiveCommandAnswerBuilderImpl underTest;
 
-    /** */
     @Before
     public void setUp() {
-        Mockito.when(commandMock.getThingEntityId()).thenReturn(TestConstants.Thing.THING_ID);
+        Mockito.when(commandMock.getEntityId()).thenReturn(TestConstants.Thing.THING_ID);
         Mockito.when(commandMock.getDittoHeaders()).thenReturn(DittoHeaders.empty());
         Mockito.when(commandMock.getFeatureId()).thenReturn(TestConstants.Feature.HOVER_BOARD_ID);
         Mockito.when(commandMock.getDesiredPropertyPointer())
@@ -56,7 +55,6 @@ public final class RetrieveFeatureDesiredPropertyLiveCommandAnswerBuilderImplTes
         underTest = RetrieveFeatureDesiredPropertyLiveCommandAnswerBuilderImpl.newInstance(commandMock);
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetNewInstanceWithNullCommand() {
@@ -66,7 +64,6 @@ public final class RetrieveFeatureDesiredPropertyLiveCommandAnswerBuilderImplTes
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void buildAnswerWithoutResponse() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse().build();
@@ -76,7 +73,6 @@ public final class RetrieveFeatureDesiredPropertyLiveCommandAnswerBuilderImplTes
                 .hasNoEvent();
     }
 
-    /** */
     @Test
     public void buildAnswerWithRetrieveFeatureDesiredPropertyResponseOnly() {
         final JsonValue FeatureDesiredProperty = TestConstants.Feature.HOVER_BOARD_PROPERTY_VALUE;
@@ -94,7 +90,6 @@ public final class RetrieveFeatureDesiredPropertyLiveCommandAnswerBuilderImplTes
                         "features/" + TestConstants.Feature.HOVER_BOARD_ID + "/desiredProperties/speed"));
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeatureDesiredPropertyNotAccessibleErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =

@@ -81,7 +81,7 @@ public final class LiveCommandAcknowledgeable<L extends LiveCommand<L, B>, B ext
                 .contains(AcknowledgementRequest.of(acknowledgementLabel))) {
             acknowledgementHandle.accept(new ImmutableAcknowledgementRequestHandle(
                     acknowledgementLabel,
-                    liveCommand.getThingEntityId(),
+                    liveCommand.getEntityId(),
                     liveCommand.getDittoHeaders(),
                     signalPublisher::accept
             ));
@@ -93,7 +93,7 @@ public final class LiveCommandAcknowledgeable<L extends LiveCommand<L, B>, B ext
                 .getAcknowledgementRequests()
                 .stream()
                 .map(ackRequest -> new ImmutableAcknowledgementRequestHandle(ackRequest.getLabel(),
-                        liveCommand.getThingEntityId(),
+                        liveCommand.getEntityId(),
                         liveCommand.getDittoHeaders(),
                         signalPublisher::accept)
                 )

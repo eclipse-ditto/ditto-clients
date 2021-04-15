@@ -35,13 +35,11 @@ public final class LiveCommandAnswerFactoryTest {
     @Mock
     private Event<?> eventMock;
 
-    /** */
     @Test
     public void assertImmutability() {
         assertInstancesOf(LiveCommandAnswerFactory.class, areImmutable());
     }
 
-    /** */
     @Test
     public void getLiveCommandAnswerInstanceWithCommandResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer = LiveCommandAnswerFactory.newLiveCommandAnswer(commandResponseMock);
@@ -51,18 +49,16 @@ public final class LiveCommandAnswerFactoryTest {
                 .hasNoEvent();
     }
 
-    /** */
     @Test
     public void getLiveCommandAnswerInstanceWithNullCommandResponse() {
         final LiveCommandAnswer liveCommandAnswer =
-                LiveCommandAnswerFactory.newLiveCommandAnswer((CommandResponse) null);
+                LiveCommandAnswerFactory.newLiveCommandAnswer((CommandResponse<?>) null);
 
         LiveCommandAssertions.assertThat(liveCommandAnswer)
                 .hasNoResponse()
                 .hasNoEvent();
     }
 
-    /** */
     @Test
     public void getLiveCommandAnswerInstanceWithEventOnly() {
         final LiveCommandAnswer liveCommandAnswer = LiveCommandAnswerFactory.newLiveCommandAnswer(eventMock);
@@ -72,17 +68,15 @@ public final class LiveCommandAnswerFactoryTest {
                 .hasEvent(eventMock);
     }
 
-    /** */
     @Test
     public void getLiveCommandAnswerInstanceWithNullEvent() {
-        final LiveCommandAnswer liveCommandAnswer = LiveCommandAnswerFactory.newLiveCommandAnswer((Event) null);
+        final LiveCommandAnswer liveCommandAnswer = LiveCommandAnswerFactory.newLiveCommandAnswer((Event<?>) null);
 
         LiveCommandAssertions.assertThat(liveCommandAnswer)
                 .hasNoResponse()
                 .hasNoEvent();
     }
 
-    /** */
     @Test
     public void getLiveCommandAnswerInstanceWithCommandResponseAndEvent() {
         final LiveCommandAnswer liveCommandAnswer = LiveCommandAnswerFactory.newLiveCommandAnswer(commandResponseMock,
@@ -93,12 +87,10 @@ public final class LiveCommandAnswerFactoryTest {
                 .hasEvent(eventMock);
     }
 
-    /** */
     @Test
     public void getLiveCommandAnswerInstanceWithNullCommandResponseAndNullEvent() {
         final LiveCommandAnswer liveCommandAnswer =
-                LiveCommandAnswerFactory.newLiveCommandAnswer((CommandResponse) null,
-                        (Event) null);
+                LiveCommandAnswerFactory.newLiveCommandAnswer(null,null);
 
         LiveCommandAssertions.assertThat(liveCommandAnswer)
                 .hasNoResponse()

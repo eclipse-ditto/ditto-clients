@@ -40,7 +40,6 @@ public final class RetrieveAttributeLiveCommandImplTest {
     private RetrieveAttribute retrieveAttributeTwinCommand;
     private RetrieveAttributeLiveCommand underTest;
 
-    /** */
     @Before
     public void setUp() {
         retrieveAttributeTwinCommand = RetrieveAttribute.of(TestConstants.Thing.THING_ID,
@@ -48,7 +47,6 @@ public final class RetrieveAttributeLiveCommandImplTest {
         underTest = RetrieveAttributeLiveCommandImpl.of(retrieveAttributeTwinCommand);
     }
 
-    /** */
     @Test
     public void assertImmutability() {
         assertInstancesOf(RetrieveAttributeLiveCommandImpl.class,
@@ -56,7 +54,6 @@ public final class RetrieveAttributeLiveCommandImplTest {
                 provided(JsonPointer.class).isAlsoImmutable());
     }
 
-    /** */
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(RetrieveAttributeLiveCommandImpl.class)
@@ -65,7 +62,6 @@ public final class RetrieveAttributeLiveCommandImplTest {
                 .verify();
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetRetrieveAttributeLiveCommandForNull() {
@@ -75,7 +71,6 @@ public final class RetrieveAttributeLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void tryToGetRetrieveAttributeLiveCommandForCreateAttributeCommand() {
         final Command<?> commandMock = Mockito.mock(Command.class);
@@ -86,19 +81,17 @@ public final class RetrieveAttributeLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void getRetrieveAttributeLiveCommandReturnsExpected() {
         assertThat(underTest)
                 .withType(retrieveAttributeTwinCommand.getType())
                 .withDittoHeaders(retrieveAttributeTwinCommand.getDittoHeaders())
-                .withId(retrieveAttributeTwinCommand.getThingEntityId())
+                .withId(retrieveAttributeTwinCommand.getEntityId())
                 .withManifest(retrieveAttributeTwinCommand.getManifest())
                 .withResourcePath(retrieveAttributeTwinCommand.getResourcePath());
         assertThat(underTest.getAttributePointer()).isEqualTo(retrieveAttributeTwinCommand.getAttributePointer());
     }
 
-    /** */
     @Test
     public void setDittoHeadersReturnsExpected() {
         final DittoHeaders emptyDittoHeaders = DittoHeaders.empty();
@@ -108,13 +101,11 @@ public final class RetrieveAttributeLiveCommandImplTest {
         assertThat(newRetrieveAttributeLiveCommand).withDittoHeaders(emptyDittoHeaders);
     }
 
-    /** */
     @Test
     public void answerReturnsNotNull() {
         assertThat(underTest.answer()).isNotNull();
     }
 
-    /** */
     @Test
     public void toStringReturnsExpected() {
         assertThat(underTest.toString())

@@ -42,17 +42,15 @@ public final class DeleteFeaturePropertiesLiveCommandAnswerBuilderImplTest {
 
     private DeleteFeaturePropertiesLiveCommandAnswerBuilderImpl underTest;
 
-    /** */
     @Before
     public void setUp() {
-        Mockito.when(commandMock.getThingEntityId()).thenReturn(TestConstants.Thing.THING_ID);
+        Mockito.when(commandMock.getEntityId()).thenReturn(TestConstants.Thing.THING_ID);
         Mockito.when(commandMock.getDittoHeaders()).thenReturn(DittoHeaders.empty());
         Mockito.when(commandMock.getFeatureId()).thenReturn(TestConstants.Feature.FLUX_CAPACITOR_ID);
 
         underTest = DeleteFeaturePropertiesLiveCommandAnswerBuilderImpl.newInstance(commandMock);
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetNewInstanceWithNullCommand() {
@@ -62,7 +60,6 @@ public final class DeleteFeaturePropertiesLiveCommandAnswerBuilderImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void buildAnswerWithDeleteFeaturePropertiesResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -75,7 +72,6 @@ public final class DeleteFeaturePropertiesLiveCommandAnswerBuilderImplTest {
                 .hasThingModifyCommandResponse();
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeaturePropertiesNotAccessibleErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -93,7 +89,6 @@ public final class DeleteFeaturePropertiesLiveCommandAnswerBuilderImplTest {
                 .withDittoRuntimeExceptionOfType(FeaturePropertiesNotAccessibleException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeaturePropertiesNotModifiableErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -111,7 +106,6 @@ public final class DeleteFeaturePropertiesLiveCommandAnswerBuilderImplTest {
                 .withDittoRuntimeExceptionOfType(FeaturePropertiesNotModifiableException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeaturePropertiesDeletedEventOnly() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse()

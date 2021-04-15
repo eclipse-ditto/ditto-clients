@@ -110,7 +110,7 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
     }
 
     @Override
-    public ThingId getThingEntityId() {
+    public ThingId getEntityId() {
         return thingId;
     }
 

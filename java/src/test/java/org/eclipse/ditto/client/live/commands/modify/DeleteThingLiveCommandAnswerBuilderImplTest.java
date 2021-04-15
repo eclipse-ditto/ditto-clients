@@ -42,16 +42,14 @@ public final class DeleteThingLiveCommandAnswerBuilderImplTest {
 
     private DeleteThingLiveCommandAnswerBuilderImpl underTest;
 
-    /** */
     @Before
     public void setUp() {
-        Mockito.when(commandMock.getThingEntityId()).thenReturn(TestConstants.Thing.THING_ID);
+        Mockito.when(commandMock.getEntityId()).thenReturn(TestConstants.Thing.THING_ID);
         Mockito.when(commandMock.getDittoHeaders()).thenReturn(DittoHeaders.empty());
 
         underTest = DeleteThingLiveCommandAnswerBuilderImpl.newInstance(commandMock);
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetNewInstanceWithNullCommand() {
@@ -61,7 +59,6 @@ public final class DeleteThingLiveCommandAnswerBuilderImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void buildAnswerWithDeleteThingResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -74,7 +71,6 @@ public final class DeleteThingLiveCommandAnswerBuilderImplTest {
                 .hasThingModifyCommandResponse();
     }
 
-    /** */
     @Test
     public void buildAnswerWithThingNotAccessibleErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -91,7 +87,6 @@ public final class DeleteThingLiveCommandAnswerBuilderImplTest {
                 .withDittoRuntimeExceptionOfType(ThingNotAccessibleException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithThingNotDeletableErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -108,7 +103,6 @@ public final class DeleteThingLiveCommandAnswerBuilderImplTest {
                 .withDittoRuntimeExceptionOfType(ThingNotDeletableException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithThingDeletedEventOnly() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse()

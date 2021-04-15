@@ -38,7 +38,6 @@ public final class DeleteFeatureLiveCommandImplTest {
     private DeleteFeature twinCommand;
     private DeleteFeatureLiveCommand underTest;
 
-    /** */
     @Before
     public void setUp() {
         twinCommand = DeleteFeature.of(TestConstants.Thing.THING_ID,
@@ -46,13 +45,11 @@ public final class DeleteFeatureLiveCommandImplTest {
         underTest = DeleteFeatureLiveCommandImpl.of(twinCommand);
     }
 
-    /** */
     @Test
     public void assertImmutability() {
         assertInstancesOf(DeleteFeatureLiveCommandImpl.class, areImmutable());
     }
 
-    /** */
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(DeleteFeatureLiveCommandImpl.class)
@@ -61,8 +58,6 @@ public final class DeleteFeatureLiveCommandImplTest {
                 .verify();
     }
 
-    /** */
-    @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetDeleteFeatureLiveCommandForNull() {
         assertThatExceptionOfType(NullPointerException.class)
@@ -71,7 +66,6 @@ public final class DeleteFeatureLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void tryToGetDeleteFeatureLiveCommandForCreateFeatureCommand() {
         final Command<?> commandMock = Mockito.mock(Command.class);
@@ -82,19 +76,17 @@ public final class DeleteFeatureLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void getDeleteFeatureLiveCommandReturnsExpected() {
         assertThat(underTest)
                 .withType(twinCommand.getType())
                 .withDittoHeaders(twinCommand.getDittoHeaders())
-                .withId(twinCommand.getThingEntityId())
+                .withId(twinCommand.getEntityId())
                 .withManifest(twinCommand.getManifest())
                 .withResourcePath(twinCommand.getResourcePath());
         assertThat(underTest.getFeatureId()).isEqualTo(twinCommand.getFeatureId());
     }
 
-    /** */
     @Test
     public void setDittoHeadersReturnsExpected() {
         final DittoHeaders emptyDittoHeaders = DittoHeaders.empty();
@@ -104,13 +96,11 @@ public final class DeleteFeatureLiveCommandImplTest {
         assertThat(newDeleteFeatureLiveCommand).withDittoHeaders(emptyDittoHeaders);
     }
 
-    /** */
     @Test
     public void answerReturnsNotNull() {
         assertThat(underTest.answer()).isNotNull();
     }
 
-    /** */
     @Test
     public void toStringReturnsExpected() {
         assertThat(underTest.toString())

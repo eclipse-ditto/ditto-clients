@@ -41,17 +41,15 @@ public final class CreateThingLiveCommandAnswerBuilderImplTest {
 
     private CreateThingLiveCommandAnswerBuilderImpl underTest;
 
-    /** */
     @Before
     public void setUp() {
-        Mockito.when(commandMock.getThingEntityId()).thenReturn(TestConstants.Thing.THING_ID);
+        Mockito.when(commandMock.getEntityId()).thenReturn(TestConstants.Thing.THING_ID);
         Mockito.when(commandMock.getThing()).thenReturn(TestConstants.Thing.THING);
         Mockito.when(commandMock.getDittoHeaders()).thenReturn(DittoHeaders.empty());
 
         underTest = CreateThingLiveCommandAnswerBuilderImpl.newInstance(commandMock);
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetNewInstanceWithNullCommand() {
@@ -61,7 +59,6 @@ public final class CreateThingLiveCommandAnswerBuilderImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void buildAnswerWithThingCreatedResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -74,7 +71,6 @@ public final class CreateThingLiveCommandAnswerBuilderImplTest {
                 .hasThingModifyCommandResponse();
     }
 
-    /** */
     @Test
     public void buildAnswerWithThingConflictErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -91,7 +87,6 @@ public final class CreateThingLiveCommandAnswerBuilderImplTest {
                 .withDittoRuntimeExceptionOfType(ThingConflictException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithThingCreatedEventOnly() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse()

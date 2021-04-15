@@ -14,7 +14,6 @@ package org.eclipse.ditto.client.assertions;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.model.base.common.HttpStatus;
-import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.signals.commands.base.assertions.AbstractCommandResponseAssert;
@@ -38,24 +37,8 @@ public final class ThingErrorResponseAssert
         return hasDittoHeaders(expectedDittoHeaders);
     }
 
-    /**
-     * @deprecated as of 2.0.0 please use {@link #withStatus(HttpStatus)} instead.
-     */
-    @Deprecated
-    public ThingErrorResponseAssert withStatus(final HttpStatusCode expectedStatus) {
-        return hasStatus(expectedStatus.getAsHttpStatus());
-    }
-
     public ThingErrorResponseAssert withStatus(final HttpStatus expectedStatus) {
         return hasStatus(expectedStatus);
-    }
-
-    /**
-     * @deprecated as of 2.0.0 please use {@link #hasStatus(HttpStatus)} instead.
-     */
-    @Deprecated
-    public ThingErrorResponseAssert hasStatusCode(final HttpStatusCode expectedStatusCode) {
-        return assertThatEquals(actual.getStatusCode(), expectedStatusCode, "HTTP status code");
     }
 
     public ThingErrorResponseAssert hasStatus(final HttpStatus expectedStatus) {

@@ -42,10 +42,9 @@ public final class DeleteFeaturePropertyLiveCommandAnswerBuilderImplTest {
 
     private DeleteFeaturePropertyLiveCommandAnswerBuilderImpl underTest;
 
-    /** */
     @Before
     public void setUp() {
-        Mockito.when(commandMock.getThingEntityId()).thenReturn(TestConstants.Thing.THING_ID);
+        Mockito.when(commandMock.getEntityId()).thenReturn(TestConstants.Thing.THING_ID);
         Mockito.when(commandMock.getDittoHeaders()).thenReturn(DittoHeaders.empty());
         Mockito.when(commandMock.getFeatureId()).thenReturn(TestConstants.Feature.FLUX_CAPACITOR_ID);
         Mockito.when(commandMock.getPropertyPointer())
@@ -54,7 +53,6 @@ public final class DeleteFeaturePropertyLiveCommandAnswerBuilderImplTest {
         underTest = DeleteFeaturePropertyLiveCommandAnswerBuilderImpl.newInstance(commandMock);
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetNewInstanceWithNullCommand() {
@@ -64,7 +62,6 @@ public final class DeleteFeaturePropertyLiveCommandAnswerBuilderImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void buildAnswerWithDeleteFeaturePropertyResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -77,7 +74,6 @@ public final class DeleteFeaturePropertyLiveCommandAnswerBuilderImplTest {
                 .hasThingModifyCommandResponse();
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeaturePropertyNotAccessibleErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -95,7 +91,6 @@ public final class DeleteFeaturePropertyLiveCommandAnswerBuilderImplTest {
                 .withDittoRuntimeExceptionOfType(FeaturePropertyNotAccessibleException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeaturePropertyNotModifiableErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -113,7 +108,6 @@ public final class DeleteFeaturePropertyLiveCommandAnswerBuilderImplTest {
                 .withDittoRuntimeExceptionOfType(FeaturePropertyNotModifiableException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeaturePropertyDeletedEventOnly() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse()

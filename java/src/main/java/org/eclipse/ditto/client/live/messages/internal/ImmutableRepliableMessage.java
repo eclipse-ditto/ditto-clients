@@ -40,7 +40,6 @@ import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
-import org.eclipse.ditto.model.messages.MessageResponseConsumer;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 
@@ -96,8 +95,8 @@ public final class ImmutableRepliableMessage<T, U> implements RepliableMessage<T
     }
 
     @Override
-    public ThingId getThingEntityId() {
-        return message.getThingEntityId();
+    public ThingId getEntityId() {
+        return message.getEntityId();
     }
 
     @Override
@@ -123,11 +122,6 @@ public final class ImmutableRepliableMessage<T, U> implements RepliableMessage<T
     @Override
     public MessageHeaders getHeaders() {
         return message.getHeaders();
-    }
-
-    @Override
-    public Optional<MessageResponseConsumer<?>> getResponseConsumer() {
-        return message.getResponseConsumer();
     }
 
     @Override
@@ -163,7 +157,7 @@ public final class ImmutableRepliableMessage<T, U> implements RepliableMessage<T
     @Override
     public MessageSender.SetPayloadOrSend<U> reply() {
         return ImmutableMessageSender.<U>response().from(responseConsumer)
-                .thingId(message.getThingEntityId())
+                .thingId(message.getEntityId())
                 .featureId(message.getFeatureId().orElse(null))
                 .subject(message.getSubject())
                 .correlationId(message.getCorrelationId()
@@ -202,7 +196,7 @@ public final class ImmutableRepliableMessage<T, U> implements RepliableMessage<T
         checkNotNull(acknowledgementHandles, "acknowledgementHandles");
         final MessageHeaders headers = message.getHeaders();
         final Set<AcknowledgementRequest> acknowledgementRequests = headers.getAcknowledgementRequests();
-        final ThingId thingId = message.getThingEntityId();
+        final ThingId thingId = message.getEntityId();
         acknowledgementHandles.accept(
                 acknowledgementRequests.stream()
                         .map(request -> new ImmutableAcknowledgementRequestHandle(request.getLabel(), thingId, headers,
@@ -219,7 +213,7 @@ public final class ImmutableRepliableMessage<T, U> implements RepliableMessage<T
         checkNotNull(acknowledgementHandle, "acknowledgementHandle");
         final MessageHeaders headers = message.getHeaders();
         final Set<AcknowledgementRequest> acknowledgementRequests = headers.getAcknowledgementRequests();
-        final ThingId thingId = message.getThingEntityId();
+        final ThingId thingId = message.getEntityId();
         acknowledgementRequests.stream()
                 .filter(req -> req.getLabel().equals(acknowledgementLabel))
                 .map(request -> new ImmutableAcknowledgementRequestHandle(request.getLabel(), thingId, headers,

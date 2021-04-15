@@ -192,7 +192,8 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
 
     private static String getPointerBusKey(final Adaptable adaptable) {
         final TopicPath topic = adaptable.getTopicPath();
-        return String.format("/things/%s:%s%s", topic.getNamespace(), topic.getId(), adaptable.getPayload().getPath());
+        return String.format("/things/%s:%s%s", topic.getNamespace(), topic.getEntityName(),
+                adaptable.getPayload().getPath());
     }
 
     /*
@@ -338,7 +339,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
     }
 
     private void handleLiveCommandOrResponse(final Adaptable adaptable) {
-        if (adaptable.getPayload().getStatus().isPresent()) {
+        if (adaptable.getPayload().getHttpStatus().isPresent()) {
             // is live command response; just publish.
             messagingProvider.getAdaptableBus()
                     .publish(ProtocolFactory.wrapAsJsonifiableAdaptable(adaptable).toJsonString());
@@ -352,13 +353,13 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
     private void handleLiveCommand(final LiveCommand<?, ?> liveCommand) {
         boolean handled = false;
 
-        final ThingId thingId = liveCommand.getThingEntityId();
+        final ThingId thingId = liveCommand.getEntityId();
         final Optional<JsonKey> featureIdFromResourcePath = getFeatureIdFromResourcePath(liveCommand);
         if (featureIdFromResourcePath.isPresent()) {
             final String featureId = featureIdFromResourcePath.get().toString();
             handled = getFeatureHandle(thingId, featureId)
                     .filter(h -> h instanceof LiveCommandProcessor)
-                    .map(h -> (LiveCommandProcessor) h)
+                    .map(LiveCommandProcessor.class::cast)
                     .map(h -> h.processLiveCommand(liveCommand))
                     .orElse(false);
             LOGGER.debug("Live command of type '{}' handled with specific feature handle: {}",
@@ -368,7 +369,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
         if (!handled) {
             handled = getThingHandle(thingId)
                     .filter(h -> h instanceof LiveCommandProcessor)
-                    .map(h -> (LiveCommandProcessor) h)
+                    .map(LiveCommandProcessor.class::cast)
                     .map(h -> h.processLiveCommand(liveCommand))
                     .orElse(false);
             LOGGER.debug("Live command of type '{}' handled with specific thing handle: {}",

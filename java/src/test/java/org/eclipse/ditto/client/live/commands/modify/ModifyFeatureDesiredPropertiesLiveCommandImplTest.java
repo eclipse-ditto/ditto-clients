@@ -39,7 +39,6 @@ public final class ModifyFeatureDesiredPropertiesLiveCommandImplTest {
     private ModifyFeatureDesiredProperties twinCommand;
     private ModifyFeatureDesiredPropertiesLiveCommand underTest;
 
-    /** */
     @Before
     public void setUp() {
         twinCommand = ModifyFeatureDesiredProperties.of(TestConstants.Thing.THING_ID, TestConstants.Feature.HOVER_BOARD_ID,
@@ -47,7 +46,6 @@ public final class ModifyFeatureDesiredPropertiesLiveCommandImplTest {
         underTest = ModifyFeatureDesiredPropertiesLiveCommandImpl.of(twinCommand);
     }
 
-    /** */
     @Test
     public void assertImmutability() {
         assertInstancesOf(ModifyFeatureDesiredPropertiesLiveCommandImpl.class,
@@ -55,7 +53,6 @@ public final class ModifyFeatureDesiredPropertiesLiveCommandImplTest {
                 provided(FeatureProperties.class).isAlsoImmutable());
     }
 
-    /** */
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(ModifyFeatureDesiredPropertiesLiveCommandImpl.class)
@@ -64,7 +61,6 @@ public final class ModifyFeatureDesiredPropertiesLiveCommandImplTest {
                 .verify();
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetModifyFeatureDesiredPropertiesLiveCommandForNull() {
@@ -74,7 +70,6 @@ public final class ModifyFeatureDesiredPropertiesLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void tryToGetModifyFeatureDesiredPropertiesLiveCommandForCreateThingCommand() {
         final Command<?> commandMock = Mockito.mock(Command.class);
@@ -86,20 +81,18 @@ public final class ModifyFeatureDesiredPropertiesLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void getModifyFeatureDesiredPropertiesLiveCommandReturnsExpected() {
         assertThat(underTest)
                 .withType(twinCommand.getType())
                 .withDittoHeaders(twinCommand.getDittoHeaders())
-                .withId(twinCommand.getThingEntityId())
+                .withId(twinCommand.getEntityId())
                 .withManifest(twinCommand.getManifest())
                 .withResourcePath(twinCommand.getResourcePath());
         assertThat(underTest.getDesiredProperties()).isEqualTo(twinCommand.getDesiredProperties());
         assertThat(underTest.getFeatureId()).isEqualTo(twinCommand.getFeatureId());
     }
 
-    /** */
     @Test
     public void setDittoHeadersReturnsExpected() {
         final DittoHeaders emptyDittoHeaders = DittoHeaders.empty();
@@ -109,13 +102,11 @@ public final class ModifyFeatureDesiredPropertiesLiveCommandImplTest {
         assertThat(newModifyFeatureDesiredPropertiesLiveCommand).withDittoHeaders(emptyDittoHeaders);
     }
 
-    /** */
     @Test
     public void answerReturnsNotNull() {
         assertThat(underTest.answer()).isNotNull();
     }
 
-    /** */
     @Test
     public void toStringReturnsExpected() {
         assertThat(underTest.toString())

@@ -41,7 +41,6 @@ public final class ModifyAttributeLiveCommandImplTest {
     private ModifyAttribute twinCommand;
     private ModifyAttributeLiveCommand underTest;
 
-    /** */
     @Before
     public void setUp() {
         twinCommand = ModifyAttribute.of(TestConstants.Thing.THING_ID, TestConstants.Thing.LOCATION_ATTRIBUTE_POINTER,
@@ -49,7 +48,6 @@ public final class ModifyAttributeLiveCommandImplTest {
         underTest = ModifyAttributeLiveCommandImpl.of(twinCommand);
     }
 
-    /** */
     @Test
     public void assertImmutability() {
         assertInstancesOf(ModifyAttributeLiveCommandImpl.class,
@@ -57,7 +55,6 @@ public final class ModifyAttributeLiveCommandImplTest {
                 provided(JsonPointer.class, JsonValue.class).areAlsoImmutable());
     }
 
-    /** */
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(ModifyAttributeLiveCommandImpl.class)
@@ -66,8 +63,6 @@ public final class ModifyAttributeLiveCommandImplTest {
                 .verify();
     }
 
-    /** */
-    @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetModifyAttributeLiveCommandForNull() {
         assertThatExceptionOfType(NullPointerException.class)
@@ -76,7 +71,6 @@ public final class ModifyAttributeLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void tryToGetModifyAttributeLiveCommandForCreateThingCommand() {
         final Command<?> commandMock = Mockito.mock(Command.class);
@@ -87,20 +81,18 @@ public final class ModifyAttributeLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void getModifyAttributeLiveCommandReturnsExpected() {
         assertThat(underTest)
                 .withType(twinCommand.getType())
                 .withDittoHeaders(twinCommand.getDittoHeaders())
-                .withId(twinCommand.getThingEntityId())
+                .withId(twinCommand.getEntityId())
                 .withManifest(twinCommand.getManifest())
                 .withResourcePath(twinCommand.getResourcePath());
         assertThat(underTest.getAttributePointer()).isEqualTo(twinCommand.getAttributePointer());
         assertThat(underTest.getAttributeValue()).isEqualTo(twinCommand.getAttributeValue());
     }
 
-    /** */
     @Test
     public void setDittoHeadersReturnsExpected() {
         final DittoHeaders emptyDittoHeaders = DittoHeaders.empty();
@@ -110,13 +102,11 @@ public final class ModifyAttributeLiveCommandImplTest {
         assertThat(newModifyAttributeLiveCommand).withDittoHeaders(emptyDittoHeaders);
     }
 
-    /** */
     @Test
     public void answerReturnsNotNull() {
         assertThat(underTest.answer()).isNotNull();
     }
 
-    /** */
     @Test
     public void toStringReturnsExpected() {
         assertThat(underTest.toString())

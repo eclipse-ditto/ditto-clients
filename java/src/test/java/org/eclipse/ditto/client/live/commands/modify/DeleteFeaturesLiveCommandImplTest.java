@@ -38,20 +38,17 @@ public final class DeleteFeaturesLiveCommandImplTest {
     private DeleteFeatures twinCommand;
     private DeleteFeaturesLiveCommand underTest;
 
-    /** */
     @Before
     public void setUp() {
         twinCommand = DeleteFeatures.of(TestConstants.Thing.THING_ID, DittoHeaders.empty());
         underTest = DeleteFeaturesLiveCommandImpl.of(twinCommand);
     }
 
-    /** */
     @Test
     public void assertImmutability() {
         assertInstancesOf(DeleteFeaturesLiveCommandImpl.class, areImmutable());
     }
 
-    /** */
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(DeleteFeaturesLiveCommandImpl.class)
@@ -60,7 +57,6 @@ public final class DeleteFeaturesLiveCommandImplTest {
                 .verify();
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetDeleteFeaturesLiveCommandForNull() {
@@ -70,7 +66,6 @@ public final class DeleteFeaturesLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void tryToGetDeleteFeaturesLiveCommandForCreateFeaturesCommand() {
         final Command<?> commandMock = Mockito.mock(Command.class);
@@ -81,18 +76,16 @@ public final class DeleteFeaturesLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void getDeleteFeaturesLiveCommandReturnsExpected() {
         assertThat(underTest)
                 .withType(twinCommand.getType())
                 .withDittoHeaders(twinCommand.getDittoHeaders())
-                .withId(twinCommand.getThingEntityId())
+                .withId(twinCommand.getEntityId())
                 .withManifest(twinCommand.getManifest())
                 .withResourcePath(twinCommand.getResourcePath());
     }
 
-    /** */
     @Test
     public void setDittoHeadersReturnsExpected() {
         final DittoHeaders emptyDittoHeaders = DittoHeaders.empty();
@@ -102,13 +95,11 @@ public final class DeleteFeaturesLiveCommandImplTest {
         assertThat(newDeleteFeaturesLiveCommand).withDittoHeaders(emptyDittoHeaders);
     }
 
-    /** */
     @Test
     public void answerReturnsNotNull() {
         assertThat(underTest.answer()).isNotNull();
     }
 
-    /** */
     @Test
     public void toStringReturnsExpected() {
         assertThat(underTest.toString())

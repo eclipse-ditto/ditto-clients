@@ -42,17 +42,15 @@ public final class ModifyAttributesLiveCommandAnswerBuilderImplTest {
 
     private ModifyAttributesLiveCommandAnswerBuilderImpl underTest;
 
-    /** */
     @Before
     public void setUp() {
-        Mockito.when(commandMock.getThingEntityId()).thenReturn(TestConstants.Thing.THING_ID);
+        Mockito.when(commandMock.getEntityId()).thenReturn(TestConstants.Thing.THING_ID);
         Mockito.when(commandMock.getDittoHeaders()).thenReturn(DittoHeaders.empty());
         Mockito.when(commandMock.getAttributes()).thenReturn(TestConstants.Thing.ATTRIBUTES);
 
         underTest = ModifyAttributesLiveCommandAnswerBuilderImpl.newInstance(commandMock);
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetNewInstanceWithNullCommand() {
@@ -62,7 +60,6 @@ public final class ModifyAttributesLiveCommandAnswerBuilderImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void buildAnswerWithModifyAttributesCreatedResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -75,7 +72,6 @@ public final class ModifyAttributesLiveCommandAnswerBuilderImplTest {
                 .hasThingModifyCommandResponse();
     }
 
-    /** */
     @Test
     public void buildAnswerWithModifyAttributesModifiedResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -88,7 +84,6 @@ public final class ModifyAttributesLiveCommandAnswerBuilderImplTest {
                 .hasThingModifyCommandResponse();
     }
 
-    /** */
     @Test
     public void buildAnswerWithAttributesNotAccessibleErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -106,7 +101,6 @@ public final class ModifyAttributesLiveCommandAnswerBuilderImplTest {
                 .withDittoRuntimeExceptionOfType(AttributesNotAccessibleException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithAttributesNotModifiableErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -124,7 +118,6 @@ public final class ModifyAttributesLiveCommandAnswerBuilderImplTest {
                 .withDittoRuntimeExceptionOfType(AttributesNotModifiableException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithAttributesCreatedEventOnly() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse()
@@ -136,7 +129,6 @@ public final class ModifyAttributesLiveCommandAnswerBuilderImplTest {
                 .hasThingModifiedEvent();
     }
 
-    /** */
     @Test
     public void buildAnswerWithAttributesModifiedEventOnly() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse()

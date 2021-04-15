@@ -39,7 +39,6 @@ public final class DeleteAttributeLiveCommandImplTest {
     private DeleteAttribute twinCommand;
     private DeleteAttributeLiveCommand underTest;
 
-    /** */
     @Before
     public void setUp() {
         twinCommand = DeleteAttribute.of(TestConstants.Thing.THING_ID,
@@ -47,7 +46,6 @@ public final class DeleteAttributeLiveCommandImplTest {
         underTest = DeleteAttributeLiveCommandImpl.of(twinCommand);
     }
 
-    /** */
     @Test
     public void assertImmutability() {
         assertInstancesOf(DeleteAttributeLiveCommandImpl.class,
@@ -55,7 +53,6 @@ public final class DeleteAttributeLiveCommandImplTest {
                 provided(JsonPointer.class).isAlsoImmutable());
     }
 
-    /** */
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(DeleteAttributeLiveCommandImpl.class)
@@ -64,7 +61,6 @@ public final class DeleteAttributeLiveCommandImplTest {
                 .verify();
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetDeleteAttributeLiveCommandForNull() {
@@ -74,7 +70,6 @@ public final class DeleteAttributeLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void tryToGetDeleteAttributeLiveCommandForCreateAttributeCommand() {
         final Command<?> commandMock = Mockito.mock(Command.class);
@@ -85,19 +80,17 @@ public final class DeleteAttributeLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void getDeleteAttributeLiveCommandReturnsExpected() {
         assertThat(underTest)
                 .withType(twinCommand.getType())
                 .withDittoHeaders(twinCommand.getDittoHeaders())
-                .withId(twinCommand.getThingEntityId())
+                .withId(twinCommand.getEntityId())
                 .withManifest(twinCommand.getManifest())
                 .withResourcePath(twinCommand.getResourcePath());
         assertThat(underTest.getAttributePointer()).isEqualTo(twinCommand.getAttributePointer());
     }
 
-    /** */
     @Test
     public void setDittoHeadersReturnsExpected() {
         final DittoHeaders emptyDittoHeaders = DittoHeaders.empty();
@@ -107,13 +100,11 @@ public final class DeleteAttributeLiveCommandImplTest {
         assertThat(newDeleteAttributeLiveCommand).withDittoHeaders(emptyDittoHeaders);
     }
 
-    /** */
     @Test
     public void answerReturnsNotNull() {
         assertThat(underTest.answer()).isNotNull();
     }
 
-    /** */
     @Test
     public void toStringReturnsExpected() {
         assertThat(underTest.toString())
