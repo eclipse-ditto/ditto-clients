@@ -15,6 +15,7 @@ import { bufferFullError, connectionLostError } from '../../../src/client/reques
 import { MockWebSocketStates, MockWebSocketStateTracker, WebSocketHelper as H } from './websocket.helper';
 import { DefaultMockWebSocket } from './websocket.mock';
 import { DittoWebSocketLiveClient } from '../../../src/client/ditto-client-websocket';
+import { jest } from '@jest/globals';
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
 
@@ -59,7 +60,6 @@ describe('WebSocket Resilience Handler with buffer', () => {
       .withTls()
       .withDomain(H.url)
       .withAuthProvider(H.basicAuthProvider(H.testName, H.password))
-      .apiVersion2()
       .withBuffer(H.bufferSize)
       .liveChannel()
       .withStateHandler(stateTracker)
@@ -79,10 +79,10 @@ describe('WebSocket Resilience Handler with buffer', () => {
     handle.getThing(H.thing.thingId);
     return new Promise(resolve => {
       setTimeout(async () => {
-        expect(resolved).toBe(false, 'Request was not buffered');
+        expect(resolved).toBe(false);
         requester.addResponse(thingRequest, thingResponse);
         await setTimeout(() => {
-          expect(resolved).toBe(true, 'Request was not fulfilled');
+          expect(resolved).toBe(true);
           expect(stateTracker.events).toEqual([MockWebSocketStates.CONNECTED, MockWebSocketStates.BACK_PRESSURE,
             MockWebSocketStates.BUFFERING, MockWebSocketStates.CONNECTED]);
           resolve();
@@ -107,7 +107,7 @@ describe('WebSocket Resilience Handler with buffer', () => {
       });
     await new Promise(resolve => {
       setTimeout(async () => {
-        expect(resolved).toBe(false, 'Message was not buffered');
+        expect(resolved).toBe(false);
         requester.addResponse(thingRequest, thingResponse);
         resolve();
       }, 200);
@@ -116,7 +116,7 @@ describe('WebSocket Resilience Handler with buffer', () => {
       setTimeout(() => {
         expect(stateTracker.events).toEqual([MockWebSocketStates.CONNECTED, MockWebSocketStates.RECONNECTING,
           MockWebSocketStates.CONNECTED]);
-        expect(resolved).toBe(true, 'Message was not sent');
+        expect(resolved).toBe(true);
         resolve();
       }, 1000);
     });

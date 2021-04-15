@@ -4,7 +4,7 @@
     "file-header": [
       true,
       "Copyright \\(c\\) \\d{4} Contributors to the Eclipse Foundation",
-      "Copyright (c) 2019 Contributors to the Eclipse Foundation\n\nSee the NOTICE file(s) distributed with this work for additional\ninformation regarding copyright ownership.\n\nThis program and the accompanying materials are made available under the\nterms of the Eclipse Public License 2.0 which is available at\nhttp://www.eclipse.org/legal/epl-2.0\n\nSPDX-License-Identifier: EPL-2.0"
+      "Copyright (c) 2021 Contributors to the Eclipse Foundation\n\nSee the NOTICE file(s) distributed with this work for additional\ninformation regarding copyright ownership.\n\nThis program and the accompanying materials are made available under the\nterms of the Eclipse Public License 2.0 which is available at\nhttp://www.eclipse.org/legal/epl-2.0\n\nSPDX-License-Identifier: EPL-2.0"
     ],
     "trailing-comma": [
       true,
