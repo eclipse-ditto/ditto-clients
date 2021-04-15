@@ -27,7 +27,6 @@ export class Thing extends EntityWithId {
     private readonly _features?: Features,
     private readonly __revision?: number,
     private readonly __modified?: string,
-    private readonly _acl?: Acl,
     private readonly _definition?: string,
     private readonly __metadata?: Metadata,
     private readonly __created?: string) {
@@ -51,7 +50,6 @@ export class Thing extends EntityWithId {
       Features.fromObject(o['features']),
       o['_revision'],
       o['_modified'],
-      Acl.fromObject(o['acl']),
       o['definition'],
       Metadata.fromObject(o['_metadata']),
       o['_created']
@@ -59,12 +57,11 @@ export class Thing extends EntityWithId {
   }
 
   public static empty(): Thing {
-    return new Thing('', '', undefined, undefined, 0, '', undefined, undefined, undefined, undefined);
+    return new Thing('', '', undefined, undefined, 0, '', undefined, undefined, undefined);
   }
 
   public toObject(): object {
     const featuresObj = Features.toObject(this.features);
-    const aclObj = Acl.toObject(this._acl);
     return EntityModel.buildObject(new Map<string, any>([
       ['thingId', this.thingId],
       ['policyId', this.policyId],
@@ -72,7 +69,6 @@ export class Thing extends EntityWithId {
       ['features', featuresObj],
       ['_revision', this._revision],
       ['_modified', this._modified],
-      ['acl', aclObj],
       ['definition', this._definition],
       ['_created', this.__created]
     ]));
@@ -112,10 +108,6 @@ export class Thing extends EntityWithId {
 
   get namespace(): string {
     return this.separateNamespaceAndThingId().namespace;
-  }
-
-  get acl(): Acl | undefined {
-    return this._acl;
   }
 
   get name(): string {
