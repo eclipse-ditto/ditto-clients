@@ -14,7 +14,7 @@
 import { TestRequester } from './http-requester.mock';
 import { Helper } from '../test.helper';
 import { HttpBuilderInitialStep, HttpClientBuilder } from '../../../src/client/http-client-builder';
-import { DittoHttpClientV1, DittoHttpClientV2 } from '../../../src/client/ditto-client-http';
+import { DittoHttpClient } from '../../../src/client/ditto-client-http';
 import { GenericResponse } from '../../../src/model/response';
 
 export class HttpHelper extends Helper {
@@ -30,34 +30,17 @@ export class HttpHelper extends Helper {
   // TODO: having this statically is causing problems between tests. it should really be not static
   private static readonly requester: TestRequester = new TestRequester(HttpHelper.errorUrl, HttpHelper.errorResponse);
 
-  public static readonly thingsClientV2: DittoHttpClientV2 = HttpHelper.buildHttpClient(HttpHelper.requester)
+  public static readonly thingsClient: DittoHttpClient = HttpHelper.buildHttpClient(HttpHelper.requester)
     .withoutTls()
     .withDomain(HttpHelper.domain)
     .withAuthProvider(HttpHelper.basicAuthProvider(HttpHelper.testName, HttpHelper.password))
-    .apiVersion2()
     .build();
 
-  public static readonly thingsClientV1: DittoHttpClientV1 = HttpHelper.buildHttpClient(HttpHelper.requester)
-    .withoutTls()
-    .withDomain(HttpHelper.domain)
-    .withAuthProvider(HttpHelper.basicAuthProvider(HttpHelper.testName, HttpHelper.password))
-    .apiVersion1()
-    .build();
-
-  public static readonly errorThingsClientV2: DittoHttpClientV2 = HttpHelper.buildHttpClient(HttpHelper.requester)
+  public static readonly errorThingsClient: DittoHttpClient = HttpHelper.buildHttpClient(HttpHelper.requester)
     .withoutTls()
     .withDomain(HttpHelper.errorDomain)
     .withAuthProvider(HttpHelper.basicAuthProvider(HttpHelper.testName, HttpHelper.password))
-    .apiVersion2()
     .build();
-
-  public static readonly errorThingsClientV1: DittoHttpClientV1 = HttpHelper.buildHttpClient(HttpHelper.requester)
-    .withoutTls()
-    .withDomain(HttpHelper.errorDomain)
-    .withAuthProvider(HttpHelper.basicAuthProvider(HttpHelper.testName, HttpHelper.password))
-    .apiVersion1()
-    .build();
-  private static readonly standardHeaders = { 'Content-Type': 'application/json' };
 
   public static test<T>(options: HttpTestOptions<T>): Promise<any> {
     const api = options.api === undefined ? 2 : options.api;

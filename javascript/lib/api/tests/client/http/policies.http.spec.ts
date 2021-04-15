@@ -27,8 +27,8 @@ import { PutResponse } from '../../../src/model/response';
 import { HttpHelper as H } from './http.helper';
 
 describe('Http Policies Handle', () => {
-  const handle = H.thingsClientV2.getPoliciesHandle();
-  const errorHandle = H.errorThingsClientV2.getPoliciesHandle();
+  const handle = H.thingsClient.getPoliciesHandle();
+  const errorHandle = H.errorThingsClient.getPoliciesHandle();
   const resourcePath = 'aResource';
   const aResource = new Resource(resourcePath, [AccessRight.Read], [AccessRight.Write]);
   const anotherResource = new Resource('anotherResource', [AccessRight.Write], [AccessRight.Write]);

@@ -1,11 +1,12 @@
 {
-  "name": "@eclipse-ditto/ditto-javascript-client-node_1.0",
+  "name": "@eclipse-ditto/ditto-javascript-client-node",
   "version": "2.0.0",
-  "description": "Node.js(r) implementation of Eclipse Ditto 1.0.x JavaScript API.",
+  "description": "Node.js(r) implementation of Eclipse Ditto JavaScript API.",
   "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
   "repository": "https://github.com/eclipse/ditto-clients",
   "license": "EPL-2.0",
   "main": "./dist/index.js",
+  "type": "commonjs",
   "types": "./dist/index.d.ts",
   "publishConfig": {
     "access": "public"
@@ -14,19 +15,18 @@
     "dist"
   ],
   "dependencies": {
-    "@eclipse-ditto/ditto-javascript-client-api_1.0": "^2.0.0",
     "https-proxy-agent": "2.2.2",
     "url": "0.11.0",
     "ws": "7.1.2"
   },
   "devDependencies": {
     "@types/http-proxy-agent": "^2.0.1",
-    "@types/jest": "^24.0.18",
+    "@types/jest": "^25.2.3",
     "@types/node": "^12.0.4",
     "@types/ws": "^6.0.1",
     "barrelsby": "^2.1.1",
-    "jest": "^24.9.0",
-    "ts-jest": "^24.0.2",
+    "jest": "^25.4.0",
+    "ts-jest": "^25.5.1",
     "tslint": "^5.18.x",
     "tslint-config-airbnb": "^5.11.1",
     "tslint-sonarts": "^1.8.0",

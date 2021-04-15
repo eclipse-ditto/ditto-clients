@@ -12,12 +12,9 @@
  */
 
 
-import {
-  DefaultTokenSupplier,
-  DittoURL,
-  ImmutableURL,
-  TokenSupplier
-} from '@eclipse-ditto/ditto-javascript-client-api_1.0';
+import { DefaultTokenSupplier, TokenSupplier } from '../../api/src/auth/bearer-auth';
+import { DittoURL, ImmutableURL } from '../../api/src/auth/auth-provider';
+
 import { DomBase64Encoder, DomHttpBasicAuth, DomHttpBearerAuth, DomWebSocketBasicAuth } from '../src/dom-auth';
 
 

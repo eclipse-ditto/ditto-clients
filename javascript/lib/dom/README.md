@@ -3,11 +3,8 @@
 Implementation of the Eclipse Ditto JavaScript API that uses functionality of DOM environments, 
 e.g. `btoa()` or `WebSocket`.
 
-It is published with two different module types to the npm registry:
-* IIFE (`dist/index.bundle.js`), for using it directly in a browser. The functionality is available under the base name
-`EclipseDittoJavascriptClient`. You can use a CDN like [UNPKG](https://unpkg.com/) to directly
-use it in a HTML document without the need to compile or pack anything.
-* ES Module (`dist/index.es.js`)
+It is published as an ES6 module. You could also use a CDN like [UNPKG](https://unpkg.com/) to directly use it
+in an HTML document (although "_very experimental_", use the `?module`-flag when importing from UNPKG).
 
 
 ## Building
@@ -27,7 +24,7 @@ npm test
 
 ```shell
 # replace <ditto-major.minor> with the major and minor version number of Eclipse Ditto you are using.
-npm i --save  @eclipse/ditto-javascript-client-api_<ditto-major.minor> @eclipse/ditto-javascript-client-dom_<ditto-major.minor>
+npm i --save  @eclipse-ditto/ditto-javascript-client-api_<ditto-major.minor> @eclipse-ditto/ditto-javascript-client-dom_<ditto-major.minor>
 ```
 
 Create an instance of a client:
@@ -42,7 +39,6 @@ const client = DittoDomClient.newHttpClient()
             .withoutTls()
             .withDomain(domain)
             .withAuthProvider(DomHttpBasicAuth.newInstance(username, password))
-            .apiVersion2()
             .build();
 ```
 To use a path other than `/api` to connect to ditto, the optional step `.withCustomPath('/path/to/api')` can be used.
