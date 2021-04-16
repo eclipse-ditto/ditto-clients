@@ -3,6 +3,14 @@ All notable changes to the Ditto JavaScript client will be documented in this fi
 
 ## [2.0.0] - 2021-xx-xx
 
+### \#112 Update npm module structure
+The api module isn't published to npm any long. The node and dom module don't contain
+the Ditto version in their name any longer, but are bound to the Ditto version itself
+(and thus have the same version numbers as Ditto).
+
+### \#142 Remove API 1
+Removes all API 1 related code from the client (namely ACLs and the API 1 builders).
+
 ### \#166 Refactor model structure: 
 Fixes #114: Refactor model structure to avoid "duplicated paths" like `features.features` for all entities inheriting from `IndexedEntityModel` and simplify type generics.
 
@@ -26,7 +34,17 @@ Fixes #123: Fixes the serialization of booleans and numbers in filters.
 ### \#140 Add support for _created field
 Adds the `_created` field to the `Thing` model.
 
+### \#155 Update vulnerable dependencies
+Update vulnerable dependencies as suggested by `npm audit`
+
 ### Breaking changes
+
+* `DittoDomClient` and `DittoNodeClient`: The builder steps `apiVersion1()` and `apiVersion2()` were removed completely.
+* Module `@eclipse-ditto/ditto-javascript-client-api_1.0` was removed completely and is no longer needed
+  for using the client.
+* Module `@eclipse-ditto/ditto-javascript-client-node_1.0` was renamed to `@eclipse-ditto/ditto-javascript-client-node`
+* Module `@eclipse-ditto/ditto-javascript-client-dom_1.0` was renamed to `@eclipse-ditto/ditto-javascript-client-dom`
+* `Acl` and all subclasses: Removed completely.
 * `Features`: Needs to be accessed using `thing.features` instead of `thing.features.features`
 * `Features`: `toObject` instance method was removed. Use `Features#toObject` and `Features#fromObject` instead.
 * `Entries`: Needs to be accessed using `policy.entries` instead of `policy.entries.entries`
@@ -35,8 +53,6 @@ Adds the `_created` field to the `Thing` model.
 * `Resources`: `toObject` instance method was removed. Use `Resources#toObject` and `Resources#fromObject` instead.
 * `Subjects`: Needs to be accessed using `policy.entries.<entryId>.subjects` instead of `policy.entries.<entryId>.subjects.subjects`
 * `Subjects`: `toObject` instance method was removed. Use `Subjects#toObject` and `Subjects#fromObject` instead.
-* `Acl`: Needs to be accessed using `thing.acl` instead of `thing.acl.acl`
-* `Acl`: `toObject` instance method was removed. Use `Acl#toObject` and `Acl#fromObject` instead.
 * `IndexedEntityModel`: The signature of some methods have been changed, see e.g. `Features` on how to update custom implementations to the new format. 
 
 ## Releases in old version format

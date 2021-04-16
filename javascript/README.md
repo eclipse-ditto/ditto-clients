@@ -3,18 +3,17 @@ This module is a TypeScript library to facilitate working the the REST-like HTTP
 
 ### How to use it
 Install `@eclipse-ditto/ditto-javascript-client-dom` for the DOM (browser) implementation, 
-`@eclipse-ditto/ditto-javascript-client-node` for the NodeJS implementation, or `@eclipse-ditto/ditto-javascript-client-api-ditto` for
-the API and build your own client implementation.
+`@eclipse-ditto/ditto-javascript-client-node` for the NodeJS implementation.
 
 More information can be found in the descriptions of the subpackages:
-* [@eclipse-ditto/ditto-javascript-client-api](./lib/api/README.md)
-* [@eclipse-ditto/ditto-javascript-client-dom](./lib/dom/README.md) 
-* [@eclipse-ditto/ditto-javascript-client-node](./lib/node/README.md)
+* [@eclipse-ditto/ditto-javascript-client-api](./lib/api/README.md) for some general information on the API of the client
+* [@eclipse-ditto/ditto-javascript-client-dom](./lib/dom/README.md) for the DOM implementation
+* [@eclipse-ditto/ditto-javascript-client-node](./lib/node/README.md) for the NodeJs implementation
 
 ### Compatibility with [Eclipse Ditto](https://github.com/eclipse/ditto)
 
 The `@eclipse-ditto/ditto-javascript-client-<package>` modules use the same
-[semantic versioning](https://docs.npmjs.com/about-semantic-versioning) and is released
+[semantic versioning](https://docs.npmjs.com/about-semantic-versioning) and are released
 alongside of Eclipse Ditto.
 
 The newest release of the JavaScript client will always try to cover as much API
@@ -42,17 +41,31 @@ npm run build
 # ...
 ```
 It is important to know that during install and build some extra processes
-are triggered by e.g. lerna which will symlink the `api` dependency into 
-the node_modules of `dom` and `node` packages.
+are triggered.
+
+### Dry-run a `publish`
+```
+# install a local npm registry
+npm i -g verdaccio
+verdaccio
+npm adduser --registry http://localhost:4873
+
+# publish
+# on linux/mac
+NPM_CONFIG_REGISTRY=http://localhost:4873 lerna publish --no-git-tag-version --no-git-reset --no-push 0.0.1
+# on windows (do not add whitespace around &&):
+set NPM_CONFIG_REGISTRY=http://localhost:4873&&lerna publish --no-git-tag-version --no-git-reset --no-push 0.0.1
+
+# have a look at the results:
+npm pack --registry=http://localhost:4873 @eclipse-ditto/ditto-javascript-client-node@0.0.1
+npm pack --registry=http://localhost:4873 @eclipse-ditto/ditto-javascript-client-dom@0.0.1
+```
 
 ### Internals
 This project is using [lerna](https://github.com/lerna/lerna) to split up the
 client into different packages. This way we can have standalone codeable 
 subprojects (`api`, `dom` and `node`) but still are able to control dependencies,
 build processes or release processes globally.
-
-Furthermore we use [rollup.js](https://rollupjs.org/) for providing multiple
-module types of the packages, e.g. the `api` will be published as ES6 Module and CommonJS module.
 
 For automatically generating barrel files, [barrelsby](https://github.com/bencoveney/barrelsby)
 is used during the build process.

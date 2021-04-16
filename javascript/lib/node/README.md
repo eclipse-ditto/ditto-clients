@@ -21,8 +21,7 @@ npm test
 ## Using
 
 ```shell
-# replace <ditto-major.minor> with the major and minor version number of Eclipse Ditto you are using.
-npm i --save  @eclipse-ditto/ditto-javascript-client-api_<ditto-major.minor> @eclipse-ditto/ditto-javascript-client-node_<ditto-major.minor>
+npm i --save  @eclipse-ditto/ditto-javascript-client-node
 ```
 
 Create an instance of a client:
@@ -47,7 +46,7 @@ since the API will stay the same no matter what implementation is used.
 
 ### Proxy
 The Node.js implementation supports setting up a proxy. 
-Currently it supports either reading directly from 'https_proxy' (or 'HTTPS_PROXY') environment variable
+Currently, it supports either reading directly from 'https_proxy' (or 'HTTPS_PROXY') environment variable
 or manually setting the proxy settings.
 
 ```javascript
@@ -59,6 +58,6 @@ const proxyOptions = {
 }
 
 DittoNodeClient.newHttpClient(proxyOptions)
-  ...
+//  ...
 ```
 Any options that are set manually will override options that are read from an environment variable.
