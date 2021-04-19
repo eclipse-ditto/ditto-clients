@@ -13,24 +13,16 @@
 package org.eclipse.ditto.client.messaging;
 
 import java.time.Duration;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
-import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
 import org.eclipse.ditto.client.internal.bus.Classification;
-import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.ProtocolFactory;
-import org.eclipse.ditto.protocoladapter.TopicPath;
-import org.eclipse.ditto.signals.commands.base.Command;
-import org.eclipse.ditto.signals.commands.base.CommandResponse;
-import org.eclipse.ditto.signals.events.base.Event;
 
 /**
  * Interface to be used when implementing a messaging provider for the Things client.
@@ -137,104 +129,6 @@ public interface MessagingProvider {
                 .subscribeOnceForAdaptable(Classification.forCorrelationId(correlationId), timeout);
         emitAdaptable(adaptableToSend);
         return result;
-    }
-
-    /**
-     * Send message using the underlying connection.
-     * Throw {@code UnsupportedOperationException}.
-     * Protocol-relevant concerns are moved away from messaging providers into API handles.
-     *
-     * @param message ignored.
-     * @param channel ignored.
-     * @throws UnsupportedOperationException always.
-     */
-    @Deprecated
-    default void send(Message<?> message, TopicPath.Channel channel) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Throw {@code UnsupportedOperationException}.
-     * Protocol-relevant concerns are moved away from messaging providers into API handles.
-     *
-     * @param command ignored.
-     * @param channel ignored.
-     * @throws UnsupportedOperationException always.
-     */
-    @Deprecated
-    default void sendCommand(Command<?> command, TopicPath.Channel channel) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Throw {@code UnsupportedOperationException}.
-     * Protocol-relevant concerns are moved away from messaging providers into API handles.
-     *
-     * @param commandResponse ignored.
-     * @param channel ignored.
-     * @throws UnsupportedOperationException always.
-     */
-    @Deprecated
-    default void sendCommandResponse(CommandResponse<?> commandResponse, TopicPath.Channel channel) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Throw {@code UnsupportedOperationException}.
-     * Protocol-relevant concerns are moved away from messaging providers into API handles.
-     * Use {@code this#emitAdaptable(Adaptable)} or {@code this#emit(String)} instead.
-     *
-     * @param event ignored.
-     * @param channel ignored.
-     * @throws UnsupportedOperationException always.
-     */
-    @Deprecated
-    default void emitEvent(Event<?> event, TopicPath.Channel channel) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Throw {@code UnsupportedOperationException}.
-     * Protocol-relevant concerns are moved away from messaging providers into API handles.
-     *
-     * @param commandResponseHandler ignored.
-     * @throws UnsupportedOperationException always.
-     */
-    @Deprecated
-    default void registerReplyHandler(Consumer<CommandResponse<?>> commandResponseHandler) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Throw {@code UnsupportedOperationException}.
-     * Protocol-relevant concerns are moved away from messaging providers into API handles.
-     *
-     * @param name ignored.
-     * @param registrationConfig ignored.
-     * @param handler ignored.
-     * @param receiptFuture ignored.
-     * @return nothing.
-     * @throws UnsupportedOperationException always.
-     */
-    @Deprecated
-    default boolean registerMessageHandler(String name,
-            Map<String, String> registrationConfig,
-            Consumer<Message<?>> handler,
-            CompletableFuture<Void> receiptFuture) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Throw {@code UnsupportedOperationException}.
-     * Protocol-relevant concerns are moved away from messaging providers into API handles.
-     *
-     * @param name ignored.
-     * @param future ignored.
-     * @throws UnsupportedOperationException always.
-     */
-    @Deprecated
-    default void deregisterMessageHandler(String name, CompletableFuture<Void> future) {
-        throw new UnsupportedOperationException();
     }
 
     /**
