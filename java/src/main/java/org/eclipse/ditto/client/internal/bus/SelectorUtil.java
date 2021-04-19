@@ -106,6 +106,7 @@ public final class SelectorUtil {
      * occurred ThingEvent
      * @param <T> the type of the ThingEvent
      */
+    @SuppressWarnings({"rawtypes", "java:S3740"})
     public static <T extends org.eclipse.ditto.signals.events.base.Event> void addHandlerForThingEvent(
             final Logger logger,
             final PointerBus in,
@@ -319,10 +320,8 @@ public final class SelectorUtil {
                         return valueToSet;
                     } else {
                         JsonValue valueToSet = value;
-                        if (value.isObject()) {
-                            if (value.asObject().contains(diff)) {
-                                valueToSet = value.asObject().getValue(diff).get();
-                            }
+                        if (value.isObject() && value.asObject().contains(diff)) {
+                            valueToSet = value.asObject().getValue(diff).get();
                         }
                         return JsonObject.newBuilder().set(parsedPath, valueToSet).build();
                     }

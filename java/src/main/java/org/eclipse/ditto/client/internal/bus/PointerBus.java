@@ -64,7 +64,7 @@ public interface PointerBus {
      * @param consumer The {@literal Consumer} to be triggered
      * @return A {@link Registration} object that allows the caller to interact with the given mapping
      */
-    Registration<Consumer<PointerWithData>> on(JsonPointerSelector selector, Consumer<PointerWithData> consumer);
+    Registration<Consumer<PointerWithData<?>>> on(JsonPointerSelector selector, Consumer<PointerWithData<?>> consumer);
 
     /**
      * @return the ExecutorService used for this Bus instance.

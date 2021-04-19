@@ -47,22 +47,22 @@ public class HandlerRegistryTest {
     @Mock
     private JsonPointerSelector selectorMock;
     @Mock
-    private Consumer<PointerWithData> consumerMock;
+    private Consumer<PointerWithData<?>> consumerMock;
     @Mock
-    private Registration<Consumer<? extends PointerWithData>> registrationMock;
-    private HandlerRegistry registry;
+    private Registration<Consumer<? extends PointerWithData<?>>> registrationMock;
+    private HandlerRegistry<?, ?> registry;
 
 
     @Before
     public void before() {
-        registry = new HandlerRegistry(busMock);
+        registry = new HandlerRegistry<>(busMock);
 
         when(busMock.on(any(JsonPointerSelector.class), any(Consumer.class))).thenReturn(registrationMock);
     }
 
     @Test(expected = NullPointerException.class)
     public void constructorWithNullBus() {
-        new HandlerRegistry(null);
+        new HandlerRegistry<>(null);
     }
 
     @Test

@@ -104,6 +104,7 @@ abstract class AbstractLiveCommandAnswerBuilder<C
      * @return the CommandResponse.
      */
     @Nullable
+    @SuppressWarnings({"rawtypes", "java:S3740"})
     protected abstract CommandResponse doCreateResponse(Function<R, CommandResponse<?>> createResponseFunction);
 
     /**
@@ -113,6 +114,7 @@ abstract class AbstractLiveCommandAnswerBuilder<C
      * @return the Event.
      */
     @Nullable
+    @SuppressWarnings({"rawtypes", "java:S3740"})
     protected abstract Event doCreateEvent(Function<E, Event<?>> createEventFunction);
 
 }
