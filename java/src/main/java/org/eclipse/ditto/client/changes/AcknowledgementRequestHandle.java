@@ -18,7 +18,7 @@ import javax.annotation.concurrent.Immutable;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.common.HttpStatus;
-import org.eclipse.ditto.model.base.entity.id.EntityIdWithType;
+import org.eclipse.ditto.model.base.entity.id.EntityId;
 import org.eclipse.ditto.model.base.headers.DittoHeadersSettable;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 
@@ -44,7 +44,7 @@ public interface AcknowledgementRequestHandle extends DittoHeadersSettable<Ackno
      *
      * @return the entity id to handle.
      */
-    EntityIdWithType getEntityId();
+    EntityId getEntityId();
 
     /**
      * Builds and sends an {@code Acknowledgement} to the Ditto backend based on the information this handle instance
