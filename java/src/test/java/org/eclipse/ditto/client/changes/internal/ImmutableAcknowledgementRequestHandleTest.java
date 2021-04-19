@@ -20,7 +20,7 @@ import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.ack.internal.ImmutableAcknowledgementRequestHandle;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
-import org.eclipse.ditto.model.base.entity.id.EntityIdWithType;
+import org.eclipse.ditto.model.base.entity.id.EntityId;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.things.ThingId;
 import org.junit.Test;
@@ -35,7 +35,7 @@ public final class ImmutableAcknowledgementRequestHandleTest {
     @Test
     public void assertImmutability() {
         assertInstancesOf(ImmutableAcknowledgementRequestHandle.class, areImmutable(),
-                provided(AcknowledgementLabel.class, EntityIdWithType.class, DittoHeaders.class, Consumer.class)
+                provided(AcknowledgementLabel.class, EntityId.class, DittoHeaders.class, Consumer.class)
                         .isAlsoImmutable());
     }
 
@@ -47,7 +47,7 @@ public final class ImmutableAcknowledgementRequestHandleTest {
         EqualsVerifier.forClass(ImmutableAcknowledgementRequestHandle.class)
                 .usingGetClass()
                 .withIgnoredFields("acknowledgementPublisher")
-                .withPrefabValues(EntityIdWithType.class, red, black)
+                .withPrefabValues(EntityId.class, red, black)
                 .verify();
     }
 

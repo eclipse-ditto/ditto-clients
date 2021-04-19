@@ -34,7 +34,7 @@ import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.entity.id.EntityId;
-import org.eclipse.ditto.model.base.entity.id.EntityIdWithType;
+import org.eclipse.ditto.model.base.entity.id.EntityId;
 import org.eclipse.ditto.model.base.entity.type.EntityType;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
@@ -48,7 +48,7 @@ import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 @Immutable
 public final class ImmutableChange implements Change {
 
-    private final EntityIdWithType entityId;
+    private final EntityId entityId;
     private final ChangeAction action;
     private final JsonPointer path;
     @Nullable private final JsonValue value;
@@ -72,7 +72,7 @@ public final class ImmutableChange implements Change {
      * @param acknowledgementPublisher the consumer for publishing built acknowledgements to the Ditto backend.
      * @throws NullPointerException if any required argument is {@code null}.
      */
-    public ImmutableChange(final EntityIdWithType entityId,
+    public ImmutableChange(final EntityId entityId,
             final ChangeAction changeAction,
             final JsonPointer path,
             @Nullable final JsonValue value,
