@@ -44,8 +44,8 @@ import org.eclipse.ditto.signals.events.base.Event;
  */
 @ParametersAreNonnullByDefault
 @NotThreadSafe
-abstract class AbstractLiveCommandAnswerBuilder<C
-        extends LiveCommand, R extends LiveCommandResponseFactory, E extends LiveEventFactory>
+abstract class AbstractLiveCommandAnswerBuilder<C extends LiveCommand<?,?>,
+        R extends LiveCommandResponseFactory, E extends LiveEventFactory>
         implements ModifyCommandResponseStep<R, E>, EventStep<E>, BuildStep {
 
     // This variable being protected is no problem as it is a) immutable and b) not visible beyond "modify" package.
