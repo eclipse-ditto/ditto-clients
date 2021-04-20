@@ -42,7 +42,6 @@ public final class DeleteFeatureLiveCommandAnswerBuilderImplTest {
 
     private DeleteFeatureLiveCommandAnswerBuilderImpl underTest;
 
-    /** */
     @Before
     public void setUp() {
         Mockito.when(commandMock.getEntityId()).thenReturn(TestConstants.Thing.THING_ID);
@@ -52,7 +51,6 @@ public final class DeleteFeatureLiveCommandAnswerBuilderImplTest {
         underTest = DeleteFeatureLiveCommandAnswerBuilderImpl.newInstance(commandMock);
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetNewInstanceWithNullCommand() {
@@ -62,7 +60,6 @@ public final class DeleteFeatureLiveCommandAnswerBuilderImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void buildAnswerWithDeleteFeatureResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -75,7 +72,6 @@ public final class DeleteFeatureLiveCommandAnswerBuilderImplTest {
                 .hasThingModifyCommandResponse();
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeatureNotAccessibleErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -93,7 +89,6 @@ public final class DeleteFeatureLiveCommandAnswerBuilderImplTest {
                 .withDittoRuntimeExceptionOfType(FeatureNotAccessibleException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeatureNotModifiableErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -111,7 +106,6 @@ public final class DeleteFeatureLiveCommandAnswerBuilderImplTest {
                 .withDittoRuntimeExceptionOfType(FeatureNotModifiableException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeatureDeletedEventOnly() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse()

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2021 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -16,4 +16,4 @@
  * org.eclipse.ditto.model.things.Thing}s and {@link org.eclipse.ditto.model.things.Feature}s.
  */
 @org.eclipse.ditto.utils.jsr305.annotations.AllValuesAreNonnullByDefault
-package org.eclipse.ditto.client.changes;
+package org.eclipse.ditto.client.ack.internal;

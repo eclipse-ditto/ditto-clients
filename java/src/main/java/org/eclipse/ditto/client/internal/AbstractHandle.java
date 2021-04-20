@@ -35,7 +35,6 @@ import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.common.HttpStatus;
-import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.base.headers.DittoHeadersSettable;
@@ -323,11 +322,6 @@ public abstract class AbstractHandle {
             @Override
             public T setDittoHeaders(final DittoHeaders dittoHeaders) {
                 return (T) this;
-            }
-
-            @Override
-            public HttpStatusCode getStatusCode() {
-                return ack.getStatusCode();
             }
 
             @Override

@@ -38,20 +38,17 @@ public final class DeleteThingLiveCommandImplTest {
     private DeleteThing twinCommand;
     private DeleteThingLiveCommand underTest;
 
-    /** */
     @Before
     public void setUp() {
         twinCommand = DeleteThing.of(TestConstants.Thing.THING_ID, DittoHeaders.empty());
         underTest = DeleteThingLiveCommandImpl.of(twinCommand);
     }
 
-    /** */
     @Test
     public void assertImmutability() {
         assertInstancesOf(DeleteThingLiveCommandImpl.class, areImmutable());
     }
 
-    /** */
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(DeleteThingLiveCommandImpl.class)
@@ -60,7 +57,6 @@ public final class DeleteThingLiveCommandImplTest {
                 .verify();
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetDeleteThingLiveCommandForNull() {
@@ -70,7 +66,6 @@ public final class DeleteThingLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void tryToGetDeleteThingLiveCommandForCreateThingCommand() {
         final Command<?> commandMock = Mockito.mock(Command.class);
@@ -81,7 +76,6 @@ public final class DeleteThingLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void getDeleteThingLiveCommandReturnsExpected() {
         assertThat(underTest)
@@ -92,7 +86,6 @@ public final class DeleteThingLiveCommandImplTest {
                 .withResourcePath(twinCommand.getResourcePath());
     }
 
-    /** */
     @Test
     public void setDittoHeadersReturnsExpected() {
         final DittoHeaders emptyDittoHeaders = DittoHeaders.empty();
@@ -102,13 +95,11 @@ public final class DeleteThingLiveCommandImplTest {
         assertThat(newDeleteThingLiveCommand).withDittoHeaders(emptyDittoHeaders);
     }
 
-    /** */
     @Test
     public void answerReturnsNotNull() {
         assertThat(underTest.answer()).isNotNull();
     }
 
-    /** */
     @Test
     public void toStringReturnsExpected() {
         assertThat(underTest.toString())

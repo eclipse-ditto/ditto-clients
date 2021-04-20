@@ -359,7 +359,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
             final String featureId = featureIdFromResourcePath.get().toString();
             handled = getFeatureHandle(thingId.get(), featureId)
                     .filter(h -> h instanceof LiveCommandProcessor)
-                    .map(h -> (LiveCommandProcessor) h)
+                    .map(LiveCommandProcessor.class::cast)
                     .map(h -> h.processLiveCommand(liveCommand))
                     .orElse(false);
             LOGGER.debug("Live command of type '{}' handled with specific feature handle: {}",
@@ -369,7 +369,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
         if (!handled && thingId.isPresent()) {
             handled = getThingHandle(thingId.get())
                     .filter(h -> h instanceof LiveCommandProcessor)
-                    .map(h -> (LiveCommandProcessor) h)
+                    .map(LiveCommandProcessor.class::cast)
                     .map(h -> h.processLiveCommand(liveCommand))
                     .orElse(false);
             LOGGER.debug("Live command of type '{}' handled with specific thing handle: {}",

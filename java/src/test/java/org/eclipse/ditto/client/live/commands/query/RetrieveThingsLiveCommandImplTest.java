@@ -46,7 +46,6 @@ public final class RetrieveThingsLiveCommandImplTest {
     private RetrieveThings retrieveThingsTwinCommand;
     private RetrieveThingsLiveCommand underTest;
 
-    /** */
     @BeforeClass
     public static void initThingIds() {
         thingIds = new ArrayList<>();
@@ -55,7 +54,6 @@ public final class RetrieveThingsLiveCommandImplTest {
         thingIds.add(ThingId.inDefaultNamespace("baz"));
     }
 
-    /** */
     @Before
     public void setUp() {
         retrieveThingsTwinCommand = RetrieveThings.getBuilder(thingIds)
@@ -65,7 +63,6 @@ public final class RetrieveThingsLiveCommandImplTest {
         underTest = RetrieveThingsLiveCommandImpl.of(retrieveThingsTwinCommand);
     }
 
-    /** */
     @Test
     public void assertImmutability() {
         assertInstancesOf(RetrieveThingsLiveCommandImpl.class,
@@ -73,7 +70,6 @@ public final class RetrieveThingsLiveCommandImplTest {
                 assumingFields("thingIds").areSafelyCopiedUnmodifiableCollectionsWithImmutableElements());
     }
 
-    /** */
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(RetrieveThingsLiveCommandImpl.class)
@@ -82,7 +78,6 @@ public final class RetrieveThingsLiveCommandImplTest {
                 .verify();
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetRetrieveThingsLiveCommandForNull() {
@@ -92,7 +87,6 @@ public final class RetrieveThingsLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void tryToGetRetrieveThingsLiveCommandForCreateAttributeCommand() {
         final Command<?> commandMock = Mockito.mock(Command.class);
@@ -103,7 +97,6 @@ public final class RetrieveThingsLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void getRetrieveThingsLiveCommandReturnsExpected() {
         assertThat(underTest)
@@ -114,7 +107,6 @@ public final class RetrieveThingsLiveCommandImplTest {
         assertThat(underTest.getEntityIds()).isEqualTo(retrieveThingsTwinCommand.getEntityIds());
     }
 
-    /** */
     @Test
     public void setDittoHeadersReturnsExpected() {
         final DittoHeaders emptyDittoHeaders = DittoHeaders.empty();
@@ -124,13 +116,11 @@ public final class RetrieveThingsLiveCommandImplTest {
         assertThat(newRetrieveThingsLiveCommand).withDittoHeaders(emptyDittoHeaders);
     }
 
-    /** */
     @Test
     public void answerReturnsNotNull() {
         Assertions.assertThat(underTest.answer()).isNotNull();
     }
 
-    /** */
     @Test
     public void toStringReturnsExpected() {
         assertThat(underTest.toString())

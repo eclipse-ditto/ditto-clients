@@ -44,7 +44,6 @@ public final class RetrieveFeatureDesiredPropertiesLiveCommandAnswerBuilderImplT
 
     private RetrieveFeatureDesiredPropertiesLiveCommandAnswerBuilderImpl underTest;
 
-    /** */
     @Before
     public void setUp() {
         Mockito.when(commandMock.getEntityId()).thenReturn(TestConstants.Thing.THING_ID);
@@ -54,7 +53,6 @@ public final class RetrieveFeatureDesiredPropertiesLiveCommandAnswerBuilderImplT
         underTest = RetrieveFeatureDesiredPropertiesLiveCommandAnswerBuilderImpl.newInstance(commandMock);
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetNewInstanceWithNullCommand() {
@@ -64,7 +62,6 @@ public final class RetrieveFeatureDesiredPropertiesLiveCommandAnswerBuilderImplT
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void buildAnswerWithoutResponse() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse().build();
@@ -74,7 +71,6 @@ public final class RetrieveFeatureDesiredPropertiesLiveCommandAnswerBuilderImplT
                 .hasNoEvent();
     }
 
-    /** */
     @Test
     public void buildAnswerWithRetrieveFeatureDesiredPropertiesResponseOnly() {
         final FeatureProperties desiredProperties = TestConstants.Feature.HOVER_BOARD_PROPERTIES;
@@ -91,7 +87,6 @@ public final class RetrieveFeatureDesiredPropertiesLiveCommandAnswerBuilderImplT
                 .hasResourcePath(JsonPointer.of("features/" + TestConstants.Feature.HOVER_BOARD_ID + "/desiredProperties"));
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeatureDesiredPropertiesNotAccessibleErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =

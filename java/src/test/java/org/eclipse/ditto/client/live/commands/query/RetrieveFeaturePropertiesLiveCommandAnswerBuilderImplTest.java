@@ -44,7 +44,6 @@ public final class RetrieveFeaturePropertiesLiveCommandAnswerBuilderImplTest {
 
     private RetrieveFeaturePropertiesLiveCommandAnswerBuilderImpl underTest;
 
-    /** */
     @Before
     public void setUp() {
         Mockito.when(commandMock.getEntityId()).thenReturn(TestConstants.Thing.THING_ID);
@@ -54,7 +53,6 @@ public final class RetrieveFeaturePropertiesLiveCommandAnswerBuilderImplTest {
         underTest = RetrieveFeaturePropertiesLiveCommandAnswerBuilderImpl.newInstance(commandMock);
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetNewInstanceWithNullCommand() {
@@ -64,7 +62,6 @@ public final class RetrieveFeaturePropertiesLiveCommandAnswerBuilderImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void buildAnswerWithoutResponse() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse().build();
@@ -74,7 +71,6 @@ public final class RetrieveFeaturePropertiesLiveCommandAnswerBuilderImplTest {
                 .hasNoEvent();
     }
 
-    /** */
     @Test
     public void buildAnswerWithRetrieveFeaturePropertiesResponseOnly() {
         final FeatureProperties featureProperties = TestConstants.Feature.FLUX_CAPACITOR_PROPERTIES;
@@ -91,7 +87,6 @@ public final class RetrieveFeaturePropertiesLiveCommandAnswerBuilderImplTest {
                 .hasResourcePath(JsonPointer.of("features/" + TestConstants.Feature.FLUX_CAPACITOR_ID + "/properties"));
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeaturePropertiesNotAccessibleErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =

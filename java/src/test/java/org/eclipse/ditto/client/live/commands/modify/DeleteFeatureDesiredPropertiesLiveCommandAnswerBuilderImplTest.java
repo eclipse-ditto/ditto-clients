@@ -42,7 +42,6 @@ public final class DeleteFeatureDesiredPropertiesLiveCommandAnswerBuilderImplTes
 
     private DeleteFeatureDesiredPropertiesLiveCommandAnswerBuilderImpl underTest;
 
-    /** */
     @Before
     public void setUp() {
         Mockito.when(commandMock.getEntityId()).thenReturn(TestConstants.Thing.THING_ID);
@@ -52,7 +51,6 @@ public final class DeleteFeatureDesiredPropertiesLiveCommandAnswerBuilderImplTes
         underTest = DeleteFeatureDesiredPropertiesLiveCommandAnswerBuilderImpl.newInstance(commandMock);
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetNewInstanceWithNullCommand() {
@@ -62,7 +60,6 @@ public final class DeleteFeatureDesiredPropertiesLiveCommandAnswerBuilderImplTes
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void buildAnswerWithDeleteFeatureDesiredPropertiesResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -75,7 +72,6 @@ public final class DeleteFeatureDesiredPropertiesLiveCommandAnswerBuilderImplTes
                 .hasThingModifyCommandResponse();
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeatureDesiredPropertiesNotAccessibleErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -93,7 +89,6 @@ public final class DeleteFeatureDesiredPropertiesLiveCommandAnswerBuilderImplTes
                 .withDittoRuntimeExceptionOfType(FeatureDesiredPropertiesNotAccessibleException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeatureDesiredPropertiesNotModifiableErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -111,7 +106,6 @@ public final class DeleteFeatureDesiredPropertiesLiveCommandAnswerBuilderImplTes
                 .withDittoRuntimeExceptionOfType(FeatureDesiredPropertiesNotModifiableException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeatureDesiredPropertiesDeletedEventOnly() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse()

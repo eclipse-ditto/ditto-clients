@@ -40,7 +40,6 @@ public final class RetrieveFeatureDesiredPropertyLiveCommandImplTest {
     private RetrieveFeatureDesiredProperty retrieveFeatureDesiredPropertyTwinCommand;
     private RetrieveFeatureDesiredPropertyLiveCommand underTest;
 
-    /** */
     @Before
     public void setUp() {
         retrieveFeatureDesiredPropertyTwinCommand = RetrieveFeatureDesiredProperty.of(TestConstants.Thing.THING_ID,
@@ -49,7 +48,6 @@ public final class RetrieveFeatureDesiredPropertyLiveCommandImplTest {
         underTest = RetrieveFeatureDesiredPropertyLiveCommandImpl.of(retrieveFeatureDesiredPropertyTwinCommand);
     }
 
-    /** */
     @Test
     public void assertImmutability() {
         assertInstancesOf(RetrieveFeatureDesiredPropertyLiveCommandImpl.class,
@@ -57,7 +55,6 @@ public final class RetrieveFeatureDesiredPropertyLiveCommandImplTest {
                 provided(JsonPointer.class).isAlsoImmutable());
     }
 
-    /** */
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(RetrieveFeatureDesiredPropertyLiveCommandImpl.class)
@@ -66,7 +63,6 @@ public final class RetrieveFeatureDesiredPropertyLiveCommandImplTest {
                 .verify();
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetRetrieveFeatureDesiredPropertyLiveCommandForNull() {
@@ -76,7 +72,6 @@ public final class RetrieveFeatureDesiredPropertyLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void tryToGetRetrieveFeatureDesiredPropertyLiveCommandForCreateAttributeCommand() {
         final Command<?> commandMock = Mockito.mock(Command.class);
@@ -87,7 +82,6 @@ public final class RetrieveFeatureDesiredPropertyLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void getRetrieveFeatureDesiredPropertyLiveCommandReturnsExpected() {
         assertThat(underTest)
@@ -101,7 +95,6 @@ public final class RetrieveFeatureDesiredPropertyLiveCommandImplTest {
                 .isEqualTo(retrieveFeatureDesiredPropertyTwinCommand.getDesiredPropertyPointer());
     }
 
-    /** */
     @Test
     public void setDittoHeadersReturnsExpected() {
         final DittoHeaders emptyDittoHeaders = DittoHeaders.empty();
@@ -111,13 +104,11 @@ public final class RetrieveFeatureDesiredPropertyLiveCommandImplTest {
         assertThat(newRetrieveFeatureDesiredPropertyLiveCommand).withDittoHeaders(emptyDittoHeaders);
     }
 
-    /** */
     @Test
     public void answerReturnsNotNull() {
         Assertions.assertThat(underTest.answer()).isNotNull();
     }
 
-    /** */
     @Test
     public void toStringReturnsExpected() {
         assertThat(underTest.toString())

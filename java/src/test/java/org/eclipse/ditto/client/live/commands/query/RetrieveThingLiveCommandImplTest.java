@@ -38,7 +38,6 @@ public final class RetrieveThingLiveCommandImplTest {
     private RetrieveThing retrieveThingTwinCommand;
     private RetrieveThingLiveCommand underTest;
 
-    /** */
     @Before
     public void setUp() {
         retrieveThingTwinCommand = RetrieveThing.getBuilder(TestConstants.Thing.THING_ID, DittoHeaders.empty())
@@ -47,13 +46,11 @@ public final class RetrieveThingLiveCommandImplTest {
         underTest = RetrieveThingLiveCommandImpl.of(retrieveThingTwinCommand);
     }
 
-    /** */
     @Test
     public void assertImmutability() {
         assertInstancesOf(RetrieveThingLiveCommandImpl.class, areImmutable());
     }
 
-    /** */
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(RetrieveThingLiveCommandImpl.class)
@@ -62,7 +59,6 @@ public final class RetrieveThingLiveCommandImplTest {
                 .verify();
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetRetrieveThingLiveCommandForNull() {
@@ -72,7 +68,6 @@ public final class RetrieveThingLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void tryToGetRetrieveThingLiveCommandForCreateAttributeCommand() {
         final Command<?> commandMock = Mockito.mock(Command.class);
@@ -83,7 +78,6 @@ public final class RetrieveThingLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void getRetrieveThingLiveCommandReturnsExpected() {
         assertThat(underTest)
@@ -94,7 +88,6 @@ public final class RetrieveThingLiveCommandImplTest {
                 .withResourcePath(retrieveThingTwinCommand.getResourcePath());
     }
 
-    /** */
     @Test
     public void setDittoHeadersReturnsExpected() {
         final DittoHeaders emptyDittoHeaders = DittoHeaders.empty();
@@ -104,13 +97,11 @@ public final class RetrieveThingLiveCommandImplTest {
         assertThat(newRetrieveThingLiveCommand).withDittoHeaders(emptyDittoHeaders);
     }
 
-    /** */
     @Test
     public void answerReturnsNotNull() {
         assertThat(underTest.answer()).isNotNull();
     }
 
-    /** */
     @Test
     public void toStringReturnsExpected() {
         assertThat(underTest.toString())

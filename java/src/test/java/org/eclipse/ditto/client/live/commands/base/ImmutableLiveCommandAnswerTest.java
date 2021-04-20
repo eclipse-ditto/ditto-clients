@@ -31,7 +31,6 @@ import nl.jqno.equalsverifier.EqualsVerifier;
  */
 public final class ImmutableLiveCommandAnswerTest {
 
-    /** */
     @Test
     public void assertImmutability() {
         assertInstancesOf(ImmutableLiveCommandAnswer.class,
@@ -39,7 +38,6 @@ public final class ImmutableLiveCommandAnswerTest {
                 provided(CommandResponse.class, Event.class).areAlsoImmutable());
     }
 
-    /** */
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(ImmutableLiveCommandAnswer.class) //
@@ -47,7 +45,6 @@ public final class ImmutableLiveCommandAnswerTest {
                 .verify();
     }
 
-    /** */
     @Test
     public void getResponseReturnsEmptyOptionalForNullResponse() {
         final ImmutableLiveCommandAnswer underTest = ImmutableLiveCommandAnswer.newInstance(null, null);
@@ -55,7 +52,6 @@ public final class ImmutableLiveCommandAnswerTest {
         assertThat(underTest.getResponse()).isEmpty();
     }
 
-    /** */
     @Test
     public void getEventReturnsEmptyOptionalForNullEvent() {
         final ImmutableLiveCommandAnswer underTest = ImmutableLiveCommandAnswer.newInstance(null, null);
@@ -63,19 +59,17 @@ public final class ImmutableLiveCommandAnswerTest {
         assertThat(underTest.getEvent()).isEmpty();
     }
 
-    /** */
     @Test
     public void getResponseReturnsExpected() {
-        final ThingCommandResponse responseMock = Mockito.mock(ThingCommandResponse.class);
+        final ThingCommandResponse<?> responseMock = Mockito.mock(ThingCommandResponse.class);
         final ImmutableLiveCommandAnswer underTest = ImmutableLiveCommandAnswer.newInstance(responseMock, null);
 
         assertThat(underTest.getResponse()).contains(responseMock);
     }
 
-    /** */
     @Test
     public void getEventReturnsExpected() {
-        final ThingEvent eventMock = Mockito.mock(ThingEvent.class);
+        final ThingEvent<?> eventMock = Mockito.mock(ThingEvent.class);
         final ImmutableLiveCommandAnswer underTest = ImmutableLiveCommandAnswer.newInstance(null, eventMock);
 
         assertThat(underTest.getEvent()).contains(eventMock);

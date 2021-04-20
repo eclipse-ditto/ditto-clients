@@ -13,7 +13,6 @@
 package org.eclipse.ditto.client.live.commands.query;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
@@ -22,7 +21,6 @@ import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.signals.commands.base.WithNamespace;
 import org.eclipse.ditto.signals.commands.things.WithSelectedFields;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThings;
-import org.eclipse.ditto.signals.commands.things.query.ThingQueryCommand;
 
 /**
  * {@link RetrieveThings} live command giving access to the command and all of its special accessors.
@@ -34,18 +32,6 @@ import org.eclipse.ditto.signals.commands.things.query.ThingQueryCommand;
 public interface RetrieveThingsLiveCommand
         extends LiveCommand<RetrieveThingsLiveCommand, RetrieveThingsLiveCommandAnswerBuilder>,
         WithNamespace, WithSelectedFields {
-
-    /**
-     * Returns the identifiers of the {@code Thing}s to be retrieved.
-     *
-     * @return the identifiers
-     * @deprecated the thing ID is now typed. Use {@link #getEntityIds()} instead.
-     */
-    @Nonnull
-    @Deprecated
-    default List<String> getThingIds() {
-        return getEntityIds().stream().map(String::valueOf).collect(Collectors.toList());
-    }
 
     @Nonnull
     List<ThingId> getEntityIds();

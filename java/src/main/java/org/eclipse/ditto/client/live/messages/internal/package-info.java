@@ -14,4 +14,5 @@
 /**
  * Internal messages package of the Ditto Client which is not part of the public API.
  */
+@org.eclipse.ditto.utils.jsr305.annotations.AllValuesAreNonnullByDefault
 package org.eclipse.ditto.client.live.messages.internal;

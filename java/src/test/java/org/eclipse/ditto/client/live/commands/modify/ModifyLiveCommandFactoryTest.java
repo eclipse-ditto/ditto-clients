@@ -22,7 +22,6 @@ import org.junit.Test;
  */
 public final class ModifyLiveCommandFactoryTest {
 
-    /** */
     @Test
     public void assertImmutability() {
         assertInstancesOf(ModifyLiveCommandFactory.class, areImmutable());

@@ -42,7 +42,6 @@ public final class DeleteFeatureDesiredPropertyLiveCommandAnswerBuilderImplTest 
 
     private DeleteFeatureDesiredPropertyLiveCommandAnswerBuilderImpl underTest;
 
-    /** */
     @Before
     public void setUp() {
         Mockito.when(commandMock.getEntityId()).thenReturn(TestConstants.Thing.THING_ID);
@@ -54,7 +53,6 @@ public final class DeleteFeatureDesiredPropertyLiveCommandAnswerBuilderImplTest 
         underTest = DeleteFeatureDesiredPropertyLiveCommandAnswerBuilderImpl.newInstance(commandMock);
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetNewInstanceWithNullCommand() {
@@ -64,7 +62,6 @@ public final class DeleteFeatureDesiredPropertyLiveCommandAnswerBuilderImplTest 
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void buildAnswerWithDeleteFeatureDesiredPropertyResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -77,7 +74,6 @@ public final class DeleteFeatureDesiredPropertyLiveCommandAnswerBuilderImplTest 
                 .hasThingModifyCommandResponse();
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeatureDesiredPropertyNotAccessibleErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -95,7 +91,6 @@ public final class DeleteFeatureDesiredPropertyLiveCommandAnswerBuilderImplTest 
                 .withDittoRuntimeExceptionOfType(FeatureDesiredPropertyNotAccessibleException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeatureDesiredPropertyNotModifiableErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -113,7 +108,6 @@ public final class DeleteFeatureDesiredPropertyLiveCommandAnswerBuilderImplTest 
                 .withDittoRuntimeExceptionOfType(FeatureDesiredPropertyNotModifiableException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeatureDesiredPropertyDeletedEventOnly() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse()

@@ -42,7 +42,6 @@ public final class DeleteAttributesLiveCommandAnswerBuilderImplTest {
 
     private DeleteAttributesLiveCommandAnswerBuilderImpl underTest;
 
-    /** */
     @Before
     public void setUp() {
         Mockito.when(commandMock.getEntityId()).thenReturn(TestConstants.Thing.THING_ID);
@@ -51,7 +50,6 @@ public final class DeleteAttributesLiveCommandAnswerBuilderImplTest {
         underTest = DeleteAttributesLiveCommandAnswerBuilderImpl.newInstance(commandMock);
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetNewInstanceWithNullCommand() {
@@ -61,7 +59,6 @@ public final class DeleteAttributesLiveCommandAnswerBuilderImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void buildAnswerWithDeleteAttributesResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -74,7 +71,6 @@ public final class DeleteAttributesLiveCommandAnswerBuilderImplTest {
                 .hasThingModifyCommandResponse();
     }
 
-    /** */
     @Test
     public void buildAnswerWithAttributesNotAccessibleErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -92,7 +88,6 @@ public final class DeleteAttributesLiveCommandAnswerBuilderImplTest {
                 .withDittoRuntimeExceptionOfType(AttributesNotAccessibleException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithAttributesNotModifiableErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -110,7 +105,6 @@ public final class DeleteAttributesLiveCommandAnswerBuilderImplTest {
                 .withDittoRuntimeExceptionOfType(AttributesNotModifiableException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithAttributesDeletedEventOnly() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse()

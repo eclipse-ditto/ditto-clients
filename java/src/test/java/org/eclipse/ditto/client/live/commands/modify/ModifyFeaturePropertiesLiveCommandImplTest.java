@@ -39,7 +39,6 @@ public final class ModifyFeaturePropertiesLiveCommandImplTest {
     private ModifyFeatureProperties twinCommand;
     private ModifyFeaturePropertiesLiveCommand underTest;
 
-    /** */
     @Before
     public void setUp() {
         twinCommand = ModifyFeatureProperties.of(TestConstants.Thing.THING_ID, TestConstants.Feature.FLUX_CAPACITOR_ID,
@@ -47,7 +46,6 @@ public final class ModifyFeaturePropertiesLiveCommandImplTest {
         underTest = ModifyFeaturePropertiesLiveCommandImpl.of(twinCommand);
     }
 
-    /** */
     @Test
     public void assertImmutability() {
         assertInstancesOf(ModifyFeaturePropertiesLiveCommandImpl.class,
@@ -55,7 +53,6 @@ public final class ModifyFeaturePropertiesLiveCommandImplTest {
                 provided(FeatureProperties.class).isAlsoImmutable());
     }
 
-    /** */
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(ModifyFeaturePropertiesLiveCommandImpl.class)
@@ -64,7 +61,6 @@ public final class ModifyFeaturePropertiesLiveCommandImplTest {
                 .verify();
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetModifyFeaturePropertiesLiveCommandForNull() {
@@ -74,7 +70,6 @@ public final class ModifyFeaturePropertiesLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void tryToGetModifyFeaturePropertiesLiveCommandForCreateThingCommand() {
         final Command<?> commandMock = Mockito.mock(Command.class);
@@ -86,7 +81,6 @@ public final class ModifyFeaturePropertiesLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void getModifyFeaturePropertiesLiveCommandReturnsExpected() {
         assertThat(underTest)
@@ -99,7 +93,6 @@ public final class ModifyFeaturePropertiesLiveCommandImplTest {
         assertThat(underTest.getFeatureId()).isEqualTo(twinCommand.getFeatureId());
     }
 
-    /** */
     @Test
     public void setDittoHeadersReturnsExpected() {
         final DittoHeaders emptyDittoHeaders = DittoHeaders.empty();
@@ -109,13 +102,11 @@ public final class ModifyFeaturePropertiesLiveCommandImplTest {
         assertThat(newModifyFeaturePropertiesLiveCommand).withDittoHeaders(emptyDittoHeaders);
     }
 
-    /** */
     @Test
     public void answerReturnsNotNull() {
         assertThat(underTest.answer()).isNotNull();
     }
 
-    /** */
     @Test
     public void toStringReturnsExpected() {
         assertThat(underTest.toString())

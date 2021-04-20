@@ -87,13 +87,11 @@ public final class LiveCommandFactoryTest {
 
     private LiveCommandFactory underTest;
 
-    /** */
     @Before
     public void setUp() {
         underTest = LiveCommandFactory.getInstance();
     }
 
-    /** */
     @Test
     public void assertImmutability() {
         assertInstancesOf(LiveCommandFactory.class,
@@ -101,7 +99,6 @@ public final class LiveCommandFactoryTest {
                 assumingFields("mappingStrategies").areSafelyCopiedUnmodifiableCollectionsWithImmutableElements());
     }
 
-    /** */
     @Test
     public void liveCommandFactoryIsSingleton() {
         assertThat(underTest).isSameAs(LiveCommandFactory.getInstance());
@@ -120,7 +117,6 @@ public final class LiveCommandFactoryTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void tryToGetLiveCommandForCommandWithUnknownType() {
         final Command<?> commandMock = Mockito.mock(Command.class);
@@ -133,14 +129,12 @@ public final class LiveCommandFactoryTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void getCreateThingLiveCommandForCreateThing() {
         final CreateThing twinCommand = CreateThing.of(TestConstants.Thing.THING, null, DittoHeaders.empty());
         createAndCheckLiveCommandFor(twinCommand, CreateThingLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getDeleteAttributeLiveCommandForDeleteAttribute() {
         final DeleteAttribute twinCommand = DeleteAttribute.of(TestConstants.Thing.THING_ID,
@@ -148,14 +142,12 @@ public final class LiveCommandFactoryTest {
         createAndCheckLiveCommandFor(twinCommand, DeleteAttributeLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getDeleteAttributesLiveCommandForDeleteAttributes() {
         final DeleteAttributes twinCommand = DeleteAttributes.of(TestConstants.Thing.THING_ID, DittoHeaders.empty());
         createAndCheckLiveCommandFor(twinCommand, DeleteAttributesLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getDeleteFeatureLiveCommandForDeleteFeature() {
         final DeleteFeature twinCommand =
@@ -165,7 +157,6 @@ public final class LiveCommandFactoryTest {
         createAndCheckLiveCommandFor(twinCommand, DeleteFeatureLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getDeleteFeaturePropertiesLiveCommandForDeleteFeatureProperties() {
         final DeleteFeatureProperties twinCommand =
@@ -174,7 +165,6 @@ public final class LiveCommandFactoryTest {
         createAndCheckLiveCommandFor(twinCommand, DeleteFeaturePropertiesLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getDeleteFeaturePropertyLiveCommandForDeleteFeatureProperty() {
         final DeleteFeatureProperty twinCommand =
@@ -183,21 +173,18 @@ public final class LiveCommandFactoryTest {
         createAndCheckLiveCommandFor(twinCommand, DeleteFeaturePropertyLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getDeleteFeaturesLiveCommandForDeleteFeatures() {
         final DeleteFeatures twinCommand = DeleteFeatures.of(TestConstants.Thing.THING_ID, DittoHeaders.empty());
         createAndCheckLiveCommandFor(twinCommand, DeleteFeaturesLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getDeleteThingLiveCommandForDeleteThing() {
         final DeleteThing twinCommand = DeleteThing.of(TestConstants.Thing.THING_ID, DittoHeaders.empty());
         createAndCheckLiveCommandFor(twinCommand, DeleteThingLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getModifyAttributeLiveCommandForModifyAttribute() {
         final ModifyAttribute twinCommand =
@@ -206,7 +193,6 @@ public final class LiveCommandFactoryTest {
         createAndCheckLiveCommandFor(twinCommand, ModifyAttributeLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getModifyAttributesLiveCommandForModifyAttributes() {
         final ModifyAttributes twinCommand =
@@ -215,7 +201,6 @@ public final class LiveCommandFactoryTest {
         createAndCheckLiveCommandFor(twinCommand, ModifyAttributesLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getModifyFeatureLiveCommandForModifyFeature() {
         final ModifyFeature twinCommand =
@@ -224,7 +209,6 @@ public final class LiveCommandFactoryTest {
         createAndCheckLiveCommandFor(twinCommand, ModifyFeatureLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getModifyFeaturePropertiesLiveCommandForModifyFeatureProperties() {
         final ModifyFeatureProperties twinCommand =
@@ -233,7 +217,6 @@ public final class LiveCommandFactoryTest {
         createAndCheckLiveCommandFor(twinCommand, ModifyFeaturePropertiesLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getModifyFeaturePropertyLiveCommandForModifyFeatureProperty() {
         final ModifyFeatureProperty twinCommand =
@@ -243,7 +226,6 @@ public final class LiveCommandFactoryTest {
         createAndCheckLiveCommandFor(twinCommand, ModifyFeaturePropertyLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getModifyFeaturesLiveCommandForModifyFeatures() {
         final ModifyFeatures twinCommand =
@@ -283,7 +265,6 @@ public final class LiveCommandFactoryTest {
         createAndCheckLiveCommandFor(twinCommand, RetrieveAttributeLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getRetrieveAttributesLiveCommandForRetrieveAttributes() {
         final RetrieveAttributes twinCommand =
@@ -292,7 +273,6 @@ public final class LiveCommandFactoryTest {
         createAndCheckLiveCommandFor(twinCommand, RetrieveAttributesLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getRetrieveFeatureLiveCommandForRetrieveFeature() {
         final RetrieveFeature twinCommand =
@@ -301,7 +281,6 @@ public final class LiveCommandFactoryTest {
         createAndCheckLiveCommandFor(twinCommand, RetrieveFeatureLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getRetrieveFeaturePropertiesLiveCommandForRetrieveFeatureProperties() {
         final RetrieveFeatureProperties twinCommand =
@@ -310,7 +289,6 @@ public final class LiveCommandFactoryTest {
         createAndCheckLiveCommandFor(twinCommand, RetrieveFeaturePropertiesLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getRetrieveFeaturePropertyLiveCommandForRetrieveFeatureProperty() {
         final RetrieveFeatureProperty twinCommand =
@@ -319,21 +297,18 @@ public final class LiveCommandFactoryTest {
         createAndCheckLiveCommandFor(twinCommand, RetrieveFeaturePropertyLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getRetrieveFeaturesLiveCommandForRetrieveFeatures() {
         final RetrieveFeatures twinCommand = RetrieveFeatures.of(TestConstants.Thing.THING_ID, DittoHeaders.empty());
         createAndCheckLiveCommandFor(twinCommand, RetrieveFeaturesLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getRetrieveThingLiveCommandForRetrieveThing() {
         final RetrieveThing twinCommand = RetrieveThing.of(TestConstants.Thing.THING_ID, DittoHeaders.empty());
         createAndCheckLiveCommandFor(twinCommand, RetrieveThingLiveCommand.class);
     }
 
-    /** */
     @Test
     public void getRetrieveThingsLiveCommandForRetrieveThing() {
         final List<ThingId> thingIds = Arrays.asList(ThingId.inDefaultNamespace("boatyMcBoatface"),
@@ -345,8 +320,8 @@ public final class LiveCommandFactoryTest {
     }
 
     private void createAndCheckLiveCommandFor(final Command<?> twinCommand,
-            final Class<? extends LiveCommand> expectedLiveCommandClass) {
-        final LiveCommand liveCommand = underTest.getLiveCommand(twinCommand);
+            final Class<? extends LiveCommand<?, ?>> expectedLiveCommandClass) {
+        final LiveCommand<?, ?> liveCommand = underTest.getLiveCommand(twinCommand);
 
         assertThat(liveCommand)
                 .withType(twinCommand.getType())

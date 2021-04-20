@@ -40,7 +40,6 @@ public final class DeleteFeatureDesiredPropertyLiveCommandImplTest {
     private DeleteFeatureDesiredProperty twinCommand;
     private DeleteFeatureDesiredPropertyLiveCommand underTest;
 
-    /** */
     @Before
     public void setUp() {
         twinCommand = DeleteFeatureDesiredProperty.of(TestConstants.Thing.THING_ID,
@@ -49,7 +48,6 @@ public final class DeleteFeatureDesiredPropertyLiveCommandImplTest {
         underTest = DeleteFeatureDesiredPropertyLiveCommandImpl.of(twinCommand);
     }
 
-    /** */
     @Test
     public void assertImmutability() {
         assertInstancesOf(DeleteFeatureDesiredPropertyLiveCommandImpl.class,
@@ -57,7 +55,6 @@ public final class DeleteFeatureDesiredPropertyLiveCommandImplTest {
                 provided(JsonPointer.class).isAlsoImmutable());
     }
 
-    /** */
     @Test
     public void testHashCodeAndEquals() {
         EqualsVerifier.forClass(DeleteFeatureDesiredPropertyLiveCommandImpl.class)
@@ -66,8 +63,6 @@ public final class DeleteFeatureDesiredPropertyLiveCommandImplTest {
                 .verify();
     }
 
-    /** */
-    @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetDeleteFeatureDesiredPropertyLiveCommandForNull() {
         assertThatExceptionOfType(NullPointerException.class)
@@ -76,7 +71,6 @@ public final class DeleteFeatureDesiredPropertyLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void tryToGetDeleteFeatureDesiredPropertyLiveCommandForCreateFeatureDesiredPropertyCommand() {
         final Command<?> commandMock = Mockito.mock(Command.class);
@@ -87,7 +81,6 @@ public final class DeleteFeatureDesiredPropertyLiveCommandImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void getDeleteFeatureDesiredPropertyLiveCommandReturnsExpected() {
         assertThat(underTest)
@@ -100,7 +93,6 @@ public final class DeleteFeatureDesiredPropertyLiveCommandImplTest {
         assertThat(underTest.getDesiredPropertyPointer()).isEqualTo(twinCommand.getDesiredPropertyPointer());
     }
 
-    /** */
     @Test
     public void setDittoHeadersReturnsExpected() {
         final DittoHeaders emptyDittoHeaders = DittoHeaders.empty();
@@ -110,13 +102,11 @@ public final class DeleteFeatureDesiredPropertyLiveCommandImplTest {
         assertThat(newDeleteFeatureDesiredPropertyLiveCommand).withDittoHeaders(emptyDittoHeaders);
     }
 
-    /** */
     @Test
     public void answerReturnsNotNull() {
         assertThat(underTest.answer()).isNotNull();
     }
 
-    /** */
     @Test
     public void toStringReturnsExpected() {
         assertThat(underTest.toString())

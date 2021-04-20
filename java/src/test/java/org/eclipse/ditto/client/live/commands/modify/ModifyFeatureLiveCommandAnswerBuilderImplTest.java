@@ -42,7 +42,6 @@ public final class ModifyFeatureLiveCommandAnswerBuilderImplTest {
 
     private ModifyFeatureLiveCommandAnswerBuilderImpl underTest;
 
-    /** */
     @Before
     public void setUp() {
         Mockito.when(commandMock.getEntityId()).thenReturn(TestConstants.Thing.THING_ID);
@@ -53,7 +52,6 @@ public final class ModifyFeatureLiveCommandAnswerBuilderImplTest {
         underTest = ModifyFeatureLiveCommandAnswerBuilderImpl.newInstance(commandMock);
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetNewInstanceWithNullCommand() {
@@ -63,7 +61,6 @@ public final class ModifyFeatureLiveCommandAnswerBuilderImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void buildAnswerWithModifyFeatureCreatedResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -76,7 +73,6 @@ public final class ModifyFeatureLiveCommandAnswerBuilderImplTest {
                 .hasThingModifyCommandResponse();
     }
 
-    /** */
     @Test
     public void buildAnswerWithModifyFeatureModifiedResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -89,7 +85,6 @@ public final class ModifyFeatureLiveCommandAnswerBuilderImplTest {
                 .hasThingModifyCommandResponse();
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeatureNotAccessibleErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -106,7 +101,6 @@ public final class ModifyFeatureLiveCommandAnswerBuilderImplTest {
                 .withDittoRuntimeExceptionOfType(FeatureNotAccessibleException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeatureNotModifiableErrorResponseOnly() {
         final LiveCommandAnswer liveCommandAnswer =
@@ -123,7 +117,6 @@ public final class ModifyFeatureLiveCommandAnswerBuilderImplTest {
                 .withDittoRuntimeExceptionOfType(FeatureNotModifiableException.class);
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeatureCreatedEventOnly() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse()
@@ -135,7 +128,6 @@ public final class ModifyFeatureLiveCommandAnswerBuilderImplTest {
                 .hasThingModifiedEvent();
     }
 
-    /** */
     @Test
     public void buildAnswerWithFeatureModifiedEventOnly() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse()

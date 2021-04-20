@@ -79,8 +79,6 @@ import org.eclipse.ditto.signals.commands.things.modify.ModifyThing;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveFeature;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThing;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Creates outgoing Commands sent from the client.
@@ -559,7 +557,6 @@ public final class OutgoingMessageFactory {
                     return builder;
                 }).orElseGet(() -> MessagesModelFactory.newMessageBuilder(messageHeaders));
 
-        message.getResponseConsumer().ifPresent(messageBuilder::responseConsumer);
         return messageBuilder.build();
     }
 

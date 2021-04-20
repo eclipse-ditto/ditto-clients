@@ -49,7 +49,6 @@ public final class RetrieveThingsLiveCommandAnswerBuilderImplTest {
 
     private RetrieveThingsLiveCommandAnswerBuilderImpl underTest;
 
-    /** */
     @BeforeClass
     public static void initThingIds() {
         thingIds = new ArrayList<>();
@@ -58,7 +57,6 @@ public final class RetrieveThingsLiveCommandAnswerBuilderImplTest {
         thingIds.add(":baz");
     }
 
-    /** */
     @Before
     public void setUp() {
         Mockito.when(commandMock.getDittoHeaders()).thenReturn(DittoHeaders.empty());
@@ -67,7 +65,6 @@ public final class RetrieveThingsLiveCommandAnswerBuilderImplTest {
         underTest = RetrieveThingsLiveCommandAnswerBuilderImpl.newInstance(commandMock);
     }
 
-    /** */
     @SuppressWarnings("ConstantConditions")
     @Test
     public void tryToGetNewInstanceWithNullCommand() {
@@ -77,7 +74,6 @@ public final class RetrieveThingsLiveCommandAnswerBuilderImplTest {
                 .withNoCause();
     }
 
-    /** */
     @Test
     public void buildAnswerWithoutResponse() {
         final LiveCommandAnswer liveCommandAnswer = underTest.withoutResponse().build();
@@ -87,7 +83,6 @@ public final class RetrieveThingsLiveCommandAnswerBuilderImplTest {
                 .hasNoEvent();
     }
 
-    /** */
     @Test
     public void buildAnswerWithRetrieveThingResponseOnly() {
         final Thing thing = TestConstants.Thing.THING;

@@ -32,7 +32,6 @@ import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
-import org.eclipse.ditto.model.messages.MessageResponseConsumer;
 import org.eclipse.ditto.model.things.ThingId;
 
 /**
@@ -160,11 +159,6 @@ public final class ImmutableDeserializingMessage<T> implements Message<T> {
     @Override
     public MessageHeaders getHeaders() {
         return delegateMessage.getHeaders();
-    }
-
-    @Override
-    public Optional<MessageResponseConsumer<?>> getResponseConsumer() {
-        return delegateMessage.getResponseConsumer();
     }
 
     @Override
