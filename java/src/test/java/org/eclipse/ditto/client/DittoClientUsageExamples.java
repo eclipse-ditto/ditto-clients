@@ -405,7 +405,7 @@ public final class DittoClientUsageExamples {
         backendClient.live()
                 .forFeature(thingId, "temp-sensor")
                 .putProperty("temperature", 23.21)
-                .whenComplete((_void, throwable) -> {
+                .whenComplete((unused, throwable) -> {
                     if (throwable != null) {
                         LOGGER.error("[AT BACKEND] Received error when putting the property: {}",
                                 throwable.getMessage(), throwable);
@@ -565,7 +565,7 @@ public final class DittoClientUsageExamples {
                 .forEach(counter -> thingIds.forEach(thingId -> executorService.execute(() -> {
                     final long startTs2 = System.nanoTime();
                     client.twin().forId(thingId).putAttribute("counter", counter,
-                            Options.Modify.responseRequired(false)).whenComplete((_void, throwable) ->
+                            Options.Modify.responseRequired(false)).whenComplete((unused, throwable) ->
                     {
                         if (throwable != null) {
                             LOGGER.debug("performLoadTestUpdate: Updating attribute failed: {}",
