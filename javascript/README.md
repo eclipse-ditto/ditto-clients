@@ -16,10 +16,6 @@ More information can be found in the descriptions of the subpackages:
 
 ### Compatibility with [Eclipse Ditto](https://github.com/eclipse/ditto)
 
-The `@eclipse-ditto/ditto-javascript-client-<package>` modules use the same
-[semantic versioning](https://docs.npmjs.com/about-semantic-versioning) and are released
-alongside of Eclipse Ditto.
-
 The newest release of the JavaScript client will always try to cover as much API
 functionality of the same Eclipse Ditto version as possible. There might
 however be missing features for which we would be very happy to accept contributions.
