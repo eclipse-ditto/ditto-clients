@@ -29,7 +29,7 @@ public interface DittoClient {
 
     /**
      * Returns the client's {@link Twin} singleton which provides the necessary functionality to manage and monitor
-     * {@link org.eclipse.ditto.model.things.Thing}s.
+     * {@link org.eclipse.ditto.things.model.Thing}s.
      *
      * @return the Twin handle
      */
@@ -37,7 +37,7 @@ public interface DittoClient {
 
     /**
      * Returns the client's {@link Live} singleton which provides the necessary functionality to manage and monitor
-     * {@link org.eclipse.ditto.model.things.Thing}s.
+     * {@link org.eclipse.ditto.things.model.Thing}s.
      *
      * @return the Live handle
      */

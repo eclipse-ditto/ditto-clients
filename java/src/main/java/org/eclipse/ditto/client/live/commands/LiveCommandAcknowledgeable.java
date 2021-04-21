@@ -26,8 +26,8 @@ import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.acks.AcknowledgementRequest;
 import org.eclipse.ditto.model.base.entity.id.WithEntityId;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.model.things.ThingId;
-import org.eclipse.ditto.model.things.WithThingId;
+import org.eclipse.ditto.things.model.ThingId;
+import org.eclipse.ditto.things.model.WithThingId;
 import org.eclipse.ditto.signals.base.Signal;
 
 /**

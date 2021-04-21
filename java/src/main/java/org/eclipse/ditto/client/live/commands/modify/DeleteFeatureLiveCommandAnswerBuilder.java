@@ -17,10 +17,10 @@ import javax.annotation.Nonnull;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandResponseFactory;
 import org.eclipse.ditto.client.live.commands.base.LiveEventFactory;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeature;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureResponse;
-import org.eclipse.ditto.signals.events.things.FeatureDeleted;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeature;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureResponse;
+import org.eclipse.ditto.things.model.signals.events.FeatureDeleted;
 
 /**
  * LiveCommandAnswer builder for producing {@code CommandResponse}s and {@code Event}s for {@link DeleteFeature}
@@ -48,7 +48,7 @@ public interface DeleteFeatureLiveCommandAnswerBuilder extends LiveCommandAnswer
          * Builds a {@link ThingErrorResponse} indicating that the feature was not accessible.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.FeatureNotAccessibleException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.FeatureNotAccessibleException
          * FeatureNotAccessibleException
          */
         @Nonnull
@@ -58,7 +58,7 @@ public interface DeleteFeatureLiveCommandAnswerBuilder extends LiveCommandAnswer
          * Builds a {@link ThingErrorResponse} indicating that the feature was not modifiable.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.FeatureNotModifiableException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.FeatureNotModifiableException
          * FeatureNotModifiableException
          */
         @Nonnull

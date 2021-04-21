@@ -17,7 +17,7 @@ import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.signals.commands.base.assertions.AbstractCommandResponseAssert;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
 
 /**
  * An assert for {@link ThingErrorResponse}.

@@ -17,7 +17,7 @@ import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstance
 import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import org.eclipse.ditto.client.changes.Change;
-import org.eclipse.ditto.model.things.Feature;
+import org.eclipse.ditto.things.model.Feature;
 import org.junit.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;

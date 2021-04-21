@@ -14,14 +14,14 @@ package org.eclipse.ditto.client.live.events;
 
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.things.FeatureProperties;
-import org.eclipse.ditto.signals.events.things.FeatureDeleted;
-import org.eclipse.ditto.signals.events.things.FeaturePropertiesCreated;
-import org.eclipse.ditto.signals.events.things.FeaturePropertiesDeleted;
-import org.eclipse.ditto.signals.events.things.FeaturePropertiesModified;
-import org.eclipse.ditto.signals.events.things.FeaturePropertyCreated;
-import org.eclipse.ditto.signals.events.things.FeaturePropertyDeleted;
-import org.eclipse.ditto.signals.events.things.FeaturePropertyModified;
+import org.eclipse.ditto.things.model.FeatureProperties;
+import org.eclipse.ditto.things.model.signals.events.FeatureDeleted;
+import org.eclipse.ditto.things.model.signals.events.FeaturePropertiesCreated;
+import org.eclipse.ditto.things.model.signals.events.FeaturePropertiesDeleted;
+import org.eclipse.ditto.things.model.signals.events.FeaturePropertiesModified;
+import org.eclipse.ditto.things.model.signals.events.FeaturePropertyCreated;
+import org.eclipse.ditto.things.model.signals.events.FeaturePropertyDeleted;
+import org.eclipse.ditto.things.model.signals.events.FeaturePropertyModified;
 
 /**
  * Creates {@link org.eclipse.ditto.signals.events.base.Event Event}s on "Feature" scope the {@code thingId} and {@code

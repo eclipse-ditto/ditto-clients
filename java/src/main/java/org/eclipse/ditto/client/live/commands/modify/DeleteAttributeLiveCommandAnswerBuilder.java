@@ -17,10 +17,10 @@ import javax.annotation.Nonnull;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandResponseFactory;
 import org.eclipse.ditto.client.live.commands.base.LiveEventFactory;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteAttribute;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributeResponse;
-import org.eclipse.ditto.signals.events.things.AttributeDeleted;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttribute;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttributeResponse;
+import org.eclipse.ditto.things.model.signals.events.AttributeDeleted;
 
 /**
  * LiveCommandAnswer builder for producing {@code CommandResponse}s and {@code Event}s for {@link DeleteAttribute}
@@ -50,7 +50,7 @@ public interface DeleteAttributeLiveCommandAnswerBuilder
          * Builds a {@link ThingErrorResponse} indicating that the attribute was not accessible.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.AttributeNotAccessibleException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.AttributeNotAccessibleException
          * AttributeNotAccessibleException
          */
         @Nonnull
@@ -60,7 +60,7 @@ public interface DeleteAttributeLiveCommandAnswerBuilder
          * Builds a {@link ThingErrorResponse} indicating that the attribute was not modifiable.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.AttributeNotModifiableException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.AttributeNotModifiableException
          * AttributeNotModifiableException
          */
         @Nonnull

@@ -16,7 +16,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.OptionName;
-import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.things.model.ThingId;
 
 
 /**

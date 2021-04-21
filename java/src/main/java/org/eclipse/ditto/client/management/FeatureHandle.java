@@ -17,7 +17,7 @@ import java.util.concurrent.CompletionStage;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.registration.FeaturePropertiesChangeRegistration;
 import org.eclipse.ditto.json.JsonFieldSelector;
-import org.eclipse.ditto.model.things.Feature;
+import org.eclipse.ditto.things.model.Feature;
 import org.eclipse.ditto.signals.base.WithFeatureId;
 
 /**

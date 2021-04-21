@@ -18,7 +18,7 @@ import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.signals.commands.base.Command;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveFeatureProperties;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeatureProperties;
 
 /**
  * An immutable implementation of {@link RetrieveFeaturePropertiesLiveCommand}.

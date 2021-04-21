@@ -18,9 +18,9 @@ import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstance
 import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
-import org.eclipse.ditto.signals.commands.things.ThingCommandResponse;
+import org.eclipse.ditto.things.model.signals.commands.ThingCommandResponse;
 import org.eclipse.ditto.signals.events.base.Event;
-import org.eclipse.ditto.signals.events.things.ThingEvent;
+import org.eclipse.ditto.things.model.signals.events.ThingEvent;
 import org.junit.Test;
 import org.mockito.Mockito;
 

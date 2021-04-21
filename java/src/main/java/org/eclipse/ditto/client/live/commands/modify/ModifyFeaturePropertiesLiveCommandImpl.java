@@ -17,9 +17,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.model.things.FeatureProperties;
+import org.eclipse.ditto.things.model.FeatureProperties;
 import org.eclipse.ditto.signals.commands.base.Command;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperties;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureProperties;
 
 /**
  * An immutable implementation of {@link ModifyFeaturePropertiesLiveCommand}.

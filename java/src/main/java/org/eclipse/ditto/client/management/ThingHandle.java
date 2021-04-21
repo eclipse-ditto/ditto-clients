@@ -20,10 +20,10 @@ import org.eclipse.ditto.client.registration.ThingAttributeChangeRegistration;
 import org.eclipse.ditto.client.registration.ThingChangeRegistration;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.policies.model.PolicyId;
-import org.eclipse.ditto.model.things.Feature;
-import org.eclipse.ditto.model.things.Features;
-import org.eclipse.ditto.model.things.Thing;
-import org.eclipse.ditto.model.things.WithThingId;
+import org.eclipse.ditto.things.model.Feature;
+import org.eclipse.ditto.things.model.Features;
+import org.eclipse.ditto.things.model.Thing;
+import org.eclipse.ditto.things.model.WithThingId;
 
 /**
  * A {@code ThingHandle} is the entry point to managing and monitoring a <em>specific</em> {@code Thing}. It can for

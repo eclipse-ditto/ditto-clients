@@ -21,7 +21,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
-import org.eclipse.ditto.model.things.Thing;
+import org.eclipse.ditto.things.model.Thing;
 import org.eclipse.ditto.signals.commands.thingsearch.subscription.CancelSubscription;
 import org.eclipse.ditto.signals.commands.thingsearch.subscription.CreateSubscription;
 import org.eclipse.ditto.signals.commands.thingsearch.subscription.RequestFromSubscription;

@@ -27,10 +27,10 @@ import org.eclipse.ditto.model.base.exceptions.InvalidRqlExpressionException;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.protocol.TopicPath;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.events.things.AttributeCreated;
-import org.eclipse.ditto.signals.events.things.FeaturePropertyModified;
-import org.eclipse.ditto.signals.events.things.ThingDeleted;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.events.AttributeCreated;
+import org.eclipse.ditto.things.model.signals.events.FeaturePropertyModified;
+import org.eclipse.ditto.things.model.signals.events.ThingDeleted;
 import org.junit.Test;
 
 /**

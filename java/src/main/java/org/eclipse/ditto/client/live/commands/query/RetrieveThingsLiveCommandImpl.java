@@ -22,10 +22,10 @@ import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.client.live.commands.base.AbstractLiveCommand;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.signals.commands.base.Command;
-import org.eclipse.ditto.signals.commands.things.ThingCommand;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveThings;
+import org.eclipse.ditto.things.model.signals.commands.ThingCommand;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveThings;
 
 /**
  * An immutable implementation of {@link RetrieveThingsLiveCommand}.

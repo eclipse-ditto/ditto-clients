@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import org.eclipse.ditto.model.things.Thing;
+import org.eclipse.ditto.things.model.Thing;
 import org.reactivestreams.Publisher;
 
 /**

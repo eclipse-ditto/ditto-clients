@@ -34,7 +34,7 @@ import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.entity.id.EntityId;
 import org.eclipse.ditto.model.base.entity.type.EntityType;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.model.things.Features;
+import org.eclipse.ditto.things.model.Features;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 
 /**

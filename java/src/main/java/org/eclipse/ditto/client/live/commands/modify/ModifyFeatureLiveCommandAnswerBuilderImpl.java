@@ -22,13 +22,13 @@ import javax.annotation.concurrent.NotThreadSafe;
 
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswer;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.exceptions.FeatureNotAccessibleException;
-import org.eclipse.ditto.signals.commands.things.exceptions.FeatureNotModifiableException;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureResponse;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.exceptions.FeatureNotAccessibleException;
+import org.eclipse.ditto.things.model.signals.commands.exceptions.FeatureNotModifiableException;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureResponse;
 import org.eclipse.ditto.signals.events.base.Event;
-import org.eclipse.ditto.signals.events.things.FeatureCreated;
-import org.eclipse.ditto.signals.events.things.FeatureModified;
+import org.eclipse.ditto.things.model.signals.events.FeatureCreated;
+import org.eclipse.ditto.things.model.signals.events.FeatureModified;
 
 /**
  * A mutable builder with a fluent API for creating a {@link LiveCommandAnswer} for a {@link ModifyFeatureLiveCommand}.

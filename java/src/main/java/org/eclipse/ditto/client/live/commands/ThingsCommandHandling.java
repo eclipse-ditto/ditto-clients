@@ -20,14 +20,14 @@ import org.eclipse.ditto.client.live.commands.query.RetrieveThingsLiveCommand;
 /**
  * Provides the necessary functionality for registering {@link org.eclipse.ditto.client.live.commands.base.LiveCommand
  * LiveCommand} functions to receive commands to <em>generally</em> manage and retrieve {@link
- * org.eclipse.ditto.model.things.Thing Thing}s.
+ * org.eclipse.ditto.things.model.Thing Thing}s.
  *
  * @since 1.0.0
  */
 public interface ThingsCommandHandling extends ThingCommandHandling {
 
     /**
-     * Registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveThings
+     * Registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.query.RetrieveThings
      * RetrieveThings} commands.
      *
      * @param handler the handler to receive the commands
@@ -42,7 +42,7 @@ public interface ThingsCommandHandling extends ThingCommandHandling {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveThings
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.query.RetrieveThings
      * RetrieveThings} commands.
      */
     default void stopHandlingRetrieveThingsCommands() {

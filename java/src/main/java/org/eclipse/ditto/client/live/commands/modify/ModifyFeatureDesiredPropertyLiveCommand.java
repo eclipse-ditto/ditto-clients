@@ -18,8 +18,8 @@ import org.eclipse.ditto.client.live.commands.base.LiveCommand;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.signals.base.WithFeatureId;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDesiredProperty;
-import org.eclipse.ditto.signals.commands.things.modify.ThingModifyCommand;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureDesiredProperty;
+import org.eclipse.ditto.things.model.signals.commands.modify.ThingModifyCommand;
 
 /**
  * {@link ModifyFeatureDesiredProperty} live command giving access to the command and all of its special accessors.
@@ -37,7 +37,7 @@ public interface ModifyFeatureDesiredPropertyLiveCommand
      * Returns the JSON pointer of the Property to modify.
      *
      * @return the JSON pointer.
-     * @see org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDesiredProperty#getDesiredPropertyPointer() ()
+     * @see org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureDesiredProperty#getDesiredPropertyPointer() ()
      */
     @Nonnull
     JsonPointer getDesiredPropertyPointer();
@@ -46,7 +46,7 @@ public interface ModifyFeatureDesiredPropertyLiveCommand
      * Returns the value of the Property to modify.
      *
      * @return the value.
-     * @see org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDesiredProperty#getDesiredPropertyValue() ()
+     * @see org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureDesiredProperty#getDesiredPropertyValue() ()
      */
     @Nonnull
     JsonValue getDesiredPropertyValue();

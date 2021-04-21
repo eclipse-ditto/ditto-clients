@@ -14,8 +14,8 @@ package org.eclipse.ditto.client.live.commands.query;
 
 import org.eclipse.ditto.client.live.commands.base.LiveCommand;
 import org.eclipse.ditto.signals.base.WithFeatureId;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveFeatureDefinition;
-import org.eclipse.ditto.signals.commands.things.query.ThingQueryCommand;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeatureDefinition;
+import org.eclipse.ditto.things.model.signals.commands.query.ThingQueryCommand;
 
 /**
  * {@link RetrieveFeatureDefinition} live command giving access to the command and all of its special accessors.

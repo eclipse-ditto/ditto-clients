@@ -20,7 +20,7 @@ import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.policies.model.PolicyId;
-import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.things.model.ThingId;
 
 /**
  * This class provides convenient access to the values of known options out of an array of user provided options.

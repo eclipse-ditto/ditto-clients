@@ -20,15 +20,15 @@ import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswer;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.commands.base.assertions.CommandAssertions;
 import org.eclipse.ditto.signals.commands.base.assertions.CommandResponseAssert;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.modify.MergeThingResponse;
-import org.eclipse.ditto.signals.commands.things.modify.ThingModifyCommandResponse;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveThingsResponse;
-import org.eclipse.ditto.signals.commands.things.query.ThingQueryCommandResponse;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.modify.MergeThingResponse;
+import org.eclipse.ditto.things.model.signals.commands.modify.ThingModifyCommandResponse;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveThingsResponse;
+import org.eclipse.ditto.things.model.signals.commands.query.ThingQueryCommandResponse;
 import org.eclipse.ditto.signals.events.base.Event;
-import org.eclipse.ditto.signals.events.things.ThingModifiedEvent;
-import org.eclipse.ditto.signals.events.things.assertions.ThingEventAssertions;
-import org.eclipse.ditto.signals.events.things.assertions.ThingModifiedEventAssert;
+import org.eclipse.ditto.things.model.signals.events.ThingModifiedEvent;
+import org.eclipse.ditto.things.model.signals.events.assertions.ThingEventAssertions;
+import org.eclipse.ditto.things.model.signals.events.assertions.ThingModifiedEventAssert;
 
 /**
  * An assert for {@link org.eclipse.ditto.client.live.commands.base.LiveCommandAnswer}s.

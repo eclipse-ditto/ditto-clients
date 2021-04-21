@@ -17,10 +17,10 @@ import javax.annotation.Nonnull;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandResponseFactory;
 import org.eclipse.ditto.client.live.commands.base.LiveEventFactory;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteThingResponse;
-import org.eclipse.ditto.signals.events.things.ThingDeleted;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteThing;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteThingResponse;
+import org.eclipse.ditto.things.model.signals.events.ThingDeleted;
 
 /**
  * LiveCommandAnswer builder for producing {@code CommandResponse}s and {@code Event}s for {@link DeleteThing}
@@ -48,7 +48,7 @@ public interface DeleteThingLiveCommandAnswerBuilder extends LiveCommandAnswerBu
          * Builds a {@link ThingErrorResponse} indicating that the Thing was not accessible.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.ThingNotAccessibleException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.ThingNotAccessibleException
          * ThingNotAccessibleException
          */
         @Nonnull
@@ -58,7 +58,7 @@ public interface DeleteThingLiveCommandAnswerBuilder extends LiveCommandAnswerBu
          * Builds a {@link ThingErrorResponse} indicating that the Thing was not deletable.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.ThingNotDeletableException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.ThingNotDeletableException
          * ThingNotDeletableException
          */
         @Nonnull

@@ -18,7 +18,7 @@ import javax.annotation.concurrent.Immutable;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.signals.commands.base.Command;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureDesiredProperty;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureDesiredProperty;
 
 /**
  * An immutable implementation of {@link DeleteFeatureDesiredPropertyLiveCommand}.

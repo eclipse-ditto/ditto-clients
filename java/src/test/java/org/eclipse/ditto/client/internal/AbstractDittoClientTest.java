@@ -46,7 +46,7 @@ import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageBuilder;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
-import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.protocol.adapter.DittoProtocolAdapter;
 import org.eclipse.ditto.protocol.adapter.ProtocolAdapter;
 import org.eclipse.ditto.protocol.ProtocolFactory;

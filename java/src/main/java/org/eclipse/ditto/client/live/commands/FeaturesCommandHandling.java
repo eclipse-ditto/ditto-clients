@@ -25,7 +25,7 @@ import org.eclipse.ditto.client.live.commands.query.RetrieveFeaturesLiveCommand;
 
 /**
  * Provides the necessary functionality for registering {@link org.eclipse.ditto.client.live.commands.base.LiveCommand
- * LiveCommand} functions to receive commands to manage and retrieve {@link org.eclipse.ditto.model.things.Feature
+ * LiveCommand} functions to receive commands to manage and retrieve {@link org.eclipse.ditto.things.model.Feature
  * Feature}s.
  *
  * @since 1.0.0
@@ -33,7 +33,7 @@ import org.eclipse.ditto.client.live.commands.query.RetrieveFeaturesLiveCommand;
 public interface FeaturesCommandHandling extends FeaturePropertiesCommandHandling {
 
     /**
-     * Registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyFeatures
+     * Registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatures
      * ModifyFeatures} commands.
      *
      * @param handler the handler to receive the commands
@@ -48,7 +48,7 @@ public interface FeaturesCommandHandling extends FeaturePropertiesCommandHandlin
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyFeature
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeature
      * ModifyFeature} commands.
      */
     default void stopHandlingModifyFeaturesCommands() {
@@ -56,7 +56,7 @@ public interface FeaturesCommandHandling extends FeaturePropertiesCommandHandlin
     }
 
     /**
-     * Registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.MergeThing
+     * Registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.MergeThing
      * MergeThing} commands for changes on features level.
      *
      * @param handler the handler to receive the commands
@@ -71,7 +71,7 @@ public interface FeaturesCommandHandling extends FeaturePropertiesCommandHandlin
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.MergeThing
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.MergeThing
      * MergeThing} commands.
      */
     default void stopHandlingMergeFeaturesCommands() {
@@ -79,7 +79,7 @@ public interface FeaturesCommandHandling extends FeaturePropertiesCommandHandlin
     }
 
     /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteFeatures
+     * Registers a handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatures
      * DeleteFeatures} commands.
      *
      * @param handler the handler to receive the commands
@@ -94,7 +94,7 @@ public interface FeaturesCommandHandling extends FeaturePropertiesCommandHandlin
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteFeatures
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatures
      * DeleteFeatures} commands.
      */
     default void stopHandlingDeleteFeaturesCommands() {
@@ -102,7 +102,7 @@ public interface FeaturesCommandHandling extends FeaturePropertiesCommandHandlin
     }
 
     /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyFeature
+     * Registers a handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeature
      * ModifyFeature} commands.
      *
      * @param handler the handler to receive the commands
@@ -117,7 +117,7 @@ public interface FeaturesCommandHandling extends FeaturePropertiesCommandHandlin
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyFeature
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeature
      * ModifyFeature} commands.
      */
     default void stopHandlingModifyFeatureCommands() {
@@ -125,7 +125,7 @@ public interface FeaturesCommandHandling extends FeaturePropertiesCommandHandlin
     }
 
     /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteFeature
+     * Registers a handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeature
      * DeleteFeature} commands.
      *
      * @param handler the handler to receive the commands
@@ -140,7 +140,7 @@ public interface FeaturesCommandHandling extends FeaturePropertiesCommandHandlin
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteFeature
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeature
      * DeleteFeature} commands.
      */
     default void stopHandlingDeleteFeatureCommands() {
@@ -148,7 +148,7 @@ public interface FeaturesCommandHandling extends FeaturePropertiesCommandHandlin
     }
 
     /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveFeatures
+     * Registers a handler to receive {@link org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeatures
      * RetrieveFeatures} commands.
      *
      * @param handler the handler to receive the commands
@@ -163,7 +163,7 @@ public interface FeaturesCommandHandling extends FeaturePropertiesCommandHandlin
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveFeatures
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeatures
      * RetrieveFeatures} commands.
      */
     default void stopHandlingRetrieveFeaturesCommands() {
@@ -171,7 +171,7 @@ public interface FeaturesCommandHandling extends FeaturePropertiesCommandHandlin
     }
 
     /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveFeature
+     * Registers a handler to receive {@link org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeature
      * RetrieveFeature} commands.
      * <p>
      * If registered for a specific {@code Thing}, it will only receive commands for that Thing and its Features.
@@ -189,7 +189,7 @@ public interface FeaturesCommandHandling extends FeaturePropertiesCommandHandlin
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveFeature
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeature
      * RetrieveFeature} commands.
      */
     default void stopHandlingRetrieveFeatureCommands() {

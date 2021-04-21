@@ -17,11 +17,11 @@ import javax.annotation.Nonnull;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandResponseFactory;
 import org.eclipse.ditto.client.live.commands.base.LiveEventFactory;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperty;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeaturePropertyResponse;
-import org.eclipse.ditto.signals.events.things.FeaturePropertyCreated;
-import org.eclipse.ditto.signals.events.things.FeaturePropertyModified;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureProperty;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeaturePropertyResponse;
+import org.eclipse.ditto.things.model.signals.events.FeaturePropertyCreated;
+import org.eclipse.ditto.things.model.signals.events.FeaturePropertyModified;
 
 /**
  * LiveCommandAnswer builder for producing {@code CommandResponse}s and {@code Event}s for {@link ModifyFeatureProperty}
@@ -59,7 +59,7 @@ public interface ModifyFeaturePropertyLiveCommandAnswerBuilder
          * Builds a {@link ThingErrorResponse} indicating that the feature property was not accessible.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.FeaturePropertyNotAccessibleException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.FeaturePropertyNotAccessibleException
          * FeaturePropertyNotAccessibleException
          */
         @Nonnull
@@ -69,7 +69,7 @@ public interface ModifyFeaturePropertyLiveCommandAnswerBuilder
          * Builds a {@link ThingErrorResponse} indicating that the feature property was not modifiable.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.FeaturePropertyNotModifiableException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.FeaturePropertyNotModifiableException
          * FeaturePropertyNotModifiableException
          */
         @Nonnull

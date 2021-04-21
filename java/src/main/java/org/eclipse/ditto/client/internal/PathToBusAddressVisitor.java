@@ -18,12 +18,12 @@ import javax.annotation.Nullable;
 
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
-import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.protocol.UnknownPathException;
-import org.eclipse.ditto.signals.commands.things.ThingResourceVisitor;
+import org.eclipse.ditto.things.model.signals.commands.ThingResourceVisitor;
 
 /**
- * Implements {@link org.eclipse.ditto.signals.commands.things.ThingResourceVisitor} to map a
+ * Implements {@link org.eclipse.ditto.things.model.signals.commands.ThingResourceVisitor} to map a
  * {@link org.eclipse.ditto.json.JsonPointer} to a bus address factory that is used in the client for event
  * notification.
  */

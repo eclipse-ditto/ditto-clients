@@ -25,14 +25,14 @@ import org.eclipse.ditto.client.live.commands.query.RetrieveThingLiveCommand;
 /**
  * Provides the necessary functionality for registering {@link org.eclipse.ditto.client.live.commands.base.LiveCommand
  * LiveCommand} functions to receive commands to manage and retrieve <em>a particular</em> {@link
- * org.eclipse.ditto.model.things.Thing Thing}.
+ * org.eclipse.ditto.things.model.Thing Thing}.
  *
  * @since 1.0.0
  */
 public interface ThingCommandHandling extends LiveCommandProcessor {
 
     /**
-     * Registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.CreateThing CreateThing}
+     * Registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.CreateThing CreateThing}
      * commands.
      *
      * @param handler the handler to receive the commands
@@ -47,7 +47,7 @@ public interface ThingCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.CreateThing
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.CreateThing
      * CreateThing} commands.
      */
     default void stopHandlingCreateThingCommands() {
@@ -55,7 +55,7 @@ public interface ThingCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * Registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyThing ModifyThing}
+     * Registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.ModifyThing ModifyThing}
      * commands.
      *
      * @param handler the handler to receive the commands
@@ -70,7 +70,7 @@ public interface ThingCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyThing
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.ModifyThing
      * ModifyThing} commands.
      */
     default void stopHandlingModifyThingCommands() {
@@ -78,7 +78,7 @@ public interface ThingCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * Registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.MergeThing MergeThing}
+     * Registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.MergeThing MergeThing}
      * commands.
      *
      * @param handler the handler to receive the commands
@@ -93,7 +93,7 @@ public interface ThingCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.MergeThing
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.MergeThing
      * MergeThing} commands.
      */
     default void stopHandlingMergeThingCommands() {
@@ -101,7 +101,7 @@ public interface ThingCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * Registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteThing DeleteThing}
+     * Registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.DeleteThing DeleteThing}
      * commands.
      *
      * @param handler the handler to receive the commands
@@ -116,7 +116,7 @@ public interface ThingCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteThing
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.DeleteThing
      * DeleteThing} commands.
      */
     default void stopHandlingDeleteThingCommands() {
@@ -124,7 +124,7 @@ public interface ThingCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * Registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveThing
+     * Registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.query.RetrieveThing
      * RetrieveThing} commands.
      *
      * @param handler the handler to receive the commands
@@ -139,7 +139,7 @@ public interface ThingCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveThing
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.query.RetrieveThing
      * RetrieveThing} commands.
      */
     default void stopHandlingRetrieveThingCommands() {

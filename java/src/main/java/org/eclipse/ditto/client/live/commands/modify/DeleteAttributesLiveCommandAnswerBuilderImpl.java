@@ -23,12 +23,12 @@ import javax.annotation.concurrent.NotThreadSafe;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswer;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.exceptions.AttributesNotAccessibleException;
-import org.eclipse.ditto.signals.commands.things.exceptions.AttributesNotModifiableException;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributesResponse;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.exceptions.AttributesNotAccessibleException;
+import org.eclipse.ditto.things.model.signals.commands.exceptions.AttributesNotModifiableException;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttributesResponse;
 import org.eclipse.ditto.signals.events.base.Event;
-import org.eclipse.ditto.signals.events.things.AttributesDeleted;
+import org.eclipse.ditto.things.model.signals.events.AttributesDeleted;
 
 /**
  * A mutable builder with a fluent API for creating a {@link LiveCommandAnswer} for a

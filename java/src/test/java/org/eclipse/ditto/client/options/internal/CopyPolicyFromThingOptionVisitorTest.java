@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.eclipse.ditto.client.options.internal.MockOptionFactory.createOptionMock;
 
 import org.eclipse.ditto.client.options.OptionName;
-import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.things.model.ThingId;
 import org.junit.Before;
 import org.junit.Test;
 

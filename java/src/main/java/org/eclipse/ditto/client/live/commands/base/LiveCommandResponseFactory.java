@@ -13,9 +13,9 @@
 package org.eclipse.ditto.client.live.commands.base;
 
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
-import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.signals.commands.base.ErrorResponse;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
 
 /**
  * Base for factories of {@link org.eclipse.ditto.signals.commands.base.CommandResponse}s which create

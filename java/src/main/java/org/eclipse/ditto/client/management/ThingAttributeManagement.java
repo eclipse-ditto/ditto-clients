@@ -24,7 +24,7 @@ import org.eclipse.ditto.json.JsonValue;
 
 /**
  * {@code ThingAttributeManagement} provides all functionality required for managing {@link
- * org.eclipse.ditto.model.things.Thing} attributes.
+ * org.eclipse.ditto.things.model.Thing} attributes.
  * <p>
  * Note: All methods returning a {@link CompletionStage} are executed non-blocking and asynchronously.
  * Therefore, these methods return a {@code CompletionStage} object that will complete either successfully

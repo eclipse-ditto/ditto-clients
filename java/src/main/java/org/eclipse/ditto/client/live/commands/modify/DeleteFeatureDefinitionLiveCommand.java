@@ -14,10 +14,10 @@ package org.eclipse.ditto.client.live.commands.modify;
 
 import org.eclipse.ditto.client.live.commands.base.LiveCommand;
 import org.eclipse.ditto.signals.base.WithFeatureId;
-import org.eclipse.ditto.signals.commands.things.modify.ThingModifyCommand;
+import org.eclipse.ditto.things.model.signals.commands.modify.ThingModifyCommand;
 
 /**
- * {@link org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureDefinition} live command giving access to the
+ * {@link org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureDefinition} live command giving access to the
  * command and all of its special accessors. Also the entry point for creating a
  * {@link DeleteFeatureDefinitionLiveCommandAnswerBuilder} as answer for an incoming command.
  *

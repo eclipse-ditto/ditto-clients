@@ -43,7 +43,7 @@ import org.eclipse.ditto.protocol.Payload;
 import org.eclipse.ditto.protocol.adapter.ProtocolAdapter;
 import org.eclipse.ditto.protocol.ProtocolFactory;
 import org.eclipse.ditto.signals.base.Signal;
-import org.eclipse.ditto.signals.events.things.ThingEvent;
+import org.eclipse.ditto.things.model.signals.events.ThingEvent;
 import org.eclipse.ditto.utils.jsr305.annotations.AllParametersAndReturnValuesAreNonnullByDefault;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

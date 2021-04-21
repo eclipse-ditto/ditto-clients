@@ -18,10 +18,10 @@ import static org.eclipse.ditto.client.live.commands.assertions.LiveCommandAsser
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswer;
 import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.signals.commands.things.TestConstants;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.exceptions.FeatureDefinitionNotAccessibleException;
-import org.eclipse.ditto.signals.commands.things.exceptions.FeatureDefinitionNotModifiableException;
+import org.eclipse.ditto.things.model.signals.commands.TestConstants;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.exceptions.FeatureDefinitionNotAccessibleException;
+import org.eclipse.ditto.things.model.signals.commands.exceptions.FeatureDefinitionNotModifiableException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

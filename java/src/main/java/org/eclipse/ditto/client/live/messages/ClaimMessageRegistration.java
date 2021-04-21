@@ -20,7 +20,7 @@ import org.eclipse.ditto.client.registration.HandlerDeregistration;
 
 /**
  * Provides the necessary functionality for registering handlers to receive {@link RepliableMessage}s that are sent to
- * {@link org.eclipse.ditto.model.things.Thing}s to claim these.
+ * {@link org.eclipse.ditto.things.model.Thing}s to claim these.
  *
  * @since 1.0.0
  */

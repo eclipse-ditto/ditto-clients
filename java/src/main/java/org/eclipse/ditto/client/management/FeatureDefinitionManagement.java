@@ -15,11 +15,11 @@ package org.eclipse.ditto.client.management;
 import java.util.concurrent.CompletionStage;
 
 import org.eclipse.ditto.client.options.Option;
-import org.eclipse.ditto.model.things.FeatureDefinition;
+import org.eclipse.ditto.things.model.FeatureDefinition;
 
 /**
  * {@code FeatureDefinitionManagement} provides create, update and delete functionality for managing {@link
- * org.eclipse.ditto.model.things.FeatureDefinition}s.
+ * org.eclipse.ditto.things.model.FeatureDefinition}s.
  * <p>
  * All the methods are executed non-blocking and asynchronously.
  * Therefore, the methods return a {@code CompletionStage} object that will complete either successfully

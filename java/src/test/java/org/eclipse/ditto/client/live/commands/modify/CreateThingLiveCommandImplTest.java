@@ -21,10 +21,10 @@ import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable
 import java.text.MessageFormat;
 
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.model.things.Thing;
+import org.eclipse.ditto.things.model.Thing;
 import org.eclipse.ditto.signals.commands.base.Command;
-import org.eclipse.ditto.signals.commands.things.TestConstants;
-import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
+import org.eclipse.ditto.things.model.signals.commands.TestConstants;
+import org.eclipse.ditto.things.model.signals.commands.modify.CreateThing;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;

@@ -22,10 +22,10 @@ import java.text.MessageFormat;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.model.things.Features;
+import org.eclipse.ditto.things.model.Features;
 import org.eclipse.ditto.signals.commands.base.Command;
-import org.eclipse.ditto.signals.commands.things.TestConstants;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatures;
+import org.eclipse.ditto.things.model.signals.commands.TestConstants;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatures;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;

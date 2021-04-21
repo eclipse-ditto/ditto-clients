@@ -17,10 +17,10 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import org.eclipse.ditto.client.live.commands.base.LiveCommand;
-import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.signals.commands.base.WithNamespace;
-import org.eclipse.ditto.signals.commands.things.WithSelectedFields;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveThings;
+import org.eclipse.ditto.things.model.signals.commands.WithSelectedFields;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveThings;
 
 /**
  * {@link RetrieveThings} live command giving access to the command and all of its special accessors.

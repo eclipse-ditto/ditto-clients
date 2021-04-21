@@ -17,10 +17,10 @@ import javax.annotation.Nonnull;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandResponseFactory;
 import org.eclipse.ditto.client.live.commands.base.LiveEventFactory;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureDesiredProperties;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureDesiredPropertiesResponse;
-import org.eclipse.ditto.signals.events.things.FeatureDesiredPropertiesDeleted;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureDesiredProperties;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureDesiredPropertiesResponse;
+import org.eclipse.ditto.things.model.signals.events.FeatureDesiredPropertiesDeleted;
 
 /**
  * LiveCommandAnswer builder for producing {@code CommandResponse}s and {@code Event}s for
@@ -49,7 +49,7 @@ public interface DeleteFeatureDesiredPropertiesLiveCommandAnswerBuilder
          * Builds a {@link ThingErrorResponse} indicating that the features desired properties were not accessible.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.FeatureDesiredPropertiesNotAccessibleException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.FeatureDesiredPropertiesNotAccessibleException
          * FeatureDesiredPropertiesNotAccessibleException
          */
         @Nonnull
@@ -59,7 +59,7 @@ public interface DeleteFeatureDesiredPropertiesLiveCommandAnswerBuilder
          * Builds a {@link ThingErrorResponse} indicating that the feature properties were not modifiable.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.FeatureDesiredPropertiesNotModifiableException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.FeatureDesiredPropertiesNotModifiableException
          * FeatureDesiredPropertiesNotModifiableException
          */
         @Nonnull

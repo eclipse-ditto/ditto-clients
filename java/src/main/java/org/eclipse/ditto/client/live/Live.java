@@ -26,7 +26,7 @@ import org.eclipse.ditto.client.live.messages.MessageRegistration;
 import org.eclipse.ditto.client.live.messages.PendingMessage;
 import org.eclipse.ditto.client.management.CommonManagement;
 import org.eclipse.ditto.client.options.Option;
-import org.eclipse.ditto.model.things.Thing;
+import org.eclipse.ditto.things.model.Thing;
 
 /**
  * Live API acting as the entry point for directly managing and monitoring <em>Live Things</em>. Those are not managed
@@ -42,7 +42,7 @@ public interface Live extends CommonManagement<LiveThingHandle, LiveFeatureHandl
     /**
      * Provides the functionality to create and send a new {@link org.eclipse.ditto.model.messages.Message}
      * <em>FROM</em> or <em>TO</em> a "Live" {@link Thing} or a "Live" Thing's {@link
-     * org.eclipse.ditto.model.things.Feature Feature}. <p> Example: </p>
+     * org.eclipse.ditto.things.model.Feature Feature}. <p> Example: </p>
      * <pre>
      * client.live().message()
      *    .from("org.eclipse.ditto:fireDetectionDevice")

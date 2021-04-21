@@ -17,8 +17,8 @@ import javax.annotation.Nonnull;
 import org.eclipse.ditto.client.live.commands.base.LiveCommand;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.signals.base.WithFeatureId;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveFeatureProperty;
-import org.eclipse.ditto.signals.commands.things.query.ThingQueryCommand;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeatureProperty;
+import org.eclipse.ditto.things.model.signals.commands.query.ThingQueryCommand;
 
 /**
  * {@link RetrieveFeatureProperty} live command giving access to the command and all of its special accessors.

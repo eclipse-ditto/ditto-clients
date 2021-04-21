@@ -32,7 +32,7 @@ import org.eclipse.ditto.client.twin.TwinSearchHandle;
 import org.eclipse.ditto.client.twin.TwinThingHandle;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
-import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.protocol.TopicPath;
 
 /**

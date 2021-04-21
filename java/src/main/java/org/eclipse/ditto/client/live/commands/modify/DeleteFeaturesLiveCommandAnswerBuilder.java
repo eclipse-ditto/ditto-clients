@@ -17,10 +17,10 @@ import javax.annotation.Nonnull;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandResponseFactory;
 import org.eclipse.ditto.client.live.commands.base.LiveEventFactory;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatures;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeaturesResponse;
-import org.eclipse.ditto.signals.events.things.FeaturesDeleted;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatures;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeaturesResponse;
+import org.eclipse.ditto.things.model.signals.events.FeaturesDeleted;
 
 /**
  * LiveCommandAnswer builder for producing {@code CommandResponse}s and {@code Event}s for {@link DeleteFeatures}
@@ -48,7 +48,7 @@ public interface DeleteFeaturesLiveCommandAnswerBuilder extends LiveCommandAnswe
          * Builds a {@link ThingErrorResponse} indicating that the features were not accessible.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.FeaturesNotAccessibleException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.FeaturesNotAccessibleException
          * FeaturesNotAccessibleException
          */
         @Nonnull
@@ -58,7 +58,7 @@ public interface DeleteFeaturesLiveCommandAnswerBuilder extends LiveCommandAnswe
          * Builds a {@link ThingErrorResponse} indicating that the features were not modifiable.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.FeaturesNotModifiableException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.FeaturesNotModifiableException
          * FeaturesNotModifiableException
          */
         @Nonnull

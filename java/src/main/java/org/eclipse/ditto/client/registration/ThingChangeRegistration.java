@@ -19,7 +19,7 @@ import org.eclipse.ditto.client.changes.ThingChange;
 
 /**
  * Provides the functionality for registering handlers which are notified about {@link
- * org.eclipse.ditto.model.things.Thing} changes.
+ * org.eclipse.ditto.things.model.Thing} changes.
  *
  * @since 1.0.0
  */

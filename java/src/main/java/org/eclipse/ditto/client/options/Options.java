@@ -18,7 +18,7 @@ import org.eclipse.ditto.client.management.CommonManagement;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.policies.model.PolicyId;
-import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.things.model.ThingId;
 
 /**
  * This utility class allows to create {@link Option}s with custom values the Ditto Client is aware of.

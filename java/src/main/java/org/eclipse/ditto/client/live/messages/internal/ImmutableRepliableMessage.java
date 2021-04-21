@@ -40,7 +40,7 @@ import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
-import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 
 /**

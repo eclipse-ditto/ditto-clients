@@ -12,8 +12,8 @@
  */
 
 /**
- * Contains an API for managing {@link org.eclipse.ditto.model.things.Thing Thing}s and {@link
- * org.eclipse.ditto.model.things.Feature Feature}s.
+ * Contains an API for managing {@link org.eclipse.ditto.things.model.Thing Thing}s and {@link
+ * org.eclipse.ditto.things.model.Feature Feature}s.
  */
 @org.eclipse.ditto.utils.jsr305.annotations.AllParametersAndReturnValuesAreNonnullByDefault
 package org.eclipse.ditto.client.management;

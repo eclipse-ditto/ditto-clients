@@ -15,10 +15,10 @@ package org.eclipse.ditto.client.live.commands.modify;
 import javax.annotation.Nonnull;
 
 import org.eclipse.ditto.client.live.commands.base.LiveCommand;
-import org.eclipse.ditto.model.things.FeatureProperties;
+import org.eclipse.ditto.things.model.FeatureProperties;
 import org.eclipse.ditto.signals.base.WithFeatureId;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDesiredProperties;
-import org.eclipse.ditto.signals.commands.things.modify.ThingModifyCommand;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureDesiredProperties;
+import org.eclipse.ditto.things.model.signals.commands.modify.ThingModifyCommand;
 
 /**
  * {@link ModifyFeatureDesiredProperties} live command giving access to the command and all of its special accessors.
@@ -35,7 +35,7 @@ public interface ModifyFeatureDesiredPropertiesLiveCommand extends LiveCommand<M
      * Returns the {desired properties to modify.
      *
      * @return the Properties to modify.
-     * @see org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDesiredProperties#getDesiredProperties() ()
+     * @see org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureDesiredProperties#getDesiredProperties() ()
      */
     @Nonnull
     FeatureProperties getDesiredProperties();

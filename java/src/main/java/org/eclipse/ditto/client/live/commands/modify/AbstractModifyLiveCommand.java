@@ -19,8 +19,8 @@ import org.eclipse.ditto.client.live.commands.base.LiveCommand;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
-import org.eclipse.ditto.model.things.ThingId;
-import org.eclipse.ditto.signals.commands.things.modify.ThingModifyCommand;
+import org.eclipse.ditto.things.model.ThingId;
+import org.eclipse.ditto.things.model.signals.commands.modify.ThingModifyCommand;
 
 /**
  * Abstract base implementation for LiveCommands wrapping {@link ThingModifyCommand}s.

@@ -17,13 +17,13 @@ import javax.annotation.Nonnull;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandResponseFactory;
 import org.eclipse.ditto.client.live.commands.base.LiveEventFactory;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.modify.MergeThingResponse;
-import org.eclipse.ditto.signals.events.things.ThingMerged;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.modify.MergeThingResponse;
+import org.eclipse.ditto.things.model.signals.events.ThingMerged;
 
 /**
  * LiveCommandAnswer builder for producing {@code CommandResponse}s and {@code Event}s for
- * {@link org.eclipse.ditto.signals.commands.things.modify.MergeThing} commands.
+ * {@link org.eclipse.ditto.things.model.signals.commands.modify.MergeThing} commands.
  *
  * @since 2.0.0
  */
@@ -32,13 +32,13 @@ public interface MergeThingLiveCommandAnswerBuilder extends
                 MergeThingLiveCommandAnswerBuilder.EventFactory> {
 
     /**
-     * Factory for {@code CommandResponse}s to {@link org.eclipse.ditto.signals.commands.things.modify.MergeThing}
+     * Factory for {@code CommandResponse}s to {@link org.eclipse.ditto.things.model.signals.commands.modify.MergeThing}
      * command.
      */
     interface ResponseFactory extends LiveCommandResponseFactory {
 
         /**
-         * Builds a "merged"  {@link org.eclipse.ditto.signals.commands.things.modify.MergeThingResponse} using the
+         * Builds a "merged"  {@link org.eclipse.ditto.things.model.signals.commands.modify.MergeThingResponse} using the
          * values of the {@code Command}.
          *
          * @return the response.
@@ -47,20 +47,20 @@ public interface MergeThingLiveCommandAnswerBuilder extends
         MergeThingResponse merged();
 
         /**
-         * Builds a {@link org.eclipse.ditto.signals.commands.things.ThingErrorResponse} indicating that the Thing was not accessible.
+         * Builds a {@link org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse} indicating that the Thing was not accessible.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.ThingNotAccessibleException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.ThingNotAccessibleException
          * ThingNotAccessibleException
          */
         @Nonnull
         ThingErrorResponse thingNotAccessibleError();
 
         /**
-         * Builds a {@link org.eclipse.ditto.signals.commands.things.ThingErrorResponse} indicating that the Thing was not modifiable.
+         * Builds a {@link org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse} indicating that the Thing was not modifiable.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.ThingNotModifiableException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.ThingNotModifiableException
          * ThingNotModifiableException
          */
         @Nonnull
@@ -68,12 +68,12 @@ public interface MergeThingLiveCommandAnswerBuilder extends
     }
 
     /**
-     * Factory for events triggered by {@link org.eclipse.ditto.signals.commands.things.modify.MergeThing} command.
+     * Factory for events triggered by {@link org.eclipse.ditto.things.model.signals.commands.modify.MergeThing} command.
      */
     interface EventFactory extends LiveEventFactory {
 
         /**
-         * Creates a {@link org.eclipse.ditto.signals.events.things.ThingMerged} event using the values of the {@code
+         * Creates a {@link org.eclipse.ditto.things.model.signals.events.ThingMerged} event using the values of the {@code
          * Command}.
          *
          * @return the event.

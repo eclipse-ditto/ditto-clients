@@ -17,11 +17,11 @@ import javax.annotation.Nonnull;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandResponseFactory;
 import org.eclipse.ditto.client.live.commands.base.LiveEventFactory;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatures;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeaturesResponse;
-import org.eclipse.ditto.signals.events.things.FeaturesCreated;
-import org.eclipse.ditto.signals.events.things.FeaturesModified;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatures;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeaturesResponse;
+import org.eclipse.ditto.things.model.signals.events.FeaturesCreated;
+import org.eclipse.ditto.things.model.signals.events.FeaturesModified;
 
 /**
  * LiveCommandAnswer builder for producing {@code CommandResponse}s and {@code Event}s for {@link ModifyFeatures}
@@ -58,7 +58,7 @@ public interface ModifyFeaturesLiveCommandAnswerBuilder extends
          * Builds a {@link ThingErrorResponse} indicating that the features were not accessible.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.FeaturesNotAccessibleException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.FeaturesNotAccessibleException
          * FeaturesNotAccessibleException
          */
         @Nonnull
@@ -68,7 +68,7 @@ public interface ModifyFeaturesLiveCommandAnswerBuilder extends
          * Builds a {@link ThingErrorResponse} indicating that the features were not modifiable.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.FeaturesNotModifiableException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.FeaturesNotModifiableException
          * FeaturesNotModifiableException
          */
         @Nonnull

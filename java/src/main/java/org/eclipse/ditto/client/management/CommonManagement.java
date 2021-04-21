@@ -26,8 +26,8 @@ import org.eclipse.ditto.client.registration.ThingFeaturePropertiesChangeRegistr
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.policies.model.Policy;
-import org.eclipse.ditto.model.things.Thing;
-import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.things.model.Thing;
+import org.eclipse.ditto.things.model.ThingId;
 
 /**
  * A {@code CommonManagement} provides the basic functionality, which can be used to manage (i.e., create and delete)
@@ -91,7 +91,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
 
     /**
      * Creates a new instance of {@link FeatureHandle} which aggregates all operations of an already existing {@link
-     * org.eclipse.ditto.model.things.Feature Feature} specified by the given Thing plus Feature identifiers.
+     * org.eclipse.ditto.things.model.Feature Feature} specified by the given Thing plus Feature identifiers.
      *
      * @param thingId the identifier of the Thing containing the Feature to create the handle for.
      * @param featureId the identifier of the Feature to create the handle for.
@@ -147,7 +147,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @return CompletionStage providing the created Thing object or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code thingId} is {@code null} or empty.
-     * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
+     * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
      */
     CompletionStage<Thing> create(ThingId thingId, Option<?>... options);
 
@@ -160,7 +160,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @return CompletionStage providing the created Thing object or a specific {@link
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier.
-     * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
+     * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
      */
     CompletionStage<Thing> create(Thing thing, Option<?>... options);
 
@@ -178,7 +178,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * {@code "thingId"}.
      * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code thing} cannot be parsed to a
      * {@link Thing}.
-     * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
+     * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
      * @since 1.0.0
      */
     CompletionStage<Thing> create(JsonObject thing, Option<?>... options);
@@ -206,7 +206,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier, or if
      * {@code initialPolicy} is {@code null}.
-     * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
+     * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
      * @since 1.1.0
      */
     CompletionStage<Thing> create(Thing thing, JsonObject initialPolicy, Option<?>... options);
@@ -223,7 +223,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code thingId} is {@code null} or empty, or if {@code initialPolicy} is
      * {@code null}.
-     * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
+     * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
      * @since 1.1.0
      */
     CompletionStage<Thing> create(ThingId thingId, JsonObject initialPolicy, Option<?>... options);
@@ -243,7 +243,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * {@code "thingId"}, or if {@code initialPolicy} is {@code null}.
      * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code thing} cannot be parsed to a {@link
      * Thing}.
-     * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
+     * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
      * @since 1.1.0
      */
     CompletionStage<Thing> create(JsonObject thing, JsonObject initialPolicy, Option<?>... options);
@@ -259,7 +259,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier, or if
      * {@code initialPolicy} is {@code null}.
-     * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
+     * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
      * @since 1.1.0
      */
     CompletionStage<Thing> create(Thing thing, Policy initialPolicy, Option<?>... options);
@@ -276,7 +276,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code thingId} is {@code null} or empty, or if {@code initialPolicy} is
      * {@code null}.
-     * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
+     * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
      * @since 1.1.0
      */
     CompletionStage<Thing> create(ThingId thingId, Policy initialPolicy, Option<?>... options);
@@ -296,7 +296,7 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * {@code "thingId"}, or if {@code initialPolicy} is {@code null}.
      * @throws org.eclipse.ditto.model.base.exceptions.DittoJsonException if {@code thing} cannot be parsed to a {@link
      * Thing}.
-     * @throws org.eclipse.ditto.model.things.ThingIdInvalidException if the {@code thingId} was invalid.
+     * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
      * @since 1.1.0
      */
     CompletionStage<Thing> create(JsonObject thing, Policy initialPolicy, Option<?>... options);

@@ -24,7 +24,7 @@ import org.eclipse.ditto.json.JsonValue;
 
 /**
  * {@code FeaturePropertiesManagement} provides create, update and delete functionality for managing {@link
- * org.eclipse.ditto.model.things.FeatureProperties}. <p> All the methods are executed non-blocking and asynchronously.
+ * org.eclipse.ditto.things.model.FeatureProperties}. <p> All the methods are executed non-blocking and asynchronously.
  * Therefore, the methods return a {@code CompletionStage} object that will complete either successfully if the
  * operation was executed and confirmed, or exceptionally with a specific
  * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if it was executed but has failed. </p>

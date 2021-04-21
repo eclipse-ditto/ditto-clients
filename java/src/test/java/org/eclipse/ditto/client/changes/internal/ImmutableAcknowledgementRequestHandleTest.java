@@ -22,7 +22,7 @@ import org.eclipse.ditto.client.ack.internal.ImmutableAcknowledgementRequestHand
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.entity.id.EntityId;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.things.model.ThingId;
 import org.junit.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;

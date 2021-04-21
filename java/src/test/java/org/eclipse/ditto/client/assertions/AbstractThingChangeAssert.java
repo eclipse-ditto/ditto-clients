@@ -18,7 +18,7 @@ import org.assertj.core.api.AbstractAssert;
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.ChangeAction;
-import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.things.model.ThingId;
 
 
 public abstract class AbstractThingChangeAssert<S extends AbstractAssert<S, T>, T extends Change>

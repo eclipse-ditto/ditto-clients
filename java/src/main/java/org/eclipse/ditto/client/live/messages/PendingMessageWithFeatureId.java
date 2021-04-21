@@ -23,7 +23,7 @@ public interface PendingMessageWithFeatureId<T> {
 
     /**
      * Sets the {@link org.eclipse.ditto.model.messages.Message} as being sent <em>FROM</em> the {@link
-     * org.eclipse.ditto.model.things.Feature}.
+     * org.eclipse.ditto.things.model.Feature}.
      *
      * @return fluent API builder that provides the functionality to set the subject of the Message.
      */
@@ -31,7 +31,7 @@ public interface PendingMessageWithFeatureId<T> {
 
     /**
      * Sets the {@link org.eclipse.ditto.model.messages.Message} as being sent <em>TO</em> the {@link
-     * org.eclipse.ditto.model.things.Feature}.
+     * org.eclipse.ditto.things.model.Feature}.
      *
      * @return fluent API builder that provides the functionality to set the subject of the Message.
      */

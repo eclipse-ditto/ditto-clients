@@ -23,8 +23,8 @@ import java.text.MessageFormat;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.signals.commands.things.TestConstants;
-import org.eclipse.ditto.signals.commands.things.modify.MergeThing;
+import org.eclipse.ditto.things.model.signals.commands.TestConstants;
+import org.eclipse.ditto.things.model.signals.commands.modify.MergeThing;
 import org.junit.Before;
 import org.junit.Test;
 

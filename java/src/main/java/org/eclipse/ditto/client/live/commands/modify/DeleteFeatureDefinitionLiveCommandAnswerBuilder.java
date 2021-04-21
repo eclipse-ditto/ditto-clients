@@ -17,13 +17,13 @@ import javax.annotation.Nonnull;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandResponseFactory;
 import org.eclipse.ditto.client.live.commands.base.LiveEventFactory;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureDefinitionResponse;
-import org.eclipse.ditto.signals.events.things.FeatureDefinitionDeleted;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureDefinitionResponse;
+import org.eclipse.ditto.things.model.signals.events.FeatureDefinitionDeleted;
 
 /**
  * LiveCommandAnswer builder for producing {@code CommandResponse}s and {@code Event}s for {@link
- * org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureDefinition} commands.
+ * org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureDefinition} commands.
  *
  * @since 2.0.0
  */
@@ -34,7 +34,7 @@ public interface DeleteFeatureDefinitionLiveCommandAnswerBuilder
 
     /**
      * Factory for {@code CommandResponse}s to
-     * {@link org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureDefinition} command.
+     * {@link org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureDefinition} command.
      */
     interface ResponseFactory extends LiveCommandResponseFactory {
 
@@ -50,7 +50,7 @@ public interface DeleteFeatureDefinitionLiveCommandAnswerBuilder
          * Builds a {@link ThingErrorResponse} indicating that the Feature Definition was not accessible.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.FeaturePropertiesNotAccessibleException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.FeaturePropertiesNotAccessibleException
          * FeaturePropertiesNotAccessibleException
          */
         @Nonnull
@@ -60,7 +60,7 @@ public interface DeleteFeatureDefinitionLiveCommandAnswerBuilder
          * Builds a {@link ThingErrorResponse} indicating that the Feature Definition was not modifiable.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.FeaturePropertiesNotModifiableException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.FeaturePropertiesNotModifiableException
          * FeaturePropertiesNotModifiableException
          */
         @Nonnull
@@ -69,7 +69,7 @@ public interface DeleteFeatureDefinitionLiveCommandAnswerBuilder
     }
 
     /**
-     * Factory for events triggered by {@link org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureDefinition}
+     * Factory for events triggered by {@link org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureDefinition}
      * command.
      */
     @SuppressWarnings("squid:S1609")
