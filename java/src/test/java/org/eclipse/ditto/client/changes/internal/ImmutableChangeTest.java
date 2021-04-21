@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.base.entity.id.EntityIdWithType;
+import org.eclipse.ditto.model.base.entity.id.EntityId;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.things.ThingId;
 import org.junit.Test;
@@ -36,7 +36,7 @@ public final class ImmutableChangeTest {
     @Test
     public void assertImmutability() {
         assertInstancesOf(ImmutableChange.class, areImmutable(),
-                provided(JsonValue.class, JsonPointer.class, EntityIdWithType.class, JsonObject.class,
+                provided(JsonValue.class, JsonPointer.class, EntityId.class, JsonObject.class,
                         DittoHeaders.class, Consumer.class).isAlsoImmutable());
     }
 
@@ -48,7 +48,7 @@ public final class ImmutableChangeTest {
         EqualsVerifier.forClass(ImmutableChange.class)
                 .usingGetClass()
                 .withIgnoredFields("acknowledgementPublisher")
-                .withPrefabValues(EntityIdWithType.class, red, black)
+                .withPrefabValues(EntityId.class, red, black)
                 .verify();
     }
 

@@ -35,10 +35,9 @@ import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.common.HttpStatus;
-import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.model.base.headers.WithDittoHeaders;
+import org.eclipse.ditto.model.base.headers.DittoHeadersSettable;
 import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.Adaptable;
@@ -122,7 +121,8 @@ public abstract class AbstractHandle {
      * @param adaptable the adaptable.
      * @return the signal.
      */
-    protected Signal<?> signalFromAdaptable(final Adaptable adaptable) {
+    @SuppressWarnings({"rawtypes", "java:S3740"})
+    protected Signal signalFromAdaptable(final Adaptable adaptable) {
         return PROTOCOL_ADAPTER.fromAdaptable(adaptable);
     }
 
@@ -239,7 +239,7 @@ public abstract class AbstractHandle {
         return toSend;
     }
 
-    protected <T extends WithDittoHeaders<T>> T setChannel(final T signal, final TopicPath.Channel channel) {
+    protected <T extends DittoHeadersSettable<T>> T setChannel(final T signal, final TopicPath.Channel channel) {
         switch (channel) {
             case LIVE:
                 return adjustHeadersForLive(signal);
@@ -254,8 +254,8 @@ public abstract class AbstractHandle {
         return PROTOCOL_ADAPTER.toAdaptable(adjustHeadersForLiveSignal(liveSignal));
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    protected static Signal<?> adjustHeadersForLiveSignal(final Signal<?> signal) {
+    @SuppressWarnings({"unchecked", "rawtypes", "java:S3740"})
+    protected static Signal adjustHeadersForLiveSignal(final Signal<?> signal) {
         return adjustHeadersForLive((Signal) signal);
     }
 
@@ -306,7 +306,7 @@ public abstract class AbstractHandle {
             }
 
             @Override
-            public ThingId getThingEntityId() {
+            public ThingId getEntityId() {
                 return (ThingId) ack.getEntityId();
             }
 
@@ -326,11 +326,6 @@ public abstract class AbstractHandle {
             }
 
             @Override
-            public HttpStatusCode getStatusCode() {
-                return ack.getStatusCode();
-            }
-
-            @Override
             public HttpStatus getHttpStatus() {
                 return ack.getHttpStatus();
             }
@@ -342,7 +337,7 @@ public abstract class AbstractHandle {
         };
     }
 
-    private static <T extends WithDittoHeaders<T>> T adjustHeadersForLive(final T signal) {
+    private static <T extends DittoHeadersSettable<T>> T adjustHeadersForLive(final T signal) {
         return signal.setDittoHeaders(
                 signal.getDittoHeaders()
                         .toBuilder()

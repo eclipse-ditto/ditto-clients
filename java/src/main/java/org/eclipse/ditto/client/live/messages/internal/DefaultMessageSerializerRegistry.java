@@ -128,7 +128,7 @@ public final class DefaultMessageSerializerRegistry implements MessageSerializer
                 .collect(Collectors.toList());
         if (foundCandidates.size() == 1) {
             return Optional.of((MessageSerializerKey<T>) foundCandidates.get(0));
-        } else if (foundCandidates.size() == 0) {
+        } else if (foundCandidates.isEmpty()) {
             if (!subject.equals(MessageSerializerKey.SUBJECT_WILDCARD)) {
                 final Optional<MessageSerializerKey<?>> wildcardKey = getSerializerKeysForJavaTypeAndSubject(javaType,
                         MessageSerializerKey.SUBJECT_WILDCARD).findFirst();

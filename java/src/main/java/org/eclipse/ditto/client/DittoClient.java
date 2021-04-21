@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.eclipse.ditto.client.live.Live;
 import org.eclipse.ditto.client.policies.Policies;
@@ -52,10 +52,10 @@ public interface DittoClient {
      * Directly sends a Ditto Protocol {@link Adaptable} message to the established Ditto backend connection.
      *
      * @param dittoProtocolAdaptable the adaptable to send
-     * @return a CompletableFuture containing the correlated response to the sent {@code dittoProtocolAdaptable}
+     * @return a CompletionStage containing the correlated response to the sent {@code dittoProtocolAdaptable}
      * @throws IllegalStateException when no twin/live connection was configured for this client
      */
-    CompletableFuture<Adaptable> sendDittoProtocol(Adaptable dittoProtocolAdaptable);
+    CompletionStage<Adaptable> sendDittoProtocol(Adaptable dittoProtocolAdaptable);
 
     /**
      * Returns the client's {@link Policies} singleton which provides the necessary functionality to manage and monitor

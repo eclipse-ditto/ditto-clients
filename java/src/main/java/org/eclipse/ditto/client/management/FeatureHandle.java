@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.management;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.registration.FeaturePropertiesChangeRegistration;
@@ -21,17 +21,17 @@ import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.signals.base.WithFeatureId;
 
 /**
- * A {@code FeatureHandle} is the entry point to managing and monitoring a <em>specific</em> {@code Feature}. For
- * example, it can be used to manage (create, modify and delete) a Feature's {@code Properties}.
+ * A {@code FeatureHandle} is the entry point to managing and monitoring a <em>specific</em> {@code Feature}.
+ * For example, it can be used to manage (create, modify and delete) a Feature's {@code Properties}.
  * <p>
  * Additionally, it provides the possibility to monitor a {@code Feature} by registering handlers to be notified about
  * {@code FeaturePropertyChange}s.
  * </p>
  * <p>
- * Note: All methods returning a {@link CompletableFuture} are executed non-blocking and asynchronously. Therefore,
- * these methods return a {@code CompletableFuture} object that will complete either successfully if the operation was
- * executed and confirmed, or exceptionally with a specific {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException}
- * if it was executed but has failed.
+ * Note: All methods returning a {@link CompletionStage} are executed non-blocking and asynchronously.
+ * Therefore, these methods return a {@code CompletionStage} object that will complete either successfully
+ * if the operation was executed and confirmed, or exceptionally with a specific
+ * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if it was executed but has failed.
  * </p>
  * Example:
  * <pre>
@@ -52,28 +52,28 @@ public interface FeatureHandle extends WithFeatureId, FeaturePropertiesManagemen
     /**
      * Deletes the {@code Feature} being handled by this {@code FeatureHandle}.
      *
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return completable future
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage
      */
-    CompletableFuture<Void> delete(Option<?>... options);
+    CompletionStage<Void> delete(Option<?>... options);
 
     /**
      * Retrieve the {@code Feature} being handled by this {@code FeatureHandle}.
      *
-     * @return completable future providing the requested Feature object, when completed successfully or a specific
+     * @return CompletionStage providing the requested Feature object, when completed successfully or a specific
      * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      */
-    CompletableFuture<Feature> retrieve();
+    CompletionStage<Feature> retrieve();
 
     /**
      * Retrieve the {@code Feature} being handled by this {@code FeatureHandle}.
      *
      * @param fieldSelector a field selector object allowing to select a subset of fields on the Feature to be
      * retrieved.
-     * @return completable future providing the requested Feature object, when completed successfully or a specific
+     * @return CompletionStage providing the requested Feature object, when completed successfully or a specific
      * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
      */
-    CompletableFuture<Feature> retrieve(JsonFieldSelector fieldSelector);
+    CompletionStage<Feature> retrieve(JsonFieldSelector fieldSelector);
 
 }

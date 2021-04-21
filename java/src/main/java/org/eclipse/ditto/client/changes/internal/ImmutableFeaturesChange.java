@@ -32,7 +32,6 @@ import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.entity.id.EntityId;
-import org.eclipse.ditto.model.base.entity.id.EntityIdWithType;
 import org.eclipse.ditto.model.base.entity.type.EntityType;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.things.Features;
@@ -63,7 +62,7 @@ public final class ImmutableFeaturesChange implements FeaturesChange {
      * @param acknowledgementPublisher the consumer for publishing built acknowledgements to the Ditto backend.
      * @throws NullPointerException if any required argument is {@code null}.
      */
-    public ImmutableFeaturesChange(final EntityIdWithType entityId,
+    public ImmutableFeaturesChange(final EntityId entityId,
             final ChangeAction changeAction,
             @Nullable final Features features,
             final JsonPointer path,

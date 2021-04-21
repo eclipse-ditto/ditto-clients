@@ -16,7 +16,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.model.base.acks.AcknowledgementRequest.parseAcknowledgementRequest;
 
-import java.util.concurrent.CompletableFuture;
+import java.time.Instant;
+import java.util.concurrent.CompletionStage;
 
 import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.json.JsonPointer;
@@ -53,14 +54,15 @@ public final class DittoClientTwinTest extends AbstractConsumptionDittoClientTes
         // expect subscription messages
         assertThat(expectMsgClass(String.class)).startsWith("START-SEND-");
 
-        reply(ThingDeleted.of(THING_ID, 1L, DittoHeaders.newBuilder()
+        reply(ThingDeleted.of(THING_ID, 1L, Instant.now(), DittoHeaders.newBuilder()
                 .channel(TopicPath.Channel.TWIN.getName())
                 .acknowledgementRequest(
                         parseAcknowledgementRequest("100"),
                         parseAcknowledgementRequest("301"),
                         parseAcknowledgementRequest("403")
                 )
-                .build()
+                .build(),
+                null
         ));
 
         assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.CONTINUE);
@@ -82,7 +84,7 @@ public final class DittoClientTwinTest extends AbstractConsumptionDittoClientTes
         // expect subscription messages
         assertThat(expectMsgClass(String.class)).startsWith("START-SEND-");
 
-        reply(AttributeCreated.of(THING_ID, JsonPointer.of("hello"), JsonValue.of("World"), 5L,
+        reply(AttributeCreated.of(THING_ID, JsonPointer.of("hello"), JsonValue.of("World"), 5L, Instant.now(),
                 DittoHeaders.newBuilder()
                         .channel(TopicPath.Channel.TWIN.getName())
                         .acknowledgementRequest(
@@ -90,7 +92,8 @@ public final class DittoClientTwinTest extends AbstractConsumptionDittoClientTes
                                 parseAcknowledgementRequest("403"),
                                 parseAcknowledgementRequest("500")
                         )
-                        .build())
+                        .build(),
+                null)
         );
         assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.OK);
         assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.FORBIDDEN);
@@ -113,6 +116,7 @@ public final class DittoClientTwinTest extends AbstractConsumptionDittoClientTes
         assertThat(expectMsgClass(String.class)).startsWith("START-SEND-");
 
         reply(FeaturePropertyModified.of(THING_ID, "featureId", JsonPointer.of("hello"), JsonValue.of("World"), 5L,
+                Instant.now(),
                 DittoHeaders.newBuilder()
                         .channel(TopicPath.Channel.TWIN.getName())
                         .acknowledgementRequest(
@@ -120,7 +124,8 @@ public final class DittoClientTwinTest extends AbstractConsumptionDittoClientTes
                                 parseAcknowledgementRequest("201"),
                                 parseAcknowledgementRequest("403")
                         )
-                        .build())
+                        .build(),
+                null)
         );
         assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(expectMsgClass(Acknowledgement.class).getHttpStatus()).isEqualTo(HttpStatus.CREATED);
@@ -128,7 +133,7 @@ public final class DittoClientTwinTest extends AbstractConsumptionDittoClientTes
     }
 
     @Override
-    protected CompletableFuture<Void> startConsumptionRequest() {
+    protected CompletionStage<Void> startConsumptionRequest() {
         return client.twin().startConsumption();
     }
 
@@ -140,7 +145,7 @@ public final class DittoClientTwinTest extends AbstractConsumptionDittoClientTes
 
     @Override
     protected void startConsumptionAndExpectError() {
-        final CompletableFuture<Void> future = client.twin().startConsumption();
+        final CompletionStage<Void> future = client.twin().startConsumption();
         final String protocolMessage = messaging.expectEmitted();
         final String correlationId = determineCorrelationId(protocolMessage);
         final DittoHeaders dittoHeaders = DittoHeaders.newBuilder().correlationId(correlationId).build();
@@ -154,9 +159,9 @@ public final class DittoClientTwinTest extends AbstractConsumptionDittoClientTes
 
     @Override
     protected void startConsumptionSucceeds() {
-        final CompletableFuture<Void> future = client.twin().startConsumption();
+        final CompletionStage<Void> future = client.twin().startConsumption();
         reply(Classification.StreamingType.TWIN_EVENT.startAck());
-        future.join();
+        future.toCompletableFuture().join();
     }
 
 }

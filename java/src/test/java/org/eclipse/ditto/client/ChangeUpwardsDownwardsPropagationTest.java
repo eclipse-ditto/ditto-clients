@@ -17,9 +17,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.ditto.json.JsonFactory.emptyPointer;
 import static org.eclipse.ditto.json.JsonFactory.newObjectBuilder;
 import static org.eclipse.ditto.json.JsonFactory.newPointer;
-import static org.eclipse.ditto.model.base.auth.AuthorizationModelFactory.newAuthSubject;
 import static org.junit.Assert.assertEquals;
 
+import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -42,7 +42,6 @@ import org.eclipse.ditto.model.messages.MessagesModelFactory;
 import org.eclipse.ditto.model.things.Attributes;
 import org.eclipse.ditto.model.things.Feature;
 import org.eclipse.ditto.model.things.FeatureProperties;
-import org.eclipse.ditto.model.things.Permission;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
@@ -122,23 +121,10 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
     public void before() {
         super.before();
         thingId1 = newThingId(UUID.randomUUID().toString());
-        thing1 = ThingsModelFactory.newThingBuilder().setId(thingId1)
-                .setPermissions(
-                        ThingsModelFactory.newAclEntry(newAuthSubject(TEST_USER_SID), Permission.READ,
-                                Permission.WRITE),
-                        ThingsModelFactory.newAclEntry(newAuthSubject(TestConstants.CLIENT_ID),
-                                Permission.READ, Permission.WRITE,
-                                Permission.ADMINISTRATE))
-                .build();
+        thing1 = ThingsModelFactory.newThingBuilder().setId(thingId1).build();
 
         thingId2 = newThingId(UUID.randomUUID().toString());
         thing2withAttributes = ThingsModelFactory.newThingBuilder().setId(thingId2)
-                .setPermissions(
-                        ThingsModelFactory.newAclEntry(newAuthSubject(TEST_USER_SID), Permission.READ,
-                                Permission.WRITE),
-                        ThingsModelFactory.newAclEntry(newAuthSubject(TestConstants.CLIENT_ID),
-                                Permission.READ, Permission.WRITE,
-                                Permission.ADMINISTRATE))
                 .setAttributes(ATTRIBUTES2)
                 .build();
 
@@ -177,8 +163,9 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
 
         final Message<ThingEvent> thingCreated =
                 MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders).payload(
-                        ThingCreated.of(thing1, 1,
-                                DittoHeaders.newBuilder().schemaVersion(JsonSchemaVersion.V_1).build()
+                        ThingCreated.of(thing1, 1, null,
+                                DittoHeaders.newBuilder().schemaVersion(JsonSchemaVersion.V_2).build(),
+                                null
                         )).build();
 
         messaging.receiveEvent(thingCreated);
@@ -208,8 +195,9 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
                         .build();
         final Message<ThingEvent> thingCreated =
                 MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders)
-                        .payload(ThingCreated.of(thing1, 1,
-                                DittoHeaders.newBuilder().schemaVersion(JsonSchemaVersion.V_1).build()
+                        .payload(ThingCreated.of(thing1, 1, null,
+                                DittoHeaders.newBuilder().schemaVersion(JsonSchemaVersion.V_2).build(),
+                                null
                         ))
                         .extra(extra)
                         .build();
@@ -258,8 +246,9 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
 
         final Message<ThingEvent> thingCreated =
                 MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders).payload(
-                        ThingCreated.of(thing1, 1,
-                                DittoHeaders.newBuilder().schemaVersion(JsonSchemaVersion.V_1).build()
+                        ThingCreated.of(thing1, 1, null,
+                                DittoHeaders.newBuilder().schemaVersion(JsonSchemaVersion.V_2).build(),
+                                null
                         )).build();
 
         // only create the Thing once:
@@ -297,7 +286,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
 
         final Message<ThingEvent> thingDeleted =
                 MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders).payload(
-                        ThingDeleted.of(thingId1, 1, DittoHeaders.empty())).build();
+                        ThingDeleted.of(thingId1, 1, null, DittoHeaders.empty(), null)).build();
 
         messaging.receiveEvent(thingDeleted);
 
@@ -337,8 +326,8 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
         // set the attributes
         final Message<ThingEvent> attributesCreated =
                 MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders).payload(
-                        AttributesCreated.of(thingId1, ThingsModelFactory.newAttributes(attributesToSet), 1,
-                                DittoHeaders.empty())).build();
+                        AttributesCreated.of(thingId1, ThingsModelFactory.newAttributes(attributesToSet), 1, null,
+                                DittoHeaders.empty(), null)).build();
 
         messaging.receiveEvent(attributesCreated);
 
@@ -385,7 +374,8 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
         // set the attributes
         final Message<ThingEvent> attributeCreated =
                 MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders).payload(
-                        AttributeCreated.of(thingId1, newAttribute, complex, 1, DittoHeaders.empty())).build();
+                        AttributeCreated.of(thingId1, newAttribute, complex, 1, null, DittoHeaders.empty(), null))
+                        .build();
 
         messaging.receiveEvent(attributeCreated);
 
@@ -421,7 +411,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
         // delete the Feature
         final Message<ThingEvent> featureDeleted =
                 MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders).payload(
-                        FeatureDeleted.of(thingId1, FEATURE_ID_1, 1, DittoHeaders.empty())).build();
+                        FeatureDeleted.of(thingId1, FEATURE_ID_1, 1, Instant.now(), DittoHeaders.empty(), null)).build();
 
         messaging.receiveEvent(featureDeleted);
 
@@ -475,8 +465,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
         final Message<ThingEvent> featurePropertyCreated =
                 MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders).payload(
                         FeaturePropertyCreated.of(thingId1, FEATURE_ID_1, fooPointer, JsonValue.of(fooValue),
-                                1,
-                                DittoHeaders.empty())).build();
+                                1, Instant.now(), DittoHeaders.empty(), null)).build();
 
         messaging.receiveEvent(featurePropertyCreated);
 
@@ -521,8 +510,8 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
         final Message<ThingEvent> featurePropertyModified =
                 MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders).payload(
                         FeaturePropertyModified.of(thingId3, FEATURE_ID_2, fooPointer, JsonValue.of(fooValue),
-                                1,
-                                DittoHeaders.empty())).build();
+                                1, Instant.now(),
+                                DittoHeaders.empty(), null)).build();
 
         messaging.receiveEvent(featurePropertyModified);
 
@@ -560,7 +549,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
         // create the thing with attributes
         final Message<ThingEvent> thingCreated =
                 MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders).payload(
-                        ThingCreated.of(thing2withAttributes, 1, DittoHeaders.empty())).build();
+                        ThingCreated.of(thing2withAttributes, 1, null, DittoHeaders.empty(), null)).build();
 
         messaging.receiveEvent(thingCreated);
 
@@ -604,7 +593,8 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
         // change attributes
         final Message<ThingEvent> attributesModified =
                 MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders).payload(
-                        AttributesModified.of(thingId2, newAttributes, 1, DittoHeaders.empty())).build();
+                        AttributesModified.of(thingId2, newAttributes, 1, Instant.now(), DittoHeaders.empty(),
+                                null)).build();
 
         messaging.receiveEvent(attributesModified);
 
@@ -645,7 +635,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
         // modify the feature
         final Message<ThingEvent> featureModified =
                 MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders).payload(
-                        FeatureModified.of(thingId3, FEATURE2, 1, DittoHeaders.empty())).build();
+                        FeatureModified.of(thingId3, FEATURE2, 1, Instant.now(), DittoHeaders.empty(), null)).build();
 
         messaging.receiveEvent(featureModified);
 

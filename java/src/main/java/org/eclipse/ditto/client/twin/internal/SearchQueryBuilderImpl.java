@@ -91,8 +91,8 @@ final class SearchQueryBuilderImpl implements SearchQueryBuilder {
 
     CreateSubscription createSubscription() {
         final JsonFieldSelector fieldSelector = JsonFactory.parseJsonFieldSelector(fields);
-        final Set<String> namespaces = this.namespaces.isEmpty() ? null : this.namespaces;
-        return CreateSubscription.of(filter, options, fieldSelector, namespaces, DittoHeaders.empty());
+        final Set<String> namespacesSet = this.namespaces.isEmpty() ? null : this.namespaces;
+        return CreateSubscription.of(filter, options, fieldSelector, namespacesSet, DittoHeaders.empty());
     }
 
     int getInitialDemand() {

@@ -15,5 +15,5 @@
  * Contains an API around {@link org.eclipse.ditto.client.changes.Change}s for both {@link
  * org.eclipse.ditto.model.things.Thing}s and {@link org.eclipse.ditto.model.things.Feature}s.
  */
-@org.eclipse.ditto.utils.jsr305.annotations.AllParametersAndReturnValuesAreNonnullByDefault
+@org.eclipse.ditto.utils.jsr305.annotations.AllValuesAreNonnullByDefault
 package org.eclipse.ditto.client.changes;

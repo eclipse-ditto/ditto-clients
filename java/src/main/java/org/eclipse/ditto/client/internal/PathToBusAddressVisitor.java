@@ -58,16 +58,6 @@ final class PathToBusAddressVisitor implements ThingResourceVisitor<ThingId, Str
     }
 
     @Override
-    public String visitAcl(final JsonPointer path, @Nullable final ThingId thingId) {
-        return BusAddressFactory.forAcl(checkNotNull(thingId));
-    }
-
-    @Override
-    public String visitAclEntry(final JsonPointer path, @Nullable final ThingId thingId) {
-        return BusAddressFactory.forAclEntry(checkNotNull(thingId), extractSubjectId(path));
-    }
-
-    @Override
     public String visitAttributes(final JsonPointer path, @Nullable final ThingId thingId) {
         return BusAddressFactory.forAttributes(checkNotNull(thingId));
     }

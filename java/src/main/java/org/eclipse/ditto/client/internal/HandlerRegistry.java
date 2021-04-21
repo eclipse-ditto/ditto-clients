@@ -42,7 +42,7 @@ import org.eclipse.ditto.model.things.ThingId;
 public final class HandlerRegistry<T extends ThingHandle<F>, F extends FeatureHandle> {
 
     private final PointerBus bus;
-    private final Map<String, Registration<Consumer<PointerWithData>>> registry;
+    private final Map<String, Registration<Consumer<PointerWithData<?>>>> registry;
     private final Map<ThingId, T> thingHandles;
     private final Map<String, F> featureHandles;
 
@@ -82,7 +82,7 @@ public final class HandlerRegistry<T extends ThingHandle<F>, F extends FeatureHa
      * registrationId}
      */
     public void register(final String registrationId, final JsonPointerSelector selector,
-            final Consumer<PointerWithData> consumer) {
+            final Consumer<PointerWithData<?>> consumer) {
         checkRegistrationId(registrationId);
 
         registry.compute(registrationId, (k, v) -> {
@@ -104,7 +104,7 @@ public final class HandlerRegistry<T extends ThingHandle<F>, F extends FeatureHa
     public boolean deregister(final String registrationId) {
         checkRegistrationId(registrationId);
 
-        final Registration<Consumer<PointerWithData>> registration = registry.remove(registrationId);
+        final Registration<Consumer<PointerWithData<?>>> registration = registry.remove(registrationId);
         if (registration == null) {
             return false;
         }

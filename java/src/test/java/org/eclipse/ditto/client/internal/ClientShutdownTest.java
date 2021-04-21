@@ -50,7 +50,7 @@ public class ClientShutdownTest {
         stringFuture.toCompletableFuture().join();
 
         // WHEN: client is created
-        final DisconnectedDittoClient client = DittoClients.newDisconnectedInstance(messaging);
+        final DisconnectedDittoClient client = DittoClients.newInstance(messaging);
 
         // THEN: threads are allocated
         Assertions.assertThat(getActiveThreads(startingThreadNames)).isNotEmpty();

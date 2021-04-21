@@ -28,6 +28,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -103,7 +104,10 @@ public abstract class AbstractDittoClientTest {
         LOGGER.debug("active threads before test: {}", startingThreadNames);
         messaging = new MockMessagingProvider();
         messaging.onSend(m -> LOGGER.info("Send message: " + m));
-        client = DittoClients.newInstance(messaging);
+        client = DittoClients.newInstance(messaging)
+                .connect()
+                .toCompletableFuture()
+                .join();
     }
 
     @After
@@ -132,7 +136,7 @@ public abstract class AbstractDittoClientTest {
         CompletableFuture.allOf(assertionFutures.toArray(new CompletableFuture[0])).join();
     }
 
-    protected void assertEventualCompletion(final CompletableFuture<?> future) {
+    protected void assertEventualCompletion(final CompletionStage<?> future) {
         assertionFutures.add(CompletableFuture.runAsync(() -> assertCompletion(future), executorService));
     }
 
@@ -180,9 +184,9 @@ public abstract class AbstractDittoClientTest {
         return ProtocolFactory.wrapAsJsonifiableAdaptable(PROTOCOL_ADAPTER.toAdaptable(signal)).toJsonString();
     }
 
-    protected static void assertCompletion(final CompletableFuture<?> future) {
+    protected static void assertCompletion(final CompletionStage<?> future) {
         try {
-            future.get(10L, TimeUnit.SECONDS);
+            future.toCompletableFuture().get(10L, TimeUnit.SECONDS);
         } catch (final Exception e) {
             throw new AssertionError(e);
         }

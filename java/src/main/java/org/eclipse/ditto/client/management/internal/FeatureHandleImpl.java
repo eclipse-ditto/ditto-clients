@@ -15,7 +15,7 @@ package org.eclipse.ditto.client.management.internal;
 import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
 import static org.eclipse.ditto.model.base.common.ConditionChecker.checkArgument;
 
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.changes.Change;
@@ -110,7 +110,7 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
     }
 
     @Override
-    public ThingId getThingEntityId() {
+    public ThingId getEntityId() {
         return thingId;
     }
 
@@ -120,78 +120,76 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
     }
 
     @Override
-    public CompletableFuture<Void> delete(final Option<?>... options) {
+    public CompletionStage<Void> delete(final Option<?>... options) {
         final DeleteFeature command = outgoingMessageFactory.deleteFeature(thingId, featureId, options);
-        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 
     @Override
-    public CompletableFuture<Feature> retrieve() {
+    public CompletionStage<Feature> retrieve() {
         final RetrieveFeature command = outgoingMessageFactory.retrieveFeature(thingId, featureId);
-        return askThingCommand(command, RetrieveFeatureResponse.class, RetrieveFeatureResponse::getFeature)
-                .toCompletableFuture();
+        return askThingCommand(command, RetrieveFeatureResponse.class, RetrieveFeatureResponse::getFeature);
     }
 
     @Override
-    public CompletableFuture<Feature> retrieve(final JsonFieldSelector fieldSelector) {
+    public CompletionStage<Feature> retrieve(final JsonFieldSelector fieldSelector) {
         final RetrieveFeature command =
                 outgoingMessageFactory.retrieveFeature(thingId, featureId, fieldSelector.getPointers());
-        return askThingCommand(command, RetrieveFeatureResponse.class, RetrieveFeatureResponse::getFeature)
-                .toCompletableFuture();
+        return askThingCommand(command, RetrieveFeatureResponse.class, RetrieveFeatureResponse::getFeature);
     }
 
     @Override
-    public CompletableFuture<Void> setDefinition(final FeatureDefinition featureDefinition,
+    public CompletionStage<Void> setDefinition(final FeatureDefinition featureDefinition,
             final Option<?>... options) {
         final ModifyFeatureDefinition command =
                 outgoingMessageFactory.setFeatureDefinition(thingId, featureId, featureDefinition, options);
-        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 
     @Override
-    public CompletableFuture<Void> mergeDefinition(final FeatureDefinition featureDefinition,
+    public CompletionStage<Void> mergeDefinition(final FeatureDefinition featureDefinition,
             final Option<?>... options) {
         final MergeThing command =
                 outgoingMessageFactory.mergeFeatureDefinition(thingId, featureId, featureDefinition, options);
-        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 
     @Override
-    public CompletableFuture<Void> deleteDefinition(final Option<?>... options) {
+    public CompletionStage<Void> deleteDefinition(final Option<?>... options) {
         final DeleteFeatureDefinition
                 command = outgoingMessageFactory.deleteFeatureDefinition(thingId, featureId, options);
-        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 
     @Override
-    public CompletableFuture<Void> putProperty(final JsonPointer path, final boolean value,
+    public CompletionStage<Void> putProperty(final JsonPointer path, final boolean value,
             final Option<?>... options) {
 
         return putProperty(path, JsonFactory.newValue(value), options);
     }
 
     @Override
-    public CompletableFuture<Void> putProperty(final JsonPointer path, final double value, final Option<?>... options) {
+    public CompletionStage<Void> putProperty(final JsonPointer path, final double value, final Option<?>... options) {
         return putProperty(path, JsonFactory.newValue(value), options);
     }
 
     @Override
-    public CompletableFuture<Void> putProperty(final JsonPointer path, final int value, final Option<?>... options) {
+    public CompletionStage<Void> putProperty(final JsonPointer path, final int value, final Option<?>... options) {
         return putProperty(path, JsonFactory.newValue(value), options);
     }
 
     @Override
-    public CompletableFuture<Void> putProperty(final JsonPointer path, final long value, final Option<?>... options) {
+    public CompletionStage<Void> putProperty(final JsonPointer path, final long value, final Option<?>... options) {
         return putProperty(path, JsonFactory.newValue(value), options);
     }
 
     @Override
-    public CompletableFuture<Void> putProperty(final JsonPointer path, final String value, final Option<?>... options) {
+    public CompletionStage<Void> putProperty(final JsonPointer path, final String value, final Option<?>... options) {
         return putProperty(path, JsonFactory.newValue(value), options);
     }
 
     @Override
-    public CompletableFuture<Void> putProperty(final JsonPointer path, final JsonValue value,
+    public CompletionStage<Void> putProperty(final JsonPointer path, final JsonValue value,
             final Option<?>... options) {
 
         argumentNotNull(path, "Path");
@@ -200,11 +198,11 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
 
         final ModifyFeatureProperty command =
                 outgoingMessageFactory.setFeatureProperty(thingId, featureId, path, value, options);
-        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 
     @Override
-    public CompletableFuture<Void> mergeProperty(final JsonPointer path, final JsonValue value,
+    public CompletionStage<Void> mergeProperty(final JsonPointer path, final JsonValue value,
             final Option<?>... options) {
 
         argumentNotNull(path, "Path");
@@ -213,34 +211,34 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
 
         final MergeThing command =
                 outgoingMessageFactory.mergeFeatureProperty(thingId, featureId, path, value, options);
-        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 
     @Override
-    public CompletableFuture<Void> setProperties(final JsonObject value, final Option<?>... options) {
+    public CompletionStage<Void> setProperties(final JsonObject value, final Option<?>... options) {
         final ModifyFeatureProperties
                 command = outgoingMessageFactory.setFeatureProperties(thingId, featureId, value, options);
-        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 
     @Override
-    public CompletableFuture<Void> mergeProperties(final JsonObject value, final Option<?>... options) {
+    public CompletionStage<Void> mergeProperties(final JsonObject value, final Option<?>... options) {
         final MergeThing command = outgoingMessageFactory.mergeFeatureProperties(thingId, featureId, value, options);
-        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 
     @Override
-    public CompletableFuture<Void> deleteProperty(final JsonPointer path, final Option<?>... options) {
+    public CompletionStage<Void> deleteProperty(final JsonPointer path, final Option<?>... options) {
         final DeleteFeatureProperty
                 command = outgoingMessageFactory.deleteFeatureProperty(thingId, featureId, path, options);
-        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 
     @Override
-    public CompletableFuture<Void> deleteProperties(final Option<?>... options) {
+    public CompletionStage<Void> deleteProperties(final Option<?>... options) {
         final DeleteFeatureProperties
                 command = outgoingMessageFactory.deleteFeatureProperties(thingId, featureId, options);
-        return askThingCommand(command, CommandResponse.class, this::toVoid).toCompletableFuture();
+        return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 
     @Override

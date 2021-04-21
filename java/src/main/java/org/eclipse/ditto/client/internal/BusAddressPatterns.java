@@ -20,8 +20,6 @@ import java.text.MessageFormat;
 enum BusAddressPatterns {
 
     THING_PATTERN("/things/{0}"),
-    ACL_PATTERN("/things/{0}/acl"),
-    ACL_ENTRY_PATTERN("/things/{0}/acl/{1}"),
     ATTRIBUTES_PATTERN("/things/{0}/attributes"),
     ATTRIBUTE_PATTERN("/things/{0}/attributes{1}"),
     DEFINITION_PATTERN("/things/{0}/definition"),

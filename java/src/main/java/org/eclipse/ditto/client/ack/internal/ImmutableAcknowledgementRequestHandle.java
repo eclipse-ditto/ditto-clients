@@ -24,7 +24,7 @@ import org.eclipse.ditto.client.changes.AcknowledgementRequestHandle;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.common.HttpStatus;
-import org.eclipse.ditto.model.base.entity.id.EntityIdWithType;
+import org.eclipse.ditto.model.base.entity.id.EntityId;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.base.headers.DittoHeadersBuilder;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
@@ -38,7 +38,7 @@ import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 public final class ImmutableAcknowledgementRequestHandle implements AcknowledgementRequestHandle {
 
     private final AcknowledgementLabel acknowledgementLabel;
-    private final EntityIdWithType entityId;
+    private final EntityId entityId;
     private final DittoHeaders dittoHeaders;
     private final Consumer<Acknowledgement> acknowledgementPublisher;
 
@@ -51,7 +51,7 @@ public final class ImmutableAcknowledgementRequestHandle implements Acknowledgem
      * @param acknowledgementPublisher the consumer for publishing built acknowledgements to the Ditto backend.
      */
     public ImmutableAcknowledgementRequestHandle(final AcknowledgementLabel acknowledgementLabel,
-            final EntityIdWithType entityId,
+            final EntityId entityId,
             final DittoHeaders dittoHeaders,
             final Consumer<Acknowledgement> acknowledgementPublisher) {
 
@@ -67,7 +67,7 @@ public final class ImmutableAcknowledgementRequestHandle implements Acknowledgem
     }
 
     @Override
-    public EntityIdWithType getEntityId() {
+    public EntityId getEntityId() {
         return entityId;
     }
 

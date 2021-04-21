@@ -15,6 +15,7 @@ package org.eclipse.ditto.client;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
+import java.time.Instant;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -162,7 +163,8 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
     public void testAddAttributeFailureDueToThingErrorResponse() throws Exception {
         final CompletableFuture<Void> resultFuture = getManagement()
                 .forId(THING_ID)
-                .putAttribute(ATTRIBUTE_KEY_NEW, true);
+                .putAttribute(ATTRIBUTE_KEY_NEW, true)
+                .toCompletableFuture();
         final Signal<?> command = expectMsgClass(ModifyAttribute.class);
         reply(ThingErrorResponse.of(ThingNotAccessibleException.newBuilder(THING_ID).build(),
                 command.getDittoHeaders()));
@@ -174,7 +176,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
     public void testMergeAttributeFailureDueToThingErrorResponse() throws Exception {
         final CompletableFuture<Void> resultFuture = getManagement()
                 .forId(THING_ID)
-                .mergeAttribute(ATTRIBUTE_KEY_NEW, true);
+                .mergeAttribute(ATTRIBUTE_KEY_NEW, true).toCompletableFuture();
         final Signal<?> command = expectMsgClass(MergeThing.class);
         reply(ThingErrorResponse.of(ThingNotAccessibleException.newBuilder(THING_ID).build(),
                 command.getDittoHeaders()));
@@ -208,7 +210,8 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
     public void testDeleteAttributesFailureDueToUnexpectedResponse() throws Exception {
         final CompletableFuture<Void> resultFuture = getManagement()
                 .forId(THING_ID)
-                .deleteAttributes();
+                .deleteAttributes()
+                .toCompletableFuture();
         final Signal<?> command = expectMsgClass(DeleteAttributes.class);
         reply(command);
         resultFuture.exceptionally(error -> null).get(1, TimeUnit.SECONDS);
@@ -236,7 +239,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
 
         final Message<ThingEvent> attributeModified = MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders)
                 .payload(AttributeModified.of(THING_ID, ATTRIBUTE_KEY_NEW, JsonFactory.newValue("value"), 1,
-                        headersWithChannel()))
+                        Instant.now(), headersWithChannel(), null))
                 .build();
 
         messaging.receiveEvent(attributeModified);
@@ -265,7 +268,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
 
         final Message<ThingEvent> attributeCreated = MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders)
                 .payload(AttributeCreated.of(THING_ID, ATTRIBUTE_KEY_REALLY_NEW, JsonFactory.newValue("value"), 1,
-                        headersWithChannel()))
+                        Instant.now(), headersWithChannel(), null))
                 .build();
 
         messaging.receiveEvent(attributeCreated);

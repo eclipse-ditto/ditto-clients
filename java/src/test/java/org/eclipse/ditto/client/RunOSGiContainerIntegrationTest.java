@@ -44,6 +44,13 @@ import javax.inject.Inject;
 import org.atteo.classindex.ClassIndex;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.live.LiveThingHandle;
+import org.eclipse.ditto.client.live.commands.LiveCommandFactory;
+import org.eclipse.ditto.client.live.commands.base.LiveCommand;
+import org.eclipse.ditto.client.live.commands.base.LiveEventFactory;
+import org.eclipse.ditto.client.live.commands.modify.CreateThingLiveCommand;
+import org.eclipse.ditto.client.live.commands.modify.ModifyLiveCommandFactory;
+import org.eclipse.ditto.client.live.commands.query.QueryLiveCommandFactory;
+import org.eclipse.ditto.client.live.commands.query.RetrieveThingLiveCommand;
 import org.eclipse.ditto.client.live.messages.MessageSender;
 import org.eclipse.ditto.client.live.messages.MessageSerializer;
 import org.eclipse.ditto.client.messaging.MessagingException;
@@ -59,7 +66,6 @@ import org.eclipse.ditto.model.base.json.Jsonifiable;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessagesModelFactory;
 import org.eclipse.ditto.model.policies.PoliciesModelFactory;
-import org.eclipse.ditto.model.things.AccessControlListModelFactory;
 import org.eclipse.ditto.model.things.AttributesModelFactory;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.Adaptable;
@@ -69,13 +75,6 @@ import org.eclipse.ditto.signals.announcements.policies.PolicyAnnouncement;
 import org.eclipse.ditto.signals.base.JsonParsable;
 import org.eclipse.ditto.signals.commands.base.Command;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
-import org.eclipse.ditto.signals.commands.live.LiveCommandFactory;
-import org.eclipse.ditto.signals.commands.live.base.LiveCommand;
-import org.eclipse.ditto.signals.commands.live.base.LiveEventFactory;
-import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.ModifyLiveCommandFactory;
-import org.eclipse.ditto.signals.commands.live.query.QueryLiveCommandFactory;
-import org.eclipse.ditto.signals.commands.live.query.RetrieveThingLiveCommand;
 import org.eclipse.ditto.signals.commands.messages.MessageCommand;
 import org.eclipse.ditto.signals.commands.messages.MessageCommandResponse;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;
@@ -226,7 +225,6 @@ public class RunOSGiContainerIntegrationTest {
 
         // ditto-model-things:
         LOG.info("Ensuring ditto-model-things is usable from OSGi..");
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(AccessControlListModelFactory.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(AttributesModelFactory.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(ThingsModelFactory.class));
 
@@ -255,16 +253,6 @@ public class RunOSGiContainerIntegrationTest {
         LOG.info("Ensuring ditto-signals-commands-messages is usable from OSGi..");
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(MessageCommand.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(MessageCommandResponse.class));
-
-        // ditto-signals-commands-live:
-        LOG.info("Ensuring ditto-signals-commands-live is usable from OSGi..");
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(LiveCommandFactory.class));
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(QueryLiveCommandFactory.class));
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(RetrieveThingLiveCommand.class));
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(ModifyLiveCommandFactory.class));
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(CreateThingLiveCommand.class));
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(LiveCommand.class));
-        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(LiveEventFactory.class));
 
         // ditto-signals-events-base:
         LOG.info("Ensuring ditto-signals-events-base is usable from OSGi..");

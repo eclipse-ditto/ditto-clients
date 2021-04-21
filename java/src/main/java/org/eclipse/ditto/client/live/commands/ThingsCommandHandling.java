@@ -14,11 +14,11 @@ package org.eclipse.ditto.client.live.commands;
 
 import java.util.function.Function;
 
-import org.eclipse.ditto.signals.commands.live.base.LiveCommandAnswerBuilder;
-import org.eclipse.ditto.signals.commands.live.query.RetrieveThingsLiveCommand;
+import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
+import org.eclipse.ditto.client.live.commands.query.RetrieveThingsLiveCommand;
 
 /**
- * Provides the necessary functionality for registering {@link org.eclipse.ditto.signals.commands.live.base.LiveCommand
+ * Provides the necessary functionality for registering {@link org.eclipse.ditto.client.live.commands.base.LiveCommand
  * LiveCommand} functions to receive commands to <em>generally</em> manage and retrieve {@link
  * org.eclipse.ditto.model.things.Thing Thing}s.
  *

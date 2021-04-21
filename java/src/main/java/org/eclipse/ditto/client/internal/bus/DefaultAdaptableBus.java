@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
 final class DefaultAdaptableBus implements AdaptableBus {
 
     private static final String ACK_SUFFIX = ":ACK";
-    private static final Logger LOGGER = LoggerFactory.getLogger(AdaptableBus.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAdaptableBus.class);
 
     private final ExecutorService singleThreadedExecutorService;
     private final ScheduledExecutorService scheduledExecutorService;
@@ -168,7 +168,8 @@ final class DefaultAdaptableBus implements AdaptableBus {
             scheduledExecutorService.shutdownNow();
             singleThreadedExecutorService.awaitTermination(2, TimeUnit.SECONDS);
             scheduledExecutorService.awaitTermination(2, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
+            Thread.currentThread().interrupt();
             LOGGER.info("Waiting for termination was interrupted.");
         }
     }

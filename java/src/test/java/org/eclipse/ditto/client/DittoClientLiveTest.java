@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
@@ -31,6 +32,9 @@ import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.client.live.commands.FeaturesCommandHandling;
 import org.eclipse.ditto.client.live.commands.LiveCommandHandler;
 import org.eclipse.ditto.client.live.commands.ThingCommandHandling;
+import org.eclipse.ditto.client.live.commands.modify.CreateThingLiveCommand;
+import org.eclipse.ditto.client.live.commands.modify.CreateThingLiveCommandAnswerBuilder;
+import org.eclipse.ditto.client.live.commands.modify.DeleteFeatureLiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.live.events.FeatureEventFactory;
 import org.eclipse.ditto.client.live.messages.MessageRegistration;
 import org.eclipse.ditto.client.live.messages.MessageSender;
@@ -53,9 +57,6 @@ import org.eclipse.ditto.signals.acks.base.Acknowledgement;
 import org.eclipse.ditto.signals.acks.base.Acknowledgements;
 import org.eclipse.ditto.signals.acks.things.ThingAcknowledgementFactory;
 import org.eclipse.ditto.signals.base.Signal;
-import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommand;
-import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommandAnswerBuilder;
-import org.eclipse.ditto.signals.commands.live.modify.DeleteFeatureLiveCommandAnswerBuilder;
 import org.eclipse.ditto.signals.commands.messages.MessageCommand;
 import org.eclipse.ditto.signals.commands.messages.MessageCommandResponse;
 import org.eclipse.ditto.signals.commands.messages.SendClaimMessage;
@@ -213,7 +214,7 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
 
         return ThingAcknowledgementFactory.newAcknowledgement(
                 LIVE_RESPONSE,
-                commandResponse.getThingEntityId(),
+                commandResponse.getEntityId(),
                 commandResponse.getHttpStatus(),
                 liveResponseAckHeaders,
                 payload.orElse(null));
@@ -440,7 +441,7 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
     }
 
     @Override
-    protected CompletableFuture<Void> startConsumptionRequest() {
+    protected CompletionStage<Void> startConsumptionRequest() {
         return client.live().startConsumption();
     }
 
@@ -458,7 +459,7 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
 
     @Override
     protected void startConsumptionAndExpectError() {
-        final CompletableFuture<Void> future = client.live().startConsumption();
+        final CompletionStage<Void> future = client.live().startConsumption();
         final InvalidRqlExpressionException invalidRqlExpressionException =
                 InvalidRqlExpressionException.newBuilder().message("Invalid filter.").build();
 
@@ -475,7 +476,7 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
 
     @Override
     protected void startConsumptionSucceeds() {
-        final CompletableFuture<Void> future = client.live().startConsumption();
+        final CompletableFuture<Void> future = client.live().startConsumption().toCompletableFuture();
 
         reply(Classification.StreamingType.LIVE_EVENT.startAck());
         reply(Classification.StreamingType.LIVE_COMMAND.startAck());
@@ -649,7 +650,7 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
     private void assertFeatureDeletedEmitted() {
         final FeatureDeleted featureDeleted = expectMsgClass(FeatureDeleted.class);
         assertThat(featureDeleted.getDittoHeaders().getChannel()).contains(TopicPath.Channel.LIVE.getName());
-        assertThat((CharSequence) featureDeleted.getThingEntityId()).isEqualTo(THING_ID);
+        assertThat((CharSequence) featureDeleted.getEntityId()).isEqualTo(THING_ID);
     }
 
     private void testMessageSending(final MessageSender.SetSubject<Object> sender,
@@ -685,8 +686,8 @@ public final class DittoClientLiveTest extends AbstractConsumptionDittoClientTes
         }
     }
 
-    private CompletableFuture<Void> startConsumption() {
-        final CompletableFuture<Void> result = client.live().startConsumption();
+    private CompletionStage<Void> startConsumption() {
+        final CompletionStage<Void> result = client.live().startConsumption();
         expectProtocolMsgWithCorrelationId("START-SEND-LIVE-EVENTS");
         expectProtocolMsgWithCorrelationId("START-SEND-MESSAGES");
         expectProtocolMsgWithCorrelationId("START-SEND-LIVE-COMMANDS");

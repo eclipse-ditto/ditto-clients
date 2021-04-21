@@ -20,7 +20,6 @@ import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.ack.ResponseConsumer;
 import org.eclipse.ditto.model.base.common.HttpStatus;
-import org.eclipse.ditto.model.base.common.HttpStatusCode;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.things.ThingId;
@@ -167,19 +166,6 @@ public interface MessageSender<T> {
          * or send the message.
          */
         SetPayloadOrSend<T> correlationId(String correlationId);
-
-        /**
-         * Sets the status code of the message.
-         *
-         * @param statusCode the status code.
-         * @return fluent api builder that provides the functionality to set <em>optionally</em> fields of the message
-         * or send the message.
-         * @deprecated as of 2.0.0 please use {@link #httpStatus(HttpStatus)} instead.
-         */
-        @Deprecated
-        default SetPayloadOrSend<T> statusCode(final HttpStatusCode statusCode) {
-            return httpStatus(null != statusCode ? statusCode.getAsHttpStatus() : null);
-        }
 
         /**
          * Sets the HTTP status of the message.

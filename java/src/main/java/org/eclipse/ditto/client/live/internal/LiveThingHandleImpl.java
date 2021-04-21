@@ -29,6 +29,7 @@ import org.eclipse.ditto.client.live.LiveCommandProcessor;
 import org.eclipse.ditto.client.live.LiveFeatureHandle;
 import org.eclipse.ditto.client.live.LiveThingHandle;
 import org.eclipse.ditto.client.live.commands.LiveCommandHandler;
+import org.eclipse.ditto.client.live.commands.base.LiveCommand;
 import org.eclipse.ditto.client.live.events.ThingEventFactory;
 import org.eclipse.ditto.client.live.events.internal.ImmutableThingEventFactory;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
@@ -43,7 +44,6 @@ import org.eclipse.ditto.model.messages.KnownMessageSubjects;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.Signal;
-import org.eclipse.ditto.signals.commands.live.base.LiveCommand;
 import org.eclipse.ditto.signals.events.base.Event;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,7 +94,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
     @Override
     public <T> PendingMessageWithThingId<T> message() {
         return PendingMessageImpl.<T>of(LOGGER, outgoingMessageFactory, messageSerializerRegistry, PROTOCOL_ADAPTER,
-                messagingProvider).withThingId(getThingEntityId());
+                messagingProvider).withThingId(getEntityId());
     }
 
     @Override
@@ -113,17 +113,17 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
         // selector for thing messages:
         final JsonPointerSelector thingSelector = "*".equals(subject)
                 ? SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/'{subject}'",
-                getThingEntityId())
+                getEntityId())
                 :
-                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/{1}", getThingEntityId(),
+                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/{1}", getEntityId(),
                         subject);
         // selector for feature messages:
         final JsonPointerSelector featureSelector = "*".equals(subject)
                 ? SelectorUtil.formatJsonPointer(LOGGER,
-                "/things/{0}/features/'{featureId}'/'{direction}'/messages/'{subject}'", getThingEntityId())
+                "/things/{0}/features/'{featureId}'/'{direction}'/messages/'{subject}'", getEntityId())
                 :
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/'{featureId}'/'{direction}'/messages/{0}",
-                        getThingEntityId(), subject);
+                        getEntityId(), subject);
 
         getHandlerRegistry().register(registrationId, SelectorUtil.or(thingSelector, featureSelector),
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
@@ -141,18 +141,18 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
         // selector for thing messages:
         final JsonPointerSelector thingSelector = "*".equals(subject)
                 ? SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/'{subject}'",
-                getThingEntityId())
+                getEntityId())
                 :
-                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/{1}", getThingEntityId(),
+                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/{1}", getEntityId(),
                         subject);
         // selector for feature messages:
         final JsonPointerSelector featureSelector = "*".equals(subject)
                 ? SelectorUtil.formatJsonPointer(LOGGER,
                 "/things/{0}/features/'{featureId}'/'{direction}'/messages/'{subject}'",
-                getThingEntityId())
+                getEntityId())
                 :
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/'{featureId}'/'{direction}'/messages/{1}",
-                        getThingEntityId(), subject);
+                        getEntityId(), subject);
 
         getHandlerRegistry().register(registrationId, SelectorUtil.or(thingSelector, featureSelector),
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
@@ -171,7 +171,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
         LiveMessagesUtil.checkSerializerExistForMessageType(messageSerializerRegistry, type);
 
         final JsonPointerSelector selector =
-                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/{1}", getThingEntityId(),
+                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/{1}", getEntityId(),
                         KnownMessageSubjects.CLAIM_SUBJECT);
 
         getHandlerRegistry().register(registrationId, selector,
@@ -187,7 +187,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
         argumentNotNull(handler, "handler");
 
         final JsonPointerSelector selector =
-                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/inbox/messages/{1}", getThingEntityId(),
+                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/inbox/messages/{1}", getEntityId(),
                         KnownMessageSubjects.CLAIM_SUBJECT);
 
         getHandlerRegistry().register(registrationId, selector,
@@ -205,7 +205,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
     public void emitEvent(final Function<ThingEventFactory, Event<?>> eventFunction) {
         argumentNotNull(eventFunction);
         final ThingEventFactory thingEventFactory =
-                ImmutableThingEventFactory.getInstance(schemaVersion, getThingEntityId());
+                ImmutableThingEventFactory.getInstance(schemaVersion, getEntityId());
         final Event<?> eventToEmit = eventFunction.apply(thingEventFactory);
         getMessagingProvider().emit(signalToJsonString(adjustHeadersForLiveSignal(eventToEmit)));
     }

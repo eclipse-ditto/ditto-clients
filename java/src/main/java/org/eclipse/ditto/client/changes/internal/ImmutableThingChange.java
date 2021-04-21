@@ -33,7 +33,6 @@ import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.entity.id.EntityId;
-import org.eclipse.ditto.model.base.entity.id.EntityIdWithType;
 import org.eclipse.ditto.model.base.entity.type.EntityType;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
 import org.eclipse.ditto.model.things.Thing;
@@ -66,7 +65,7 @@ public final class ImmutableThingChange implements ThingChange {
      * @param acknowledgementPublisher the consumer for publishing built acknowledgements to the Ditto backend.
      * @throws NullPointerException if any required argument is {@code null}.
      */
-    public ImmutableThingChange(final EntityIdWithType entityId,
+    public ImmutableThingChange(final EntityId entityId,
             final ChangeAction changeAction,
             @Nullable final Thing thing,
             final JsonPointer path,

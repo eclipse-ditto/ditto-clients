@@ -13,24 +13,16 @@
 package org.eclipse.ditto.client.messaging;
 
 import java.time.Duration;
-import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
-import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
 import org.eclipse.ditto.client.internal.bus.Classification;
-import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.ProtocolFactory;
-import org.eclipse.ditto.protocoladapter.TopicPath;
-import org.eclipse.ditto.signals.commands.base.Command;
-import org.eclipse.ditto.signals.commands.base.CommandResponse;
-import org.eclipse.ditto.signals.events.base.Event;
 
 /**
  * Interface to be used when implementing a messaging provider for the Things client.
@@ -38,16 +30,6 @@ import org.eclipse.ditto.signals.events.base.Event;
  * @since 1.0.0
  */
 public interface MessagingProvider {
-
-    /**
-     * Initializes the Messaging Provider by opening the underlying connections, etc.
-     * Blocks the calling thread until messaging provider is ready.
-     * @deprecated since 1.3.0. Use {@code initializeAsync} instead.
-     */
-    @Deprecated
-    default void initialize() {
-        initializeAsync().toCompletableFuture().join();
-    }
 
     /**
      * Perform initialization asynchronously.
@@ -130,9 +112,9 @@ public interface MessagingProvider {
      * Send Ditto Protocol {@link Adaptable} using the underlying connection and expect a response.
      *
      * @param adaptable the adaptable to be sent
-     * @return a CompletableFuture containing the correlated response to the sent {@code dittoProtocolAdaptable}
+     * @return a CompletionStage containing the correlated response to the sent {@code dittoProtocolAdaptable}
      */
-    default CompletableFuture<Adaptable> sendAdaptable(Adaptable adaptable) {
+    default CompletionStage<Adaptable> sendAdaptable(Adaptable adaptable) {
         final String correlationId = adaptable.getDittoHeaders()
                 .getCorrelationId()
                 .orElseGet(() -> UUID.randomUUID().toString());
@@ -143,109 +125,10 @@ public interface MessagingProvider {
                         adaptable.getDittoHeaders().toBuilder().correlationId(correlationId).build())
                 );
         final Duration timeout = getMessagingConfiguration().getTimeout();
-        final CompletableFuture<Adaptable> result = getAdaptableBus()
-                .subscribeOnceForAdaptable(Classification.forCorrelationId(correlationId), timeout)
-                .toCompletableFuture();
+        final CompletionStage<Adaptable> result = getAdaptableBus()
+                .subscribeOnceForAdaptable(Classification.forCorrelationId(correlationId), timeout);
         emitAdaptable(adaptableToSend);
         return result;
-    }
-
-    /**
-     * Send message using the underlying connection.
-     * Throw {@code UnsupportedOperationException}.
-     * Protocol-relevant concerns are moved away from messaging providers into API handles.
-     *
-     * @param message ignored.
-     * @param channel ignored.
-     * @throws UnsupportedOperationException always.
-     */
-    @Deprecated
-    default void send(Message<?> message, TopicPath.Channel channel) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Throw {@code UnsupportedOperationException}.
-     * Protocol-relevant concerns are moved away from messaging providers into API handles.
-     *
-     * @param command ignored.
-     * @param channel ignored.
-     * @throws UnsupportedOperationException always.
-     */
-    @Deprecated
-    default void sendCommand(Command<?> command, TopicPath.Channel channel) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Throw {@code UnsupportedOperationException}.
-     * Protocol-relevant concerns are moved away from messaging providers into API handles.
-     *
-     * @param commandResponse ignored.
-     * @param channel ignored.
-     * @throws UnsupportedOperationException always.
-     */
-    @Deprecated
-    default void sendCommandResponse(CommandResponse<?> commandResponse, TopicPath.Channel channel) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Throw {@code UnsupportedOperationException}.
-     * Protocol-relevant concerns are moved away from messaging providers into API handles.
-     * Use {@code this#emitAdaptable(Adaptable)} or {@code this#emit(String)} instead.
-     *
-     * @param event ignored.
-     * @param channel ignored.
-     * @throws UnsupportedOperationException always.
-     */
-    @Deprecated
-    default void emitEvent(Event<?> event, TopicPath.Channel channel) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Throw {@code UnsupportedOperationException}.
-     * Protocol-relevant concerns are moved away from messaging providers into API handles.
-     *
-     * @param commandResponseHandler ignored.
-     * @throws UnsupportedOperationException always.
-     */
-    @Deprecated
-    default void registerReplyHandler(Consumer<CommandResponse<?>> commandResponseHandler) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Throw {@code UnsupportedOperationException}.
-     * Protocol-relevant concerns are moved away from messaging providers into API handles.
-     *
-     * @param name ignored.
-     * @param registrationConfig ignored.
-     * @param handler ignored.
-     * @param receiptFuture ignored.
-     * @return nothing.
-     * @throws UnsupportedOperationException always.
-     */
-    @Deprecated
-    default boolean registerMessageHandler(String name,
-            Map<String, String> registrationConfig,
-            Consumer<Message<?>> handler,
-            CompletableFuture<Void> receiptFuture) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Throw {@code UnsupportedOperationException}.
-     * Protocol-relevant concerns are moved away from messaging providers into API handles.
-     *
-     * @param name ignored.
-     * @param future ignored.
-     * @throws UnsupportedOperationException always.
-     */
-    @Deprecated
-    default void deregisterMessageHandler(String name, CompletableFuture<Void> future) {
-        throw new UnsupportedOperationException();
     }
 
     /**

@@ -14,6 +14,7 @@ package org.eclipse.ditto.client.twin.internal;
 
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -92,7 +93,7 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
     }
 
     @Override
-    protected CompletableFuture<Void> doStartConsumption(final Map<String, String> consumptionConfig) {
+    protected CompletionStage<Void> doStartConsumption(final Map<String, String> consumptionConfig) {
         final CompletableFuture<Void> ackFuture = new CompletableFuture<>();
         final Classification.StreamingType streamingType = Classification.StreamingType.TWIN_EVENT;
         final String subscriptionMessage = buildProtocolCommand(streamingType.start(), consumptionConfig);
@@ -104,15 +105,14 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
                     streamingType,
                     subscriptionMessage,
                     streamingType.startAck(),
-                    ackFuture,
-                    CommonManagementImpl::asThingMessage
+                    ackFuture
             ));
         }
         return ackFuture;
     }
 
     @Override
-    public CompletableFuture<Void> suspendConsumption() {
+    public CompletionStage<Void> suspendConsumption() {
         final Classification.StreamingType streamingType = Classification.StreamingType.TWIN_EVENT;
         messagingProvider.unregisterSubscriptionMessage(streamingType);
         final CompletableFuture<Void> ackFuture = new CompletableFuture<>();

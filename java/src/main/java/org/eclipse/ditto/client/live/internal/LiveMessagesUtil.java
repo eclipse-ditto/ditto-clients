@@ -34,7 +34,6 @@ import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.ProtocolAdapter;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.acks.base.Acknowledgement;
-import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.messages.MessageCommand;
 import org.eclipse.ditto.signals.commands.messages.MessageCommandResponse;
 import org.eclipse.ditto.signals.commands.messages.SendFeatureMessage;
@@ -71,7 +70,7 @@ final class LiveMessagesUtil {
         }
     }
 
-    static <T, U> Consumer<PointerWithData> createEventConsumerForRepliableMessage(
+    static <T, U> Consumer<PointerWithData<?>> createEventConsumerForRepliableMessage(
             final ProtocolAdapter protocolAdapter,
             final MessagingProvider messagingProvider,
             final OutgoingMessageFactory outgoingMessageFactory,
@@ -95,7 +94,7 @@ final class LiveMessagesUtil {
         };
     }
 
-    static <U> Consumer<PointerWithData> createEventConsumerForRepliableMessage(
+    static <U> Consumer<PointerWithData<?>> createEventConsumerForRepliableMessage(
             final ProtocolAdapter protocolAdapter,
             final MessagingProvider messagingProvider,
             final OutgoingMessageFactory outgoingMessageFactory,
@@ -133,10 +132,10 @@ final class LiveMessagesUtil {
 
     private static Consumer<Acknowledgement> acknowledgementPublisher(final ProtocolAdapter protocolAdapter,
             final MessagingProvider messagingProvider) {
-        return ack -> messagingProvider.emitAdaptable(protocolAdapter.toAdaptable((Signal<?>) ack));
+        return ack -> messagingProvider.emitAdaptable(protocolAdapter.toAdaptable(ack));
     }
 
-    private static <T> Message<T> eventToMessage(final PointerWithData e, final Class<T> type, final boolean
+    private static <T> Message<T> eventToMessage(final PointerWithData<?> e, final Class<T> type, final boolean
             copyRawPayloadToPayload) {
         final Message<?> incomingMessage = (Message<?>) e.getData();
         LOGGER.trace("Received message {} for message handler.", incomingMessage);
@@ -158,12 +157,12 @@ final class LiveMessagesUtil {
             final ProtocolAdapter protocolAdapter) {
 
         final TopicPath.Channel channel = TopicPath.Channel.LIVE;
-        final DittoHeadersBuilder headersBuilder = DittoHeaders.newBuilder().channel(channel.getName());
+        final DittoHeadersBuilder<?, ?> headersBuilder = DittoHeaders.newBuilder().channel(channel.getName());
         final Optional<String> optionalCorrelationId = message.getCorrelationId();
         optionalCorrelationId.ifPresent(headersBuilder::correlationId);
         final DittoHeaders dittoHeaders = headersBuilder.build();
 
-        final ThingId thingId = message.getThingEntityId();
+        final ThingId thingId = message.getEntityId();
         final Optional<HttpStatus> httpStatusOptional = message.getHttpStatus();
         final Optional<String> featureIdOptional = message.getFeatureId();
         final Adaptable adaptable;
@@ -173,12 +172,12 @@ final class LiveMessagesUtil {
             final MessageCommandResponse<?, ?> messageCommandResponse = featureIdOptional.isPresent()
                     ? SendFeatureMessageResponse.of(thingId, featureIdOptional.get(), message, httpStatus, dittoHeaders)
                     : SendThingMessageResponse.of(thingId, message, httpStatus, dittoHeaders);
-            adaptable = protocolAdapter.toAdaptable((Signal<?>) messageCommandResponse);
+            adaptable = protocolAdapter.toAdaptable(messageCommandResponse);
         } else {
             final MessageCommand<?, ?> messageCommand = featureIdOptional.isPresent()
                     ? SendFeatureMessage.of(thingId, featureIdOptional.get(), message, dittoHeaders)
                     : SendThingMessage.of(thingId, message, dittoHeaders);
-            adaptable = protocolAdapter.toAdaptable((Signal<?>) messageCommand);
+            adaptable = protocolAdapter.toAdaptable(messageCommand);
         }
         return adaptable;
     }

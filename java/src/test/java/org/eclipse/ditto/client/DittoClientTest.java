@@ -14,15 +14,15 @@ package org.eclipse.ditto.client;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
-import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.model.things.ThingIdInvalidException;
 import org.eclipse.ditto.signals.base.Signal;
 import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
 import org.junit.Test;
@@ -31,8 +31,8 @@ public final class DittoClientTest extends AbstractDittoClientTest {
 
     @Test
     public void concurrentTwinAndLiveSubscriptionWorks() {
-        final CompletableFuture<Void> twinConsumption = client.twin().startConsumption();
-        final CompletableFuture<Void> liveConsumption = client.live().startConsumption();
+        final CompletionStage<Void> twinConsumption = client.twin().startConsumption();
+        final CompletionStage<Void> liveConsumption = client.live().startConsumption();
 
         expectProtocolMsgWithCorrelationId("START-SEND-EVENTS");
         expectProtocolMsgWithCorrelationId("START-SEND-LIVE-EVENTS");
@@ -50,8 +50,8 @@ public final class DittoClientTest extends AbstractDittoClientTest {
 
     @Test
     public void concurrentTwinAndLiveSubscriptionWorksForIfTwinAndLiveFail() {
-        final CompletableFuture<Void> twinConsumption = client.twin().startConsumption();
-        final CompletableFuture<Void> liveConsumption = client.live().startConsumption();
+        final CompletionStage<Void> twinConsumption = client.twin().startConsumption();
+        final CompletionStage<Void> liveConsumption = client.live().startConsumption();
 
         final Map<String, String> map = new HashMap<>();
         map.put("START-SEND-EVENTS", expectProtocolMsgWithCorrelationId("START-SEND-EVENTS"));
@@ -66,8 +66,8 @@ public final class DittoClientTest extends AbstractDittoClientTest {
 
     @Test
     public void concurrentTwinAndLiveSubscriptionWorksIfTwinFailsAndLiveSucceeds() {
-        final CompletableFuture<Void> twinConsumption = client.twin().startConsumption();
-        final CompletableFuture<Void> liveConsumption = client.live().startConsumption();
+        final CompletionStage<Void> twinConsumption = client.twin().startConsumption();
+        final CompletionStage<Void> liveConsumption = client.live().startConsumption();
 
         final String correlationId = expectProtocolMsgWithCorrelationId("START-SEND-EVENTS");
         expectProtocolMsgWithCorrelationId("START-SEND-LIVE-EVENTS");
@@ -86,15 +86,15 @@ public final class DittoClientTest extends AbstractDittoClientTest {
 
     private static Signal<?> getErrorResponse(final CharSequence correlationId, final String s) {
         final DittoHeaders dittoHeaders = DittoHeaders.newBuilder().correlationId(correlationId).build();
-        return ThingErrorResponse.of(DittoRuntimeException.newBuilder("unexpected", HttpStatus.BAD_REQUEST)
+        return ThingErrorResponse.of(ThingIdInvalidException.newBuilder("invalid")
                 .message(s)
                 .dittoHeaders(dittoHeaders)
                 .build());
     }
 
-    private static void assertFailedCompletion(final CompletableFuture<Void> twinConsumption, final String s) {
+    private static void assertFailedCompletion(final CompletionStage<Void> twinConsumption, final String s) {
         try {
-            twinConsumption.get(1, TimeUnit.SECONDS);
+            twinConsumption.toCompletableFuture().get(1, TimeUnit.SECONDS);
         } catch (final Exception e) {
             Assertions.assertThat(e)
                     .isInstanceOf(ExecutionException.class)

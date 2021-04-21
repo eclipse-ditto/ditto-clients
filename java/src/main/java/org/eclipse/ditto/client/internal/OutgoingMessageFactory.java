@@ -79,8 +79,6 @@ import org.eclipse.ditto.signals.commands.things.modify.ModifyThing;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveFeature;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThing;
 import org.eclipse.ditto.signals.commands.things.query.RetrieveThings;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Creates outgoing Commands sent from the client.
@@ -88,8 +86,6 @@ import org.slf4j.LoggerFactory;
  * @since 1.0.0
  */
 public final class OutgoingMessageFactory {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(OutgoingMessageFactory.class);
 
     private static final EntityTagMatchers ASTERISK =
             EntityTagMatchers.fromList(Collections.singletonList(EntityTagMatcher.asterisk()));
@@ -122,8 +118,6 @@ public final class OutgoingMessageFactory {
      */
     public CreateThing createThing(final Thing thing, @Nullable JsonObject initialPolicy,
             final Option<?>... options) {
-        logWarningsForAclPolicyUsage(thing);
-
         validateOptions(initialPolicy, options);
 
         final DittoHeaders dittoHeaders = buildDittoHeaders(false, options);
@@ -150,8 +144,6 @@ public final class OutgoingMessageFactory {
         checkNotNull(thing, "thing");
         final ThingId thingId = thing.getEntityId().orElseThrow(() -> new IllegalArgumentException("Thing had no ID!"));
 
-        logWarningsForAclPolicyUsage(thing);
-
         validateOptions(initialPolicy, options);
 
         final DittoHeaders dittoHeaders = buildDittoHeaders(true, options);
@@ -176,8 +168,6 @@ public final class OutgoingMessageFactory {
         checkNotNull(thing, "thing");
         final ThingId thingId = thing.getEntityId().orElseThrow(() -> new IllegalArgumentException("Thing had no ID!"));
 
-        logWarningsForAclPolicyUsage(thing);
-
         final DittoHeaders headersWithoutIfMatch = buildDittoHeaders(false, options);
         final DittoHeaders headers = headersWithoutIfMatch.toBuilder()
                 .ifMatch(ASTERISK)
@@ -197,7 +187,6 @@ public final class OutgoingMessageFactory {
      */
     MergeThing mergeThing(final ThingId thingId, final Thing thing, final Option<?>[] options) {
         checkNotNull(thing, "thing");
-        logWarningsForAclPolicyUsage(thing);
 
         final DittoHeaders headersWithoutIfMatch = buildDittoHeaders(false, options);
         final DittoHeaders headers = headersWithoutIfMatch.toBuilder()
@@ -205,19 +194,6 @@ public final class OutgoingMessageFactory {
                 .build();
 
         return MergeThing.withThing(thingId, thing, headers);
-    }
-
-    private void logWarningsForAclPolicyUsage(final Thing thing) {
-        if (jsonSchemaVersion == JsonSchemaVersion.V_1 && thing.getPolicyEntityId().isPresent()) {
-            LOGGER.warn("Creating/modifying a Thing with a defined 'policyId' when client was configured to use " +
-                    "Ditto Protocol in 'schemaVersion' 1 (which is ACL based). That will most likely result in " +
-                    "unexpected behavior.");
-        }
-        if (jsonSchemaVersion == JsonSchemaVersion.V_2 && thing.getAccessControlList().isPresent()) {
-            LOGGER.warn("Creating/modifying a Thing with a defined 'acl' when client was configured to use " +
-                    "Ditto Protocol in 'schemaVersion' 2 (which is policy based). That will most likely result in " +
-                    "unexpected behavior.");
-        }
     }
 
     public RetrieveThing retrieveThing(final CharSequence thingId) {
@@ -581,7 +557,6 @@ public final class OutgoingMessageFactory {
                     return builder;
                 }).orElseGet(() -> MessagesModelFactory.newMessageBuilder(messageHeaders));
 
-        message.getResponseConsumer().ifPresent(messageBuilder::responseConsumer);
         return messageBuilder.build();
     }
 

@@ -21,6 +21,7 @@ import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID_COPY_POLICY;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_WITH_INLINE_POLICY;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CountDownLatch;
@@ -37,8 +38,6 @@ import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.acks.AcknowledgementRequest;
-import org.eclipse.ditto.model.base.auth.AuthorizationModelFactory;
-import org.eclipse.ditto.model.base.auth.AuthorizationSubject;
 import org.eclipse.ditto.model.base.common.HttpStatus;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
@@ -104,7 +103,7 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
     public void testMergeThing() {
         assertEventualCompletion(getManagement().merge(THING_ID, THING));
         final MergeThing command = expectMsgClass(MergeThing.class);
-        reply(MergeThingResponse.of(command.getThingEntityId(), command.getPath(), command.getDittoHeaders()));
+        reply(MergeThingResponse.of(command.getEntityId(), command.getPath(), command.getDittoHeaders()));
         assertOnlyIfMatchHeader(command);
     }
 
@@ -183,7 +182,9 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
     public void createThingFailsWithExistsOption() {
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(
-                        () -> getManagement().create(THING_ID, Options.Modify.exists(false)).get(TIMEOUT, TIME_UNIT));
+                        () -> getManagement().create(THING_ID, Options.Modify.exists(false))
+                                .toCompletableFuture()
+                                .get(TIMEOUT, TIME_UNIT));
     }
 
     @Test
@@ -230,7 +231,9 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
     @Test
     public void updateThingFailsWithExistsOption() {
         assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> getManagement().update(THING, Options.Modify.exists(false)).get(TIMEOUT, TIME_UNIT));
+                .isThrownBy(() -> getManagement().update(THING, Options.Modify.exists(false))
+                        .toCompletableFuture()
+                        .get(TIMEOUT, TIME_UNIT));
     }
 
     @Test
@@ -243,7 +246,9 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
     public void deleteThingFailsWithExistsOption() {
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(
-                        () -> getManagement().delete(THING_ID, Options.Modify.exists(false)).get(TIMEOUT, TIME_UNIT));
+                        () -> getManagement().delete(THING_ID, Options.Modify.exists(false))
+                                .toCompletableFuture()
+                                .get(TIMEOUT, TIME_UNIT));
     }
 
     @Test
@@ -263,7 +268,8 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
                 MessageHeaders.newBuilder(MessageDirection.FROM, THING_ID, ThingCreated.TYPE).build();
 
         final Message<ThingEvent> thingCreated = MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders)
-                .payload(ThingCreated.of(Thing.newBuilder().setId(THING_ID).build(), 1, headersWithChannel()))
+                .payload(ThingCreated.of(Thing.newBuilder().setId(THING_ID).build(), 1, Instant.now(),
+                        headersWithChannel(), null))
                 .build();
 
         messaging.receiveEvent(thingCreated);
@@ -295,7 +301,7 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
                 MessageHeaders.newBuilder(MessageDirection.FROM, THING_ID, ThingDeleted.TYPE).build();
 
         return MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders)
-                .payload(ThingDeleted.of(THING_ID, 1, headersWithChannel()))
+                .payload(ThingDeleted.of(THING_ID, 1, Instant.now(), headersWithChannel(), null))
                 .build();
     }
 
@@ -371,15 +377,13 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
     @Test
     public void testCreateThingWithoutFeatures() {
         final ThingId thingIdWithoutFeatures = ThingId.of("demo:mything1");
-        final AuthorizationSubject authorizationSubject = AuthorizationModelFactory.newAuthSubject("someSubject");
         final Thing thing = ThingsModelFactory.newThingBuilder()
                 .setId(thingIdWithoutFeatures)
-                .setPermissions(authorizationSubject, ThingsModelFactory.allPermissions())
                 .build();
         assertEventualCompletion(getManagement().create(thing));
         final CreateThing command = expectMsgClass(CreateThing.class);
         reply(CreateThingResponse.of(command.getThing(), command.getDittoHeaders()));
-        assertThat((CharSequence) command.getThingEntityId()).isEqualTo(thingIdWithoutFeatures);
+        assertThat((CharSequence) command.getEntityId()).isEqualTo(thingIdWithoutFeatures);
     }
 
     @Test
@@ -420,7 +424,7 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
         assertEventualCompletion(getManagement().put(THING, POLICY_JSON_OBJECT));
         final ModifyThing createThing = expectMsgClass(ModifyThing.class);
         reply(CreateThingResponse.of(Thing.newBuilder().setId(THING_ID).build(), createThing.getDittoHeaders()));
-        assertThat((CharSequence) createThing.getThingEntityId()).isEqualTo(THING_ID);
+        assertThat((CharSequence) createThing.getEntityId()).isEqualTo(THING_ID);
         assertThat(createThing.getInitialPolicy()).isNotEmpty();
     }
 

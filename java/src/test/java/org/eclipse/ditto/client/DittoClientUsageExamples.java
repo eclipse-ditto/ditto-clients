@@ -45,6 +45,8 @@ import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.configuration.ProxyConfiguration;
 import org.eclipse.ditto.client.configuration.TrustStoreConfiguration;
 import org.eclipse.ditto.client.configuration.WebSocketMessagingConfiguration;
+import org.eclipse.ditto.client.live.commands.modify.CreateThingLiveCommandAnswerBuilder;
+import org.eclipse.ditto.client.live.commands.modify.ModifyFeaturePropertyLiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.messaging.AuthenticationProvider;
 import org.eclipse.ditto.client.messaging.AuthenticationProviders;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
@@ -67,8 +69,6 @@ import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.JsonifiableAdaptable;
 import org.eclipse.ditto.protocoladapter.ProtocolFactory;
-import org.eclipse.ditto.signals.commands.live.modify.CreateThingLiveCommandAnswerBuilder;
-import org.eclipse.ditto.signals.commands.live.modify.ModifyFeaturePropertyLiveCommandAnswerBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,8 +101,14 @@ public final class DittoClientUsageExamples {
     private static final Properties CONFIG;
 
     public static void main(final String... args) throws ExecutionException, InterruptedException {
-        final DittoClient client = DittoClients.newInstance(createMessagingProvider());
-        final DittoClient client2 = DittoClients.newInstance(createMessagingProvider());
+        final DittoClient client = DittoClients.newInstance(createMessagingProvider())
+                .connect()
+                .toCompletableFuture()
+                .join();
+        final DittoClient client2 = DittoClients.newInstance(createMessagingProvider())
+                .connect()
+                .toCompletableFuture()
+                .join();
 
         if (shouldNotSkip("twin.examples")) {
             final JsonifiableAdaptable jsonifiableAdaptable = ProtocolFactory.jsonifiableAdaptableFromJson(
@@ -139,12 +145,12 @@ public final class DittoClientUsageExamples {
                 }
             });
 
-            client.twin().startConsumption().get();
-            client2.twin().startConsumption().get();
+            client.twin().startConsumption().toCompletableFuture().join();
+            client2.twin().startConsumption().toCompletableFuture().join();
             LOGGER.info("Subscribed for Twin events");
 
-            client.live().startConsumption().get();
-            client2.live().startConsumption().get();
+            client.live().startConsumption().toCompletableFuture().join();
+            client2.live().startConsumption().toCompletableFuture().join();
             LOGGER.info("Subscribed for Live events/commands/messages");
 
             System.out.println("\n\nContinuing with TWIN commands/events demo:");
@@ -153,8 +159,8 @@ public final class DittoClientUsageExamples {
         }
 
         if (shouldNotSkip("live.examples")) {
-            client.live().startConsumption().get();
-            client2.live().startConsumption().get();
+            client.live().startConsumption().toCompletableFuture().join();
+            client2.live().startConsumption().toCompletableFuture().join();
 
             System.out.println("\n\nAbout to continue with LIVE commands/events demo:");
             promptEnterKey();
@@ -203,8 +209,7 @@ public final class DittoClientUsageExamples {
         System.exit(0);
     }
 
-    private static void addNewSubjectToExistingPolicy(final DittoClient client)
-            throws ExecutionException, InterruptedException {
+    private static void addNewSubjectToExistingPolicy(final DittoClient client) {
         client.twin().create()
                 .thenApply(thing -> thing.getPolicyEntityId()
                         .orElseThrow(() -> new IllegalStateException(("Could not get PolicyId from created Thing."))))
@@ -220,7 +225,8 @@ public final class DittoClientUsageExamples {
                                 .build())
                 .thenCompose(updatedPolicy -> client.policies().update(updatedPolicy))
                 .thenAccept(v -> LOGGER.info("Policy was updated with new subject."))
-                .get();
+                .toCompletableFuture()
+                .join();
     }
 
     private static void useTwinCommandsAndEvents(final DittoClient client, final DittoClient client2)
@@ -290,17 +296,17 @@ public final class DittoClientUsageExamples {
                 LOGGER.error("Thing could not be created due to: {}", throwable.getMessage());
             }
             return client.twin().forId(thingId).putAttribute("new", OffsetDateTime.now().toString());
-        }).get();
+        }).toCompletableFuture().join();
 
         final ThingId newId = ThingId.of(NAMESPACE + ":dummy-" + UUID.randomUUID());
         final ThingBuilder.FromScratch newThingBuilder = Thing.newBuilder().setId(newId);
         final Thing newThing = newThingBuilder.build();
-        client.twin().create(newThing).get();
+        client.twin().create(newThing).toCompletableFuture().join();
 
         client.twin().retrieve(JsonFieldSelector.newInstance("thingId"), thingId, newId).thenAccept(things ->
                 LOGGER.info("Retrieved Things: {}", things));
 
-        client.twin().delete(thingId).get();
+        client.twin().delete(thingId).toCompletableFuture().join();
 
         client.twin().forId(thingId).retrieve().whenComplete((thingAsPersisted, ex) -> {
             LOGGER.info("Thing that should be deleted: {}", thingAsPersisted);
@@ -318,7 +324,7 @@ public final class DittoClientUsageExamples {
                     LOGGER.error("Thing could not be created due to: {}", throwable.getMessage());
                 }
                 return client.twin().forId(evenNewerId).putAttribute("new", OffsetDateTime.now().toString());
-            }).get(10, SECONDS);
+            }).toCompletableFuture().get(10, SECONDS);
         } catch (final TimeoutException e) {
             e.printStackTrace();
         }
@@ -327,7 +333,7 @@ public final class DittoClientUsageExamples {
             final ThingBuilder.FromScratch dummyThingBuilder =
                     Thing.newBuilder().setId(ThingId.of(NAMESPACE + ":dummy-" + UUID.randomUUID()));
             final Thing dummyThing = dummyThingBuilder.build();
-            client.twin().create(dummyThing).get(10, SECONDS);
+            client.twin().create(dummyThing).toCompletableFuture().get(10, SECONDS);
         } catch (final TimeoutException e) {
             e.printStackTrace();
         }
@@ -348,7 +354,7 @@ public final class DittoClientUsageExamples {
 
         final ThingId thingId = ThingId.of(NAMESPACE + ":live-" + UUID.randomUUID().toString());
 
-        backendClient.twin().create(thingId).get();
+        backendClient.twin().create(thingId).toCompletableFuture().join();
 
         // ###
         // ###
@@ -399,7 +405,7 @@ public final class DittoClientUsageExamples {
         backendClient.live()
                 .forFeature(thingId, "temp-sensor")
                 .putProperty("temperature", 23.21)
-                .whenComplete((_void, throwable) -> {
+                .whenComplete((unused, throwable) -> {
                     if (throwable != null) {
                         LOGGER.error("[AT BACKEND] Received error when putting the property: {}",
                                 throwable.getMessage(), throwable);
@@ -459,7 +465,7 @@ public final class DittoClientUsageExamples {
         final ThingId thingId = ThingId.of(NAMESPACE + ":messages-" + UUID.randomUUID());
 
         // first create Thing:
-        backendClient.twin().create(thingId).get();
+        backendClient.twin().create(thingId).toCompletableFuture().join();
 
         LOGGER.info("[AT DEVICE] Registering for messages..");
         promptEnterKey();
@@ -530,7 +536,7 @@ public final class DittoClientUsageExamples {
                         .setFeature("the-feature", featurePropertiesExample)
                         .build();
                 try {
-                    client.twin().create(thing).get(10, TimeUnit.SECONDS);
+                    client.twin().create(thing).toCompletableFuture().get(10, TimeUnit.SECONDS);
                 } catch (final InterruptedException | ExecutionException | TimeoutException e) {
                     throw new IllegalStateException(e);
                 }
@@ -559,7 +565,7 @@ public final class DittoClientUsageExamples {
                 .forEach(counter -> thingIds.forEach(thingId -> executorService.execute(() -> {
                     final long startTs2 = System.nanoTime();
                     client.twin().forId(thingId).putAttribute("counter", counter,
-                            Options.Modify.responseRequired(false)).whenComplete((_void, throwable) ->
+                            Options.Modify.responseRequired(false)).whenComplete((unused, throwable) ->
                     {
                         if (throwable != null) {
                             LOGGER.debug("performLoadTestUpdate: Updating attribute failed: {}",
@@ -685,7 +691,7 @@ public final class DittoClientUsageExamples {
             throws InterruptedException, ExecutionException {
 
         final ThingId thingId = ThingId.of(NAMESPACE + ":load-read-" + UUID.randomUUID());
-        client.twin().create(thingId).get();
+        client.twin().create(thingId).toCompletableFuture().join();
         if (log) {
             LOGGER.info("performLoadTestRead: Created new thing: {}", thingId);
         }

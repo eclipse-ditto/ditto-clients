@@ -16,22 +16,13 @@ import java.time.Instant;
 
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonObject;
-import org.eclipse.ditto.json.JsonPointer;
-import org.eclipse.ditto.model.base.auth.AuthorizationContext;
-import org.eclipse.ditto.model.base.auth.AuthorizationModelFactory;
-import org.eclipse.ditto.model.base.auth.AuthorizationSubject;
-import org.eclipse.ditto.model.base.auth.DittoAuthorizationContextType;
 import org.eclipse.ditto.model.policies.PoliciesModelFactory;
 import org.eclipse.ditto.model.policies.PolicyId;
-import org.eclipse.ditto.model.things.AccessControlList;
-import org.eclipse.ditto.model.things.AclEntry;
 import org.eclipse.ditto.model.things.Attributes;
 import org.eclipse.ditto.model.things.FeatureProperties;
 import org.eclipse.ditto.model.things.Features;
-import org.eclipse.ditto.model.things.Permission;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.model.things.ThingLifecycle;
-import org.eclipse.ditto.model.things.ThingRevision;
 import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
 
@@ -45,49 +36,6 @@ public final class TestConstants {
     }
 
     public static final String CLIENT_ID = "theClient";
-
-    /**
-     * Authorization-related test constants.
-     */
-    public static final class Authorization {
-
-        /**
-         * A known Authorization Subject for testing.
-         */
-        public static final AuthorizationSubject AUTH_SUBJECT_OLDMAN =
-                AuthorizationModelFactory.newAuthSubject("JohnOldman");
-
-        /**
-         * Another known AuthorizationSubject for testing.
-         */
-        public static final AuthorizationSubject AUTH_SUBJECT_GRIMES =
-                AuthorizationModelFactory.newAuthSubject("FrankGrimes");
-
-        /**
-         * An Authorization Context which contains all known Authorization Subjects.
-         */
-        public static final AuthorizationContext AUTH_CONTEXT =
-                AuthorizationModelFactory.newAuthContext(DittoAuthorizationContextType.UNSPECIFIED,
-                        AUTH_SUBJECT_OLDMAN, AUTH_SUBJECT_GRIMES);
-
-        /**
-         * The known ACL entry of John Oldman.
-         */
-        public static final AclEntry ACL_ENTRY_OLDMAN =
-                ThingsModelFactory.newAclEntry(Authorization.AUTH_SUBJECT_OLDMAN, Permission.READ, Permission.WRITE,
-                        Permission.ADMINISTRATE);
-
-        /**
-         * The known ACL entry of Frank Grimes.
-         */
-        public static final AclEntry ACL_ENTRY_GRIMES =
-                ThingsModelFactory.newAclEntry(Authorization.AUTH_SUBJECT_GRIMES, Permission.READ);
-
-        private Authorization() {
-            throw new AssertionError();
-        }
-
-    }
 
     /**
      * Feature-related test constants.
@@ -136,33 +84,27 @@ public final class TestConstants {
         /**
          * A known namespace for testing.
          */
-        public static final String NAMEPSACE = "example.com";
+        public static final String NAMESPACE = "example.com";
 
         /**
          * A known Thing ID for testing.
          */
-        public static final ThingId THING_ID = ThingId.of("example.com:testThing");
+        public static final ThingId THING_ID = ThingId.of(NAMESPACE, "testThing");
 
         /**
          * A known Thing ID for testing.
          */
-        public static final ThingId THING_ID_COPY_POLICY = ThingId.of("example.com:testThingForCopyPolicy");
+        public static final ThingId THING_ID_COPY_POLICY = ThingId.of(NAMESPACE, "testThingForCopyPolicy");
 
         /**
          * A known Policy ID for testing.
          */
-        public static final String POLICY_ID = "example.com:testPolicy";
+        public static final PolicyId POLICY_ID = PolicyId.of(NAMESPACE, "testPolicy");
 
         /**
          * A known lifecycle of a Thing.
          */
         public static final ThingLifecycle LIFECYCLE = ThingLifecycle.ACTIVE;
-
-        /**
-         * A known Access Control List of a Thing.
-         */
-        public static final AccessControlList ACL =
-                ThingsModelFactory.newAcl(Authorization.ACL_ENTRY_OLDMAN, Authorization.ACL_ENTRY_GRIMES);
 
         /**
          * A known location attribute for testing.
@@ -185,25 +127,7 @@ public final class TestConstants {
          */
         public static final long REVISION_NUMBER = 0;
 
-        /**
-         * A known revision of a Thing.
-         */
-        public static final ThingRevision REVISION = ThingsModelFactory.newThingRevision(REVISION_NUMBER);
-
         public static final Instant MODIFIED = Instant.EPOCH;
-
-        /**
-         * A known Thing for testing in V1.
-         */
-        public static final org.eclipse.ditto.model.things.Thing THING_V1 = ThingsModelFactory.newThingBuilder()
-                .setAttributes(ATTRIBUTES)
-                .setFeatures(Feature.FEATURES)
-                .setLifecycle(LIFECYCLE)
-                .setPermissions(ACL)
-                .setId(THING_ID)
-                .setRevision(REVISION_NUMBER)
-                .setModified(MODIFIED)
-                .build();
 
         /**
          * A known Thing for testing in V2.
@@ -217,30 +141,6 @@ public final class TestConstants {
                 .setRevision(REVISION_NUMBER)
                 .setModified(MODIFIED)
                 .build();
-
-        /**
-         * A known type for a {@code Resource}.
-         */
-        public static final String RESOURCE_TYPE = "relation";
-
-        /**
-         * A known {@code JsonPointer} for a {@code Resource}.
-         */
-        public static final JsonPointer RESOURCE_PATH = JsonFactory.newPointer("/attributes/foo");
-
-        /**
-         * Known Thing with policy.
-         */
-        public static final org.eclipse.ditto.model.things.Thing THING_V2_WITH_POLICY =
-                ThingsModelFactory.newThingBuilder()
-                        .setAttributes(ATTRIBUTES)
-                        .setFeatures(Feature.FEATURES)
-                        .setLifecycle(LIFECYCLE)
-                        .setPolicyId(POLICY_ID)
-                        .setId(THING_ID)
-                        .setRevision(REVISION_NUMBER)
-                        .setModified(MODIFIED)
-                        .build();
 
         private Thing() {
             throw new AssertionError();
@@ -256,7 +156,7 @@ public final class TestConstants {
 
         public static final JsonObject THING_WITH_INLINE_POLICY = INLINE_POLICY_JSON_OBJECT.toBuilder()
                 .set(org.eclipse.ditto.model.things.Thing.JsonFields.ID, THING_ID.toString())
-                .set(org.eclipse.ditto.model.things.Thing.JsonFields.POLICY_ID, POLICY_ID)
+                .set(org.eclipse.ditto.model.things.Thing.JsonFields.POLICY_ID, POLICY_ID.toString())
                 .build();
 
     }
