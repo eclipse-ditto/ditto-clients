@@ -19,7 +19,7 @@ import org.eclipse.ditto.client.management.CommonManagement;
 import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
 import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.protocoladapter.TopicPath;
+import org.eclipse.ditto.protocol.TopicPath;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 

@@ -16,8 +16,8 @@ import java.time.Instant;
 
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonObject;
-import org.eclipse.ditto.model.policies.PoliciesModelFactory;
-import org.eclipse.ditto.model.policies.PolicyId;
+import org.eclipse.ditto.policies.model.PoliciesModelFactory;
+import org.eclipse.ditto.policies.model.PolicyId;
 import org.eclipse.ditto.model.things.Attributes;
 import org.eclipse.ditto.model.things.FeatureProperties;
 import org.eclipse.ditto.model.things.Features;
@@ -214,7 +214,7 @@ public final class TestConstants {
         /**
          * Known Policy created from known jsonObject.
          */
-        public static final org.eclipse.ditto.model.policies.Policy POLICY =
+        public static final org.eclipse.ditto.policies.model.Policy POLICY =
                 PoliciesModelFactory.newPolicy(POLICY_JSON_OBJECT);
 
     }

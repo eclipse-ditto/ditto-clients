@@ -25,7 +25,7 @@ import org.eclipse.ditto.client.registration.ThingChangeRegistration;
 import org.eclipse.ditto.client.registration.ThingFeaturePropertiesChangeRegistration;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
-import org.eclipse.ditto.model.policies.Policy;
+import org.eclipse.ditto.policies.model.Policy;
 import org.eclipse.ditto.model.things.Thing;
 import org.eclipse.ditto.model.things.ThingId;
 

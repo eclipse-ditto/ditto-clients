@@ -17,7 +17,7 @@ import java.util.concurrent.CompletionStage;
 import org.eclipse.ditto.client.live.Live;
 import org.eclipse.ditto.client.policies.Policies;
 import org.eclipse.ditto.client.twin.Twin;
-import org.eclipse.ditto.protocoladapter.Adaptable;
+import org.eclipse.ditto.protocol.Adaptable;
 
 /**
  * The client API for Eclipse Ditto Client acting as the entry point for getting access to {@link Twin} and {@link Live}
@@ -59,7 +59,7 @@ public interface DittoClient {
 
     /**
      * Returns the client's {@link Policies} singleton which provides the necessary functionality to manage and monitor
-     * {@link org.eclipse.ditto.model.policies.Policy}s.
+     * {@link org.eclipse.ditto.policies.model.Policy}s.
      *
      * @return the Policy handle
      * @since 1.1.0

@@ -19,7 +19,7 @@ import javax.annotation.Nullable;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.things.ThingId;
-import org.eclipse.ditto.protocoladapter.UnknownPathException;
+import org.eclipse.ditto.protocol.UnknownPathException;
 import org.eclipse.ditto.signals.commands.things.ThingResourceVisitor;
 
 /**

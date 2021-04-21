@@ -890,13 +890,13 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-signals-announcements-policies</artifactId>
+            <artifactId>ditto-policies-model</artifactId>
             <version>${ditto.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-protocol-adapter</artifactId>
+            <artifactId>ditto-protocol</artifactId>
             <version>${ditto.version}</version>
         </dependency>
 

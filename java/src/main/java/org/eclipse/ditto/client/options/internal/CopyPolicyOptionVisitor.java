@@ -16,7 +16,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.OptionName;
-import org.eclipse.ditto.model.policies.PolicyId;
+import org.eclipse.ditto.policies.model.PolicyId;
 
 
 /**
