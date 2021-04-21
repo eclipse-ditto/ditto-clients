@@ -33,6 +33,11 @@ public interface RetrieveThingsLiveCommand
         extends LiveCommand<RetrieveThingsLiveCommand, RetrieveThingsLiveCommandAnswerBuilder>,
         WithNamespace, WithSelectedFields {
 
+    /**
+     * Returns the identifiers of the {@code Thing}s to be retrieved.
+     *
+     * @return the identifiers
+     */
     @Nonnull
     List<ThingId> getEntityIds();
 

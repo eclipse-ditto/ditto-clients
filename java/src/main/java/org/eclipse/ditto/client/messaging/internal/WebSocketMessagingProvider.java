@@ -182,15 +182,13 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     @Override
     public CompletionStage<?> initializeAsync() {
         // this method may be called multiple times.
-        if (!initializing.getAndSet(true)) {
-            if (webSocket.get() == null) {
-                return connectWithPotentialRetries(this::createWebsocket, initializationFuture,
-                        messagingConfiguration.isInitialConnectRetryEnabled())
-                        .thenApply(ws -> {
-                            setWebSocket(ws);
-                            return this;
-                        });
-            }
+        if (!initializing.getAndSet(true) && webSocket.get() == null) {
+            return connectWithPotentialRetries(this::createWebsocket, initializationFuture,
+                    messagingConfiguration.isInitialConnectRetryEnabled())
+                    .thenApply(ws -> {
+                        setWebSocket(ws);
+                        return this;
+                    });
         }
         // no need to set flags for subsequent calls of this method
         return initializationFuture.thenApply(ws -> this);
@@ -226,7 +224,6 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     private CompletionStage<WebSocket> initiateConnection(final WebSocket ws) {
         checkNotNull(ws, "ws");
 
-        // TODO: make these configurable?
         ws.addHeader("User-Agent", DITTO_CLIENT_USER_AGENT);
         ws.setMaxPayloadSize(256 * 1024); // 256 KiB
         ws.setMissingCloseFrameAllowed(true);

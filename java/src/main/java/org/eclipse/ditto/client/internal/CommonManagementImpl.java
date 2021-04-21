@@ -55,6 +55,7 @@ import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.model.base.entity.id.WithEntityId;
 import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.model.messages.Message;
@@ -69,7 +70,6 @@ import org.eclipse.ditto.model.things.ThingsModelFactory;
 import org.eclipse.ditto.protocoladapter.Adaptable;
 import org.eclipse.ditto.protocoladapter.TopicPath;
 import org.eclipse.ditto.signals.base.Signal;
-import org.eclipse.ditto.model.base.entity.id.WithEntityId;
 import org.eclipse.ditto.signals.base.WithOptionalEntity;
 import org.eclipse.ditto.signals.commands.base.CommandResponse;
 import org.eclipse.ditto.signals.commands.base.ErrorResponse;
@@ -657,9 +657,9 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
             final CompletableFuture<Void> futureToCompleteOrFailAfterAck) {
 
         return subscribeAndPublishMessage(previousSubscriptionId, streamingType, protocolCommand, protocolCommandAck,
-                futureToCompleteOrFailAfterAck, adaptable -> bus -> {
-                    asThingMessage(adaptable).ifPresent(message -> bus.notify(message.getSubject(), message));
-                });
+                futureToCompleteOrFailAfterAck, adaptable -> pointerBus ->
+                        asThingMessage(adaptable).ifPresent(message -> pointerBus.notify(message.getSubject(), message))
+                );
     }
 
     protected AdaptableBus.SubscriptionId subscribeAndPublishMessage(

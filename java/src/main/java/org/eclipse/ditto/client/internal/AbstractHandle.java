@@ -121,7 +121,8 @@ public abstract class AbstractHandle {
      * @param adaptable the adaptable.
      * @return the signal.
      */
-    protected Signal<?> signalFromAdaptable(final Adaptable adaptable) {
+    @SuppressWarnings({"rawtypes", "java:S3740"})
+    protected Signal signalFromAdaptable(final Adaptable adaptable) {
         return PROTOCOL_ADAPTER.fromAdaptable(adaptable);
     }
 
@@ -253,8 +254,8 @@ public abstract class AbstractHandle {
         return PROTOCOL_ADAPTER.toAdaptable(adjustHeadersForLiveSignal(liveSignal));
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
-    protected static Signal<?> adjustHeadersForLiveSignal(final Signal<?> signal) {
+    @SuppressWarnings({"unchecked", "rawtypes", "java:S3740"})
+    protected static Signal adjustHeadersForLiveSignal(final Signal<?> signal) {
         return adjustHeadersForLive((Signal) signal);
     }
 

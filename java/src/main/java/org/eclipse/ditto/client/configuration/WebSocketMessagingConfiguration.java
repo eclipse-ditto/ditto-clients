@@ -118,7 +118,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
 
         private static final List<String> ALLOWED_URI_SCHEME = Arrays.asList("wss", "ws");
         private static final String WS_PATH = "/ws/";
-        private static final String WS_PATH_REGEX = "/ws/([12])/?";
+        private static final String WS_PATH_REGEX = "/ws/2/?";
 
         private JsonSchemaVersion jsonSchemaVersion;
         private Duration timeout = Duration.ofSeconds(60L);

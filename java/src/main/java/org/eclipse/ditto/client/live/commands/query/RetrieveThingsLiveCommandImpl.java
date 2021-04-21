@@ -22,7 +22,6 @@ import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.client.live.commands.base.AbstractLiveCommand;
 import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.model.base.json.Jsonifiable;
 import org.eclipse.ditto.model.things.ThingId;
 import org.eclipse.ditto.signals.commands.base.Command;
 import org.eclipse.ditto.signals.commands.things.ThingCommand;

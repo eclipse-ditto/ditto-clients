@@ -83,14 +83,14 @@ public final class LiveCommandAcknowledgeable<L extends LiveCommand<L, B>, B ext
             final Consumer<AcknowledgementRequestHandle> acknowledgementHandle) {
         final DittoHeaders dittoHeaders = liveCommand.getDittoHeaders();
         if (dittoHeaders.getAcknowledgementRequests().contains(AcknowledgementRequest.of(acknowledgementLabel))) {
-            WithEntityId.getEntityIdOfType(ThingId.class, liveCommand).ifPresent(thingId -> {
+            WithEntityId.getEntityIdOfType(ThingId.class, liveCommand).ifPresent(thingId ->
                 acknowledgementHandle.accept(new ImmutableAcknowledgementRequestHandle(
                         acknowledgementLabel,
                         ((WithThingId) liveCommand).getEntityId(),
                         dittoHeaders,
                         signalPublisher::accept
-                ));
-            });
+                ))
+            );
         }
     }
 

@@ -38,8 +38,7 @@ import org.eclipse.ditto.signals.events.things.AttributeDeleted;
  */
 @ParametersAreNonnullByDefault
 @NotThreadSafe
-final class DeleteAttributeLiveCommandAnswerBuilderImpl
-        extends
+final class DeleteAttributeLiveCommandAnswerBuilderImpl extends
         AbstractLiveCommandAnswerBuilder<DeleteAttributeLiveCommand, DeleteAttributeLiveCommandAnswerBuilder.ResponseFactory,
                 DeleteAttributeLiveCommandAnswerBuilder.EventFactory>
         implements DeleteAttributeLiveCommandAnswerBuilder {
@@ -60,13 +59,13 @@ final class DeleteAttributeLiveCommandAnswerBuilderImpl
     }
 
     @Override
-    protected CommandResponse doCreateResponse(
+    protected CommandResponse<?> doCreateResponse(
             final Function<ResponseFactory, CommandResponse<?>> createResponseFunction) {
         return createResponseFunction.apply(new ResponseFactoryImpl());
     }
 
     @Override
-    protected Event doCreateEvent(final Function<EventFactory, Event<?>> createEventFunction) {
+    protected Event<?> doCreateEvent(final Function<EventFactory, Event<?>> createEventFunction) {
         return createEventFunction.apply(new EventFactoryImpl());
     }
 

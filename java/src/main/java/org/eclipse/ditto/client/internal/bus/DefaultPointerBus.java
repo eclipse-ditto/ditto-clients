@@ -28,7 +28,7 @@ final class DefaultPointerBus implements PointerBus {
 
     private final String name;
     private final ExecutorService executor;
-    private final Registry<Consumer<PointerWithData>> consumerRegistry;
+    private final Registry<Consumer<PointerWithData<?>>> consumerRegistry;
 
     DefaultPointerBus(final String name, final ExecutorService executor) {
         this.name = name;
@@ -50,8 +50,8 @@ final class DefaultPointerBus implements PointerBus {
     }
 
     @Override
-    public Registration<Consumer<PointerWithData>> on(final JsonPointerSelector selector,
-            final Consumer<PointerWithData> consumer) {
+    public Registration<Consumer<PointerWithData<?>>> on(final JsonPointerSelector selector,
+            final Consumer<PointerWithData<?>> consumer) {
 
         return consumerRegistry.register(selector, consumer);
     }

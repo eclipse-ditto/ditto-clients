@@ -35,6 +35,10 @@ import org.eclipse.ditto.signals.commands.things.ThingResourceMapper;
  */
 class BusAddressFactory {
 
+    private BusAddressFactory() {
+        throw new AssertionError();
+    }
+
     private static final ThingResourceMapper<ThingId, String> RESOURCE_PATH_MAPPER =
             ThingResourceMapper.from(PathToBusAddressVisitor.getInstance());
 

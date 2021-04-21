@@ -57,7 +57,7 @@ final class RetrieveThingsLiveCommandAnswerBuilderImpl
     }
 
     @Override
-    protected CommandResponse doCreateResponse(
+    protected CommandResponse<?> doCreateResponse(
             final Function<ResponseFactory, CommandResponse<?>> createResponseFunction) {
         return createResponseFunction.apply(new ResponseFactoryImpl());
     }

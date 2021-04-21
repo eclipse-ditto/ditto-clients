@@ -18,7 +18,7 @@ import org.eclipse.ditto.signals.commands.base.assertions.AbstractCommandAssert;
 /**
  * An Assert for {@link org.eclipse.ditto.client.live.commands.base.LiveCommand}s.
  */
-public class LiveCommandAssert extends AbstractCommandAssert<LiveCommandAssert, LiveCommand> {
+public class LiveCommandAssert extends AbstractCommandAssert<LiveCommandAssert, LiveCommand<?,?>> {
 
     /**
      * Constructs a new {@code LiveCommandAssert} object.

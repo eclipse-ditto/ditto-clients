@@ -30,7 +30,7 @@ public class AcknowledgementsFailedException extends RuntimeException {
 
     private static final String MESSAGE_TEMPLATE = "Requested acknowledgements failed with status code %d.";
 
-    private final Acknowledgements acknowledgements;
+    private final transient Acknowledgements acknowledgements;
 
     private AcknowledgementsFailedException(final Acknowledgements acknowledgements) {
         super(String.format(MESSAGE_TEMPLATE, checkNotNull(acknowledgements, "acknowledgements").getHttpStatus().getCode()));

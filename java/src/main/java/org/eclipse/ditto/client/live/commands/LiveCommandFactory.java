@@ -66,14 +66,14 @@ public final class LiveCommandFactory {
     private static final int STRATEGIES_NUMBER = 26;
     private static final LiveCommandFactory INSTANCE = new LiveCommandFactory();
 
-    private final Map<String, Function<Command, LiveCommand>> mappingStrategies;
+    private final Map<String, Function<Command<?>, LiveCommand<?, ?>>> mappingStrategies;
 
     private LiveCommandFactory() {
         mappingStrategies = Collections.unmodifiableMap(initMappingStrategies());
     }
 
-    private static Map<String, Function<Command, LiveCommand>> initMappingStrategies() {
-        final Map<String, Function<Command, LiveCommand>> result = new HashMap<>(STRATEGIES_NUMBER);
+    private static Map<String, Function<Command<?>, LiveCommand<?, ?>>> initMappingStrategies() {
+        final Map<String, Function<Command<?>, LiveCommand<?, ?>>> result = new HashMap<>(STRATEGIES_NUMBER);
         result.put(CreateThing.TYPE, ModifyLiveCommandFactory::createThing);
         result.put(DeleteAttribute.TYPE, ModifyLiveCommandFactory::deleteAttribute);
         result.put(DeleteAttributes.TYPE, ModifyLiveCommandFactory::deleteAttributes);
@@ -125,11 +125,11 @@ public final class LiveCommandFactory {
      * mapping strategy associated with the command's type.
      */
     @Nonnull
-    public LiveCommand getLiveCommand(@Nonnull final Command<?> command) {
+    public LiveCommand<?, ?> getLiveCommand(@Nonnull final Command<?> command) {
         checkNotNull(command, "command");
 
         final String commandType = command.getType();
-        final Function<Command, LiveCommand> commandToLiveCommand = mappingStrategies.get(commandType);
+        final Function<Command<?>, LiveCommand<?, ?>> commandToLiveCommand = mappingStrategies.get(commandType);
         if (null == commandToLiveCommand) {
             final String msgTemplate = "No mapping strategy for command <{0}> available!"
                     + " The command type <{1}> is unknown!";

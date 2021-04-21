@@ -32,6 +32,7 @@ public interface LiveCommandAnswer {
      * @return the CommandResponse or an empty Optional.
      */
     @Nonnull
+    @SuppressWarnings({"rawtypes", "java:S3740"})
     Optional<CommandResponse> getResponse();
 
     /**
@@ -40,6 +41,7 @@ public interface LiveCommandAnswer {
      * @return the Event or an empty Optional.
      */
     @Nonnull
+    @SuppressWarnings({"rawtypes", "java:S3740"})
     Optional<Event> getEvent();
 
 }
