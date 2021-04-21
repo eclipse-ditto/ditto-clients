@@ -1,11 +1,6 @@
 # Ditto JavaScript client API
-This module is a TypeScript library to facilitate working the the REST-like HTTP API and web socket API of Eclipse Ditto.
-
-It is published with three different module types to the npm registry:
-* CommonJS (`dist/index.js`), typical module type for using in Node.js
-* ES6 Module (`dist/index.es.js`), typical module type for browsers. You could also use a CDN like
-  [UNPKG](https://unpkg.com/) to directly use it in an HTML document (although "_very experimental_",
-  use the `?module`-flag when importing from UNPKG)
+This module is a TypeScript library to facilitate working the REST-like HTTP API and web socket API of Eclipse Ditto.
+It is not published itself, but as part of its implementations for NodeJS and DOM environments.
 
 ## Implementation
 The already existing implementations can be found in the [parent module](../../README.md).
@@ -29,7 +24,7 @@ npm test
 
 ## Using the client
 
-The different implementations (dom, node) describe how the provide instances of a `ThingsClient`.
+The different implementations (dom, node) describe how to provide instances of a `ThingsClient`.
 Have a look at them on how to get an instance of the client. We assume
 the variable `client` to be an instance of `ThingsClient` for the following usage
 explanations.
@@ -47,7 +42,7 @@ thingsHandle.putThing(thing)
     .then(result => console.log(`Finished putting thing with result: ${JSON.stringify(result)}`));
 ```
 
-Additionally options for requests can be specified and passed on to the methods:
+Additionally, options for requests can be specified and passed on to the methods:
 ```typescript
 const options = DefaultFieldsOptions.getInstance();
 options.ifMatch('A Tag').withFields('thingId', 'policyId', '_modified');
@@ -122,7 +117,7 @@ A connection is still being attempted.
   description: 'The request might have been sent and processed.'
 }
 ```
-This error is returned when the WebSocket connection failed while a request was waiting for it's response.
+This error is returned when the WebSocket connection failed while a request was waiting for its response.
 It's not possible to tell whether the request was received by the service or not.
 ```json5
 {

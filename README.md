@@ -19,9 +19,8 @@ Implemented in Java, targeted for use in Java and all JVM based languages (sourc
 ## [JavaScript](javascript/)
 
 [![Build Status](https://github.com/eclipse/ditto-clients/workflows/javascript-build/badge.svg)](https://github.com/eclipse/ditto-clients/actions?query=workflow%3Ajavascript-build)
-[![npm api](https://img.shields.io/npm/v/@eclipse-ditto/ditto-javascript-client-api_1.0?label=npm%3A%20api)](https://www.npmjs.com/package/@eclipse-ditto/ditto-javascript-client-api_1.0)
-[![npm node](https://img.shields.io/npm/v/@eclipse-ditto/ditto-javascript-client-node_1.0?label=npm%3A%20node)](https://www.npmjs.com/package/@eclipse-ditto/ditto-javascript-client-node_1.0)
-[![npm dom](https://img.shields.io/npm/v/@eclipse-ditto/ditto-javascript-client-dom_1.0?label=npm%3A%20dom)](https://www.npmjs.com/package/@eclipse-ditto/ditto-javascript-client-dom_1.0)
+[![npm node](https://img.shields.io/npm/v/@eclipse-ditto/ditto-javascript-client-node?label=npm%3A%20node)](https://www.npmjs.com/package/@eclipse-ditto/ditto-javascript-client-node)
+[![npm dom](https://img.shields.io/npm/v/@eclipse-ditto/ditto-javascript-client-dom?label=npm%3A%20dom)](https://www.npmjs.com/package/@eclipse-ditto/ditto-javascript-client-dom)
 
 Implemented in TypeScript, this SDK contains a JavaScript library for usage of Ditto in both browser and Node.JS 
 based environments.
