@@ -1,4 +1,8 @@
 # Ditto JavaScript client
+[![Build Status](https://github.com/eclipse/ditto-clients/workflows/javascript-build/badge.svg)](https://github.com/eclipse/ditto-clients/actions?query=workflow%3Ajavascript-build)
+[![npm node](https://img.shields.io/npm/v/@eclipse-ditto/ditto-javascript-client-node?label=npm%3A%20node)](https://www.npmjs.com/package/@eclipse-ditto/ditto-javascript-client-node)
+[![npm dom](https://img.shields.io/npm/v/@eclipse-ditto/ditto-javascript-client-dom?label=npm%3A%20dom)](https://www.npmjs.com/package/@eclipse-ditto/ditto-javascript-client-dom)
+
 This module is a TypeScript library to facilitate working the the REST-like HTTP API and web socket API of Eclipse Ditto.
 
 ### How to use it
