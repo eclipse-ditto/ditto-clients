@@ -12,12 +12,12 @@
  */
 package org.eclipse.ditto.client.internal;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.checkNotNull;
 
 import javax.annotation.Nullable;
 
 import org.eclipse.ditto.json.JsonPointer;
-import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
+import org.eclipse.ditto.base.model.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.protocol.UnknownPathException;
 import org.eclipse.ditto.things.model.signals.commands.ThingResourceVisitor;

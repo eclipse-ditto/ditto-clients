@@ -13,7 +13,7 @@
 package org.eclipse.ditto.client.live.commands.assertions;
 
 import org.eclipse.ditto.client.live.commands.base.LiveCommand;
-import org.eclipse.ditto.signals.commands.base.assertions.AbstractCommandAssert;
+import org.eclipse.ditto.base.model.signals.commands.assertions.AbstractCommandAssert;
 
 /**
  * An Assert for {@link org.eclipse.ditto.client.live.commands.base.LiveCommand}s.

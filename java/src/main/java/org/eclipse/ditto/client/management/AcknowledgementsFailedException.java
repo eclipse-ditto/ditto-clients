@@ -12,11 +12,11 @@
  */
 package org.eclipse.ditto.client.management;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.checkNotNull;
 
 import javax.annotation.concurrent.Immutable;
 
-import org.eclipse.ditto.signals.acks.base.Acknowledgements;
+import org.eclipse.ditto.base.model.signals.acks.Acknowledgements;
 
 /**
  * This exception is thrown in the Ditto client if the requested acknowledgements failed.

@@ -813,7 +813,7 @@
 
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-model-base</artifactId>
+            <artifactId>ditto-base-model</artifactId>
             <version>${ditto.version}</version>
         </dependency>
         <dependency>
@@ -836,17 +836,6 @@
             <artifactId>ditto-model-thingsearch</artifactId>
             <version>${ditto.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-signals-base</artifactId>
-            <version>${ditto.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-signals-commands-base</artifactId>
-            <version>${ditto.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-signals-commands-messages</artifactId>
@@ -859,18 +848,7 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-signals-events-base</artifactId>
-            <version>${ditto.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-signals-events-thingsearch</artifactId>
-            <version>${ditto.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-signals-announcements-base</artifactId>
             <version>${ditto.version}</version>
         </dependency>
         <dependency>
@@ -1013,7 +991,7 @@
 
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-model-base</artifactId>
+            <artifactId>ditto-base-model</artifactId>
             <type>test-jar</type>
             <version>${ditto.version}</version>
             <scope>test</scope>
@@ -1021,27 +999,6 @@
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-things-model</artifactId>
-            <type>test-jar</type>
-            <version>${ditto.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-signals-base</artifactId>
-            <type>test-jar</type>
-            <version>${ditto.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-signals-commands-base</artifactId>
-            <type>test-jar</type>
-            <version>${ditto.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-signals-events-base</artifactId>
             <type>test-jar</type>
             <version>${ditto.version}</version>
             <scope>test</scope>

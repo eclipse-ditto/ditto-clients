@@ -13,16 +13,16 @@
 package org.eclipse.ditto.client.live.commands.modify;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.eclipse.ditto.signals.commands.base.assertions.CommandAssertions.assertThat;
+import static org.eclipse.ditto.base.model.signals.commands.assertions.CommandAssertions.assertThat;
 import static org.mutabilitydetector.unittesting.AllowedReason.provided;
 import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
 import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import java.text.MessageFormat;
 
-import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.things.model.Attributes;
-import org.eclipse.ditto.signals.commands.base.Command;
+import org.eclipse.ditto.base.model.signals.commands.Command;
 import org.eclipse.ditto.things.model.signals.commands.TestConstants;
 import org.eclipse.ditto.things.model.signals.commands.modify.ModifyAttributes;
 import org.junit.Before;

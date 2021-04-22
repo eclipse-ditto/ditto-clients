@@ -13,7 +13,7 @@
 package org.eclipse.ditto.client.live.commands.query;
 
 import org.eclipse.ditto.client.live.commands.base.LiveCommand;
-import org.eclipse.ditto.signals.base.WithFeatureId;
+import org.eclipse.ditto.base.model.signals.WithFeatureId;
 import org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeatureDesiredProperties;
 import org.eclipse.ditto.things.model.signals.commands.query.ThingQueryCommand;
 

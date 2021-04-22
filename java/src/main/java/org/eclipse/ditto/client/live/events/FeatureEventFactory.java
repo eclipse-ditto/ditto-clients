@@ -24,7 +24,7 @@ import org.eclipse.ditto.things.model.signals.events.FeaturePropertyDeleted;
 import org.eclipse.ditto.things.model.signals.events.FeaturePropertyModified;
 
 /**
- * Creates {@link org.eclipse.ditto.signals.events.base.Event Event}s on "Feature" scope the {@code thingId} and {@code
+ * Creates {@link org.eclipse.ditto.base.model.signals.events.Event Event}s on "Feature" scope the {@code thingId} and {@code
  * featureId} are known. Therefore those must not be explicitly passed to the factory methods.
  *
  * @since 1.0.0

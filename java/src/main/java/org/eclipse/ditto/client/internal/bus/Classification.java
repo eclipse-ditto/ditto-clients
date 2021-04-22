@@ -12,14 +12,14 @@
  */
 package org.eclipse.ditto.client.internal.bus;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.checkNotNull;
 
 import java.util.Objects;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
 
-import org.eclipse.ditto.signals.base.Signal;
+import org.eclipse.ditto.base.model.signals.Signal;
 
 /**
  * Opaque type of classifications.

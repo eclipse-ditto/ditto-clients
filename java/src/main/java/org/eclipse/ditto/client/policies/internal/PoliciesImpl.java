@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.policies.internal;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.argumentNotNull;
 
 import java.text.MessageFormat;
 import java.util.Optional;
@@ -28,8 +28,8 @@ import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.policies.Policies;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
-import org.eclipse.ditto.model.base.acks.DittoAcknowledgementLabel;
+import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
+import org.eclipse.ditto.base.model.acks.DittoAcknowledgementLabel;
 import org.eclipse.ditto.policies.model.PoliciesModelFactory;
 import org.eclipse.ditto.policies.model.Policy;
 import org.eclipse.ditto.policies.model.PolicyId;

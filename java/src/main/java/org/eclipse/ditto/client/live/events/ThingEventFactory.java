@@ -39,7 +39,7 @@ import org.eclipse.ditto.things.model.signals.events.FeaturesModified;
 import org.eclipse.ditto.things.model.signals.events.ThingDeleted;
 
 /**
- * Creates {@link org.eclipse.ditto.signals.events.base.Event Event}s on "Thing" scope where the {@code thingId} is
+ * Creates {@link org.eclipse.ditto.base.model.signals.events.Event Event}s on "Thing" scope where the {@code thingId} is
  * known. Therefore the {@code thingId} must not be explicitly passed to the factory methods.
  *
  * @since 1.0.0

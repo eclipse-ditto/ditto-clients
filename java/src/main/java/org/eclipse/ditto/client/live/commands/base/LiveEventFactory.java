@@ -13,8 +13,8 @@
 package org.eclipse.ditto.client.live.commands.base;
 
 /**
- * Base for factories of {@link org.eclipse.ditto.signals.events.base.Event}s which create {@code Event}s for incoming
- * {@link org.eclipse.ditto.signals.commands.base.Command}s.
+ * Base for factories of {@link org.eclipse.ditto.base.model.signals.events.Event}s which create {@code Event}s for incoming
+ * {@link org.eclipse.ditto.base.model.signals.commands.Command}s.
  *
  * @since 2.0.0
  */

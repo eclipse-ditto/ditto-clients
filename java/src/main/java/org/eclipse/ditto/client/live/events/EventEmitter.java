@@ -14,7 +14,7 @@ package org.eclipse.ditto.client.live.events;
 
 import java.util.function.Function;
 
-import org.eclipse.ditto.signals.events.base.Event;
+import org.eclipse.ditto.base.model.signals.events.Event;
 
 /**
  * Provides functionality to emit {@link Event}s from the live client when they occur on devices.

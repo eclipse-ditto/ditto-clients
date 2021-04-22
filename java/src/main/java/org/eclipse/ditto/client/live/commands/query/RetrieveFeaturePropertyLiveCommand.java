@@ -16,7 +16,7 @@ import javax.annotation.Nonnull;
 
 import org.eclipse.ditto.client.live.commands.base.LiveCommand;
 import org.eclipse.ditto.json.JsonPointer;
-import org.eclipse.ditto.signals.base.WithFeatureId;
+import org.eclipse.ditto.base.model.signals.WithFeatureId;
 import org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeatureProperty;
 import org.eclipse.ditto.things.model.signals.commands.query.ThingQueryCommand;
 

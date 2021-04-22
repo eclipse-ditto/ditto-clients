@@ -16,8 +16,8 @@ import java.util.Optional;
 
 import javax.annotation.Nonnull;
 
-import org.eclipse.ditto.signals.commands.base.CommandResponse;
-import org.eclipse.ditto.signals.events.base.Event;
+import org.eclipse.ditto.base.model.signals.commands.CommandResponse;
+import org.eclipse.ditto.base.model.signals.events.Event;
 
 /**
  * This interface defines an answer for a received {@link LiveCommand}.

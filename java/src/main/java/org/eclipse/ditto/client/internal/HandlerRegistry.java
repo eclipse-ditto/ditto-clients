@@ -13,7 +13,7 @@
 package org.eclipse.ditto.client.internal;
 
 import static java.util.Objects.requireNonNull;
-import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.argumentNotNull;
 
 import java.util.Map;
 import java.util.Optional;

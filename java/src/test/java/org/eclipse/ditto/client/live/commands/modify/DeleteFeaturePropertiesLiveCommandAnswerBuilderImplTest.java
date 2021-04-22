@@ -18,8 +18,8 @@ import static org.eclipse.ditto.client.live.commands.assertions.LiveCommandAsser
 import java.text.MessageFormat;
 
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswer;
-import org.eclipse.ditto.model.base.common.HttpStatus;
-import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.common.HttpStatus;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.things.model.signals.commands.TestConstants;
 import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
 import org.eclipse.ditto.things.model.signals.commands.exceptions.FeaturePropertiesNotAccessibleException;

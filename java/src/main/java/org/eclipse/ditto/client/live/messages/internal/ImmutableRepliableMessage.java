@@ -12,8 +12,8 @@
  */
 package org.eclipse.ditto.client.live.messages.internal;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
-import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.argumentNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.checkNotNull;
 
 import java.nio.ByteBuffer;
 import java.time.Duration;
@@ -33,15 +33,15 @@ import org.eclipse.ditto.client.changes.AcknowledgementRequestHandle;
 import org.eclipse.ditto.client.live.messages.MessageSender;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.json.JsonObject;
-import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
-import org.eclipse.ditto.model.base.acks.AcknowledgementRequest;
-import org.eclipse.ditto.model.base.auth.AuthorizationContext;
-import org.eclipse.ditto.model.base.common.HttpStatus;
+import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
+import org.eclipse.ditto.base.model.acks.AcknowledgementRequest;
+import org.eclipse.ditto.base.model.auth.AuthorizationContext;
+import org.eclipse.ditto.base.model.common.HttpStatus;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.model.messages.MessageDirection;
 import org.eclipse.ditto.model.messages.MessageHeaders;
 import org.eclipse.ditto.things.model.ThingId;
-import org.eclipse.ditto.signals.acks.base.Acknowledgement;
+import org.eclipse.ditto.base.model.signals.acks.Acknowledgement;
 
 /**
  * Immutable implementation for {@link RepliableMessage}.

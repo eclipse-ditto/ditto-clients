@@ -20,7 +20,7 @@ import javax.annotation.concurrent.NotThreadSafe;
 
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswer;
 import org.eclipse.ditto.things.model.FeatureDefinition;
-import org.eclipse.ditto.signals.commands.base.CommandResponse;
+import org.eclipse.ditto.base.model.signals.commands.CommandResponse;
 import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
 import org.eclipse.ditto.things.model.signals.commands.exceptions.FeatureDefinitionNotAccessibleException;
 import org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeatureDefinitionResponse;

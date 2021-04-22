@@ -16,7 +16,7 @@ import java.util.Arrays;
 
 import org.eclipse.ditto.client.management.CommonManagement;
 import org.eclipse.ditto.json.JsonFieldSelector;
-import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.policies.model.PolicyId;
 import org.eclipse.ditto.things.model.ThingId;
 

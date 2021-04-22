@@ -20,7 +20,7 @@ import org.eclipse.ditto.client.live.commands.LiveCommandHandler;
 import org.eclipse.ditto.client.live.commands.base.LiveCommand;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswer;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
-import org.eclipse.ditto.signals.base.Signal;
+import org.eclipse.ditto.base.model.signals.Signal;
 import org.slf4j.Logger;
 
 /**

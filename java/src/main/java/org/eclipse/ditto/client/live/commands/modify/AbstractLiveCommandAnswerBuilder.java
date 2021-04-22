@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.live.commands.modify;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.checkNotNull;
 
 import java.util.function.Function;
 
@@ -29,8 +29,8 @@ import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder.Modi
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerFactory;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandResponseFactory;
 import org.eclipse.ditto.client.live.commands.base.LiveEventFactory;
-import org.eclipse.ditto.signals.commands.base.CommandResponse;
-import org.eclipse.ditto.signals.events.base.Event;
+import org.eclipse.ditto.base.model.signals.commands.CommandResponse;
+import org.eclipse.ditto.base.model.signals.events.Event;
 
 /**
  * Abstract base implementation for all {@link LiveCommandAnswerBuilder}s for modification commands.

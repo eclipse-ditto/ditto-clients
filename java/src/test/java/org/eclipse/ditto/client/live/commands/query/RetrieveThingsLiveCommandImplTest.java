@@ -13,7 +13,7 @@
 package org.eclipse.ditto.client.live.commands.query;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.eclipse.ditto.signals.commands.base.assertions.CommandAssertions.assertThat;
+import static org.eclipse.ditto.base.model.signals.commands.assertions.CommandAssertions.assertThat;
 import static org.mutabilitydetector.unittesting.AllowedReason.assumingFields;
 import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
 import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
@@ -23,9 +23,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.assertj.core.api.Assertions;
-import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.things.model.ThingId;
-import org.eclipse.ditto.signals.commands.base.Command;
+import org.eclipse.ditto.base.model.signals.commands.Command;
 import org.eclipse.ditto.things.model.signals.commands.TestConstants;
 import org.eclipse.ditto.things.model.signals.commands.query.RetrieveThings;
 import org.junit.Before;

@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.internal.bus;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.checkNotNull;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -30,6 +30,7 @@ import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.eclipse.ditto.base.model.signals.events.Event;
 import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.SpecificChangeBuilderFunction;
@@ -107,7 +108,7 @@ public final class SelectorUtil {
      * @param <T> the type of the ThingEvent
      */
     @SuppressWarnings({"rawtypes", "java:S3740"})
-    public static <T extends org.eclipse.ditto.signals.events.base.Event> void addHandlerForThingEvent(
+    public static <T extends Event> void addHandlerForThingEvent(
             final Logger logger,
             final PointerBus in,
             final String thingEventTypeString,

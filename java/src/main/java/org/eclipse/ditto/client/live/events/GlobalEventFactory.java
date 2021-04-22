@@ -43,7 +43,7 @@ import org.eclipse.ditto.things.model.signals.events.ThingDeleted;
 import org.eclipse.ditto.things.model.signals.events.ThingModified;
 
 /**
- * Creates {@link org.eclipse.ditto.signals.events.base.Event Event}s on "global" scope on which neither {@code thingId}
+ * Creates {@link org.eclipse.ditto.base.model.signals.events.Event Event}s on "global" scope on which neither {@code thingId}
  * nor {@code featureId} are known. Therefore those must always be passed to the factory methods.
  *
  * @since 1.0.0

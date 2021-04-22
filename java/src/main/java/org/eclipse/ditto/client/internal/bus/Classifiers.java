@@ -16,7 +16,7 @@ import java.util.EnumSet;
 import java.util.Optional;
 
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
+import org.eclipse.ditto.base.model.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.protocol.Adaptable;
 import org.eclipse.ditto.protocol.TopicPath;
 import org.eclipse.ditto.signals.events.thingsearch.SubscriptionEvent;

@@ -29,7 +29,7 @@ import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.model.messages.Message;
 import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.protocol.adapter.ProtocolAdapter;
-import org.eclipse.ditto.signals.base.Signal;
+import org.eclipse.ditto.base.model.signals.Signal;
 import org.slf4j.Logger;
 
 final class PendingMessageImpl<T> implements PendingMessage<T> {

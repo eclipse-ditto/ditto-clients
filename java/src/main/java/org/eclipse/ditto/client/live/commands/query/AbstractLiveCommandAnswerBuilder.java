@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.live.commands.query;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.checkNotNull;
 
 import java.util.function.Function;
 
@@ -24,7 +24,7 @@ import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswer;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerFactory;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandResponseFactory;
-import org.eclipse.ditto.signals.commands.base.CommandResponse;
+import org.eclipse.ditto.base.model.signals.commands.CommandResponse;
 
 /**
  * Abstract base implementation for all {@link LiveCommandAnswerBuilder}s for query commands.

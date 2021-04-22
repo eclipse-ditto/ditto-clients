@@ -22,7 +22,7 @@ import org.eclipse.ditto.client.twin.SearchOptionsBuilder;
 import org.eclipse.ditto.client.twin.SearchQueryBuilder;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonFieldSelector;
-import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.signals.commands.thingsearch.subscription.CreateSubscription;
 
 final class SearchQueryBuilderImpl implements SearchQueryBuilder {

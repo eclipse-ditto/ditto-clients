@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.messaging.internal;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.checkNotNull;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -47,9 +47,9 @@ import org.eclipse.ditto.client.messaging.MessagingException;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.json.JsonCollectors;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
-import org.eclipse.ditto.model.base.common.HttpStatus;
-import org.eclipse.ditto.model.base.headers.DittoHeaderDefinition;
+import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
+import org.eclipse.ditto.base.model.common.HttpStatus;
+import org.eclipse.ditto.base.model.headers.DittoHeaderDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

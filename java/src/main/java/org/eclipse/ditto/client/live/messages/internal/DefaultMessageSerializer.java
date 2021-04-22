@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.live.messages.internal;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.argumentNotNull;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;

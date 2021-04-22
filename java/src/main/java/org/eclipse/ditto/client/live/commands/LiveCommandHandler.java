@@ -17,7 +17,7 @@ import java.util.function.Function;
 
 import org.eclipse.ditto.client.live.commands.base.LiveCommand;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
-import org.eclipse.ditto.signals.base.Signal;
+import org.eclipse.ditto.base.model.signals.Signal;
 
 /**
  * Generic interface for handling a live command.

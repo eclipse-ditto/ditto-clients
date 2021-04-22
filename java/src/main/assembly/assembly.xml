@@ -34,20 +34,15 @@
                 <include>org.atteo.classindex:classindex</include>
                 <include>org.reactivestreams:reactive-streams</include>
                 <include>org.eclipse.ditto:ditto-json</include>
-                <include>org.eclipse.ditto:ditto-model-base</include>
+                <include>org.eclipse.ditto:ditto-base-model</include>
                 <include>org.eclipse.ditto:ditto-model-jwt</include>
                 <include>org.eclipse.ditto:ditto-policies-model</include>
                 <include>org.eclipse.ditto:ditto-model-messages</include>
                 <include>org.eclipse.ditto:ditto-things-model</include>
                 <include>org.eclipse.ditto:ditto-model-thingsearch</include>
-                <include>org.eclipse.ditto:ditto-signals-base</include>
-                <include>org.eclipse.ditto:ditto-signals-acks-base</include>
-                <include>org.eclipse.ditto:ditto-signals-commands-base</include>
                 <include>org.eclipse.ditto:ditto-signals-commands-thingsearch</include>
                 <include>org.eclipse.ditto:ditto-signals-commands-messages</include>
-                <include>org.eclipse.ditto:ditto-signals-events-base</include>
                 <include>org.eclipse.ditto:ditto-signals-events-thingsearch</include>
-                <include>org.eclipse.ditto:ditto-signals-announcements-base</include>
                 <include>org.eclipse.ditto:ditto-protocol</include>
                 <include>org.eclipse.ditto:ditto-client</include>
             </includes>

@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.live.commands;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.checkNotNull;
 
 import java.text.MessageFormat;
 import java.util.Collections;
@@ -26,7 +26,7 @@ import javax.annotation.concurrent.Immutable;
 import org.eclipse.ditto.client.live.commands.base.LiveCommand;
 import org.eclipse.ditto.client.live.commands.modify.ModifyLiveCommandFactory;
 import org.eclipse.ditto.client.live.commands.query.QueryLiveCommandFactory;
-import org.eclipse.ditto.signals.commands.base.Command;
+import org.eclipse.ditto.base.model.signals.commands.Command;
 import org.eclipse.ditto.things.model.signals.commands.modify.CreateThing;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttribute;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttributes;

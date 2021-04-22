@@ -13,7 +13,7 @@
 package org.eclipse.ditto.client.live.commands.assertions;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.eclipse.ditto.signals.commands.base.assertions.CommandAssertions.assertThat;
+import static org.eclipse.ditto.base.model.signals.commands.assertions.CommandAssertions.assertThat;
 import static org.mutabilitydetector.unittesting.AllowedReason.assumingFields;
 import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
 import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
@@ -48,9 +48,9 @@ import org.eclipse.ditto.client.live.commands.query.RetrieveFeaturePropertyLiveC
 import org.eclipse.ditto.client.live.commands.query.RetrieveFeaturesLiveCommand;
 import org.eclipse.ditto.client.live.commands.query.RetrieveThingLiveCommand;
 import org.eclipse.ditto.client.live.commands.query.RetrieveThingsLiveCommand;
-import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.things.model.ThingId;
-import org.eclipse.ditto.signals.commands.base.Command;
+import org.eclipse.ditto.base.model.signals.commands.Command;
 import org.eclipse.ditto.things.model.signals.commands.TestConstants;
 import org.eclipse.ditto.things.model.signals.commands.modify.CreateThing;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttribute;

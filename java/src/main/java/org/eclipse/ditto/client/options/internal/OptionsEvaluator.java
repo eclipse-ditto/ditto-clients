@@ -18,7 +18,7 @@ import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.json.JsonFieldSelector;
-import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.policies.model.PolicyId;
 import org.eclipse.ditto.things.model.ThingId;
 

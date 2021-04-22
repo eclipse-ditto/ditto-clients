@@ -12,8 +12,8 @@
  */
 package org.eclipse.ditto.client.management.internal;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
-import static org.eclipse.ditto.model.base.common.ConditionChecker.checkArgument;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.argumentNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.checkArgument;
 
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
@@ -45,7 +45,7 @@ import org.eclipse.ditto.things.model.Thing;
 import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.things.model.ThingsModelFactory;
 import org.eclipse.ditto.protocol.TopicPath;
-import org.eclipse.ditto.signals.commands.base.CommandResponse;
+import org.eclipse.ditto.base.model.signals.commands.CommandResponse;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttribute;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttributes;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeature;
