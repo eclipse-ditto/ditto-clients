@@ -833,22 +833,12 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-model-thingsearch</artifactId>
+            <artifactId>ditto-thingsearch-model</artifactId>
             <version>${ditto.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
             <artifactId>ditto-signals-commands-messages</artifactId>
-            <version>${ditto.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-signals-commands-thingsearch</artifactId>
-            <version>${ditto.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-signals-events-thingsearch</artifactId>
             <version>${ditto.version}</version>
         </dependency>
         <dependency>

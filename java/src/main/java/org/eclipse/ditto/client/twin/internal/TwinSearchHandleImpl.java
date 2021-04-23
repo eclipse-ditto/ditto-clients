@@ -31,8 +31,8 @@ import org.eclipse.ditto.base.model.acks.DittoAcknowledgementLabel;
 import org.eclipse.ditto.things.model.Thing;
 import org.eclipse.ditto.things.model.ThingsModelFactory;
 import org.eclipse.ditto.protocol.TopicPath;
-import org.eclipse.ditto.signals.commands.thingsearch.subscription.CreateSubscription;
-import org.eclipse.ditto.signals.events.thingsearch.SubscriptionHasNextPage;
+import org.eclipse.ditto.thingsearch.model.signals.commands.subscription.CreateSubscription;
+import org.eclipse.ditto.thingsearch.model.signals.events.SubscriptionHasNextPage;
 import org.reactivestreams.Publisher;
 
 /**
