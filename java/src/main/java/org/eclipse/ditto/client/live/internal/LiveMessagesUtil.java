@@ -34,12 +34,12 @@ import org.eclipse.ditto.protocol.Adaptable;
 import org.eclipse.ditto.protocol.adapter.ProtocolAdapter;
 import org.eclipse.ditto.protocol.TopicPath;
 import org.eclipse.ditto.base.model.signals.acks.Acknowledgement;
-import org.eclipse.ditto.signals.commands.messages.MessageCommand;
-import org.eclipse.ditto.signals.commands.messages.MessageCommandResponse;
-import org.eclipse.ditto.signals.commands.messages.SendFeatureMessage;
-import org.eclipse.ditto.signals.commands.messages.SendFeatureMessageResponse;
-import org.eclipse.ditto.signals.commands.messages.SendThingMessage;
-import org.eclipse.ditto.signals.commands.messages.SendThingMessageResponse;
+import org.eclipse.ditto.model.messages.signals.commands.MessageCommand;
+import org.eclipse.ditto.model.messages.signals.commands.MessageCommandResponse;
+import org.eclipse.ditto.model.messages.signals.commands.SendFeatureMessage;
+import org.eclipse.ditto.model.messages.signals.commands.SendFeatureMessageResponse;
+import org.eclipse.ditto.model.messages.signals.commands.SendThingMessage;
+import org.eclipse.ditto.model.messages.signals.commands.SendThingMessageResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
