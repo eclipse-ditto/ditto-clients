@@ -132,7 +132,7 @@ describe('DomWebSocketBearerAuth', () => {
   it('should add access_token parameter', () => {
     const bearerAuth = DomWebSocketBearerAuth.newInstance(new DefaultTokenSupplier(exampleToken1));
     const baseUrl = defaultUrl().toString();
-    const expected = `${baseUrl}?access_token=${exampleToken1}`;
+    const expected = `${baseUrl}&access_token=${exampleToken1}`;
     const actual = bearerAuth.authenticateWithUrl(defaultUrl()).toString();
 
     expect(actual).toEqual(expected);
@@ -152,14 +152,14 @@ describe('DomWebSocketBearerAuth', () => {
     const bearerAuth = DomWebSocketBearerAuth.newInstance(testSupplier);
 
     let authenticatedUrl = bearerAuth.authenticateWithUrl(defaultUrl());
-    expect(authenticatedUrl.queryParams.length).toEqual(1);
-    expect(authenticatedUrl.queryParams[0]).toEqual(`access_token=${exampleToken1}`);
+    expect(authenticatedUrl.queryParams.length).toEqual(2);
+    expect(authenticatedUrl.queryParams[1]).toEqual(`access_token=${exampleToken1}`);
 
     testSupplier.testToken = exampleToken2;
 
     authenticatedUrl = bearerAuth.authenticateWithUrl(defaultUrl());
-    expect(authenticatedUrl.queryParams.length).toEqual(1);
-    expect(authenticatedUrl.queryParams[0]).toEqual(`access_token=${exampleToken2}`);
+    expect(authenticatedUrl.queryParams.length).toEqual(2);
+    expect(authenticatedUrl.queryParams[1]).toEqual(`access_token=${exampleToken2}`);
   });
 
 });
