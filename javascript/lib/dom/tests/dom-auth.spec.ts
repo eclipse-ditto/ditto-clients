@@ -135,7 +135,7 @@ describe('DomWebSocketBearerAuth', () => {
     const expected = `${baseUrl}?access_token=${exampleToken1}`;
     const actual = bearerAuth.authenticateWithUrl(defaultUrl()).toString();
 
-    expectEquals(actual, expected);
+    expect(actual).toEqual(expected);
   });
 
   it('should not add Authorization header', () => {
