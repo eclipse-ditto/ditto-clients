@@ -85,3 +85,31 @@ export class DomHttpBearerAuth extends HttpBearerAuth {
     return new DomHttpBearerAuth(tokenSupplier);
   }
 }
+
+/**
+ * DOM implementation of bearer authentication for WebSocket connections
+ */
+export class DomWebSocketBearerAuth extends HttpBearerAuth {
+
+  constructor(tokenSupplier: TokenSupplier) {
+    super(tokenSupplier);
+  }
+
+  /**
+   * Create a new AuthProvider for bearer token authentication over WebSocket
+   * @param tokenSupplier Provides auth tokens to this AuthProvider when needed
+   */
+  static newInstance(tokenSupplier: TokenSupplier) {
+    return new DomWebSocketBearerAuth(tokenSupplier);
+  }
+
+  authenticateWithUrl(originalUrl: DittoURL): DittoURL {
+    const accessToken = [`access_token=${this.supplier.getToken()}`];
+    const params = [...originalUrl.queryParams, ...accessToken];
+    return originalUrl.withParams(params);
+  }
+
+  authenticateWithHeaders(originalHeaders: DittoHeaders): DittoHeaders {
+    return originalHeaders;
+  }
+}

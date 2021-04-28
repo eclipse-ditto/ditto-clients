@@ -15,7 +15,7 @@
 import { DefaultTokenSupplier, TokenSupplier } from '../../api/src/auth/bearer-auth';
 import { DittoURL, ImmutableURL } from '../../api/src/auth/auth-provider';
 
-import { DomBase64Encoder, DomHttpBasicAuth, DomHttpBearerAuth, DomWebSocketBasicAuth } from '../src/dom-auth';
+import { DomBase64Encoder, DomHttpBasicAuth, DomHttpBearerAuth, DomWebSocketBasicAuth, DomWebSocketBearerAuth } from '../src/dom-auth';
 
 
 const USERNAME = 'ditto';
@@ -119,6 +119,47 @@ describe('DomHttpBearerAuth', () => {
     expect(dittoHeaders.size).toEqual(2);
     expect(dittoHeaders.get(DEFAULT_KEY)).toEqual(DEFAULT_VAL);
     expect(dittoHeaders.get('Authorization')).toEqual(`Bearer ${exampleToken2}`);
+  });
+
+});
+
+
+describe('DomWebSocketBearerAuth', () => {
+
+  const exampleToken1 = 'bGLYQpCUgchwipBMEXNeyqGglINUbh';
+  const exampleToken2 = 'ClEXwgYsJGPfrmRVuKpnmsXekuyhbx';
+
+  it('should add access_token parameter', () => {
+    const bearerAuth = DomWebSocketBearerAuth.newInstance(new DefaultTokenSupplier(exampleToken1));
+    const baseUrl = defaultUrl().toString();
+    const expected = `${baseUrl}?access_token=${exampleToken1}`;
+    const actual = bearerAuth.authenticateWithUrl(defaultUrl()).toString();
+
+    expectEquals(actual, expected);
+  });
+
+  it('should not add Authorization header', () => {
+    const bearerAuth = DomWebSocketBearerAuth.newInstance(new DefaultTokenSupplier(exampleToken1));
+
+    const dittoHeaders = bearerAuth.authenticateWithHeaders(defaultHeaders());
+    expect(dittoHeaders.size).toEqual(1);
+    expect(dittoHeaders.get(DEFAULT_KEY)).toEqual(DEFAULT_VAL);
+  });
+
+  it('should use the token provided by the TokenSupplier', () => {
+    const testSupplier = new TestTokenSupplier();
+    testSupplier.testToken = exampleToken1;
+    const bearerAuth = DomWebSocketBearerAuth.newInstance(testSupplier);
+
+    let authenticatedUrl = bearerAuth.authenticateWithUrl(defaultUrl());
+    expect(authenticatedUrl.queryParams.length).toEqual(1);
+    expect(authenticatedUrl.queryParams[0]).toEqual(`access_token=${exampleToken1}`);
+
+    testSupplier.testToken = exampleToken2;
+
+    authenticatedUrl = bearerAuth.authenticateWithUrl(defaultUrl());
+    expect(authenticatedUrl.queryParams.length).toEqual(1);
+    expect(authenticatedUrl.queryParams[0]).toEqual(`access_token=${exampleToken2}`);
   });
 
 });
