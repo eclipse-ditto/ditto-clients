@@ -29,7 +29,7 @@ import com.neovisionaries.ws.client.WebSocket;
  */
 public final class DummyAuthenticationProvider implements AuthenticationProvider<WebSocket> {
 
-    private static final String X_DITTO_DUMMY_AUTH_HEADER = "x-ditto-dummy-auth";
+    private static final String X_DITTO_DUMMY_AUTH_HEADER = "x-ditto-pre-authenticated";
 
     private final DummyAuthenticationConfiguration configuration;
 
