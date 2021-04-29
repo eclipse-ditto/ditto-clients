@@ -818,7 +818,7 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.ditto</groupId>
-            <artifactId>ditto-model-jwt</artifactId>
+            <artifactId>ditto-jwt-model</artifactId>
             <version>${ditto.version}</version>
         </dependency>
         <dependency>
