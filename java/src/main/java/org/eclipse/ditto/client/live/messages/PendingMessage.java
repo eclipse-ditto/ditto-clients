@@ -16,7 +16,7 @@ import org.eclipse.ditto.things.model.ThingId;
 
 /**
  * This interface defines the entrance point to the fluent API to create and send a new {@link
- * org.eclipse.ditto.model.messages.Message}.
+ * org.eclipse.ditto.messages.model.Message}.
  *
  * @param <T> the type of the Message's payload.
  * @since 1.0.0
@@ -24,7 +24,7 @@ import org.eclipse.ditto.things.model.ThingId;
 public interface PendingMessage<T> {
 
     /**
-     * Sets the {@link org.eclipse.ditto.model.messages.Message} as being sent <em>FROM</em> the specified {@link
+     * Sets the {@link org.eclipse.ditto.messages.model.Message} as being sent <em>FROM</em> the specified {@link
      * org.eclipse.ditto.things.model.Thing}.
      *
      * @param thingId the ID of the Thing from which the Message will be sent.
@@ -34,7 +34,7 @@ public interface PendingMessage<T> {
     MessageSender.SetFeatureIdOrSubject<T> from(ThingId thingId);
 
     /**
-     * Sets the {@link org.eclipse.ditto.model.messages.Message} as being sent <em>TO</em> the specified {@link
+     * Sets the {@link org.eclipse.ditto.messages.model.Message} as being sent <em>TO</em> the specified {@link
      * org.eclipse.ditto.things.model.Thing}.
      *
      * @param thingId the identifier of the Thing to which the Message will be sent.

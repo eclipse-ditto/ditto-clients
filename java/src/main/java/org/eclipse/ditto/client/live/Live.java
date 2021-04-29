@@ -40,7 +40,7 @@ public interface Live extends CommonManagement<LiveThingHandle, LiveFeatureHandl
         FeaturesCommandHandling, FeaturePropertiesCommandHandling, EventEmitter<GlobalEventFactory> {
 
     /**
-     * Provides the functionality to create and send a new {@link org.eclipse.ditto.model.messages.Message}
+     * Provides the functionality to create and send a new {@link org.eclipse.ditto.messages.model.Message}
      * <em>FROM</em> or <em>TO</em> a "Live" {@link Thing} or a "Live" Thing's {@link
      * org.eclipse.ditto.things.model.Feature Feature}. <p> Example: </p>
      * <pre>

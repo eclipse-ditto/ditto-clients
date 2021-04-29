@@ -14,7 +14,7 @@ package org.eclipse.ditto.client.live.messages;
 
 /**
  * This interface defines the entrance point to the fluent API to create and send a new {@link
- * org.eclipse.ditto.model.messages.Message}.
+ * org.eclipse.ditto.messages.model.Message}.
  *
  * @param <T> the type of the Message's payload.
  * @since 1.0.0
@@ -22,7 +22,7 @@ package org.eclipse.ditto.client.live.messages;
 public interface PendingMessageWithThingId<T> {
 
     /**
-     * Sets the {@link org.eclipse.ditto.model.messages.Message} as being sent <em>FROM</em> the {@link
+     * Sets the {@link org.eclipse.ditto.messages.model.Message} as being sent <em>FROM</em> the {@link
      * org.eclipse.ditto.things.model.Thing}.
      *
      * @return fluent API builder that provides the functionality to set the subject of the Message.
@@ -30,7 +30,7 @@ public interface PendingMessageWithThingId<T> {
     MessageSender.SetSubject<T> from();
 
     /**
-     * Sets the {@link org.eclipse.ditto.model.messages.Message} as being sent <em>TO</em> the {@link
+     * Sets the {@link org.eclipse.ditto.messages.model.Message} as being sent <em>TO</em> the {@link
      * org.eclipse.ditto.things.model.Thing}.
      *
      * @return fluent API builder that provides the functionality to set the subject of the Message.

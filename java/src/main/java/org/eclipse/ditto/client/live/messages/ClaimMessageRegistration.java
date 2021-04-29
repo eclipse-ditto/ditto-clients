@@ -28,7 +28,7 @@ public interface ClaimMessageRegistration extends HandlerDeregistration {
 
     /**
      * Registers a {@link Consumer} to receive {@link RepliableMessage}s with the {@link
-     * org.eclipse.ditto.model.messages.KnownMessageSubjects#CLAIM_SUBJECT} and the specified payload Java {@code type}
+     * org.eclipse.ditto.messages.model.KnownMessageSubjects#CLAIM_SUBJECT} and the specified payload Java {@code type}
      * . <p> Example: </p>
      * <pre>
      * DittoClient client = ...
@@ -53,7 +53,7 @@ public interface ClaimMessageRegistration extends HandlerDeregistration {
 
     /**
      * Registers a {@link Consumer} to receive {@link RepliableMessage}'s with the {@link
-     * org.eclipse.ditto.model.messages.KnownMessageSubjects#CLAIM_SUBJECT} regardless of the payload Java {@code type}
+     * org.eclipse.ditto.messages.model.KnownMessageSubjects#CLAIM_SUBJECT} regardless of the payload Java {@code type}
      * . As a consequence, the Consumer will only be provided with the raw {@link ByteBuffer} payload of the Message.
      * <p> Example: </p>
      * <pre>

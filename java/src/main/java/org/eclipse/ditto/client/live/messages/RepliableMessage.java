@@ -13,7 +13,7 @@
 package org.eclipse.ditto.client.live.messages;
 
 import org.eclipse.ditto.client.ack.Acknowledgeable;
-import org.eclipse.ditto.model.messages.Message;
+import org.eclipse.ditto.messages.model.Message;
 
 /**
  * A {@link Message} which can be replied to.

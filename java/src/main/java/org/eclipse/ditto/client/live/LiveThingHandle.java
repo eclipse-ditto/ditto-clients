@@ -34,7 +34,7 @@ public interface LiveThingHandle
         FeaturesCommandHandling, FeaturePropertiesCommandHandling, EventEmitter<ThingEventFactory> {
 
     /**
-     * Provides the functionality to create and send a new {@link org.eclipse.ditto.model.messages.Message}
+     * Provides the functionality to create and send a new {@link org.eclipse.ditto.messages.model.Message}
      * <em>FROM</em> or <em>TO</em> the {@code Thing} handled by this {@code LiveThingHandle}. <p> Example: </p>
      * <pre>
      * client.live().forId("org.eclipse.ditto:fireDetectionDevice").message()

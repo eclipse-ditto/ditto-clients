@@ -40,7 +40,7 @@ import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.json.JsonValueContainer;
-import org.eclipse.ditto.model.messages.Message;
+import org.eclipse.ditto.messages.model.Message;
 import org.slf4j.Logger;
 
 /**

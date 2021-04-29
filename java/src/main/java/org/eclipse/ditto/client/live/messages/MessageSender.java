@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 import org.eclipse.ditto.client.ack.ResponseConsumer;
 import org.eclipse.ditto.base.model.common.HttpStatus;
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
-import org.eclipse.ditto.model.messages.Message;
+import org.eclipse.ditto.messages.model.Message;
 import org.eclipse.ditto.things.model.ThingId;
 
 /**

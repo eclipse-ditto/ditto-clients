@@ -56,8 +56,8 @@ import org.eclipse.ditto.base.model.auth.AuthorizationContext;
 import org.eclipse.ditto.base.model.exceptions.DittoRuntimeException;
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.base.model.json.Jsonifiable;
-import org.eclipse.ditto.model.messages.Message;
-import org.eclipse.ditto.model.messages.MessagesModelFactory;
+import org.eclipse.ditto.messages.model.Message;
+import org.eclipse.ditto.messages.model.MessagesModelFactory;
 import org.eclipse.ditto.policies.model.PoliciesModelFactory;
 import org.eclipse.ditto.things.model.AttributesModelFactory;
 import org.eclipse.ditto.things.model.ThingsModelFactory;
@@ -68,8 +68,8 @@ import org.eclipse.ditto.policies.model.signals.announcements.PolicyAnnouncement
 import org.eclipse.ditto.base.model.signals.JsonParsable;
 import org.eclipse.ditto.base.model.signals.commands.Command;
 import org.eclipse.ditto.base.model.signals.commands.CommandResponse;
-import org.eclipse.ditto.model.messages.signals.commands.MessageCommand;
-import org.eclipse.ditto.model.messages.signals.commands.MessageCommandResponse;
+import org.eclipse.ditto.messages.model.signals.commands.MessageCommand;
+import org.eclipse.ditto.messages.model.signals.commands.MessageCommandResponse;
 import org.eclipse.ditto.things.model.signals.commands.ThingCommand;
 import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
 import org.eclipse.ditto.things.model.signals.commands.modify.ThingModifyCommand;
@@ -221,8 +221,8 @@ public class RunOSGiContainerIntegrationTest {
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(AttributesModelFactory.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(ThingsModelFactory.class));
 
-        // ditto-model-messages:
-        LOG.info("Ensuring ditto-model-messages is usable from OSGi..");
+        // ditto-messages-model:
+        LOG.info("Ensuring ditto-messages-model is usable from OSGi..");
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(Message.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(MessagesModelFactory.class));
 

@@ -17,7 +17,7 @@ import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable
 
 import java.util.function.Consumer;
 
-import org.eclipse.ditto.model.messages.Message;
+import org.eclipse.ditto.messages.model.Message;
 import org.junit.Test;
 import org.mutabilitydetector.unittesting.MutabilityAssert;
 

@@ -39,7 +39,7 @@
                 <include>org.eclipse.ditto:ditto-policies-model</include>
                 <include>org.eclipse.ditto:ditto-things-model</include>
                 <include>org.eclipse.ditto:ditto-thingsearch-model</include>
-                <include>org.eclipse.ditto:ditto-model-messages</include>
+                <include>org.eclipse.ditto:ditto-messages-model</include>
                 <include>org.eclipse.ditto:ditto-protocol</include>
                 <include>org.eclipse.ditto:ditto-client</include>
             </includes>
