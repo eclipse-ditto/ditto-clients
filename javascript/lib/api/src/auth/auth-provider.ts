@@ -46,7 +46,7 @@ interface DittoURL {
    */
   readonly path: string;
   /**
-   * Params for the url, e.g. ['x-correlation-id=myCorrelationid', 'x-ditto-dummy-auth=nginx:ditto']
+   * Params for the url, e.g. ['x-correlation-id=myCorrelationid', 'x-ditto-pre-authenticated=nginx:ditto']
    */
   readonly queryParams: DittoURLParams;
 
@@ -73,7 +73,7 @@ interface DittoURL {
 
   /**
    * Use the given queryParams for the url.
-   * @param params - e.g. ['x-correlation-id=myCorrelationId', 'x-ditto-dummy-auth=nginx:ditto']
+   * @param params - e.g. ['x-correlation-id=myCorrelationId', 'x-ditto-pre-authenticated=nginx:ditto']
    * @return the url object for method chaining.
    */
   withParams(params: DittoURLParams): DittoURL;
@@ -81,7 +81,7 @@ interface DittoURL {
   /**
    * Convert to string.
    * @return string representation of the url, e.g.
-   * https://ditto.eclipse.org/api/2/things?x-correlation-id=myCorrelationId&x-ditto-dummy-auth=nginx:ditto
+   * https://ditto.eclipse.org/api/2/things?x-correlation-id=myCorrelationId&x-ditto-pre-authenticated=nginx:ditto
    */
   toString(): string;
 }
