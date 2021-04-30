@@ -35,7 +35,7 @@
                 <include>org.reactivestreams:reactive-streams</include>
                 <include>org.eclipse.ditto:ditto-json</include>
                 <include>org.eclipse.ditto:ditto-base-model</include>
-                <include>org.eclipse.ditto:ditto-model-jwt</include>
+                <include>org.eclipse.ditto:ditto-jwt-model</include>
                 <include>org.eclipse.ditto:ditto-policies-model</include>
                 <include>org.eclipse.ditto:ditto-things-model</include>
                 <include>org.eclipse.ditto:ditto-thingsearch-model</include>
