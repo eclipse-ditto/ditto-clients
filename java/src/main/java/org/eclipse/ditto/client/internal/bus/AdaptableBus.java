@@ -20,7 +20,7 @@ import java.util.function.Predicate;
 
 import javax.annotation.Nullable;
 
-import org.eclipse.ditto.protocoladapter.Adaptable;
+import org.eclipse.ditto.protocol.Adaptable;
 
 /**
  * Event bus for messages that are either {@code String} or {@code} Adaptable.

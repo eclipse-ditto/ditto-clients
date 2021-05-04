@@ -19,11 +19,11 @@ import org.eclipse.ditto.client.registration.FeatureChangeRegistration;
 import org.eclipse.ditto.client.registration.ThingAttributeChangeRegistration;
 import org.eclipse.ditto.client.registration.ThingChangeRegistration;
 import org.eclipse.ditto.json.JsonFieldSelector;
-import org.eclipse.ditto.model.policies.PolicyId;
-import org.eclipse.ditto.model.things.Feature;
-import org.eclipse.ditto.model.things.Features;
-import org.eclipse.ditto.model.things.Thing;
-import org.eclipse.ditto.model.things.WithThingId;
+import org.eclipse.ditto.policies.model.PolicyId;
+import org.eclipse.ditto.things.model.Feature;
+import org.eclipse.ditto.things.model.Features;
+import org.eclipse.ditto.things.model.Thing;
+import org.eclipse.ditto.things.model.WithThingId;
 
 /**
  * A {@code ThingHandle} is the entry point to managing and monitoring a <em>specific</em> {@code Thing}. It can for
@@ -36,7 +36,7 @@ import org.eclipse.ditto.model.things.WithThingId;
  * Note: All methods returning a {@link CompletionStage} are executed non-blocking and asynchronously. Therefore,
  * these methods return a {@code CompletionStage} object that will complete either successfully if the operation was
  * executed and confirmed, or exceptionally with a specific
- * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if it was executed but has failed.
+ * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if it was executed but has failed.
  * </p>
  * Example:
  * <pre>
@@ -75,7 +75,7 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @param options options to be applied configuring behaviour of this method, see
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing for handling the deletion a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      */
     CompletionStage<Void> delete(Option<?>... options);
 
@@ -83,7 +83,7 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * Retrieve the {@code Thing} object being handled by this {@code ThingHandle}.
      *
      * @return CompletionStage providing the requested {@link Thing} or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      */
     CompletionStage<Thing> retrieve();
 
@@ -92,7 +92,7 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      *
      * @param fieldSelector a field selector object allowing to select a subset of fields on the Thing to be retrieved.
      * @return CompletionStage providing the requested {@link Thing} or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      */
     CompletionStage<Thing> retrieve(JsonFieldSelector fieldSelector);
 
@@ -103,7 +103,7 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the result of the operation or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code policyId} is {@code null}.
      * @since 1.1.0
      */
@@ -116,7 +116,7 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the result of the operation or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code policyId} is {@code null}.
      * @since 2.0.0
      */
@@ -129,7 +129,7 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the result of the operation or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code features} is {@code null}.
      */
     CompletionStage<Void> setFeatures(Features features, Option<?>... options);
@@ -141,7 +141,7 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the result of the operation or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code features} is {@code null}.
      * @since 2.0.0
      */
@@ -154,7 +154,7 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the result of this operation or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code feature} is {@code null}.
      */
     CompletionStage<Void> putFeature(Feature feature, Option<?>... options);
@@ -166,7 +166,7 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the result of this operation or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code feature} is {@code null}.
      * @since 2.0.0
      */
@@ -179,7 +179,7 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the deletion or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException}
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException}
      * if the operation failed
      * @throws IllegalArgumentException if {@code featureId} is {@code null}.
      */
@@ -191,7 +191,7 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the deletion or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException}
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException}
      * if the operation failed
      */
     CompletionStage<Void> deleteFeatures(Option<?>... options);

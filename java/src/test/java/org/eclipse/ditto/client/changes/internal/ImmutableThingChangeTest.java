@@ -27,9 +27,9 @@ import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.client.changes.ThingChange;
 import org.eclipse.ditto.json.JsonPointer;
-import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.model.things.Thing;
-import org.eclipse.ditto.signals.acks.base.Acknowledgement;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.things.model.Thing;
+import org.eclipse.ditto.base.model.signals.acks.Acknowledgement;
 import org.junit.Test;
 import org.mockito.Mockito;
 

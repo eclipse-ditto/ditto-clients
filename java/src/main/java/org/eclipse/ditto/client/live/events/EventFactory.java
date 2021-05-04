@@ -14,11 +14,11 @@ package org.eclipse.ditto.client.live.events;
 
 import java.util.UUID;
 
-import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
 
 /**
- * Factory for {@link org.eclipse.ditto.signals.events.base.Event Event}s which are emitted by live client "from
+ * Factory for {@link org.eclipse.ditto.base.model.signals.events.Event Event}s which are emitted by live client "from
  * scratch", that is when something happened on a device, e.g. a property was modified. <p> Base interface for Factories
  * with a more specific scope, e.g. Things or Features. </p>
  *

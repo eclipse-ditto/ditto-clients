@@ -15,8 +15,8 @@ package org.eclipse.ditto.client.assertions;
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.ThingChange;
-import org.eclipse.ditto.model.messages.Message;
-import org.eclipse.ditto.signals.commands.policies.PolicyCommand;
+import org.eclipse.ditto.messages.model.Message;
+import org.eclipse.ditto.policies.model.signals.commands.PolicyCommand;
 
 /**
  * Custom assertions for testing the CR Integration Client.

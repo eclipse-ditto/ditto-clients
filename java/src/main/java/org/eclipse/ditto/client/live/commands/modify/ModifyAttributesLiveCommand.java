@@ -15,9 +15,9 @@ package org.eclipse.ditto.client.live.commands.modify;
 import javax.annotation.Nonnull;
 
 import org.eclipse.ditto.client.live.commands.base.LiveCommand;
-import org.eclipse.ditto.model.things.Attributes;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributes;
-import org.eclipse.ditto.signals.commands.things.modify.ThingModifyCommand;
+import org.eclipse.ditto.things.model.Attributes;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyAttributes;
+import org.eclipse.ditto.things.model.signals.commands.modify.ThingModifyCommand;
 
 /**
  * {@link ModifyAttributes} live command giving access to the command and all of its special accessors. Also the entry

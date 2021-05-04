@@ -14,8 +14,8 @@ package org.eclipse.ditto.client.ack.internal;
 
 import java.util.Set;
 
-import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
-import org.eclipse.ditto.model.base.acks.AcknowledgementRequest;
+import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
+import org.eclipse.ditto.base.model.acks.AcknowledgementRequest;
 
 /**
  * Validate an acknowledgement request from the client.

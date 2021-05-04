@@ -16,7 +16,7 @@ import javax.annotation.concurrent.ThreadSafe;
 
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.OptionName;
-import org.eclipse.ditto.model.base.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
 
 /**
  * This visitor fetches and provides the value as {@code DittoHeaders} for the option with name

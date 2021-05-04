@@ -16,10 +16,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.concurrent.Immutable;
 
-import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.model.things.Attributes;
-import org.eclipse.ditto.signals.commands.base.Command;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributes;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.things.model.Attributes;
+import org.eclipse.ditto.base.model.signals.commands.Command;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyAttributes;
 
 /**
  * An immutable implementation of {@link ModifyAttributesLiveCommand}.

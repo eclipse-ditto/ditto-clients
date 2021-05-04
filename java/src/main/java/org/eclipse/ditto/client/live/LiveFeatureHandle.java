@@ -29,7 +29,7 @@ public interface LiveFeatureHandle extends FeatureHandle, MessageRegistration, F
         EventEmitter<FeatureEventFactory> {
 
     /**
-     * Provides the functionality to create and send a new {@link org.eclipse.ditto.model.messages.Message} <em>TO</em>
+     * Provides the functionality to create and send a new {@link org.eclipse.ditto.messages.model.Message} <em>TO</em>
      * or <em>FROM</em> the {@code Feature} handled by this {@code LiveFeatureHandle}. <p> Example: </p>
      * <pre>
      * client.live()

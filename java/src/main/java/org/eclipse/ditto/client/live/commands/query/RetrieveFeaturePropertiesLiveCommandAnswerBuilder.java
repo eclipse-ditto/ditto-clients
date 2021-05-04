@@ -17,10 +17,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandResponseFactory;
-import org.eclipse.ditto.model.things.FeatureProperties;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveFeatureProperties;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveFeaturePropertiesResponse;
+import org.eclipse.ditto.things.model.FeatureProperties;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeatureProperties;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeaturePropertiesResponse;
 
 /**
  * LiveCommandAnswer builder for producing {@code CommandResponse}s for {@link RetrieveFeatureProperties} commands.

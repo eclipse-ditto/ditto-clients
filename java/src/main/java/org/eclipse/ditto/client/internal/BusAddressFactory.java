@@ -27,8 +27,8 @@ import static org.eclipse.ditto.client.internal.BusAddressPatterns.POLICY_ID_PAT
 import static org.eclipse.ditto.client.internal.BusAddressPatterns.THING_PATTERN;
 
 import org.eclipse.ditto.json.JsonPointer;
-import org.eclipse.ditto.model.things.ThingId;
-import org.eclipse.ditto.signals.commands.things.ThingResourceMapper;
+import org.eclipse.ditto.things.model.ThingId;
+import org.eclipse.ditto.things.model.signals.commands.ThingResourceMapper;
 
 /**
  * Factory creates bus addresses for different parts of a thing.

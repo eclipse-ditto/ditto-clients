@@ -21,8 +21,8 @@ import java.time.Instant;
 import java.util.Base64;
 
 import org.eclipse.ditto.client.configuration.AccessTokenAuthenticationConfiguration;
-import org.eclipse.ditto.model.jwt.ImmutableJsonWebToken;
-import org.eclipse.ditto.model.jwt.JsonWebToken;
+import org.eclipse.ditto.jwt.model.ImmutableJsonWebToken;
+import org.eclipse.ditto.jwt.model.JsonWebToken;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;

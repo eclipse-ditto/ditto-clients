@@ -17,8 +17,8 @@ import java.util.concurrent.CompletionStage;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.registration.FeaturePropertiesChangeRegistration;
 import org.eclipse.ditto.json.JsonFieldSelector;
-import org.eclipse.ditto.model.things.Feature;
-import org.eclipse.ditto.signals.base.WithFeatureId;
+import org.eclipse.ditto.things.model.Feature;
+import org.eclipse.ditto.base.model.signals.WithFeatureId;
 
 /**
  * A {@code FeatureHandle} is the entry point to managing and monitoring a <em>specific</em> {@code Feature}.
@@ -31,7 +31,7 @@ import org.eclipse.ditto.signals.base.WithFeatureId;
  * Note: All methods returning a {@link CompletionStage} are executed non-blocking and asynchronously.
  * Therefore, these methods return a {@code CompletionStage} object that will complete either successfully
  * if the operation was executed and confirmed, or exceptionally with a specific
- * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if it was executed but has failed.
+ * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if it was executed but has failed.
  * </p>
  * Example:
  * <pre>
@@ -62,7 +62,7 @@ public interface FeatureHandle extends WithFeatureId, FeaturePropertiesManagemen
      * Retrieve the {@code Feature} being handled by this {@code FeatureHandle}.
      *
      * @return CompletionStage providing the requested Feature object, when completed successfully or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      */
     CompletionStage<Feature> retrieve();
 
@@ -72,7 +72,7 @@ public interface FeatureHandle extends WithFeatureId, FeaturePropertiesManagemen
      * @param fieldSelector a field selector object allowing to select a subset of fields on the Feature to be
      * retrieved.
      * @return CompletionStage providing the requested Feature object, when completed successfully or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      */
     CompletionStage<Feature> retrieve(JsonFieldSelector fieldSelector);
 

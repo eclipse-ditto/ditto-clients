@@ -17,11 +17,11 @@ import javax.annotation.Nonnull;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandResponseFactory;
 import org.eclipse.ditto.client.live.commands.base.LiveEventFactory;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDefinition;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDefinitionResponse;
-import org.eclipse.ditto.signals.events.things.FeatureDefinitionCreated;
-import org.eclipse.ditto.signals.events.things.FeatureDefinitionModified;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureDefinition;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureDefinitionResponse;
+import org.eclipse.ditto.things.model.signals.events.FeatureDefinitionCreated;
+import org.eclipse.ditto.things.model.signals.events.FeatureDefinitionModified;
 
 /**
  * LiveCommandAnswer builder for producing {@code CommandResponse}s and {@code Event}s for
@@ -58,7 +58,7 @@ public interface ModifyFeatureDefinitionLiveCommandAnswerBuilder extends
          * Builds a {@link ThingErrorResponse} indicating that the Feature Definition was not accessible.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.FeatureDefinitionNotAccessibleException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.FeatureDefinitionNotAccessibleException
          * FeatureDefinitionNotAccessibleException
          */
         @Nonnull
@@ -68,7 +68,7 @@ public interface ModifyFeatureDefinitionLiveCommandAnswerBuilder extends
          * Builds a {@link ThingErrorResponse} indicating that the Feature Definition was not modifiable.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.FeatureDefinitionNotModifiableException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.FeatureDefinitionNotModifiableException
          * FeatureDefinitionNotModifiableException
          */
         @Nonnull

@@ -14,7 +14,7 @@ package org.eclipse.ditto.client.changes;
 
 import java.util.Optional;
 
-import org.eclipse.ditto.model.things.Thing;
+import org.eclipse.ditto.things.model.Thing;
 
 /**
  * Represents a change of a {@link Thing}.

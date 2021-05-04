@@ -18,15 +18,15 @@ import org.eclipse.ditto.client.live.commands.base.AbstractLiveCommand;
 import org.eclipse.ditto.client.live.commands.base.LiveCommand;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
-import org.eclipse.ditto.model.things.ThingId;
-import org.eclipse.ditto.signals.commands.things.modify.ThingModifyCommand;
+import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
+import org.eclipse.ditto.things.model.ThingId;
+import org.eclipse.ditto.things.model.signals.commands.modify.ThingModifyCommand;
 
 /**
  * Abstract base implementation for LiveCommands wrapping {@link ThingModifyCommand}s.
  *
  * @param <T> the type of the LiveCommand; currently needed as return type for
- * {@link #setDittoHeaders(org.eclipse.ditto.model.base.headers.DittoHeaders)}.
+ * {@link #setDittoHeaders(org.eclipse.ditto.base.model.headers.DittoHeaders)}.
  * @param <B> the type of the LiveCommandAnswerBuilder to be returned for {@link #answer()}.
  *
  * @since 2.0.0

@@ -16,7 +16,7 @@ import java.util.Collection;
 import java.util.function.Consumer;
 
 import org.eclipse.ditto.client.changes.AcknowledgementRequestHandle;
-import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
+import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
 
 /**
  * A signal that can be acknowledged.

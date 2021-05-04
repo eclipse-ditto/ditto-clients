@@ -21,8 +21,8 @@ import java.util.function.Consumer;
 
 import javax.annotation.Nullable;
 
-import org.eclipse.ditto.model.base.acks.AcknowledgementLabel;
-import org.eclipse.ditto.model.base.json.JsonSchemaVersion;
+import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
+import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
 
 /**
  * Provides configuration for messaging.
@@ -110,7 +110,7 @@ public interface MessagingConfiguration {
         /**
          * Sets the {@code JSON schema version}.
          * <p>
-         * Default is {@link org.eclipse.ditto.model.base.json.JsonSchemaVersion#LATEST}.
+         * Default is {@link org.eclipse.ditto.base.model.json.JsonSchemaVersion#LATEST}.
          *
          * @param jsonSchemaVersion the schema version to set.
          * @return this builder.

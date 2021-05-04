@@ -13,7 +13,7 @@
 package org.eclipse.ditto.client.internal;
 
 import static java.util.Objects.requireNonNull;
-import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.argumentNotNull;
 
 import java.util.Map;
 import java.util.Optional;
@@ -29,7 +29,7 @@ import org.eclipse.ditto.client.internal.bus.Registration;
 import org.eclipse.ditto.client.management.FeatureHandle;
 import org.eclipse.ditto.client.management.ThingHandle;
 import org.eclipse.ditto.client.registration.DuplicateRegistrationIdException;
-import org.eclipse.ditto.model.things.ThingId;
+import org.eclipse.ditto.things.model.ThingId;
 
 /**
  * Manages handlers on an {@link PointerBus}. Allows registration and deregistration of consumers based on a {@code

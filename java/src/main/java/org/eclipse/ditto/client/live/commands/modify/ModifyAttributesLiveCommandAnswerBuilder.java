@@ -17,11 +17,11 @@ import javax.annotation.Nonnull;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandResponseFactory;
 import org.eclipse.ditto.client.live.commands.base.LiveEventFactory;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributes;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributesResponse;
-import org.eclipse.ditto.signals.events.things.AttributesCreated;
-import org.eclipse.ditto.signals.events.things.AttributesModified;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyAttributes;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyAttributesResponse;
+import org.eclipse.ditto.things.model.signals.events.AttributesCreated;
+import org.eclipse.ditto.things.model.signals.events.AttributesModified;
 
 /**
  * LiveCommandAnswer builder for producing {@code CommandResponse}s and {@code Event}s for {@link ModifyAttributes}
@@ -57,7 +57,7 @@ public interface ModifyAttributesLiveCommandAnswerBuilder extends LiveCommandAns
          * Builds a {@link ThingErrorResponse} indicating that the attributes were not accessible.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.AttributesNotAccessibleException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.AttributesNotAccessibleException
          * AttributesNotAccessibleException
          */
         @Nonnull
@@ -67,7 +67,7 @@ public interface ModifyAttributesLiveCommandAnswerBuilder extends LiveCommandAns
          * Builds a {@link ThingErrorResponse} indicating that the attributes were not modifiable.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.AttributesNotModifiableException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.AttributesNotModifiableException
          * AttributesNotModifiableException
          */
         @Nonnull

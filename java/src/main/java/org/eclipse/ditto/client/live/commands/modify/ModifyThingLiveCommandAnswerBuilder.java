@@ -17,11 +17,11 @@ import javax.annotation.Nonnull;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandResponseFactory;
 import org.eclipse.ditto.client.live.commands.base.LiveEventFactory;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyThing;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyThingResponse;
-import org.eclipse.ditto.signals.events.things.ThingCreated;
-import org.eclipse.ditto.signals.events.things.ThingModified;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyThing;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyThingResponse;
+import org.eclipse.ditto.things.model.signals.events.ThingCreated;
+import org.eclipse.ditto.things.model.signals.events.ThingModified;
 
 /**
  * LiveCommandAnswer builder for producing {@code CommandResponse}s and {@code Event}s for {@link ModifyThing}
@@ -58,7 +58,7 @@ public interface ModifyThingLiveCommandAnswerBuilder
          * Builds a {@link ThingErrorResponse} indicating that the Thing was not accessible.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.ThingNotAccessibleException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.ThingNotAccessibleException
          * ThingNotAccessibleException
          */
         @Nonnull
@@ -68,7 +68,7 @@ public interface ModifyThingLiveCommandAnswerBuilder
          * Builds a {@link ThingErrorResponse} indicating that the Thing was not modifiable.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.ThingNotModifiableException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.ThingNotModifiableException
          * ThingNotModifiableException
          */
         @Nonnull

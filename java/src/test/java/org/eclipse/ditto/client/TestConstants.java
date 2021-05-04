@@ -16,15 +16,15 @@ import java.time.Instant;
 
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonObject;
-import org.eclipse.ditto.model.policies.PoliciesModelFactory;
-import org.eclipse.ditto.model.policies.PolicyId;
-import org.eclipse.ditto.model.things.Attributes;
-import org.eclipse.ditto.model.things.FeatureProperties;
-import org.eclipse.ditto.model.things.Features;
-import org.eclipse.ditto.model.things.ThingId;
-import org.eclipse.ditto.model.things.ThingLifecycle;
-import org.eclipse.ditto.model.things.ThingsModelFactory;
-import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
+import org.eclipse.ditto.policies.model.PoliciesModelFactory;
+import org.eclipse.ditto.policies.model.PolicyId;
+import org.eclipse.ditto.things.model.Attributes;
+import org.eclipse.ditto.things.model.FeatureProperties;
+import org.eclipse.ditto.things.model.Features;
+import org.eclipse.ditto.things.model.ThingId;
+import org.eclipse.ditto.things.model.ThingLifecycle;
+import org.eclipse.ditto.things.model.ThingsModelFactory;
+import org.eclipse.ditto.things.model.signals.commands.modify.CreateThing;
 
 /**
  * Defines constants for testing.
@@ -59,8 +59,8 @@ public final class TestConstants {
         /**
          * A known Feature which is required for time travel.
          */
-        public static final org.eclipse.ditto.model.things.Feature FLUX_CAPACITOR =
-                org.eclipse.ditto.model.things.Feature.newBuilder()
+        public static final org.eclipse.ditto.things.model.Feature FLUX_CAPACITOR =
+                org.eclipse.ditto.things.model.Feature.newBuilder()
                         .properties(FLUX_CAPACITOR_PROPERTIES)
                         .withId(FLUX_CAPACITOR_ID)
                         .build();
@@ -132,7 +132,7 @@ public final class TestConstants {
         /**
          * A known Thing for testing in V2.
          */
-        public static final org.eclipse.ditto.model.things.Thing THING_V2 = ThingsModelFactory.newThingBuilder()
+        public static final org.eclipse.ditto.things.model.Thing THING_V2 = ThingsModelFactory.newThingBuilder()
                 .setAttributes(ATTRIBUTES)
                 .setFeatures(Feature.FEATURES)
                 .setLifecycle(LIFECYCLE)
@@ -155,8 +155,8 @@ public final class TestConstants {
                         .build();
 
         public static final JsonObject THING_WITH_INLINE_POLICY = INLINE_POLICY_JSON_OBJECT.toBuilder()
-                .set(org.eclipse.ditto.model.things.Thing.JsonFields.ID, THING_ID.toString())
-                .set(org.eclipse.ditto.model.things.Thing.JsonFields.POLICY_ID, POLICY_ID.toString())
+                .set(org.eclipse.ditto.things.model.Thing.JsonFields.ID, THING_ID.toString())
+                .set(org.eclipse.ditto.things.model.Thing.JsonFields.POLICY_ID, POLICY_ID.toString())
                 .build();
 
     }
@@ -214,7 +214,7 @@ public final class TestConstants {
         /**
          * Known Policy created from known jsonObject.
          */
-        public static final org.eclipse.ditto.model.policies.Policy POLICY =
+        public static final org.eclipse.ditto.policies.model.Policy POLICY =
                 PoliciesModelFactory.newPolicy(POLICY_JSON_OBJECT);
 
     }

@@ -21,13 +21,13 @@ import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.NotThreadSafe;
 
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswer;
-import org.eclipse.ditto.signals.commands.base.CommandResponse;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.exceptions.FeatureNotAccessibleException;
-import org.eclipse.ditto.signals.commands.things.exceptions.FeatureNotModifiableException;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureResponse;
-import org.eclipse.ditto.signals.events.base.Event;
-import org.eclipse.ditto.signals.events.things.FeatureDeleted;
+import org.eclipse.ditto.base.model.signals.commands.CommandResponse;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.exceptions.FeatureNotAccessibleException;
+import org.eclipse.ditto.things.model.signals.commands.exceptions.FeatureNotModifiableException;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureResponse;
+import org.eclipse.ditto.base.model.signals.events.Event;
+import org.eclipse.ditto.things.model.signals.events.FeatureDeleted;
 
 /**
  * A mutable builder with a fluent API for creating a {@link LiveCommandAnswer} for a {@link DeleteFeatureLiveCommand}.

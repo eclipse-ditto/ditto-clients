@@ -17,11 +17,11 @@ import javax.annotation.Nonnull;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandResponseFactory;
 import org.eclipse.ditto.client.live.commands.base.LiveEventFactory;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDesiredProperties;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDesiredPropertiesResponse;
-import org.eclipse.ditto.signals.events.things.FeatureDesiredPropertiesCreated;
-import org.eclipse.ditto.signals.events.things.FeatureDesiredPropertiesModified;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureDesiredProperties;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureDesiredPropertiesResponse;
+import org.eclipse.ditto.things.model.signals.events.FeatureDesiredPropertiesCreated;
+import org.eclipse.ditto.things.model.signals.events.FeatureDesiredPropertiesModified;
 
 /**
  * LiveCommandAnswer builder for producing {@code CommandResponse}s and {@code Event}s for
@@ -59,7 +59,7 @@ public interface ModifyFeatureDesiredPropertiesLiveCommandAnswerBuilder
          * Builds a {@link ThingErrorResponse} indicating that the feature's desired properties were not accessible.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.FeatureDesiredPropertiesNotAccessibleException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.FeatureDesiredPropertiesNotAccessibleException
          * FeatureDesiredPropertiesNotAccessibleException
          */
         @Nonnull
@@ -69,7 +69,7 @@ public interface ModifyFeatureDesiredPropertiesLiveCommandAnswerBuilder
          * Builds a {@link ThingErrorResponse} indicating that the feature's desired properties were not modifiable.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.FeatureDesiredPropertiesNotModifiableException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.FeatureDesiredPropertiesNotModifiableException
          * FeatureDesiredPropertiesNotModifiableException
          */
         @Nonnull

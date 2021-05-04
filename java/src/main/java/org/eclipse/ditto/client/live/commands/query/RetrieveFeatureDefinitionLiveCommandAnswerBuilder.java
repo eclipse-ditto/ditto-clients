@@ -14,10 +14,10 @@ package org.eclipse.ditto.client.live.commands.query;
 
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandResponseFactory;
-import org.eclipse.ditto.model.things.FeatureDefinition;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveFeatureDefinition;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveFeatureDefinitionResponse;
+import org.eclipse.ditto.things.model.FeatureDefinition;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeatureDefinition;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeatureDefinitionResponse;
 import org.eclipse.ditto.utils.jsr305.annotations.AllValuesAreNonnullByDefault;
 
 /**

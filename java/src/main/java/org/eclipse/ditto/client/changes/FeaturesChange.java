@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.changes;
 
-import org.eclipse.ditto.model.things.Features;
+import org.eclipse.ditto.things.model.Features;
 
 /**
  * Represents a change of a Thing regarding its {@link Features}.

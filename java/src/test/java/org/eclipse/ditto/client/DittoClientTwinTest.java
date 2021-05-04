@@ -14,7 +14,7 @@ package org.eclipse.ditto.client;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
-import static org.eclipse.ditto.model.base.acks.AcknowledgementRequest.parseAcknowledgementRequest;
+import static org.eclipse.ditto.base.model.acks.AcknowledgementRequest.parseAcknowledgementRequest;
 
 import java.time.Instant;
 import java.util.concurrent.CompletionStage;
@@ -22,15 +22,15 @@ import java.util.concurrent.CompletionStage;
 import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.base.common.HttpStatus;
-import org.eclipse.ditto.model.base.exceptions.InvalidRqlExpressionException;
-import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.protocoladapter.TopicPath;
-import org.eclipse.ditto.signals.acks.base.Acknowledgement;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.events.things.AttributeCreated;
-import org.eclipse.ditto.signals.events.things.FeaturePropertyModified;
-import org.eclipse.ditto.signals.events.things.ThingDeleted;
+import org.eclipse.ditto.base.model.common.HttpStatus;
+import org.eclipse.ditto.base.model.exceptions.InvalidRqlExpressionException;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.protocol.TopicPath;
+import org.eclipse.ditto.base.model.signals.acks.Acknowledgement;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.events.AttributeCreated;
+import org.eclipse.ditto.things.model.signals.events.FeaturePropertyModified;
+import org.eclipse.ditto.things.model.signals.events.ThingDeleted;
 import org.junit.Test;
 
 /**

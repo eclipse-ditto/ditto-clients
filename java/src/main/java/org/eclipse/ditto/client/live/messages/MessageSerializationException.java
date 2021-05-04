@@ -13,7 +13,7 @@
 package org.eclipse.ditto.client.live.messages;
 
 /**
- * Thrown in case a {@link org.eclipse.ditto.model.messages.Message}'s payload could not be serialized/deserialized
+ * Thrown in case a {@link org.eclipse.ditto.messages.model.Message}'s payload could not be serialized/deserialized
  * appropriately.
  *
  * @since 1.0.0

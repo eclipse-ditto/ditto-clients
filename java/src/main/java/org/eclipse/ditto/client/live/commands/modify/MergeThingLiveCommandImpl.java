@@ -18,9 +18,9 @@ import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.signals.commands.base.Command;
-import org.eclipse.ditto.signals.commands.things.modify.MergeThing;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.signals.commands.Command;
+import org.eclipse.ditto.things.model.signals.commands.modify.MergeThing;
 
 /**
  * An immutable implementation of {@link MergeThingLiveCommand}.
@@ -48,7 +48,7 @@ final class MergeThingLiveCommandImpl extends AbstractModifyLiveCommand<MergeThi
      * @return the instance.
      * @throws NullPointerException if {@code command} is {@code null}.
      * @throws ClassCastException if {@code command} is not an instance of
-     * {@link org.eclipse.ditto.signals.commands.things.modify.MergeThing}.
+     * {@link org.eclipse.ditto.things.model.signals.commands.modify.MergeThing}.
      */
     @Nonnull
     public static MergeThingLiveCommandImpl of(final Command<?> command) {

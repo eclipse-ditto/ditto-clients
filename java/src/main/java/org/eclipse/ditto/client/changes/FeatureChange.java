@@ -12,8 +12,8 @@
  */
 package org.eclipse.ditto.client.changes;
 
-import org.eclipse.ditto.model.things.Feature;
-import org.eclipse.ditto.signals.base.WithFeatureId;
+import org.eclipse.ditto.things.model.Feature;
+import org.eclipse.ditto.base.model.signals.WithFeatureId;
 
 /**
  * Represents a change of a Thing regarding a single {@link Feature}.

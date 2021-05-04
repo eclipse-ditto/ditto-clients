@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.live.commands;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.checkNotNull;
 
 import java.text.MessageFormat;
 import java.util.Collections;
@@ -26,34 +26,34 @@ import javax.annotation.concurrent.Immutable;
 import org.eclipse.ditto.client.live.commands.base.LiveCommand;
 import org.eclipse.ditto.client.live.commands.modify.ModifyLiveCommandFactory;
 import org.eclipse.ditto.client.live.commands.query.QueryLiveCommandFactory;
-import org.eclipse.ditto.signals.commands.base.Command;
-import org.eclipse.ditto.signals.commands.things.modify.CreateThing;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteAttribute;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteAttributes;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeature;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureDefinition;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperties;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperty;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatures;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteThing;
-import org.eclipse.ditto.signals.commands.things.modify.MergeThing;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyAttribute;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyAttributes;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeature;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDefinition;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperties;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperty;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatures;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyThing;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveAttribute;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveAttributes;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveFeature;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveFeatureDefinition;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveFeatureProperties;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveFeatureProperty;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveFeatures;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveThing;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveThings;
+import org.eclipse.ditto.base.model.signals.commands.Command;
+import org.eclipse.ditto.things.model.signals.commands.modify.CreateThing;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttribute;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttributes;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeature;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureDefinition;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureProperties;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureProperty;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatures;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteThing;
+import org.eclipse.ditto.things.model.signals.commands.modify.MergeThing;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyAttribute;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyAttributes;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeature;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureDefinition;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureProperties;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureProperty;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatures;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyThing;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveAttribute;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveAttributes;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeature;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeatureDefinition;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeatureProperties;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeatureProperty;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeatures;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveThing;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveThings;
 
 /**
  * A factory for creating immutable instances of {@link LiveCommand} based on existing <em>Twin Commands</em>.

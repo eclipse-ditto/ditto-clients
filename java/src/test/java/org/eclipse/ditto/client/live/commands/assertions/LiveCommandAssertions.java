@@ -14,7 +14,7 @@ package org.eclipse.ditto.client.live.commands.assertions;
 
 import org.eclipse.ditto.client.live.commands.base.LiveCommand;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswer;
-import org.eclipse.ditto.signals.commands.base.assertions.CommandAssertions;
+import org.eclipse.ditto.base.model.signals.commands.assertions.CommandAssertions;
 
 /**
  * Custom test assertions for {@link org.eclipse.ditto.client.live.commands.base.LiveCommand}s.

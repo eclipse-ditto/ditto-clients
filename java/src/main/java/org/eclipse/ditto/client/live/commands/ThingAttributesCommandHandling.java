@@ -33,7 +33,7 @@ import org.eclipse.ditto.client.live.commands.query.RetrieveAttributesLiveComman
 public interface ThingAttributesCommandHandling extends LiveCommandProcessor {
 
     /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyAttributes
+     * Registers a handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.ModifyAttributes
      * ModifyAttributes} commands.
      *
      * @param handler the handler to receive the commands
@@ -48,7 +48,7 @@ public interface ThingAttributesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyAttributes
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.ModifyAttributes
      * ModifyAttributes} commands.
      */
     default void stopHandlingModifyAttributesCommands() {
@@ -56,7 +56,7 @@ public interface ThingAttributesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteAttributes
+     * Registers a handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttributes
      * DeleteAttributes} commands.
      *
      * @param handler the handler to receive the commands
@@ -71,7 +71,7 @@ public interface ThingAttributesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteAttributes
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttributes
      * DeleteAttributes} commands.
      */
     default void stopHandlingDeleteAttributesCommands() {
@@ -79,7 +79,7 @@ public interface ThingAttributesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyAttribute
+     * Registers a handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.ModifyAttribute
      * ModifyAttribute} commands.
      *
      * @param handler the handler to receive the commands
@@ -94,7 +94,7 @@ public interface ThingAttributesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyAttribute
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.ModifyAttribute
      * ModifyAttribute} commands.
      */
     default void stopHandlingModifyAttributeCommands() {
@@ -102,7 +102,7 @@ public interface ThingAttributesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.MergeThing
+     * Registers a handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.MergeThing
      * MergeThing} commands for changes on attributes level.
      *
      * @param handler the handler to receive the commands
@@ -117,7 +117,7 @@ public interface ThingAttributesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.MergeThing
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.MergeThing
      * MergeThing} commands.
      */
     default void stopHandlingMergeAttributeCommands() {
@@ -125,7 +125,7 @@ public interface ThingAttributesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteAttribute
+     * Registers a handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttribute
      * DeleteAttribute} commands.
      *
      * @param handler the handler to receive the commands
@@ -140,7 +140,7 @@ public interface ThingAttributesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteAttribute
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttribute
      * DeleteAttribute} commands.
      */
     default void stopHandlingDeleteAttributeCommands() {
@@ -148,7 +148,7 @@ public interface ThingAttributesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveAttributes
+     * Registers a handler to receive {@link org.eclipse.ditto.things.model.signals.commands.query.RetrieveAttributes
      * RetrieveAttributes} commands.
      *
      * @param handler the handler to receive the commands
@@ -163,7 +163,7 @@ public interface ThingAttributesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveAttributes
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.query.RetrieveAttributes
      * RetrieveAttributes} commands.
      */
     default void stopHandlingRetrieveAttributesCommands() {
@@ -171,7 +171,7 @@ public interface ThingAttributesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveAttribute
+     * Registers a handler to receive {@link org.eclipse.ditto.things.model.signals.commands.query.RetrieveAttribute
      * RetrieveAttribute}
      *
      * @param handler the handler to receive the commands
@@ -186,7 +186,7 @@ public interface ThingAttributesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveAttribute
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.query.RetrieveAttribute
      * RetrieveAttribute} commands.
      */
     default void stopHandlingRetrieveAttributeCommand() {

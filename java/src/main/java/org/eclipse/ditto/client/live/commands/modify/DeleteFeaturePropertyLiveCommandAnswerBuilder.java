@@ -17,10 +17,10 @@ import javax.annotation.Nonnull;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandResponseFactory;
 import org.eclipse.ditto.client.live.commands.base.LiveEventFactory;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperty;
-import org.eclipse.ditto.signals.commands.things.modify.DeleteFeaturePropertyResponse;
-import org.eclipse.ditto.signals.events.things.FeaturePropertyDeleted;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureProperty;
+import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeaturePropertyResponse;
+import org.eclipse.ditto.things.model.signals.events.FeaturePropertyDeleted;
 
 /**
  * LiveCommandAnswer builder for producing {@code CommandResponse}s and {@code Event}s for {@link DeleteFeatureProperty}
@@ -50,7 +50,7 @@ public interface DeleteFeaturePropertyLiveCommandAnswerBuilder
          * Builds a {@link ThingErrorResponse} indicating that the feature property was not accessible.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.FeaturePropertyNotAccessibleException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.FeaturePropertyNotAccessibleException
          * FeaturePropertyNotAccessibleException
          */
         @Nonnull
@@ -60,7 +60,7 @@ public interface DeleteFeaturePropertyLiveCommandAnswerBuilder
          * Builds a {@link ThingErrorResponse} indicating that the feature property was not modifiable.
          *
          * @return the response.
-         * @see org.eclipse.ditto.signals.commands.things.exceptions.FeaturePropertyNotModifiableException
+         * @see org.eclipse.ditto.things.model.signals.commands.exceptions.FeaturePropertyNotModifiableException
          * FeaturePropertyNotModifiableException
          */
         @Nonnull

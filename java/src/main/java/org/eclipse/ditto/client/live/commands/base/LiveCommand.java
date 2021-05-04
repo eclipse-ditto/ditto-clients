@@ -14,8 +14,8 @@ package org.eclipse.ditto.client.live.commands.base;
 
 import javax.annotation.Nonnull;
 
-import org.eclipse.ditto.model.base.headers.DittoHeaders;
-import org.eclipse.ditto.signals.commands.base.Command;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.signals.commands.Command;
 
 /**
  * A Handle for live {@link Command}s giving access to the command. Also provides a {@code Command} specific

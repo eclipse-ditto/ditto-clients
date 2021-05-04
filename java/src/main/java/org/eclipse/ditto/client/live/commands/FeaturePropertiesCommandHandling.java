@@ -26,7 +26,7 @@ import org.eclipse.ditto.client.live.commands.query.RetrieveFeaturePropertyLiveC
 
 /**
  * Provides the necessary functionality for registering {@link org.eclipse.ditto.client.live.commands.base.LiveCommand
- * LiveCommand} functions to receive commands to manage and retrieve {@link org.eclipse.ditto.model.things.FeatureProperties
+ * LiveCommand} functions to receive commands to manage and retrieve {@link org.eclipse.ditto.things.model.FeatureProperties
  * FeatureProperties}.
  *
  * @since 1.0.0
@@ -34,7 +34,7 @@ import org.eclipse.ditto.client.live.commands.query.RetrieveFeaturePropertyLiveC
 public interface FeaturePropertiesCommandHandling extends LiveCommandProcessor {
 
     /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperties
+     * Registers a handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureProperties
      * ModifyFeatureProperties} commands.
      *
      * @param handler the handler to receive the commands
@@ -49,7 +49,7 @@ public interface FeaturePropertiesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperties
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureProperties
      * ModifyFeatureProperties} commands.
      */
     default void stopHandlingModifyFeaturePropertiesCommands() {
@@ -57,7 +57,7 @@ public interface FeaturePropertiesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperties
+     * Registers a handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureProperties
      * DeleteFeatureProperties} commands.
      *
      * @param handler the handler to receive the commands
@@ -72,7 +72,7 @@ public interface FeaturePropertiesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperties
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureProperties
      * DeleteFeatureProperties} commands.
      */
     default void stopHandlingDeleteFeaturePropertiesCommands() {
@@ -80,7 +80,7 @@ public interface FeaturePropertiesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureProperty
+     * Registers a handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureProperty
      * ModifyFeatureProperty} commands.
      *
      * @param handler the handler to receive the commands
@@ -95,7 +95,7 @@ public interface FeaturePropertiesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.MergeThing
+     * Registers a handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.MergeThing
      * MergeThing} commands for changes on feature properties level.
      *
      * @param handler the handler to receive the commands
@@ -110,7 +110,7 @@ public interface FeaturePropertiesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.MergeThing
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.MergeThing
      * MergeThing} commands.
      */
     default void stopHandlingModifyFeaturePropertyCommands() {
@@ -118,7 +118,7 @@ public interface FeaturePropertiesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperty
+     * Registers a handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureProperty
      * DeleteFeatureProperty} commands.
      *
      * @param handler the handler to receive the commands
@@ -133,7 +133,7 @@ public interface FeaturePropertiesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.modify.DeleteFeatureProperty
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureProperty
      * DeleteFeatureProperty} commands.
      */
     default void stopHandlingDeleteFeaturePropertyCommands() {
@@ -141,7 +141,7 @@ public interface FeaturePropertiesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveFeatureProperty
+     * Registers a handler to receive {@link org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeatureProperty
      * RetrieveFeatureProperty} commands.
      *
      * @param handler the handler to receive the commands
@@ -156,7 +156,7 @@ public interface FeaturePropertiesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveFeatureProperty
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeatureProperty
      * RetrieveFeatureProperty} commands.
      */
     default void stopHandlingRetrieveFeaturePropertyCommands() {
@@ -164,7 +164,7 @@ public interface FeaturePropertiesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * Registers a handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveFeatureProperties
+     * Registers a handler to receive {@link org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeatureProperties
      * RetrieveFeatureProperties} commands.
      *
      * @param handler the handler to receive the commands
@@ -179,7 +179,7 @@ public interface FeaturePropertiesCommandHandling extends LiveCommandProcessor {
     }
 
     /**
-     * De-registers the handler to receive {@link org.eclipse.ditto.signals.commands.things.query.RetrieveFeatureProperties
+     * De-registers the handler to receive {@link org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeatureProperties
      * RetrieveFeatureProperties} commands.
      */
     default void stopHandlingRetrieveFeaturePropertiesCommands() {

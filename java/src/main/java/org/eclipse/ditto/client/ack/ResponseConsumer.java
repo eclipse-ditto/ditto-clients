@@ -14,7 +14,7 @@ package org.eclipse.ditto.client.ack;
 
 import java.util.function.BiConsumer;
 
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
 
 /**
  * Interface encapsulating a {@link java.util.function.BiConsumer} which is notified about responses with either the

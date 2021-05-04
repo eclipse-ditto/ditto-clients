@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.registration;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.argumentNotNull;
 
 import java.util.function.Consumer;
 
@@ -20,7 +20,7 @@ import org.eclipse.ditto.client.DittoClient;
 import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonPointer;
-import org.eclipse.ditto.model.things.WithThingId;
+import org.eclipse.ditto.things.model.WithThingId;
 
 /**
  * Provides the necessary functionality for registering handlers which are notified about property changes.

@@ -14,36 +14,36 @@ package org.eclipse.ditto.client.live.events;
 
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.model.things.Attributes;
-import org.eclipse.ditto.model.things.Feature;
-import org.eclipse.ditto.model.things.FeatureProperties;
-import org.eclipse.ditto.model.things.Features;
-import org.eclipse.ditto.model.things.Thing;
-import org.eclipse.ditto.model.things.ThingId;
-import org.eclipse.ditto.signals.events.things.AttributeCreated;
-import org.eclipse.ditto.signals.events.things.AttributeDeleted;
-import org.eclipse.ditto.signals.events.things.AttributeModified;
-import org.eclipse.ditto.signals.events.things.AttributesCreated;
-import org.eclipse.ditto.signals.events.things.AttributesDeleted;
-import org.eclipse.ditto.signals.events.things.AttributesModified;
-import org.eclipse.ditto.signals.events.things.FeatureCreated;
-import org.eclipse.ditto.signals.events.things.FeatureDeleted;
-import org.eclipse.ditto.signals.events.things.FeatureModified;
-import org.eclipse.ditto.signals.events.things.FeaturePropertiesCreated;
-import org.eclipse.ditto.signals.events.things.FeaturePropertiesDeleted;
-import org.eclipse.ditto.signals.events.things.FeaturePropertiesModified;
-import org.eclipse.ditto.signals.events.things.FeaturePropertyCreated;
-import org.eclipse.ditto.signals.events.things.FeaturePropertyDeleted;
-import org.eclipse.ditto.signals.events.things.FeaturePropertyModified;
-import org.eclipse.ditto.signals.events.things.FeaturesCreated;
-import org.eclipse.ditto.signals.events.things.FeaturesDeleted;
-import org.eclipse.ditto.signals.events.things.FeaturesModified;
-import org.eclipse.ditto.signals.events.things.ThingCreated;
-import org.eclipse.ditto.signals.events.things.ThingDeleted;
-import org.eclipse.ditto.signals.events.things.ThingModified;
+import org.eclipse.ditto.things.model.Attributes;
+import org.eclipse.ditto.things.model.Feature;
+import org.eclipse.ditto.things.model.FeatureProperties;
+import org.eclipse.ditto.things.model.Features;
+import org.eclipse.ditto.things.model.Thing;
+import org.eclipse.ditto.things.model.ThingId;
+import org.eclipse.ditto.things.model.signals.events.AttributeCreated;
+import org.eclipse.ditto.things.model.signals.events.AttributeDeleted;
+import org.eclipse.ditto.things.model.signals.events.AttributeModified;
+import org.eclipse.ditto.things.model.signals.events.AttributesCreated;
+import org.eclipse.ditto.things.model.signals.events.AttributesDeleted;
+import org.eclipse.ditto.things.model.signals.events.AttributesModified;
+import org.eclipse.ditto.things.model.signals.events.FeatureCreated;
+import org.eclipse.ditto.things.model.signals.events.FeatureDeleted;
+import org.eclipse.ditto.things.model.signals.events.FeatureModified;
+import org.eclipse.ditto.things.model.signals.events.FeaturePropertiesCreated;
+import org.eclipse.ditto.things.model.signals.events.FeaturePropertiesDeleted;
+import org.eclipse.ditto.things.model.signals.events.FeaturePropertiesModified;
+import org.eclipse.ditto.things.model.signals.events.FeaturePropertyCreated;
+import org.eclipse.ditto.things.model.signals.events.FeaturePropertyDeleted;
+import org.eclipse.ditto.things.model.signals.events.FeaturePropertyModified;
+import org.eclipse.ditto.things.model.signals.events.FeaturesCreated;
+import org.eclipse.ditto.things.model.signals.events.FeaturesDeleted;
+import org.eclipse.ditto.things.model.signals.events.FeaturesModified;
+import org.eclipse.ditto.things.model.signals.events.ThingCreated;
+import org.eclipse.ditto.things.model.signals.events.ThingDeleted;
+import org.eclipse.ditto.things.model.signals.events.ThingModified;
 
 /**
- * Creates {@link org.eclipse.ditto.signals.events.base.Event Event}s on "global" scope on which neither {@code thingId}
+ * Creates {@link org.eclipse.ditto.base.model.signals.events.Event Event}s on "global" scope on which neither {@code thingId}
  * nor {@code featureId} are known. Therefore those must always be passed to the factory methods.
  *
  * @since 1.0.0

@@ -21,14 +21,14 @@ import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.NotThreadSafe;
 
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswer;
-import org.eclipse.ditto.signals.commands.base.CommandResponse;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.exceptions.FeatureDesiredPropertyNotAccessibleException;
-import org.eclipse.ditto.signals.commands.things.exceptions.FeatureDesiredPropertyNotModifiableException;
-import org.eclipse.ditto.signals.commands.things.modify.ModifyFeatureDesiredPropertyResponse;
-import org.eclipse.ditto.signals.events.base.Event;
-import org.eclipse.ditto.signals.events.things.FeatureDesiredPropertyCreated;
-import org.eclipse.ditto.signals.events.things.FeatureDesiredPropertyModified;
+import org.eclipse.ditto.base.model.signals.commands.CommandResponse;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.exceptions.FeatureDesiredPropertyNotAccessibleException;
+import org.eclipse.ditto.things.model.signals.commands.exceptions.FeatureDesiredPropertyNotModifiableException;
+import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureDesiredPropertyResponse;
+import org.eclipse.ditto.base.model.signals.events.Event;
+import org.eclipse.ditto.things.model.signals.events.FeatureDesiredPropertyCreated;
+import org.eclipse.ditto.things.model.signals.events.FeatureDesiredPropertyModified;
 
 /**
  * A mutable builder with a fluent API for creating a {@link LiveCommandAnswer} for a

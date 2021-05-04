@@ -12,6 +12,6 @@
  */
 
 /**
- * Contains an API for handling {@link org.eclipse.ditto.model.messages.Message Message}s.
+ * Contains an API for handling {@link org.eclipse.ditto.messages.model.Message Message}s.
  */
 package org.eclipse.ditto.client.live.messages;

@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.messaging.internal;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.checkNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.checkNotNull;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -27,12 +27,12 @@ import javax.annotation.concurrent.ThreadSafe;
 import org.eclipse.ditto.client.internal.DefaultThreadFactory;
 import org.eclipse.ditto.client.messaging.AuthenticationProvider;
 import org.eclipse.ditto.client.messaging.JsonWebTokenSupplier;
-import org.eclipse.ditto.model.jwt.JsonWebToken;
+import org.eclipse.ditto.jwt.model.JsonWebToken;
 
 import com.neovisionaries.ws.client.WebSocket;
 
 /**
- * Common base implementation for authentication providers based on {@link org.eclipse.ditto.model.jwt.JsonWebToken}.
+ * Common base implementation for authentication providers based on {@link org.eclipse.ditto.jwt.model.JsonWebToken}.
  *
  * @since 1.0.0
  */

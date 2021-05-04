@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.management;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.argumentNotNull;
 
 import java.util.concurrent.CompletionStage;
 
@@ -24,12 +24,12 @@ import org.eclipse.ditto.json.JsonValue;
 
 /**
  * {@code ThingAttributeManagement} provides all functionality required for managing {@link
- * org.eclipse.ditto.model.things.Thing} attributes.
+ * org.eclipse.ditto.things.model.Thing} attributes.
  * <p>
  * Note: All methods returning a {@link CompletionStage} are executed non-blocking and asynchronously.
  * Therefore, these methods return a {@code CompletionStage} object that will complete either successfully
  * if the operation was executed and confirmed, or exceptionally with a specific
- * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if it was executed but has failed.
+ * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if it was executed but has failed.
  *
  * @since 1.0.0
  */
@@ -44,7 +44,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
     default CompletionStage<Void> putAttribute(final CharSequence path, final boolean value,
@@ -61,7 +61,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
     CompletionStage<Void> putAttribute(JsonPointer path, boolean value, Option<?>... options);
@@ -75,7 +75,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
     default CompletionStage<Void> putAttribute(final CharSequence path, final double value,
@@ -92,7 +92,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
     CompletionStage<Void> putAttribute(JsonPointer path, double value, Option<?>... options);
@@ -106,7 +106,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
     default CompletionStage<Void> putAttribute(final CharSequence path, final int value, final Option<?>... options) {
@@ -122,7 +122,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
     CompletionStage<Void> putAttribute(JsonPointer path, int value, Option<?>... options);
@@ -136,7 +136,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
     default CompletionStage<Void> putAttribute(final CharSequence path, final long value,
@@ -153,7 +153,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
     CompletionStage<Void> putAttribute(JsonPointer path, long value, Option<?>... options);
@@ -167,7 +167,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
     default CompletionStage<Void> putAttribute(final CharSequence path, final String value,
@@ -184,7 +184,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
     CompletionStage<Void> putAttribute(JsonPointer path, String value, Option<?>... options);
@@ -198,7 +198,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
     default CompletionStage<Void> putAttribute(final CharSequence path, final JsonValue value,
@@ -215,7 +215,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if any argument is {@code null} or if {@code path} is empty.
      */
     CompletionStage<Void> putAttribute(JsonPointer path, JsonValue value, Option<?>... options);
@@ -229,7 +229,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return a completable future providing the result of this operation or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      * @since 2.0.0
      */
@@ -248,7 +248,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return a completable future providing the result of this operation or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      * @since 2.0.0
      */
@@ -267,7 +267,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return a completable future providing the result of this operation or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      * @since 2.0.0
      */
@@ -286,7 +286,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return a completable future providing the result of this operation or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      * @since 2.0.0
      */
@@ -305,7 +305,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return a completable future providing the result of this operation or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      * @since 2.0.0
      */
@@ -324,7 +324,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return a completable future providing the result of this operation or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      * @since 2.0.0
      */
@@ -342,7 +342,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return a completable future providing the result of this operation or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if any argument is {@code null} or if {@code path} is empty.
      * @since 2.0.0
      */
@@ -355,7 +355,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code value} is {@code null}
      */
     CompletionStage<Void> setAttributes(JsonObject value, Option<?>... options);
@@ -367,7 +367,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return a completable future providing the result of this operation or a specific {@link
-     * org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code value} is {@code null}
      * @since 2.0.0
      */
@@ -381,7 +381,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
     default CompletionStage<Void> deleteAttribute(final CharSequence path, final Option<?>... options) {
@@ -397,7 +397,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
      */
     CompletionStage<Void> deleteAttribute(JsonPointer path, Option<?>... options);
@@ -408,7 +408,7 @@ public interface ThingAttributeManagement {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
-     * {@link org.eclipse.ditto.model.base.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      */
     CompletionStage<Void> deleteAttributes(Option<?>... options);
 

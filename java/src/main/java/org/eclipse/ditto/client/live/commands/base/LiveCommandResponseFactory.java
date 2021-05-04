@@ -12,14 +12,14 @@
  */
 package org.eclipse.ditto.client.live.commands.base;
 
-import org.eclipse.ditto.model.base.exceptions.DittoRuntimeException;
-import org.eclipse.ditto.model.things.ThingId;
-import org.eclipse.ditto.signals.commands.base.ErrorResponse;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
+import org.eclipse.ditto.base.model.exceptions.DittoRuntimeException;
+import org.eclipse.ditto.things.model.ThingId;
+import org.eclipse.ditto.base.model.signals.commands.ErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
 
 /**
- * Base for factories of {@link org.eclipse.ditto.signals.commands.base.CommandResponse}s which create
- * {@code CommandResponse}s for incoming {@link org.eclipse.ditto.signals.commands.base.Command}s.
+ * Base for factories of {@link org.eclipse.ditto.base.model.signals.commands.CommandResponse}s which create
+ * {@code CommandResponse}s for incoming {@link org.eclipse.ditto.base.model.signals.commands.Command}s.
  *
  * @since 2.0.0
  */
@@ -30,7 +30,7 @@ public interface LiveCommandResponseFactory {
      * Creates a generic {@link ErrorResponse} which includes the passed {@link DittoRuntimeException}.
      * <p>
      * Use this method only if you are absolutely sure that the counterpart which issued the {@link
-     * org.eclipse.ditto.signals.commands.base.Command} expects such a type of {@code ErrorResponse}
+     * org.eclipse.ditto.base.model.signals.commands.Command} expects such a type of {@code ErrorResponse}
      * for the issued {@code Command}.
      *
      * @param dittoRuntimeException the DittoRuntimeException to include in the ErrorResponse.
@@ -45,7 +45,7 @@ public interface LiveCommandResponseFactory {
      * Creates a generic {@link ErrorResponse} which includes the passed {@link DittoRuntimeException}.
      * <p>
      * Use this method only if you are absolutely sure that the counterpart which issued the {@link
-     * org.eclipse.ditto.signals.commands.base.Command} expects such a type of {@code ErrorResponse}
+     * org.eclipse.ditto.base.model.signals.commands.Command} expects such a type of {@code ErrorResponse}
      * for the issued {@code Command}.
      *
      * @param thingId the Thing ID of the related Thing.

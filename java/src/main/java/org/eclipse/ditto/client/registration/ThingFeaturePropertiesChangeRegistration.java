@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client.registration;
 
-import static org.eclipse.ditto.model.base.common.ConditionChecker.argumentNotNull;
+import static org.eclipse.ditto.base.model.common.ConditionChecker.argumentNotNull;
 
 import java.util.function.Consumer;
 

@@ -21,9 +21,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandResponseFactory;
 import org.eclipse.ditto.json.JsonField;
-import org.eclipse.ditto.model.things.Thing;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveThings;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveThingsResponse;
+import org.eclipse.ditto.things.model.Thing;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveThings;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveThingsResponse;
 
 /**
  * LiveCommandAnswer builder for producing {@code CommandResponse}s for {@link RetrieveThings} commands.

@@ -20,11 +20,11 @@ import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.NotThreadSafe;
 
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswer;
-import org.eclipse.ditto.model.things.Features;
-import org.eclipse.ditto.signals.commands.base.CommandResponse;
-import org.eclipse.ditto.signals.commands.things.ThingErrorResponse;
-import org.eclipse.ditto.signals.commands.things.exceptions.FeaturesNotAccessibleException;
-import org.eclipse.ditto.signals.commands.things.query.RetrieveFeaturesResponse;
+import org.eclipse.ditto.things.model.Features;
+import org.eclipse.ditto.base.model.signals.commands.CommandResponse;
+import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
+import org.eclipse.ditto.things.model.signals.commands.exceptions.FeaturesNotAccessibleException;
+import org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeaturesResponse;
 
 /**
  * A mutable builder with a fluent API for creating a {@link LiveCommandAnswer} for a
