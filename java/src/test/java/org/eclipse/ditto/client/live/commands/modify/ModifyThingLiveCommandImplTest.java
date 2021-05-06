@@ -21,9 +21,9 @@ import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable
 import java.text.MessageFormat;
 
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
-import org.eclipse.ditto.things.model.Thing;
 import org.eclipse.ditto.base.model.signals.commands.Command;
-import org.eclipse.ditto.things.model.signals.commands.TestConstants;
+import org.eclipse.ditto.client.live.TestConstants;
+import org.eclipse.ditto.things.model.Thing;
 import org.eclipse.ditto.things.model.signals.commands.modify.ModifyThing;
 import org.junit.Before;
 import org.junit.Test;

@@ -20,9 +20,9 @@ import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstance
 import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
-import org.eclipse.ditto.things.model.FeatureDefinition;
 import org.eclipse.ditto.base.model.signals.commands.Command;
-import org.eclipse.ditto.things.model.signals.commands.TestConstants;
+import org.eclipse.ditto.client.live.TestConstants;
+import org.eclipse.ditto.things.model.FeatureDefinition;
 import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureDefinition;
 import org.junit.Before;
 import org.junit.Test;

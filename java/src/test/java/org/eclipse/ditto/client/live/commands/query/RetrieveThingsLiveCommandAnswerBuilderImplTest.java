@@ -20,13 +20,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.client.live.TestConstants;
 import org.eclipse.ditto.client.live.commands.assertions.LiveCommandAssertions;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswer;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonPointer;
-import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.things.model.Thing;
-import org.eclipse.ditto.things.model.signals.commands.TestConstants;
 import org.eclipse.ditto.things.model.signals.commands.query.RetrieveThingsResponse;
 import org.junit.Before;
 import org.junit.BeforeClass;

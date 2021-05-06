@@ -22,6 +22,9 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.signals.commands.Command;
+import org.eclipse.ditto.client.live.TestConstants;
 import org.eclipse.ditto.client.live.commands.LiveCommandFactory;
 import org.eclipse.ditto.client.live.commands.base.LiveCommand;
 import org.eclipse.ditto.client.live.commands.modify.CreateThingLiveCommand;
@@ -48,10 +51,7 @@ import org.eclipse.ditto.client.live.commands.query.RetrieveFeaturePropertyLiveC
 import org.eclipse.ditto.client.live.commands.query.RetrieveFeaturesLiveCommand;
 import org.eclipse.ditto.client.live.commands.query.RetrieveThingLiveCommand;
 import org.eclipse.ditto.client.live.commands.query.RetrieveThingsLiveCommand;
-import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.things.model.ThingId;
-import org.eclipse.ditto.base.model.signals.commands.Command;
-import org.eclipse.ditto.things.model.signals.commands.TestConstants;
 import org.eclipse.ditto.things.model.signals.commands.modify.CreateThing;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttribute;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttributes;

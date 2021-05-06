@@ -190,7 +190,7 @@
         <revision>0-SNAPSHOT</revision>
 
         <!-- ### Compile dependencies versions -->
-        <ditto.version>${revision}</ditto.version>
+        <ditto.version>2.0.0</ditto.version>
         <minimal-json.version>0.9.5</minimal-json.version>
         <nv-websocket-client.version>2.12</nv-websocket-client.version>
         <classindex.version>3.8</classindex.version>
@@ -318,7 +318,6 @@
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>3.2.0</version>
                     <configuration>
-                        <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
                         <detectJavaApiLink>false</detectJavaApiLink>
                     </configuration>
                 </plugin>

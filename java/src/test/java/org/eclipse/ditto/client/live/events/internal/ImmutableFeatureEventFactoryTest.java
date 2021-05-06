@@ -19,8 +19,8 @@ import static org.mutabilitydetector.unittesting.AllowedReason.provided;
 import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
 import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
-import org.eclipse.ditto.client.live.events.ThingEventFactory;
 import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
+import org.eclipse.ditto.client.live.events.ThingEventFactory;
 import org.junit.Before;
 import org.junit.Test;
 
