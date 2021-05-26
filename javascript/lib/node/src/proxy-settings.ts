@@ -38,7 +38,9 @@ class ProxyAgentOptionsBuilder {
   }
 
   parseUrlFromEnvironment(environmentProxy: string | undefined, options: ProxyOptions | undefined): ProxyAgentOptionsBuilder {
+    // tslint:disable-next-line:strict-boolean-expressions
     const shouldIgnoreProxyFromEnv = options !== undefined && options.ignoreProxyFromEnv;
+    // tslint:disable-next-line:strict-boolean-expressions
     if (environmentProxy !== undefined && !shouldIgnoreProxyFromEnv) {
       this.proxyUrl =  parse(environmentProxy);
     }
