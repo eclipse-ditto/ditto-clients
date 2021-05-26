@@ -21,10 +21,8 @@ import { ProxyAgent } from './proxy-settings';
  * NodeJs implementation of a Http Requester.
  */
 export class NodeRequester implements HttpRequester {
-  private readonly proxyAgent: any;
 
-  public constructor(agent: ProxyAgent) {
-    this.proxyAgent = agent.proxyAgent;
+  public constructor(private readonly agent: ProxyAgent) {
   }
 
   private static createResponseHandler(resolve: (value?: (PromiseLike<GenericResponse> | GenericResponse)) => void,
@@ -65,9 +63,9 @@ export class NodeRequester implements HttpRequester {
   public async doRequest(method: string, url: string, header: Map<string, string>, payload: string): Promise<GenericResponse> {
     return new Promise<GenericResponse>(((resolve, reject) => {
       const parsedUrl = new URL(url);
-
-      const client = (parsedUrl.protocol === 'http:') ? http : https;
-      const requestOptions = this.buildRequest(method, parsedUrl, header, payload);
+      const isSecureRequest = parsedUrl.protocol === 'https:';
+      const client = isSecureRequest ? https : http;
+      const requestOptions = this.buildRequest(method, parsedUrl, header, payload, isSecureRequest);
       const req = client.request(requestOptions, NodeRequester.createResponseHandler(resolve, reject));
       req.on('error', e => {
         throw new Error(String(e));
@@ -86,24 +84,28 @@ export class NodeRequester implements HttpRequester {
    * @param parsedUrl - The Url to send the request to.
    * @param header - The headers of the request.
    * @param body - The payload to send with the request.
+   * @param isSecureRequest - If the request is a secure HTTPS request.
    * @return the builder.
    */
-  private buildRequest(method: string, parsedUrl: URL, header: Map<string, string>, body: string): object {
+  private buildRequest(method: string, parsedUrl: URL, header: Map<string, string>, body: string,
+                       isSecureRequest: boolean): object {
     if (body !== undefined && body !== '') {
       header.set('Content-Length', Buffer.byteLength(body).toString());
     }
     const headers: { [key: string]: any } = {};
     header.forEach((v, k) => headers[k] = v);
-    const request: { [key: string]: any } = {
+    return {
       method,
       headers,
       hostname: parsedUrl.hostname,
       port: parsedUrl.port,
-      path: parsedUrl.pathname
+      path: parsedUrl.pathname,
+      agent: this.getAgentForRequestType(isSecureRequest)
     };
-    if (this.proxyAgent !== undefined && this.proxyAgent.options.path !== undefined) {
-      request['agent'] = this.proxyAgent;
-    }
-    return request;
   }
+
+  private getAgentForRequestType(isSecureRequest: boolean): http.Agent | undefined {
+    return isSecureRequest ? this.agent.proxyAgent : this.agent.httpProxyAgent;
+  }
+
 }
