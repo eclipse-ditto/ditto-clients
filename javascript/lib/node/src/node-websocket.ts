@@ -24,8 +24,7 @@ import {
 } from '../../api/src/auth/auth-provider';
 import { ProxyAgent } from './proxy-settings';
 import * as WebSocket from 'ws';
-// tslint:disable-next-line:no-duplicate-imports
-import { ClientOptions } from 'ws';
+import * as http from 'http';
 
 /**
  * Converts a Map to a plain js object.
@@ -47,7 +46,7 @@ export class NodeWebSocket implements WebSocketImplementation {
   private constructor(private webSocket: WebSocket,
                       private readonly webSocketUrl: string,
                       private readonly handler: ResponseHandler,
-                      private readonly options: ClientOptions) {
+                      private readonly options: WebSocket.ClientOptions) {
     this.setHandles();
   }
 
@@ -65,8 +64,8 @@ export class NodeWebSocket implements WebSocketImplementation {
     return new Promise<NodeWebSocket>(resolve => {
       const [authenticatedUrl, authenticatedHeaders] = authenticateWithUrlAndHeaders(url, new Map(), authProviders);
       const plainHeaders = mapToPlainObject(authenticatedHeaders);
-      const options: ClientOptions = {
-        agent: agent.proxyAgent.options.path !== undefined ? agent.proxyAgent : false,
+      const options: WebSocket.ClientOptions = {
+        agent: NodeWebSocket.getProxyAgentForProtocol(url, agent),
         rejectUnauthorized: false,
         headers: plainHeaders
       };
@@ -77,6 +76,13 @@ export class NodeWebSocket implements WebSocketImplementation {
         resolve(new NodeWebSocket(webSocket, plainUrl, handler, options));
       });
     });
+  }
+
+  private static getProxyAgentForProtocol(url: DittoURL, agent: ProxyAgent): http.Agent | undefined {
+    if ('wss' === url.protocol) {
+      return agent.proxyAgent;
+    }
+    return agent.httpProxyAgent;
   }
 
   public executeCommand(request: string): void {
