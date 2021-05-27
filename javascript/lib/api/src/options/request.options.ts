@@ -332,7 +332,7 @@ export class DefaultSearchOptions extends AbstractRequestOptions<DefaultSearchOp
   }
 
   public withSort(sortOperation: string): DefaultSearchOptions {
-    this.sort = `sort(${encodeURIComponent(sortOperation)})`;
+    this.sort = `sort(${sortOperation})`;
     return this.setOption();
   }
 
