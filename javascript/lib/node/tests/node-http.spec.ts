@@ -107,4 +107,24 @@ describe('NodeHttp', () => {
       });
   });
 
+  it('sends query params', () => {
+    const payload = 'hello';
+    const expectedResponsePayload = { foo: 'bar' };
+
+
+    nock('https://localhost:8080')
+      .get('/get?bum=baz', payload)
+      .reply(200, expectedResponsePayload);
+
+    const underTest = new NodeRequester(new ProxyAgent({}));
+
+    const request = underTest.doRequest('GET', 'https://localhost:8080/get?bum=baz', new Map(), payload);
+    return request
+      .then(response => {
+        expect(response.body).toEqual(expectedResponsePayload);
+      }, rejected => {
+        fail(rejected);
+      });
+  });
+
 });
