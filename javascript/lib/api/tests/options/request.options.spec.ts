@@ -195,22 +195,22 @@ describe('Search Options', () => {
     expect(searchOptions.getOptions().get('namespaces')).toEqual(encodeURIComponent('C,D'));
   });
   it('sets sort', () => {
-    searchOptions.withSort('A');
-    expect(searchOptions.getOptions().get('option')).toEqual(encodeURIComponent('sort(A)'));
+    searchOptions.withSort('+A');
+    expect(searchOptions.getOptions().get('option')).toEqual(encodeURIComponent('sort(+A)'));
   });
   it('overrides sort', () => {
-    searchOptions.withSort('A');
+    searchOptions.withSort('+A');
     searchOptions.withSort('B');
     expect(searchOptions.getOptions().get('option')).toEqual(encodeURIComponent('sort(B)'));
   });
   it('combines option', () => {
-    searchOptions.withLimit(1, 2).withSort('A');
-    expect(searchOptions.getOptions().get('option')).toEqual(encodeURIComponent('limit(1,2),sort(A)'));
+    searchOptions.withLimit(1, 2).withSort('+A');
+    expect(searchOptions.getOptions().get('option')).toEqual(encodeURIComponent('limit(1,2),sort(+A)'));
   });
   it('overrides combined option', () => {
-    searchOptions.withLimit(1, 2).withSort('A');
-    searchOptions.withLimit(3, 4).withSort('B');
-    expect(searchOptions.getOptions().get('option')).toEqual(encodeURIComponent('limit(3,4),sort(B)'));
+    searchOptions.withLimit(1, 2).withSort('+A');
+    searchOptions.withLimit(3, 4).withSort('-B');
+    expect(searchOptions.getOptions().get('option')).toEqual(encodeURIComponent('limit(3,4),sort(-B)'));
   });
 });
 
