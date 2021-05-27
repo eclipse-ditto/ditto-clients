@@ -92,6 +92,7 @@ export class NodeRequester implements HttpRequester {
     if (body !== undefined && body !== '') {
       header.set('Content-Length', Buffer.byteLength(body).toString());
     }
+    const pathWithQueryParams = `${parsedUrl.pathname}${parsedUrl.search}`;
     const headers: { [key: string]: any } = {};
     header.forEach((v, k) => headers[k] = v);
     return {
@@ -99,7 +100,7 @@ export class NodeRequester implements HttpRequester {
       headers,
       hostname: parsedUrl.hostname,
       port: parsedUrl.port,
-      path: parsedUrl.pathname,
+      path: pathWithQueryParams,
       agent: this.getAgentForRequestType(isSecureRequest)
     };
   }
