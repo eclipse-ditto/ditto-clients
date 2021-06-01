@@ -1,7 +1,21 @@
 # Changelog
 All notable changes to the Ditto JavaScript client will be documented in this file.
 
-## [2.0.0] - 2021-xx-xx
+## [2.1.0] - 2021-xx-xx
+
+### \#156 Fix `http:` connections
+Fixes #155: Fixed connections via `http:` protocol, which used the wrong library and proxy agent. Also added a new option
+`ignoreProxyFromEnv` to `ProxyOptions`, which allows disabling the automatic configuration of the proxy if
+the respective environment variables are found (`HTTPS_PROXY` or `HTTP_PROXY`).
+
+### \#160 Fix encoding of search options
+Fixes #157 (1/2): The search options for search requests were encoded twice before a request and thus caused an error
+for order options like `+thingId`.
+
+### \#161 Send query params with node client
+Fixes #157 (2/2): Fixes a bug, that the node client wasn't sending query params to the backend at all. 
+
+## [2.0.0] - 2021-05-06
 
 ### \#112 Update npm module structure
 The api module isn't published to npm any long. The node and dom module don't contain
