@@ -86,6 +86,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     private final Map<Object, String> subscriptionMessages;
     private final AtomicBoolean reconnecting = new AtomicBoolean(false);
     private final AtomicBoolean initializing = new AtomicBoolean(false);
+    private final AtomicBoolean websocketClosed = new AtomicBoolean(false);
     private final CompletableFuture<WebSocket> initializationFuture = new CompletableFuture<>();
 
     private final AtomicReference<WebSocket> webSocket;
@@ -270,6 +271,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
             connectExecutor.shutdownNow();
             authenticationProvider.destroy();
             adaptableBus.shutdownExecutor();
+            websocketClosed.getAndSet(true);
             final WebSocket ws = webSocket.get();
             if (ws != null) {
                 ws.disconnect();
@@ -310,7 +312,15 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                         serverCloseFrame.getCloseCode(),
                         serverCloseFrame.getCloseReason());
                 handleReconnectionIfEnabled();
-            } else {
+            } else if (!websocketClosed.get()) {
+                // client closed connection because of a connection interruption or something similar
+                LOGGER.info("Client <{}>: WebSocket connection to endpoint <{}> was unintentionally closed by client " +
+                                "- client will try to reconnect if enabled!",
+                        sessionId, messagingConfiguration.getEndpointUri());
+                handleReconnectionIfEnabled();
+            }
+            else {
+                // only when close() was called we should end here
                 LOGGER.info("Client <{}>: WebSocket connection to endpoint <{}> was closed by client",
                         sessionId, messagingConfiguration.getEndpointUri());
             }
