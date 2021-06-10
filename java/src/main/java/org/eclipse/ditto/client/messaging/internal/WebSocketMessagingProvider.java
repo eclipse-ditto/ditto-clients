@@ -35,6 +35,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
+import org.eclipse.ditto.base.model.common.HttpStatus;
+import org.eclipse.ditto.base.model.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.internal.DefaultThreadFactory;
@@ -47,9 +50,6 @@ import org.eclipse.ditto.client.messaging.MessagingException;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.json.JsonCollectors;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
-import org.eclipse.ditto.base.model.common.HttpStatus;
-import org.eclipse.ditto.base.model.headers.DittoHeaderDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,6 +86,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     private final Map<Object, String> subscriptionMessages;
     private final AtomicBoolean reconnecting = new AtomicBoolean(false);
     private final AtomicBoolean initializing = new AtomicBoolean(false);
+    private final AtomicBoolean explicitlyClosing = new AtomicBoolean(false);
     private final CompletableFuture<WebSocket> initializationFuture = new CompletableFuture<>();
 
     private final AtomicReference<WebSocket> webSocket;
@@ -270,6 +271,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
             connectExecutor.shutdownNow();
             authenticationProvider.destroy();
             adaptableBus.shutdownExecutor();
+            explicitlyClosing.set(true);
             final WebSocket ws = webSocket.get();
             if (ws != null) {
                 ws.disconnect();
@@ -310,7 +312,15 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                         serverCloseFrame.getCloseCode(),
                         serverCloseFrame.getCloseReason());
                 handleReconnectionIfEnabled();
-            } else {
+            } else if (!explicitlyClosing.get()) {
+                // client closed connection because of a connection interruption or something similar
+                LOGGER.info("Client <{}>: WebSocket connection to endpoint <{}> was unintentionally closed by client " +
+                                "- client will try to reconnect if enabled!",
+                        sessionId, messagingConfiguration.getEndpointUri());
+                handleReconnectionIfEnabled();
+            }
+            else {
+                // only when close() was called we should end here
                 LOGGER.info("Client <{}>: WebSocket connection to endpoint <{}> was closed by client",
                         sessionId, messagingConfiguration.getEndpointUri());
             }
@@ -379,6 +389,7 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     private void setWebSocket(final WebSocket webSocket) {
+        explicitlyClosing.set(false); // reset potential explicit close request by the user
         synchronized (this.webSocket) {
             final WebSocket oldWebSocket = this.webSocket.get();
             this.webSocket.set(webSocket);
