@@ -94,7 +94,7 @@ public final class HandlerRegistry<T extends ThingHandle<F>, F extends FeatureHa
     }
 
     /**
-     * Deregisters the consumer which has been registered with the given registration id.
+     * Deregister the consumer which has been registered with the given registration id.
      *
      * @param registrationId the registration id
      * @return {@code true}, if the consumer has been deregistered; {@code false}, if no consumer for the given {@code

@@ -21,6 +21,11 @@ import java.util.function.Function;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
+import org.eclipse.ditto.base.model.acks.DittoAcknowledgementLabel;
+import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
+import org.eclipse.ditto.base.model.signals.Signal;
+import org.eclipse.ditto.base.model.signals.events.Event;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
 import org.eclipse.ditto.client.internal.bus.JsonPointerSelector;
@@ -37,13 +42,8 @@ import org.eclipse.ditto.client.live.messages.PendingMessageWithFeatureId;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.client.management.internal.FeatureHandleImpl;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
-import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
-import org.eclipse.ditto.base.model.acks.DittoAcknowledgementLabel;
-import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
-import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.protocol.TopicPath;
-import org.eclipse.ditto.base.model.signals.Signal;
-import org.eclipse.ditto.base.model.signals.events.Event;
+import org.eclipse.ditto.things.model.ThingId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -95,10 +95,7 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
             final Class<T> type,
             final Consumer<RepliableMessage<T, U>> handler) {
 
-        argumentNotNull(subject);
-        argumentNotNull(type);
-        argumentNotNull(handler);
-
+        LiveMessagesUtil.checkSubject(subject);
         LiveMessagesUtil.checkSerializerExistForMessageType(messageSerializerRegistry, type, subject);
 
         final JsonPointerSelector selector = "*".equals(subject) ?
@@ -109,17 +106,14 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
 
         getHandlerRegistry().register(registrationId, selector,
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
-                        getOutgoingMessageFactory(), messageSerializerRegistry,
-                        type, handler));
+                        getOutgoingMessageFactory(), messageSerializerRegistry, type, handler));
     }
 
     @Override
     public <U> void registerForMessage(final String registrationId, final String subject,
             final Consumer<RepliableMessage<?, U>> handler) {
 
-        argumentNotNull(subject, "registrationId");
-        argumentNotNull(subject, "subject");
-        argumentNotNull(handler, "handler");
+        LiveMessagesUtil.checkSubject(subject);
 
         final JsonPointerSelector selector = "*".equals(subject)
                 ? SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/{1}/'{direction}'/messages/'{subject}'",
@@ -129,10 +123,8 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
 
         getHandlerRegistry().register(registrationId, selector,
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
-                        getOutgoingMessageFactory(), messageSerializerRegistry,
-                        handler));
+                        getOutgoingMessageFactory(), messageSerializerRegistry, handler));
     }
-
 
     /*
      * ###### Section
@@ -167,4 +159,5 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
     public Logger getLogger() {
         return LOGGER;
     }
+
 }
