@@ -95,6 +95,7 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
             final Class<T> type,
             final Consumer<RepliableMessage<T, U>> handler) {
 
+        argumentNotNull(type, "type");
         LiveMessagesUtil.checkSubject(subject);
         LiveMessagesUtil.checkSerializerExistForMessageType(messageSerializerRegistry, type, subject);
 

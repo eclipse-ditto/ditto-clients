@@ -78,8 +78,8 @@ public final class HandlerRegistry<T extends ThingHandle<F>, F extends FeatureHa
      * @param selector the JsonPointerSelector
      * @param consumer the Consumer
      * @throws IllegalArgumentException if any parameter is {@code null}
-     * @throws org.eclipse.ditto.client.registration.DuplicateRegistrationIdException if a consumer is already registered for the given {@code
-     * registrationId}
+     * @throws org.eclipse.ditto.client.registration.DuplicateRegistrationIdException if a consumer is already
+     * registered for the given {@code registrationId}
      */
     public void register(final String registrationId, final JsonPointerSelector selector,
             final Consumer<PointerWithData<?>> consumer) {

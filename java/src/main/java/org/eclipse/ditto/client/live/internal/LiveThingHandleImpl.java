@@ -104,6 +104,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
             final Class<T> type,
             final Consumer<RepliableMessage<T, U>> handler) {
 
+        argumentNotNull(type, "type");
         LiveMessagesUtil.checkSubject(subject);
         LiveMessagesUtil.checkSerializerExistForMessageType(messageSerializerRegistry, type, subject);
 
@@ -156,6 +157,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
     public <T, U> void registerForClaimMessage(final String registrationId, final Class<T> type,
             final Consumer<RepliableMessage<T, U>> handler) {
 
+        argumentNotNull(type, "type");
         LiveMessagesUtil.checkSerializerExistForMessageType(messageSerializerRegistry, type);
 
         final JsonPointerSelector selector =
@@ -164,8 +166,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
 
         getHandlerRegistry().register(registrationId, selector,
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
-                        getOutgoingMessageFactory(), messageSerializerRegistry,
-                        type, handler));
+                        getOutgoingMessageFactory(), messageSerializerRegistry, type, handler));
     }
 
     @Override
@@ -178,8 +179,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
 
         getHandlerRegistry().register(registrationId, selector,
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
-                        getOutgoingMessageFactory(), messageSerializerRegistry,
-                        handler));
+                        getOutgoingMessageFactory(), messageSerializerRegistry, handler));
     }
 
     /*

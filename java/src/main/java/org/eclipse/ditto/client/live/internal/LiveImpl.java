@@ -215,6 +215,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
             final Class<T> type,
             final Consumer<RepliableMessage<T, U>> handler) {
 
+        argumentNotNull(type, "type");
         LiveMessagesUtil.checkSubject(subject);
         LiveMessagesUtil.checkSerializerExistForMessageType(messageSerializerRegistry, type, subject);
 
@@ -264,6 +265,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
     public <T, U> void registerForClaimMessage(final String registrationId, final Class<T> type,
             final Consumer<RepliableMessage<T, U>> handler) {
 
+        argumentNotNull(type, "type");
         LiveMessagesUtil.checkSerializerExistForMessageType(messageSerializerRegistry, type);
 
         final JsonPointerSelector selector =

@@ -80,7 +80,6 @@ final class LiveMessagesUtil {
             final Class<T> type,
             final Consumer<RepliableMessage<T, U>> handler) {
 
-        argumentNotNull(type, "type");
         checkHandler(handler);
 
         return e ->
