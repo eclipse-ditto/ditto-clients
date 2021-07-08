@@ -61,7 +61,11 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
         return identifier;
     }
 
-    @Override
+    /**
+     * Returns the grace period which will be subtracted from token expiry to trigger the configured token supplier.
+     *
+     * @return the grace period.
+     */
     public JsonWebTokenSupplier getJsonWebTokenSupplier() {
         return jsonWebTokenSupplier;
     }
