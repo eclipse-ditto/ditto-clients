@@ -94,6 +94,13 @@ public interface MessagingConfiguration {
     Optional<Consumer<Throwable>> getConnectionErrorHandler();
 
     /**
+     * Returns the disconnected listener.
+     *
+     * @return the disconnected listener or an empty optional.
+     */
+    Optional<Consumer<DisconnectedContext>> getDisconnectedListener();
+
+    /**
      * Builder for creating an instance of {@code MessagingConfiguration} by utilizing Object Scoping and Method
      * Chaining.
      */
@@ -177,7 +184,15 @@ public interface MessagingConfiguration {
          * @param handler the handler that will be called with the cause of the connection error.
          * @since 1.2.0
          */
-        Builder connectionErrorHandler(@Nullable final Consumer<Throwable> handler);
+        Builder connectionErrorHandler(@Nullable Consumer<Throwable> handler);
+
+        /**
+         * Register a contextListener which is notified whenever the connection is disconnected.
+         *
+         * @param contextListener the handler that will be called with details about the disconnection.
+         * @since 2.1.0
+         */
+        Builder disconnectedListener(@Nullable Consumer<DisconnectedContext> contextListener);
 
         /**
          * Creates a new instance of {@code MessagingConfiguration}.

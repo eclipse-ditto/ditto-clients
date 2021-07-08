@@ -47,8 +47,7 @@ final class Retry<T> {
     private final Supplier<CompletionStage<T>> retriedSupplier;
     private final ScheduledExecutorService reconnectExecutor;
     private final ExecutorService callbackExecutor;
-    @Nullable
-    private final Consumer<Throwable> errorConsumer;
+    @Nullable private final Consumer<Throwable> errorConsumer;
     private final Predicate<Throwable> isRecoverable;
 
     private Retry(final String nameOfAction,
@@ -198,8 +197,8 @@ final class Retry<T> {
          * @param callbackExecutor the executor to run callbacks on.
          * @return a new instance of this builder step.
          */
-        RetryBuilderFinal<T> withExecutors(final ScheduledExecutorService reconnectExecutor,
-                final ExecutorService callbackExecutor);
+        RetryBuilderFinal<T> withExecutors(ScheduledExecutorService reconnectExecutor,
+                ExecutorService callbackExecutor);
     }
 
     /**
@@ -214,7 +213,7 @@ final class Retry<T> {
          *
          * @param errorConsumer consumer which will be called with errors that happen during task to retry.
          */
-        RetryBuilderFinal<T> notifyOnError(@Nullable final Consumer<Throwable> errorConsumer);
+        RetryBuilderFinal<T> notifyOnError(@Nullable Consumer<Throwable> errorConsumer);
 
         /**
          * Test whether an exception can be recovered from.
@@ -224,7 +223,7 @@ final class Retry<T> {
          * @param isRecoverable whether the exception can be recovered from.
          * @return this builder.
          */
-        RetryBuilderFinal<T> isRecoverable(final Predicate<Throwable> isRecoverable);
+        RetryBuilderFinal<T> isRecoverable(Predicate<Throwable> isRecoverable);
 
         /**
          * Executes the provided supplier unit the supplier returns a result.
@@ -232,7 +231,7 @@ final class Retry<T> {
          * @param future the future to complete when the supplier returns a result.
          * @return A completion stage which finally completes with the result of the supplier. Result can be null.
          */
-        CompletionStage<T> completeFutureEventually(final CompletableFuture<T> future);
+        CompletionStage<T> completeFutureEventually(CompletableFuture<T> future);
     }
 
     /**

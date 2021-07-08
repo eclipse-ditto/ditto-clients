@@ -31,20 +31,18 @@ import org.eclipse.ditto.client.messaging.JsonWebTokenSupplier;
  * @since 1.0.0
  */
 @Immutable
-public final class AccessTokenAuthenticationConfiguration extends AbstractAuthenticationConfiguration {
+public final class AccessTokenAuthenticationConfiguration extends AbstractAuthenticationConfiguration
+        implements TokenAuthenticationConfiguration {
 
     private final String identifier;
     private final JsonWebTokenSupplier jsonWebTokenSupplier;
     private final Duration expiryGracePeriod;
 
-    private AccessTokenAuthenticationConfiguration(final String identifier,
-            final JsonWebTokenSupplier jsonWebTokenSupplier,
-            final Duration expiryGracePeriod,
-            final Map<String, String> additionalHeaders) {
-        super(identifier, additionalHeaders, null);
-        this.identifier = identifier;
-        this.jsonWebTokenSupplier = jsonWebTokenSupplier;
-        this.expiryGracePeriod = expiryGracePeriod;
+    private AccessTokenAuthenticationConfiguration(final AccessTokenAuthenticationConfigurationBuilder builder) {
+        super(builder.identifier, builder.additionalHeaders, builder.proxyConfiguration);
+        this.identifier = builder.identifier;
+        this.jsonWebTokenSupplier = checkNotNull(builder.jsonWebTokenSupplier, "jsonWebTokenSupplier");
+        this.expiryGracePeriod = checkNotNull(builder.expiryGracePeriod, "expiryGracePeriod");
     }
 
     /**
@@ -63,20 +61,12 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
         return identifier;
     }
 
-    /**
-     * Returns the access token supplier.
-     *
-     * @return the supplier.
-     */
+    @Override
     public JsonWebTokenSupplier getJsonWebTokenSupplier() {
         return jsonWebTokenSupplier;
     }
 
-    /**
-     * Returns the grace period which will be subtracted from token expiry to trigger the configured token supplier.
-     *
-     * @return the grace period.
-     */
+    @Override
     public Duration getExpiryGracePeriod() {
         return expiryGracePeriod;
     }
@@ -108,7 +98,7 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
         return getClass().getSimpleName() + " [" +
                 super.toString() +
                 ", identifier=" + identifier +
-                ", accessTokenSupplier=" + jsonWebTokenSupplier +
+                ", jsonWebTokenSupplier=" + jsonWebTokenSupplier +
                 ", expiryGracePeriod=" + expiryGracePeriod +
                 "]";
     }
@@ -124,6 +114,7 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
         private String identifier;
         private JsonWebTokenSupplier jsonWebTokenSupplier;
         private Duration expiryGracePeriod = DEFAULT_EXPIRY_GRACE_PERIOD;
+        @Nullable private ProxyConfiguration proxyConfiguration;
 
         /**
          * Sets the identifier to authenticate.
@@ -168,14 +159,15 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
 
         @Override
         public AccessTokenAuthenticationConfigurationBuilder proxyConfiguration(
-                final ProxyConfiguration proxyConfiguration) {
+                @Nullable final ProxyConfiguration proxyConfiguration) {
+
+            this.proxyConfiguration = proxyConfiguration;
             return this;
         }
 
         @Override
         public AccessTokenAuthenticationConfiguration build() {
-            return new AccessTokenAuthenticationConfiguration(identifier, jsonWebTokenSupplier, expiryGracePeriod,
-                    additionalHeaders);
+            return new AccessTokenAuthenticationConfiguration(this);
         }
 
     }

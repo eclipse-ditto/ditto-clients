@@ -24,6 +24,8 @@ import java.util.function.Consumer;
 
 import javax.annotation.concurrent.ThreadSafe;
 
+import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
+import org.eclipse.ditto.client.configuration.TokenAuthenticationConfiguration;
 import org.eclipse.ditto.client.internal.DefaultThreadFactory;
 import org.eclipse.ditto.client.messaging.AuthenticationProvider;
 import org.eclipse.ditto.client.messaging.JsonWebTokenSupplier;
@@ -40,16 +42,22 @@ abstract class AbstractTokenAuthenticationProvider implements AuthenticationProv
 
     private static final String PROTOCOL_CMD_JWT_TOKEN_TEMPLATE = "JWT-TOKEN?jwtToken=%s";
 
+    private final TokenAuthenticationConfiguration authenticationConfiguration;
     private final Map<String, String> additionalHeaders;
     private final JsonWebTokenSupplier jsonWebTokenSupplier;
     private final JwtRefreshScheduler jwtRefreshScheduler;
 
-    AbstractTokenAuthenticationProvider(final Map<String, String> additionalHeaders,
-            final JsonWebTokenSupplier jsonWebTokenSupplier,
-            final Duration expiryGracePeriod) {
-        this.additionalHeaders = checkNotNull(additionalHeaders, "additionalHeaders");
-        this.jsonWebTokenSupplier = checkNotNull(jsonWebTokenSupplier, "accessTokenSupplier");
-        jwtRefreshScheduler = JwtRefreshScheduler.newInstance(jsonWebTokenSupplier, expiryGracePeriod);
+    AbstractTokenAuthenticationProvider(final TokenAuthenticationConfiguration authenticationConfiguration) {
+        this.authenticationConfiguration = checkNotNull(authenticationConfiguration, "tokenAuthenticationConfiguration");
+        this.additionalHeaders = authenticationConfiguration.getAdditionalHeaders();
+        this.jsonWebTokenSupplier = authenticationConfiguration.getJsonWebTokenSupplier();
+        jwtRefreshScheduler = JwtRefreshScheduler.newInstance(jsonWebTokenSupplier,
+                authenticationConfiguration.getExpiryGracePeriod(), authenticationConfiguration.getSessionId());
+    }
+
+    @Override
+    public AuthenticationConfiguration getConfiguration() {
+        return authenticationConfiguration;
     }
 
     @Override
@@ -77,10 +85,12 @@ abstract class AbstractTokenAuthenticationProvider implements AuthenticationProv
         private final Duration expiryGracePeriod;
         private final ScheduledExecutorService executorService;
 
-        private JwtRefreshScheduler(final JsonWebTokenSupplier jsonWebTokenSupplier, final Duration expiryGracePeriod) {
+        private JwtRefreshScheduler(final JsonWebTokenSupplier jsonWebTokenSupplier, final Duration expiryGracePeriod,
+                final String sessionId) {
             this.jsonWebTokenSupplier = jsonWebTokenSupplier;
             this.expiryGracePeriod = expiryGracePeriod;
-            executorService = Executors.newSingleThreadScheduledExecutor(new DefaultThreadFactory("scheduler"));
+            executorService = Executors.newSingleThreadScheduledExecutor(
+                    new DefaultThreadFactory("ditto-client-jwt-refresh-" + sessionId));
         }
 
         /**
@@ -88,13 +98,16 @@ abstract class AbstractTokenAuthenticationProvider implements AuthenticationProv
          *
          * @param jsonWebTokenSupplier a supplier for jwt tokens.
          * @param expiryGracePeriod the grace period before the actual expiry to account for network latency.
+         * @param sessionId the sessionId of the Ditto client instance.
          * @return the JwtRefreshScheduler.
          */
         static JwtRefreshScheduler newInstance(final JsonWebTokenSupplier jsonWebTokenSupplier,
-                final Duration expiryGracePeriod) {
+                final Duration expiryGracePeriod,
+                final String sessionId) {
             checkNotNull(jsonWebTokenSupplier, "jsonWebTokenSupplier");
             checkNotNull(expiryGracePeriod, "expiryGracePeriod");
-            return new JwtRefreshScheduler(jsonWebTokenSupplier, expiryGracePeriod);
+            checkNotNull(sessionId, "sessionId");
+            return new JwtRefreshScheduler(jsonWebTokenSupplier, expiryGracePeriod, sessionId);
         }
 
         /**

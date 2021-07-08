@@ -17,6 +17,14 @@ import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
+import org.eclipse.ditto.base.model.acks.AcknowledgementLabelNotDeclaredException;
+import org.eclipse.ditto.base.model.acks.AcknowledgementLabelNotUniqueException;
+import org.eclipse.ditto.base.model.headers.DittoHeaderDefinition;
+import org.eclipse.ditto.base.model.headers.DittoHeadersBuilder;
+import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
+import org.eclipse.ditto.base.model.signals.Signal;
+import org.eclipse.ditto.base.model.signals.acks.Acknowledgement;
+import org.eclipse.ditto.base.model.signals.commands.ErrorResponse;
 import org.eclipse.ditto.client.DisconnectedDittoClient;
 import org.eclipse.ditto.client.DittoClient;
 import org.eclipse.ditto.client.changes.ChangeAction;
@@ -39,23 +47,13 @@ import org.eclipse.ditto.client.policies.internal.PoliciesImpl;
 import org.eclipse.ditto.client.twin.Twin;
 import org.eclipse.ditto.client.twin.internal.TwinImpl;
 import org.eclipse.ditto.json.JsonPointer;
-import org.eclipse.ditto.base.model.acks.AcknowledgementLabelNotDeclaredException;
-import org.eclipse.ditto.base.model.acks.AcknowledgementLabelNotUniqueException;
-import org.eclipse.ditto.base.model.headers.DittoHeaderDefinition;
-import org.eclipse.ditto.base.model.headers.DittoHeadersBuilder;
-import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
 import org.eclipse.ditto.messages.model.Message;
 import org.eclipse.ditto.messages.model.MessageDirection;
-import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.protocol.Adaptable;
-import org.eclipse.ditto.protocol.adapter.DittoProtocolAdapter;
-import org.eclipse.ditto.protocol.HeaderTranslator;
-import org.eclipse.ditto.protocol.adapter.ProtocolAdapter;
 import org.eclipse.ditto.protocol.ProtocolFactory;
 import org.eclipse.ditto.protocol.TopicPath;
-import org.eclipse.ditto.base.model.signals.acks.Acknowledgement;
-import org.eclipse.ditto.base.model.signals.Signal;
-import org.eclipse.ditto.base.model.signals.commands.ErrorResponse;
+import org.eclipse.ditto.protocol.adapter.ProtocolAdapter;
+import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.things.model.signals.events.AttributeCreated;
 import org.eclipse.ditto.things.model.signals.events.AttributeDeleted;
 import org.eclipse.ditto.things.model.signals.events.AttributeModified;
@@ -106,6 +104,21 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
         this.twin = twin;
         this.live = live;
         this.policies = policies;
+        twin.getMessagingProvider().registerChannelCloser(() -> {
+            LOGGER.info("Closing <twin> channel..");
+            twin.getMessagingProvider().close();
+            twin.getBus().close();
+        });
+        live.getMessagingProvider().registerChannelCloser(() -> {
+            LOGGER.info("Closing <live> channel..");
+            live.getMessagingProvider().close();
+            live.getBus().close();
+        });
+        policies.getMessagingProvider().registerChannelCloser(() -> {
+            LOGGER.info("Closing <policies> channel..");
+            policies.getMessagingProvider().close();
+            policies.getBus().close();
+        });
         logVersionInformation();
         handleSpontaneousErrors();
     }
@@ -231,8 +244,10 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
 
     private static void init(final PointerBus bus, final MessagingProvider messagingProvider) {
         registerKeyBasedDistributorForIncomingEvents(bus);
-        registerKeyBasedHandlersForIncomingEvents(bus, messagingProvider,
-                DittoProtocolAdapter.of(HeaderTranslator.empty()));
+        registerKeyBasedHandlersForIncomingEvents(bus, messagingProvider, AbstractHandle.PROTOCOL_ADAPTER);
+        messagingProvider.getAdaptableBus().subscribeForAdaptable(Classification.forErrors(), errorAdaptable ->
+                messagingProvider.onDittoProtocolError(asDittoRuntimeException(errorAdaptable))
+        );
     }
 
     private static void registerKeyBasedDistributorForIncomingEvents(final PointerBus bus) {

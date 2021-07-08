@@ -49,6 +49,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
     @Nullable private final ProxyConfiguration proxyConfiguration;
     @Nullable private final TrustStoreConfiguration trustStoreConfiguration;
     @Nullable private final Consumer<Throwable> connectionErrorHandler;
+    @Nullable private final Consumer<DisconnectedContext> disconnectedListener;
     private final Set<AcknowledgementLabel> declaredAcknowledgements;
 
     public WebSocketMessagingConfiguration(final WebSocketMessagingConfigurationBuilder builder,
@@ -60,6 +61,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         proxyConfiguration = builder.proxyConfiguration;
         trustStoreConfiguration = builder.trustStoreConfiguration;
         connectionErrorHandler = builder.connectionErrorHandler;
+        disconnectedListener = builder.disconnectedListener;
         this.timeout = builder.timeout;
         this.declaredAcknowledgements = Collections.unmodifiableSet(builder.declaredAcknowledgements);
         this.endpointUri = endpointUri;
@@ -114,6 +116,11 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         return Optional.ofNullable(connectionErrorHandler);
     }
 
+    @Override
+    public Optional<Consumer<DisconnectedContext>> getDisconnectedListener() {
+        return Optional.ofNullable(disconnectedListener);
+    }
+
     private static final class WebSocketMessagingConfigurationBuilder implements MessagingConfiguration.Builder {
 
         private static final List<String> ALLOWED_URI_SCHEME = Arrays.asList("wss", "ws");
@@ -128,6 +135,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         @Nullable private ProxyConfiguration proxyConfiguration;
         private TrustStoreConfiguration trustStoreConfiguration;
         @Nullable private Consumer<Throwable> connectionErrorHandler;
+        @Nullable private Consumer<DisconnectedContext> disconnectedListener;
         private final Set<AcknowledgementLabel> declaredAcknowledgements = new HashSet<>();
 
         private WebSocketMessagingConfigurationBuilder() {
@@ -136,6 +144,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
             initialConnectRetryEnabled = false;
             proxyConfiguration = null;
             connectionErrorHandler = null;
+            disconnectedListener = null;
         }
 
         @Override
@@ -203,6 +212,12 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         }
 
         @Override
+        public Builder disconnectedListener(@Nullable final Consumer<DisconnectedContext> contextListener) {
+            this.disconnectedListener = contextListener;
+            return this;
+        }
+
+        @Override
         public MessagingConfiguration build() {
             final URI wsEndpointUri = appendWsPathIfNecessary(this.endpointUri, jsonSchemaVersion);
             return new WebSocketMessagingConfiguration(this, wsEndpointUri);
@@ -211,7 +226,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         private static URI appendWsPathIfNecessary(final URI baseUri, final JsonSchemaVersion schemaVersion) {
             if (needToAppendWsPath(baseUri)) {
                 final String pathWithoutTrailingSlashes = removeTrailingSlashFromPath(baseUri.getPath());
-                final String newPath = pathWithoutTrailingSlashes + WS_PATH + schemaVersion.toString();
+                final String newPath = pathWithoutTrailingSlashes + WS_PATH + schemaVersion;
                 return baseUri.resolve(newPath);
             } else {
                 checkIfBaseUriAndSchemaVersionMatch(baseUri, schemaVersion);

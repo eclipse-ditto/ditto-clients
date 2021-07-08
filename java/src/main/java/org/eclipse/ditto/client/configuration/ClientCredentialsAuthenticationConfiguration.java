@@ -27,6 +27,8 @@ import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
 import javax.annotation.concurrent.NotThreadSafe;
 
+import org.eclipse.ditto.client.messaging.JsonWebTokenSupplier;
+
 /**
  * A {@link org.eclipse.ditto.client.configuration.AuthenticationConfiguration} for OAuth 2 client credentials
  * authentication.
@@ -34,12 +36,14 @@ import javax.annotation.concurrent.NotThreadSafe;
  * @since 1.0.0
  */
 @Immutable
-public final class ClientCredentialsAuthenticationConfiguration extends AbstractAuthenticationConfiguration {
+public final class ClientCredentialsAuthenticationConfiguration extends AbstractAuthenticationConfiguration
+        implements TokenAuthenticationConfiguration {
 
     private final String tokenEndpoint;
     private final String clientId;
     private final String clientSecret;
     private final List<String> scopes;
+    private final JsonWebTokenSupplier jsonWebTokenSupplier;
     private final Duration expiryGracePeriod;
 
     public ClientCredentialsAuthenticationConfiguration(
@@ -50,6 +54,7 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
         clientId = checkNotNull(builder.clientId, "clientId");
         clientSecret = checkNotNull(builder.clientSecret, "clientSecret");
         scopes = Collections.unmodifiableList(new ArrayList<>(builder.scopes));
+        jsonWebTokenSupplier = checkNotNull(builder.jsonWebTokenSupplier, "jsonWebTokenSupplier");
         expiryGracePeriod = checkNotNull(builder.expiryGracePeriod, "expiryGracePeriod");
     }
 
@@ -96,11 +101,12 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
         return scopes;
     }
 
-    /**
-     * Returns the expiry grace period.
-     *
-     * @return the period.
-     */
+    @Override
+    public JsonWebTokenSupplier getJsonWebTokenSupplier() {
+        return jsonWebTokenSupplier;
+    }
+
+    @Override
     public Duration getExpiryGracePeriod() {
         return expiryGracePeriod;
     }
@@ -121,12 +127,14 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
                 Objects.equals(clientId, that.clientId) &&
                 Objects.equals(clientSecret, that.clientSecret) &&
                 Objects.equals(scopes, that.scopes) &&
+                Objects.equals(jsonWebTokenSupplier, that.jsonWebTokenSupplier) &&
                 Objects.equals(expiryGracePeriod, that.expiryGracePeriod);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), tokenEndpoint, clientId, clientSecret, scopes, expiryGracePeriod);
+        return Objects.hash(super.hashCode(), tokenEndpoint, clientId, clientSecret, scopes, jsonWebTokenSupplier,
+                expiryGracePeriod);
     }
 
     @Override
@@ -137,6 +145,7 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
                 ", clientId=" + clientId +
                 ", clientSecret=" + clientSecret +
                 ", scopes=" + scopes +
+                ", jsonWebTokenSupplier=" + jsonWebTokenSupplier +
                 ", expiryGracePeriod=" + expiryGracePeriod +
                 "]";
     }
@@ -151,6 +160,7 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
         private String clientId;
         private String clientSecret;
         private Collection<String> scopes;
+        private JsonWebTokenSupplier jsonWebTokenSupplier;
         private Duration expiryGracePeriod;
         @Nullable private ProxyConfiguration proxyConfiguration;
         private final Map<String, String> additionalHeaders;
@@ -158,7 +168,6 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
         private ClientCredentialsAuthenticationConfigurationBuilder() {
             scopes = Collections.emptyList();
             expiryGracePeriod = DEFAULT_EXPIRY_GRACE_PERIOD;
-            proxyConfiguration = null;
             additionalHeaders = new HashMap<>();
         }
 
@@ -204,6 +213,18 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
          */
         public ClientCredentialsAuthenticationConfigurationBuilder scopes(final Collection<String> scopes) {
             this.scopes = new ArrayList<>(checkNotNull(scopes, "scopes"));
+            return this;
+        }
+
+        /**
+         * Sets the access token supplier to authenticate.
+         *
+         * @param jsonWebTokenSupplier the supplier.
+         * @return this builder.
+         */
+        public ClientCredentialsAuthenticationConfigurationBuilder accessTokenSupplier(
+                final JsonWebTokenSupplier jsonWebTokenSupplier) {
+            this.jsonWebTokenSupplier = jsonWebTokenSupplier;
             return this;
         }
 

@@ -14,7 +14,6 @@ package org.eclipse.ditto.client.internal.bus;
 
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 /**
@@ -23,8 +22,6 @@ import java.util.function.Consumer;
  * @since 1.0.0
  */
 final class DefaultPointerBus implements PointerBus {
-
-    private static final int TERMINATION_TIMEOUT_SECONDS = 2;
 
     private final String name;
     private final ExecutorService executor;
@@ -59,12 +56,6 @@ final class DefaultPointerBus implements PointerBus {
     @Override
     public void close() {
         consumerRegistry.clear();
-        executor.shutdownNow();
-        try {
-            executor.awaitTermination(TERMINATION_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-        } catch (final InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
     }
 
     @Override

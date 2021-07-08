@@ -24,7 +24,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -51,8 +50,8 @@ final class DefaultAdaptableBus implements AdaptableBus {
     private static final String ACK_SUFFIX = ":ACK";
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAdaptableBus.class);
 
-    private final ExecutorService singleThreadedExecutorService;
-    private final ScheduledExecutorService scheduledExecutorService;
+    private final ExecutorService defaultExecutor;
+    private final ScheduledExecutorService scheduledExecutor;
     private final Collection<Classifier<String>> stringClassifiers;
     private final Collection<Classifier<Adaptable>> adaptableClassifiers;
 
@@ -61,9 +60,9 @@ final class DefaultAdaptableBus implements AdaptableBus {
     private final Map<Classification, Set<Entry<Consumer<Adaptable>>>> persistentAdaptableConsumers;
     private final Map<SubscriptionId, Future<?>> timeoutFutures;
 
-    DefaultAdaptableBus(final ScheduledExecutorService scheduledExecutorService) {
-        singleThreadedExecutorService = Executors.newSingleThreadExecutor();
-        this.scheduledExecutorService = scheduledExecutorService;
+    DefaultAdaptableBus(final ExecutorService defaultExecutor, final ScheduledExecutorService scheduledExecutor) {
+        this.defaultExecutor = defaultExecutor;
+        this.scheduledExecutor = scheduledExecutor;
         stringClassifiers = new ConcurrentLinkedQueue<>();
         adaptableClassifiers = new ConcurrentLinkedQueue<>();
         oneTimeStringConsumers = new ConcurrentHashMap<>();
@@ -152,25 +151,25 @@ final class DefaultAdaptableBus implements AdaptableBus {
 
     @Override
     public ScheduledExecutorService getScheduledExecutor() {
-        return scheduledExecutorService;
+        return scheduledExecutor;
     }
 
     @Override
     public void publish(final String message) {
-        singleThreadedExecutorService.submit(() -> doPublish(message));
+        doPublish(message);
     }
 
     @Override
-    public void shutdownExecutor() {
+    public void shutdownExecutors() {
         LOGGER.trace("Shutting down AdaptableBus Executors");
         try {
-            singleThreadedExecutorService.shutdownNow();
-            scheduledExecutorService.shutdownNow();
-            singleThreadedExecutorService.awaitTermination(2, TimeUnit.SECONDS);
-            scheduledExecutorService.awaitTermination(2, TimeUnit.SECONDS);
+            defaultExecutor.shutdownNow();
+            scheduledExecutor.shutdownNow();
+            defaultExecutor.awaitTermination(2, TimeUnit.SECONDS);
+            scheduledExecutor.awaitTermination(2, TimeUnit.SECONDS);
         } catch (final InterruptedException e) {
             Thread.currentThread().interrupt();
-            LOGGER.info("Waiting for termination was interrupted.");
+            LOGGER.info("Waiting for executors termination was interrupted.");
         }
     }
 
@@ -256,7 +255,7 @@ final class DefaultAdaptableBus implements AdaptableBus {
         if (tag.mustBeSequential()) {
             consumer.accept(message);
         } else {
-            scheduledExecutorService.submit(() -> consumer.accept(message));
+            defaultExecutor.submit(() -> consumer.accept(message));
         }
     }
 
@@ -307,7 +306,7 @@ final class DefaultAdaptableBus implements AdaptableBus {
             if (v != null) {
                 v.cancel(false);
             }
-            return scheduledExecutorService.schedule(runnable, when.toMillis(), TimeUnit.MILLISECONDS);
+            return scheduledExecutor.schedule(runnable, when.toMillis(), TimeUnit.MILLISECONDS);
         });
     }
 
