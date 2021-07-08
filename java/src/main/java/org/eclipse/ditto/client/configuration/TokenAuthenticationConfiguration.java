@@ -14,21 +14,12 @@ package org.eclipse.ditto.client.configuration;
 
 import java.time.Duration;
 
-import org.eclipse.ditto.client.messaging.JsonWebTokenSupplier;
-
 /**
  * Additional JWT / Token specific configurations.
  *
  * @since 2.1.0
  */
 public interface TokenAuthenticationConfiguration extends AuthenticationConfiguration {
-
-    /**
-     * Returns the access token supplier.
-     *
-     * @return the supplier.
-     */
-    JsonWebTokenSupplier getJsonWebTokenSupplier();
 
     /**
      * Returns the grace period which will be subtracted from token expiry to trigger the configured token supplier.

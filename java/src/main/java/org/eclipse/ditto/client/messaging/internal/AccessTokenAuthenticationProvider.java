@@ -22,7 +22,7 @@ import org.eclipse.ditto.client.configuration.AccessTokenAuthenticationConfigura
 public final class AccessTokenAuthenticationProvider extends AbstractTokenAuthenticationProvider {
 
     public AccessTokenAuthenticationProvider(final AccessTokenAuthenticationConfiguration configuration) {
-        super(configuration);
+        super(configuration, configuration.getJsonWebTokenSupplier());
     }
 
 }

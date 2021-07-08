@@ -47,10 +47,11 @@ abstract class AbstractTokenAuthenticationProvider implements AuthenticationProv
     private final JsonWebTokenSupplier jsonWebTokenSupplier;
     private final JwtRefreshScheduler jwtRefreshScheduler;
 
-    AbstractTokenAuthenticationProvider(final TokenAuthenticationConfiguration authenticationConfiguration) {
+    AbstractTokenAuthenticationProvider(final TokenAuthenticationConfiguration authenticationConfiguration,
+            final JsonWebTokenSupplier jsonWebTokenSupplier) {
         this.authenticationConfiguration = checkNotNull(authenticationConfiguration, "tokenAuthenticationConfiguration");
         this.additionalHeaders = authenticationConfiguration.getAdditionalHeaders();
-        this.jsonWebTokenSupplier = authenticationConfiguration.getJsonWebTokenSupplier();
+        this.jsonWebTokenSupplier = checkNotNull(jsonWebTokenSupplier, "jsonWebTokenSupplier");
         jwtRefreshScheduler = JwtRefreshScheduler.newInstance(jsonWebTokenSupplier,
                 authenticationConfiguration.getExpiryGracePeriod(), authenticationConfiguration.getSessionId());
     }

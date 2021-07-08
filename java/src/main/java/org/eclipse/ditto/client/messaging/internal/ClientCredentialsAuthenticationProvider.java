@@ -22,7 +22,7 @@ import org.eclipse.ditto.client.configuration.ClientCredentialsAuthenticationCon
 public final class ClientCredentialsAuthenticationProvider extends AbstractTokenAuthenticationProvider {
 
     public ClientCredentialsAuthenticationProvider(final ClientCredentialsAuthenticationConfiguration configuration) {
-        super(configuration);
+        super(configuration, ClientCredentialsJsonWebTokenSupplier.newInstance(configuration));
     }
 
 }
