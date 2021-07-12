@@ -338,7 +338,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
         if (thingId.isPresent() && featureIdFromResourcePath.isPresent()) {
             final String featureId = featureIdFromResourcePath.get().toString();
             handled = getFeatureHandle(thingId.get(), featureId)
-                    .filter(h -> h instanceof LiveCommandProcessor)
+                    .filter(LiveCommandProcessor.class::isInstance)
                     .map(LiveCommandProcessor.class::cast)
                     .map(h -> h.processLiveCommand(liveCommand))
                     .orElse(false);
@@ -348,7 +348,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
 
         if (!handled && thingId.isPresent()) {
             handled = getThingHandle(thingId.get())
-                    .filter(h -> h instanceof LiveCommandProcessor)
+                    .filter(LiveCommandProcessor.class::isInstance)
                     .map(LiveCommandProcessor.class::cast)
                     .map(h -> h.processLiveCommand(liveCommand))
                     .orElse(false);

@@ -20,6 +20,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -27,6 +28,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
+import org.eclipse.ditto.base.model.signals.Signal;
 import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.BasicAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
@@ -34,15 +37,13 @@ import org.eclipse.ditto.client.configuration.WebSocketMessagingConfiguration;
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
 import org.eclipse.ditto.client.internal.bus.BusFactory;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
-import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
 import org.eclipse.ditto.messages.model.Message;
 import org.eclipse.ditto.protocol.Adaptable;
-import org.eclipse.ditto.protocol.adapter.DittoProtocolAdapter;
 import org.eclipse.ditto.protocol.HeaderTranslator;
 import org.eclipse.ditto.protocol.Payload;
-import org.eclipse.ditto.protocol.adapter.ProtocolAdapter;
 import org.eclipse.ditto.protocol.ProtocolFactory;
-import org.eclipse.ditto.base.model.signals.Signal;
+import org.eclipse.ditto.protocol.adapter.DittoProtocolAdapter;
+import org.eclipse.ditto.protocol.adapter.ProtocolAdapter;
 import org.eclipse.ditto.things.model.signals.events.ThingEvent;
 import org.eclipse.ditto.utils.jsr305.annotations.AllParametersAndReturnValuesAreNonnullByDefault;
 import org.slf4j.Logger;
@@ -62,10 +63,11 @@ public class MockMessagingProvider implements MessagingProvider {
                     .username("hans")
                     .password("dampf")
                     .build();
-    private final AtomicReference<Consumer<Message<?>>> in = new AtomicReference<>();
+
     private final ExecutorService executor = Executors.newFixedThreadPool(2, new MockThreadFactory());
+    private final ScheduledExecutorService scheduledExecutor = Executors.newScheduledThreadPool(2, new MockThreadFactory());
     private final MessagingConfiguration messagingConfiguration;
-    private final AdaptableBus adaptableBus = BusFactory.createAdaptableBus();
+    private final AdaptableBus adaptableBus = BusFactory.createAdaptableBus(executor, scheduledExecutor);
     private final BlockingQueue<String> emittedMessages = new LinkedBlockingQueue<>();
     private final AtomicReference<Consumer<Object>> onSendConsumer = new AtomicReference<>(m -> {});
 
@@ -160,13 +162,25 @@ public class MockMessagingProvider implements MessagingProvider {
 
     @Override
     public void close() {
-        adaptableBus.shutdownExecutor();
+        adaptableBus.shutdownExecutors();
+        scheduledExecutor.shutdownNow();
         executor.shutdownNow();
         try {
+            scheduledExecutor.awaitTermination(5, TimeUnit.SECONDS);
             executor.awaitTermination(5, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             LOGGER.info("Waiting for termination was interrupted.");
         }
+    }
+
+    @Override
+    public void registerChannelCloser(final Runnable channelCloser) {
+        // do nothing
+    }
+
+    @Override
+    public void onDittoProtocolError(final Throwable throwable) {
+        // do nothing
     }
 
     private static MessagingConfiguration getDefaultMessagingConfiguration(final JsonSchemaVersion version) {

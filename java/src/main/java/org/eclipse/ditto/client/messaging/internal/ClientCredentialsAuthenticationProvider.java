@@ -12,9 +12,6 @@
  */
 package org.eclipse.ditto.client.messaging.internal;
 
-import static org.eclipse.ditto.base.model.common.ConditionChecker.checkNotNull;
-
-import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.ClientCredentialsAuthenticationConfiguration;
 
 /**
@@ -24,17 +21,8 @@ import org.eclipse.ditto.client.configuration.ClientCredentialsAuthenticationCon
  */
 public final class ClientCredentialsAuthenticationProvider extends AbstractTokenAuthenticationProvider {
 
-    private final ClientCredentialsAuthenticationConfiguration configuration;
-
     public ClientCredentialsAuthenticationProvider(final ClientCredentialsAuthenticationConfiguration configuration) {
-        super(configuration.getAdditionalHeaders(), ClientCredentialsJsonWebTokenSupplier.newInstance(configuration),
-                configuration.getExpiryGracePeriod());
-        this.configuration = checkNotNull(configuration, "configuration");
-    }
-
-    @Override
-    public AuthenticationConfiguration getConfiguration() {
-        return configuration;
+        super(configuration, ClientCredentialsJsonWebTokenSupplier.newInstance(configuration));
     }
 
 }

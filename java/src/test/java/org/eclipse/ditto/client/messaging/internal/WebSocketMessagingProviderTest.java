@@ -26,17 +26,18 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
 import org.eclipse.ditto.client.configuration.BasicAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.configuration.WebSocketMessagingConfiguration;
 import org.eclipse.ditto.client.messaging.AuthenticationProvider;
 import org.eclipse.ditto.client.messaging.AuthenticationProviders;
 import org.eclipse.ditto.client.messaging.MessagingException;
-import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
 import org.junit.AfterClass;
 import org.junit.Test;
 
@@ -49,6 +50,7 @@ import com.neovisionaries.ws.client.WebSocket;
 public final class WebSocketMessagingProviderTest {
 
     private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor();
+    private static final ScheduledExecutorService SCHEDULED_EXECUTOR = Executors.newScheduledThreadPool(1);
 
     @AfterClass
     public static void shutdownExecutor() {
@@ -60,12 +62,13 @@ public final class WebSocketMessagingProviderTest {
         final BlockingQueue<Throwable> errors = new LinkedBlockingQueue<>();
         final AtomicReference<WebSocketMessagingProvider> messagingProviderReference = new AtomicReference<>();
         final ExecutorService e = Executors.newSingleThreadExecutor();
+        final ScheduledExecutorService se = Executors.newScheduledThreadPool(1);
         final WebSocketMessagingProvider underTest =
                 WebSocketMessagingProvider.newInstance(configOf("ws://unknown.host.invalid:80", error -> {
                             messagingProviderReference.get().close();
                             errors.add(error);
                         }, false),
-                        dummyAuth(), e);
+                        dummyAuth(), e, se);
         messagingProviderReference.set(underTest);
 
         // WHEN: websocket connect to a nonsense address
@@ -98,7 +101,7 @@ public final class WebSocketMessagingProviderTest {
         final MessagingConfiguration config =
                 configOf("ws://127.0.0.1:" + serverSocket.take().getLocalPort(), errors::add, true);
         final WebSocketMessagingProvider underTest =
-                WebSocketMessagingProvider.newInstance(config, dummyAuth(), EXECUTOR);
+                WebSocketMessagingProvider.newInstance(config, dummyAuth(), EXECUTOR, SCHEDULED_EXECUTOR);
 
         // WHEN: websocket connect to an unavailable address
         final CompletableFuture<?> future = underTest.initializeAsync().toCompletableFuture();

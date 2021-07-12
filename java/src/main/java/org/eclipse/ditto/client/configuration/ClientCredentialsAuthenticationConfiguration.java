@@ -34,7 +34,8 @@ import javax.annotation.concurrent.NotThreadSafe;
  * @since 1.0.0
  */
 @Immutable
-public final class ClientCredentialsAuthenticationConfiguration extends AbstractAuthenticationConfiguration {
+public final class ClientCredentialsAuthenticationConfiguration extends AbstractAuthenticationConfiguration
+        implements TokenAuthenticationConfiguration {
 
     private final String tokenEndpoint;
     private final String clientId;
@@ -96,11 +97,7 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
         return scopes;
     }
 
-    /**
-     * Returns the expiry grace period.
-     *
-     * @return the period.
-     */
+    @Override
     public Duration getExpiryGracePeriod() {
         return expiryGracePeriod;
     }
@@ -158,7 +155,6 @@ public final class ClientCredentialsAuthenticationConfiguration extends Abstract
         private ClientCredentialsAuthenticationConfigurationBuilder() {
             scopes = Collections.emptyList();
             expiryGracePeriod = DEFAULT_EXPIRY_GRACE_PERIOD;
-            proxyConfiguration = null;
             additionalHeaders = new HashMap<>();
         }
 

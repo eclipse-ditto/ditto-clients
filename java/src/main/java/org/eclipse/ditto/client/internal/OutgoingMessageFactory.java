@@ -25,6 +25,11 @@ import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.headers.DittoHeadersBuilder;
+import org.eclipse.ditto.base.model.headers.entitytag.EntityTagMatcher;
+import org.eclipse.ditto.base.model.headers.entitytag.EntityTagMatchers;
+import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
 import org.eclipse.ditto.client.live.messages.MessageSerializationException;
 import org.eclipse.ditto.client.live.messages.MessageSerializer;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
@@ -35,11 +40,6 @@ import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.base.model.headers.DittoHeaders;
-import org.eclipse.ditto.base.model.headers.DittoHeadersBuilder;
-import org.eclipse.ditto.base.model.headers.entitytag.EntityTagMatcher;
-import org.eclipse.ditto.base.model.headers.entitytag.EntityTagMatchers;
-import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
 import org.eclipse.ditto.messages.model.Message;
 import org.eclipse.ditto.messages.model.MessageBuilder;
 import org.eclipse.ditto.messages.model.MessageHeaders;
@@ -47,16 +47,16 @@ import org.eclipse.ditto.messages.model.MessagesModelFactory;
 import org.eclipse.ditto.policies.model.Policy;
 import org.eclipse.ditto.policies.model.PolicyId;
 import org.eclipse.ditto.policies.model.PolicyIdInvalidException;
+import org.eclipse.ditto.policies.model.signals.commands.modify.CreatePolicy;
+import org.eclipse.ditto.policies.model.signals.commands.modify.DeletePolicy;
+import org.eclipse.ditto.policies.model.signals.commands.modify.ModifyPolicy;
+import org.eclipse.ditto.policies.model.signals.commands.query.RetrievePolicy;
 import org.eclipse.ditto.things.model.Feature;
 import org.eclipse.ditto.things.model.FeatureDefinition;
 import org.eclipse.ditto.things.model.Features;
 import org.eclipse.ditto.things.model.Thing;
 import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.things.model.ThingsModelFactory;
-import org.eclipse.ditto.policies.model.signals.commands.modify.CreatePolicy;
-import org.eclipse.ditto.policies.model.signals.commands.modify.DeletePolicy;
-import org.eclipse.ditto.policies.model.signals.commands.modify.ModifyPolicy;
-import org.eclipse.ditto.policies.model.signals.commands.query.RetrievePolicy;
 import org.eclipse.ditto.things.model.signals.commands.modify.CreateThing;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttribute;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttributes;
@@ -87,6 +87,7 @@ import org.eclipse.ditto.things.model.signals.commands.query.RetrieveThings;
  */
 public final class OutgoingMessageFactory {
 
+    private static final String ARGUMENT_THING = "thing";
     private static final EntityTagMatchers ASTERISK =
             EntityTagMatchers.fromList(Collections.singletonList(EntityTagMatcher.asterisk()));
 
@@ -141,7 +142,7 @@ public final class OutgoingMessageFactory {
      */
     public ModifyThing putThing(final Thing thing, @Nullable final JsonObject initialPolicy,
             final Option<?>... options) {
-        checkNotNull(thing, "thing");
+        checkNotNull(thing, ARGUMENT_THING);
         final ThingId thingId = thing.getEntityId().orElseThrow(() -> new IllegalArgumentException("Thing had no ID!"));
 
         validateOptions(initialPolicy, options);
@@ -165,7 +166,7 @@ public final class OutgoingMessageFactory {
      * @throws UnsupportedOperationException if an invalid option has been specified.
      */
     public ModifyThing updateThing(final Thing thing, final Option<?>... options) {
-        checkNotNull(thing, "thing");
+        checkNotNull(thing, ARGUMENT_THING);
         final ThingId thingId = thing.getEntityId().orElseThrow(() -> new IllegalArgumentException("Thing had no ID!"));
 
         final DittoHeaders headersWithoutIfMatch = buildDittoHeaders(false, options);
@@ -186,7 +187,7 @@ public final class OutgoingMessageFactory {
      * @throws UnsupportedOperationException if an invalid option has been specified.
      */
     MergeThing mergeThing(final ThingId thingId, final Thing thing, final Option<?>[] options) {
-        checkNotNull(thing, "thing");
+        checkNotNull(thing, ARGUMENT_THING);
 
         final DittoHeaders headersWithoutIfMatch = buildDittoHeaders(false, options);
         final DittoHeaders headers = headersWithoutIfMatch.toBuilder()
