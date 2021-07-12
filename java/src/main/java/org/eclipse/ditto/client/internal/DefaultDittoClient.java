@@ -642,4 +642,5 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
                     ProtocolFactory.wrapAsJsonifiableAdaptable(adaptable).toJsonString());
         }
     }
+
 }

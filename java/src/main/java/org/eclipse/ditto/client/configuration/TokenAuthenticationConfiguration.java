@@ -27,4 +27,5 @@ public interface TokenAuthenticationConfiguration extends AuthenticationConfigur
      * @return the grace period.
      */
     Duration getExpiryGracePeriod();
+
 }

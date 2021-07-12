@@ -25,7 +25,7 @@ public interface DisconnectedContext {
     /**
      * Returns the {@link Source} providing the source of the disconnect.
      *
-     * @return the source of the disonnect.
+     * @return the source of the disconnect.
      */
     Source getSource();
 
@@ -101,4 +101,5 @@ public interface DisconnectedContext {
          */
         DisconnectionHandler performReconnect();
     }
+
 }

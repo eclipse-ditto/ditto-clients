@@ -152,7 +152,7 @@ public interface MessagingConfiguration {
         Builder reconnectEnabled(boolean reconnectEnabled);
 
         /**
-         * Sets if {@code initialConnectRetryEnbaled}.
+         * Sets if {@code initialConnectRetryEnabled}.
          * <p> Default is disabled. When establishing a new connection, the client doesn't try to reconnect.
          *
          * @param initialConnectRetryEnabled enables/disables retrying connection initialization.

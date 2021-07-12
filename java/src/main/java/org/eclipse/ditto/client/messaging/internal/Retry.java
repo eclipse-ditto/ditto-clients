@@ -304,6 +304,7 @@ final class Retry<T> {
                     checkNotNull(callbackExecutor, "callbackExecutor"),
                     errorConsumer, isRecoverable).completeFutureEventually(future);
         }
+
     }
 
 }

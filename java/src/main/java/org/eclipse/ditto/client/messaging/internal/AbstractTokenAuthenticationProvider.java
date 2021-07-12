@@ -108,6 +108,7 @@ abstract class AbstractTokenAuthenticationProvider implements AuthenticationProv
             checkNotNull(jsonWebTokenSupplier, "jsonWebTokenSupplier");
             checkNotNull(expiryGracePeriod, "expiryGracePeriod");
             checkNotNull(sessionId, "sessionId");
+
             return new JwtRefreshScheduler(jsonWebTokenSupplier, expiryGracePeriod, sessionId);
         }
 

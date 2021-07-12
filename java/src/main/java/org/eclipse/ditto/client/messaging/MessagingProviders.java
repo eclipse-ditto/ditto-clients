@@ -49,7 +49,7 @@ public final class MessagingProviders {
             final AuthenticationProvider<WebSocket> authenticationProvider,
             final ExecutorService defaultExecutor) {
         final ScheduledExecutorService defaultScheduledExecutor = createScheduledExecutorService(
-                "abus-" + authenticationProvider.getConfiguration().getSessionId());
+                "adaptable-bus-" + authenticationProvider.getConfiguration().getSessionId());
         return WebSocketMessagingProvider.newInstance(configuration, authenticationProvider, defaultExecutor,
                 defaultScheduledExecutor);
     }

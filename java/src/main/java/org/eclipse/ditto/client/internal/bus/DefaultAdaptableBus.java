@@ -104,15 +104,16 @@ final class DefaultAdaptableBus implements AdaptableBus {
             final Consumer<Adaptable> adaptableConsumer) {
         final Entry<Consumer<Adaptable>> entry = new Entry<>(tag, adaptableConsumer);
         addEntry(persistentAdaptableConsumers, entry);
+
         return entry;
     }
 
     @Override
     public SubscriptionId subscribeForAdaptableExclusively(final Classification tag,
             final Consumer<Adaptable> adaptableConsumer) {
-
         final Entry<Consumer<Adaptable>> entry = new Entry<>(tag, adaptableConsumer);
         replaceEntry(persistentAdaptableConsumers, entry);
+
         return entry;
     }
 
@@ -133,6 +134,7 @@ final class DefaultAdaptableBus implements AdaptableBus {
                     onTimeout.accept(timeoutError);
                     return null;
                 });
+
         return entry;
     }
 
@@ -259,8 +261,7 @@ final class DefaultAdaptableBus implements AdaptableBus {
         }
     }
 
-    private boolean publishToOneTimeAdaptableSubscribers(final Adaptable adaptable,
-            final List<Classification> tags) {
+    private boolean publishToOneTimeAdaptableSubscribers(final Adaptable adaptable, final List<Classification> tags) {
         for (final Classification tag : tags) {
             final Consumer<Adaptable> oneTimeSubscriber = removeOne(oneTimeAdaptableConsumers, tag);
             if (oneTimeSubscriber != null) {

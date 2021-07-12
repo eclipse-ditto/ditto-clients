@@ -164,7 +164,6 @@ public final class AccessTokenAuthenticationConfiguration extends AbstractAuthen
         @Override
         public AccessTokenAuthenticationConfigurationBuilder proxyConfiguration(
                 @Nullable final ProxyConfiguration proxyConfiguration) {
-
             this.proxyConfiguration = proxyConfiguration;
             return this;
         }

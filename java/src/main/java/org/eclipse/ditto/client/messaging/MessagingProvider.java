@@ -140,7 +140,7 @@ public interface MessagingProvider {
      * Registers a {@code Runnable} to run when the user code performs a {@code closeChannel} in the disconnection
      * handler of a registered disconnectionListener.
      *
-     * @param channelCloser the runnable to ron
+     * @param channelCloser the runnable to run
      * @since 2.1.0
      */
     void registerChannelCloser(Runnable channelCloser);
@@ -153,4 +153,5 @@ public interface MessagingProvider {
      * @since 2.1.0
      */
     void onDittoProtocolError(Throwable throwable);
+
 }
