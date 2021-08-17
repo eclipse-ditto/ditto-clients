@@ -121,7 +121,7 @@ public final class OutgoingMessageFactory {
             final Option<?>... options) {
         validateOptions(initialPolicy, options);
 
-        final DittoHeaders dittoHeaders = buildDittoHeaders(false, options);
+        final DittoHeaders dittoHeaders = buildDittoHeaders(false, false, options);
 
         final Optional<String> optionalPolicyIdOrPlaceHolder = getPolicyIdOrPlaceholder(options);
 
@@ -147,7 +147,7 @@ public final class OutgoingMessageFactory {
 
         validateOptions(initialPolicy, options);
 
-        final DittoHeaders dittoHeaders = buildDittoHeaders(true, options);
+        final DittoHeaders dittoHeaders = buildDittoHeaders(true, true, options);
 
         final Optional<String> optionalPolicyIdOrPlaceHolder = getPolicyIdOrPlaceholder(options);
 
@@ -169,7 +169,7 @@ public final class OutgoingMessageFactory {
         checkNotNull(thing, ARGUMENT_THING);
         final ThingId thingId = thing.getEntityId().orElseThrow(() -> new IllegalArgumentException("Thing had no ID!"));
 
-        final DittoHeaders headersWithoutIfMatch = buildDittoHeaders(false, options);
+        final DittoHeaders headersWithoutIfMatch = buildDittoHeaders(false, true, options);
         final DittoHeaders headers = headersWithoutIfMatch.toBuilder()
                 .ifMatch(ASTERISK)
                 .build();
@@ -189,7 +189,7 @@ public final class OutgoingMessageFactory {
     MergeThing mergeThing(final ThingId thingId, final Thing thing, final Option<?>[] options) {
         checkNotNull(thing, ARGUMENT_THING);
 
-        final DittoHeaders headersWithoutIfMatch = buildDittoHeaders(false, options);
+        final DittoHeaders headersWithoutIfMatch = buildDittoHeaders(false, true, options);
         final DittoHeaders headers = headersWithoutIfMatch.toBuilder()
                 .ifMatch(ASTERISK)
                 .build();
@@ -198,18 +198,18 @@ public final class OutgoingMessageFactory {
     }
 
     public RetrieveThing retrieveThing(final CharSequence thingId) {
-        return RetrieveThing.of(ThingId.of(thingId), buildDittoHeaders(false));
+        return RetrieveThing.of(ThingId.of(thingId), buildDittoHeaders(false, true));
     }
 
     public RetrieveThing retrieveThing(final CharSequence thingId, final Iterable<JsonPointer> fields) {
-        return RetrieveThing.getBuilder(ThingId.of(thingId), buildDittoHeaders(false))
+        return RetrieveThing.getBuilder(ThingId.of(thingId), buildDittoHeaders(false, true))
                 .withSelectedFields(JsonFactory.newFieldSelector(fields))
                 .build();
     }
 
     public RetrieveThings retrieveThings(final Iterable<ThingId> thingIds) {
         return RetrieveThings.getBuilder(makeList(thingIds))
-                .dittoHeaders(buildDittoHeaders(false))
+                .dittoHeaders(buildDittoHeaders(false, false))
                 .build();
     }
 
@@ -224,12 +224,12 @@ public final class OutgoingMessageFactory {
     public RetrieveThings retrieveThings(final Iterable<ThingId> thingIds, final Iterable<JsonPointer> fields) {
         return RetrieveThings.getBuilder(makeList(thingIds))
                 .selectedFields(JsonFactory.newFieldSelector(fields))
-                .dittoHeaders(buildDittoHeaders(false))
+                .dittoHeaders(buildDittoHeaders(false, false))
                 .build();
     }
 
     public DeleteThing deleteThing(final ThingId thingId, final Option<?>... options) {
-        return DeleteThing.of(thingId, buildDittoHeaders(false, options));
+        return DeleteThing.of(thingId, buildDittoHeaders(false, true, options));
     }
 
     /**
@@ -243,7 +243,7 @@ public final class OutgoingMessageFactory {
      * @since 1.1.0
      */
     public CreatePolicy createPolicy(final Policy policy, final Option<?>... options) {
-        return CreatePolicy.of(policy, buildDittoHeaders(false, options));
+        return CreatePolicy.of(policy, buildDittoHeaders(false, false, options));
     }
 
     /**
@@ -259,7 +259,7 @@ public final class OutgoingMessageFactory {
         final PolicyId policyId =
                 policy.getEntityId().orElseThrow(() -> new IllegalArgumentException("Policy had no ID!"));
 
-        final DittoHeaders headers = buildDittoHeaders(true, options);
+        final DittoHeaders headers = buildDittoHeaders(true, false, options);
         return ModifyPolicy.of(policyId, policy, headers);
     }
 
@@ -276,7 +276,7 @@ public final class OutgoingMessageFactory {
         final PolicyId policyId =
                 policy.getEntityId().orElseThrow(() -> new IllegalArgumentException("Policy had no ID!"));
 
-        final DittoHeaders headersWithoutIfMatch = buildDittoHeaders(false, options);
+        final DittoHeaders headersWithoutIfMatch = buildDittoHeaders(false, false, options);
         final DittoHeaders headers = headersWithoutIfMatch.toBuilder()
                 .ifMatch(ASTERISK)
                 .build();
@@ -292,7 +292,7 @@ public final class OutgoingMessageFactory {
      * @since 1.1.0
      */
     public RetrievePolicy retrievePolicy(final PolicyId policyId) {
-        return RetrievePolicy.of(policyId, buildDittoHeaders(false));
+        return RetrievePolicy.of(policyId, buildDittoHeaders(false, false));
     }
 
     /**
@@ -305,7 +305,7 @@ public final class OutgoingMessageFactory {
      * @since 1.1.0
      */
     public DeletePolicy deletePolicy(final PolicyId policyId, final Option<?>... options) {
-        return DeletePolicy.of(policyId, buildDittoHeaders(false, options));
+        return DeletePolicy.of(policyId, buildDittoHeaders(false, false, options));
     }
 
     public ModifyAttribute setAttribute(final ThingId thingId,
@@ -313,7 +313,7 @@ public final class OutgoingMessageFactory {
             final JsonValue value,
             final Option<?>... options) {
 
-        return ModifyAttribute.of(thingId, path, value, buildDittoHeaders(true, options));
+        return ModifyAttribute.of(thingId, path, value, buildDittoHeaders(true, true, options));
     }
 
     public MergeThing mergeAttribute(final ThingId thingId,
@@ -321,54 +321,54 @@ public final class OutgoingMessageFactory {
             final JsonValue value,
             final Option<?>... options) {
 
-        return MergeThing.withAttribute(thingId, path, value, buildDittoHeaders(true, options));
+        return MergeThing.withAttribute(thingId, path, value, buildDittoHeaders(true, true, options));
     }
 
     public ModifyAttributes setAttributes(final ThingId thingId, final JsonObject attributes,
             final Option<?>... options) {
         return ModifyAttributes.of(thingId, ThingsModelFactory.newAttributes(attributes),
-                buildDittoHeaders(true, options));
+                buildDittoHeaders(true,true, options));
     }
 
     public MergeThing mergeAttributes(final ThingId thingId, final JsonObject attributes, final Option<?>[] options) {
         return MergeThing.withAttributes(thingId, ThingsModelFactory.newAttributes(attributes),
-                buildDittoHeaders(true, options));
+                buildDittoHeaders(true, true, options));
     }
 
     public DeleteAttribute deleteAttribute(final ThingId thingId, final JsonPointer path, final Option<?>... options) {
-        return DeleteAttribute.of(thingId, path, buildDittoHeaders(false, options));
+        return DeleteAttribute.of(thingId, path, buildDittoHeaders(false, true, options));
     }
 
     public DeleteAttributes deleteAttributes(final ThingId thingId, final Option<?>... options) {
-        return DeleteAttributes.of(thingId, buildDittoHeaders(false, options));
+        return DeleteAttributes.of(thingId, buildDittoHeaders(false, true, options));
     }
 
     public ModifyFeature setFeature(final ThingId thingId, final Feature feature, final Option<?>... options) {
-        return ModifyFeature.of(thingId, feature, buildDittoHeaders(true, options));
+        return ModifyFeature.of(thingId, feature, buildDittoHeaders(true, true, options));
     }
 
     public MergeThing mergeFeature(final ThingId thingId, final Feature feature, final Option<?>... options) {
-        return MergeThing.withFeature(thingId, feature, buildDittoHeaders(true, options));
+        return MergeThing.withFeature(thingId, feature, buildDittoHeaders(true, true, options));
     }
 
     public ModifyFeatures setFeatures(final ThingId thingId, final Features features, final Option<?>... options) {
-        return ModifyFeatures.of(thingId, features, buildDittoHeaders(true, options));
+        return ModifyFeatures.of(thingId, features, buildDittoHeaders(true, true, options));
     }
 
     public MergeThing mergeFeatures(final ThingId thingId, final Features features, final Option<?>[] options) {
-        return MergeThing.withFeatures(thingId, features, buildDittoHeaders(true, options));
+        return MergeThing.withFeatures(thingId, features, buildDittoHeaders(true, true, options));
     }
 
     public ModifyPolicyId setPolicyId(final ThingId thingId, final PolicyId policyId, final Option<?>... options) {
-        return ModifyPolicyId.of(thingId, policyId, buildDittoHeaders(true, options));
+        return ModifyPolicyId.of(thingId, policyId, buildDittoHeaders(true, true, options));
     }
 
     public MergeThing mergePolicyId(final ThingId thingId, final PolicyId policyId, final Option<?>... options) {
-        return MergeThing.withPolicyId(thingId, policyId, buildDittoHeaders(true, options));
+        return MergeThing.withPolicyId(thingId, policyId, buildDittoHeaders(true, true, options));
     }
 
     public RetrieveFeature retrieveFeature(final ThingId thingId, final String featureId, final Option<?>... options) {
-        return RetrieveFeature.of(thingId, featureId, buildDittoHeaders(false, options));
+        return RetrieveFeature.of(thingId, featureId, buildDittoHeaders(false, true, options));
     }
 
     public RetrieveFeature retrieveFeature(final ThingId thingId,
@@ -377,15 +377,15 @@ public final class OutgoingMessageFactory {
             final Option<?>... options) {
 
         return RetrieveFeature.of(thingId, featureId, JsonFactory.newFieldSelector(fields),
-                buildDittoHeaders(false, options));
+                buildDittoHeaders(false, true, options));
     }
 
     public DeleteFeature deleteFeature(final ThingId thingId, final String featureId, final Option<?>... options) {
-        return DeleteFeature.of(thingId, featureId, buildDittoHeaders(false, options));
+        return DeleteFeature.of(thingId, featureId, buildDittoHeaders(false, true, options));
     }
 
     public DeleteFeatures deleteFeatures(final ThingId thingId, final Option<?>... options) {
-        return DeleteFeatures.of(thingId, buildDittoHeaders(false, options));
+        return DeleteFeatures.of(thingId, buildDittoHeaders(false, true, options));
     }
 
     /**
@@ -403,7 +403,8 @@ public final class OutgoingMessageFactory {
             final FeatureDefinition featureDefinition,
             final Option<?>... options) {
 
-        return ModifyFeatureDefinition.of(thingId, featureId, featureDefinition, buildDittoHeaders(true, options));
+        return ModifyFeatureDefinition.of(thingId, featureId, featureDefinition,
+                buildDittoHeaders(true, true, options));
     }
 
     /**
@@ -422,7 +423,7 @@ public final class OutgoingMessageFactory {
             final Option<?>... options) {
 
         return MergeThing.withFeatureDefinition(thingId, featureId, featureDefinition,
-                buildDittoHeaders(true, options));
+                buildDittoHeaders(true, true, options));
     }
 
     /**
@@ -437,7 +438,7 @@ public final class OutgoingMessageFactory {
     public DeleteFeatureDefinition deleteFeatureDefinition(final ThingId thingId, final String featureId,
             final Option<?>... options) {
 
-        return DeleteFeatureDefinition.of(thingId, featureId, buildDittoHeaders(false, options));
+        return DeleteFeatureDefinition.of(thingId, featureId, buildDittoHeaders(false, true, options));
     }
 
     public ModifyFeatureProperty setFeatureProperty(final ThingId thingId,
@@ -446,7 +447,8 @@ public final class OutgoingMessageFactory {
             final JsonValue value,
             final Option<?>... options) {
 
-        return ModifyFeatureProperty.of(thingId, featureId, path, value, buildDittoHeaders(true, options));
+        return ModifyFeatureProperty.of(thingId, featureId, path, value,
+                buildDittoHeaders(true, true, options));
     }
 
     public MergeThing mergeFeatureProperty(final ThingId thingId,
@@ -455,7 +457,8 @@ public final class OutgoingMessageFactory {
             final JsonValue value,
             final Option<?>... options) {
 
-        return MergeThing.withFeatureProperty(thingId, featureId, path, value, buildDittoHeaders(true, options));
+        return MergeThing.withFeatureProperty(thingId, featureId, path, value,
+                buildDittoHeaders(true, true, options));
     }
 
     public ModifyFeatureProperties setFeatureProperties(final ThingId thingId,
@@ -464,7 +467,7 @@ public final class OutgoingMessageFactory {
             final Option<?>... options) {
 
         return ModifyFeatureProperties.of(thingId, featureId, ThingsModelFactory.newFeatureProperties(properties),
-                buildDittoHeaders(true, options));
+                buildDittoHeaders(true, true, options));
     }
 
     public MergeThing mergeFeatureProperties(final ThingId thingId,
@@ -473,7 +476,7 @@ public final class OutgoingMessageFactory {
             final Option<?>... options) {
 
         return MergeThing.withFeatureProperties(thingId, featureId, ThingsModelFactory.newFeatureProperties(properties),
-                buildDittoHeaders(true, options));
+                buildDittoHeaders(true, true, options));
     }
 
     public DeleteFeatureProperty deleteFeatureProperty(final ThingId thingId,
@@ -481,13 +484,15 @@ public final class OutgoingMessageFactory {
             final JsonPointer path,
             final Option<?>... options) {
 
-        return DeleteFeatureProperty.of(thingId, featureId, path, buildDittoHeaders(false, options));
+        return DeleteFeatureProperty.of(thingId, featureId, path,
+                buildDittoHeaders(false, true, options));
     }
 
     public DeleteFeatureProperties deleteFeatureProperties(final ThingId thingId, final String featureId,
             final Option<?>... options) {
 
-        return DeleteFeatureProperties.of(thingId, featureId, buildDittoHeaders(false, options));
+        return DeleteFeatureProperties.of(thingId, featureId,
+                buildDittoHeaders(false, true, options));
     }
 
     /**
@@ -561,7 +566,7 @@ public final class OutgoingMessageFactory {
         return messageBuilder.build();
     }
 
-    private DittoHeaders buildDittoHeaders(final boolean allowExists, final Option<?>... options) {
+    private DittoHeaders buildDittoHeaders(final boolean allowExists, final boolean allowCondition, final Option<?>... options) {
         final OptionsEvaluator.Global global = OptionsEvaluator.forGlobalOptions(options);
         final OptionsEvaluator.Modify modify = OptionsEvaluator.forModifyOptions(options);
 
@@ -580,6 +585,12 @@ public final class OutgoingMessageFactory {
             } else {
                 headersBuilder.ifNoneMatch(ASTERISK);
             }
+        });
+        modify.condition().ifPresent(condition -> {
+            if (!allowCondition) {
+                throw new IllegalArgumentException("Option \"condition\" is not allowed for this operation.");
+            }
+            headersBuilder.condition(condition);
         });
 
         return headersBuilder.build();

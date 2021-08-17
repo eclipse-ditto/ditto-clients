@@ -28,6 +28,15 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 
 import org.assertj.core.api.Assertions;
+import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
+import org.eclipse.ditto.base.model.acks.AcknowledgementRequest;
+import org.eclipse.ditto.base.model.common.HttpStatus;
+import org.eclipse.ditto.base.model.exceptions.DittoRuntimeException;
+import org.eclipse.ditto.base.model.headers.DittoHeaderDefinition;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.headers.condition.Condition;
+import org.eclipse.ditto.base.model.signals.acks.Acknowledgement;
+import org.eclipse.ditto.base.model.signals.acks.Acknowledgements;
 import org.eclipse.ditto.client.internal.AbstractDittoClientThingsTest;
 import org.eclipse.ditto.client.management.AcknowledgementsFailedException;
 import org.eclipse.ditto.client.options.Option;
@@ -36,11 +45,6 @@ import org.eclipse.ditto.client.registration.DuplicateRegistrationIdException;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
-import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
-import org.eclipse.ditto.base.model.acks.AcknowledgementRequest;
-import org.eclipse.ditto.base.model.common.HttpStatus;
-import org.eclipse.ditto.base.model.exceptions.DittoRuntimeException;
-import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.messages.model.Message;
 import org.eclipse.ditto.messages.model.MessageDirection;
 import org.eclipse.ditto.messages.model.MessageHeaders;
@@ -51,8 +55,6 @@ import org.eclipse.ditto.things.model.Feature;
 import org.eclipse.ditto.things.model.Thing;
 import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.things.model.ThingsModelFactory;
-import org.eclipse.ditto.base.model.signals.acks.Acknowledgement;
-import org.eclipse.ditto.base.model.signals.acks.Acknowledgements;
 import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
 import org.eclipse.ditto.things.model.signals.commands.exceptions.ThingPreconditionFailedException;
 import org.eclipse.ditto.things.model.signals.commands.modify.CreateThing;
@@ -76,6 +78,7 @@ import org.junit.Test;
 public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
 
     private static final String FEATURE_ID = "someFeature";
+    private static final Condition CONDITION = Condition.of("ne(attributes/test)");
     private static final JsonPointer ATTRIBUTE_KEY_NEW = JsonFactory.newPointer("new");
     private static final String ATTRIBUTE_VALUE = "value";
     private static final Feature FEATURE = ThingsModelFactory.newFeatureBuilder()
@@ -529,4 +532,49 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
 
         reply(ModifyThingResponse.modified(THING_ID, expectMsgClass(ModifyThing.class).getDittoHeaders()));
     }
+
+    @Test
+    public void createThingFailsWithConditionOption() {
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> getManagement().create(THING, Options.Modify.condition(CONDITION))
+                        .toCompletableFuture()
+                        .get(TIMEOUT, TIME_UNIT));
+    }
+
+    @Test
+    public void testPutThingWithConditionOption() {
+        assertEventualCompletion(getManagement().put(THING, Options.Modify.condition(CONDITION)));
+        final ModifyThing command = expectMsgClass(ModifyThing.class);
+        reply(ModifyThingResponse.modified(THING_ID, command.getDittoHeaders()));
+        Assertions.assertThat(command.getDittoHeaders())
+                .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION.toString());
+    }
+
+    @Test
+    public void testUpdateThingWithConditionOption() {
+        assertEventualCompletion(getManagement().update(THING, Options.Modify.condition(CONDITION)));
+        final ModifyThing command = expectMsgClass(ModifyThing.class);
+        reply(ModifyThingResponse.modified(THING_ID, command.getDittoHeaders()));
+        Assertions.assertThat(command.getDittoHeaders())
+                .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION.toString());
+    }
+
+    @Test
+    public void testMergeThingWithConditionOption() {
+        assertEventualCompletion(getManagement().merge(THING_ID, THING, Options.Modify.condition(CONDITION)));
+        final MergeThing command = expectMsgClass(MergeThing.class);
+        reply(MergeThingResponse.of(THING_ID, JsonPointer.empty(), command.getDittoHeaders()));
+        Assertions.assertThat(command.getDittoHeaders())
+                .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION.toString());
+    }
+
+    @Test
+    public void testDeleteThingWithConditionOption() {
+        assertEventualCompletion(getManagement().delete(THING_ID, Options.Modify.condition(CONDITION)));
+        final DeleteThing command = expectMsgClass(DeleteThing.class);
+        reply(DeleteThingResponse.of(THING_ID, command.getDittoHeaders()));
+        Assertions.assertThat(command.getDittoHeaders())
+                .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION.toString());
+    }
+
 }

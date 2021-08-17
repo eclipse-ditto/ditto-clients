@@ -21,24 +21,26 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Assertions;
+import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
+import org.eclipse.ditto.base.model.acks.AcknowledgementRequest;
+import org.eclipse.ditto.base.model.common.HttpStatus;
+import org.eclipse.ditto.base.model.headers.DittoHeaderDefinition;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.headers.condition.Condition;
+import org.eclipse.ditto.base.model.signals.Signal;
+import org.eclipse.ditto.base.model.signals.acks.Acknowledgement;
+import org.eclipse.ditto.base.model.signals.acks.Acknowledgements;
 import org.eclipse.ditto.client.internal.AbstractDittoClientThingsTest;
 import org.eclipse.ditto.client.management.AcknowledgementsFailedException;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
-import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
-import org.eclipse.ditto.base.model.acks.AcknowledgementRequest;
-import org.eclipse.ditto.base.model.common.HttpStatus;
-import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.things.model.Feature;
 import org.eclipse.ditto.things.model.FeatureDefinition;
 import org.eclipse.ditto.things.model.Features;
 import org.eclipse.ditto.things.model.Thing;
 import org.eclipse.ditto.things.model.ThingsModelFactory;
-import org.eclipse.ditto.base.model.signals.acks.Acknowledgement;
-import org.eclipse.ditto.base.model.signals.acks.Acknowledgements;
-import org.eclipse.ditto.base.model.signals.Signal;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeature;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureDefinition;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureDefinitionResponse;
@@ -71,11 +73,15 @@ import org.junit.Test;
 public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest {
 
     private static final String FEATURE_ID = "someFeature";
+    private static final Condition CONDITION = Condition.of("ne(attributes/test)");
     private static final Feature FEATURE = ThingsModelFactory.newFeatureBuilder()
             .properties(ThingsModelFactory.newFeaturePropertiesBuilder()
                     .set("propertyPointer", "propertyValue")
                     .build())
             .withId(FEATURE_ID)
+            .build();
+    private static final Features FEATURES = ThingsModelFactory.newFeaturesBuilder()
+            .set(FEATURE)
             .build();
 
     @Test
@@ -339,4 +345,63 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
         assertThat(sentDittoHeaders.getAcknowledgementRequests())
                 .containsExactly(AcknowledgementRequest.of(label1), AcknowledgementRequest.of(label2));
     }
+
+    @Test
+    public void testSetFeatureWithConditionOption() {
+        assertEventualCompletion(
+                getManagement().forId(THING_ID).putFeature(FEATURE, Options.Modify.condition(CONDITION))
+        );
+        final ModifyFeature command = expectMsgClass(ModifyFeature.class);
+        reply(ModifyFeatureResponse.modified(THING_ID, FEATURE_ID, command.getDittoHeaders()));
+        assertThat(command.getFeatureId()).isEqualTo(FEATURE_ID);
+        Assertions.assertThat(command.getDittoHeaders())
+                .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION.toString());
+    }
+
+    @Test
+    public void testMergeFeaturesWithConditionOption() {
+        assertEventualCompletion(
+                getManagement().forId(THING_ID).mergeFeatures(FEATURES, Options.Modify.condition(CONDITION))
+        );
+        final MergeThing command = expectMsgClass(MergeThing.class);
+        reply(MergeThingResponse.of(THING_ID, JsonFactory.newPointer("/features"),
+                command.getDittoHeaders()));
+        Assertions.assertThat(command.getDittoHeaders())
+                .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION.toString());
+    }
+
+    @Test
+    public void testMergeFeatureWithConditionOption() {
+        assertEventualCompletion(
+                getManagement().forId(THING_ID).mergeFeature(FEATURE, Options.Modify.condition(CONDITION))
+        );
+        final MergeThing command = expectMsgClass(MergeThing.class);
+        reply(MergeThingResponse.of(THING_ID, JsonFactory.newPointer("/features/" + FEATURE_ID),
+                command.getDittoHeaders()));
+        Assertions.assertThat(command.getDittoHeaders())
+                .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION.toString());
+    }
+
+    @Test
+    public void testDeleteFeaturesWithConditionOption() {
+        assertEventualCompletion(
+                getManagement().forId(THING_ID).deleteFeatures(Options.Modify.condition(CONDITION))
+        );
+        final DeleteFeatures command = expectMsgClass(DeleteFeatures.class);
+        reply(DeleteFeaturesResponse.of(THING_ID, command.getDittoHeaders()));
+        Assertions.assertThat(command.getDittoHeaders())
+                .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION.toString());
+    }
+
+    @Test
+    public void testDeleteFeatureWithConditionOption() {
+        assertEventualCompletion(
+                getManagement().forId(THING_ID).deleteFeature(FEATURE_ID, Options.Modify.condition(CONDITION))
+        );
+        final DeleteFeature command = expectMsgClass(DeleteFeature.class);
+        reply(DeleteFeatureResponse.of(THING_ID, FEATURE_ID, command.getDittoHeaders()));
+        Assertions.assertThat(command.getDittoHeaders())
+                .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION.toString());
+    }
+
 }

@@ -14,9 +14,10 @@ package org.eclipse.ditto.client.options;
 
 import java.util.Arrays;
 
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.headers.condition.Condition;
 import org.eclipse.ditto.client.management.CommonManagement;
 import org.eclipse.ditto.json.JsonFieldSelector;
-import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.policies.model.PolicyId;
 import org.eclipse.ditto.things.model.ThingId;
 
@@ -99,7 +100,7 @@ public final class Options {
         }
 
         /**
-         * Creates an option for specifying whether the created policy should copied from a already existing policy
+         * Creates an option for specifying whether the created policy should copied from an already existing policy
          * <p>
          * The returned option has the name {@link OptionName.Modify#COPY_POLICY} and the given {@code boolean} value.
          * </p>
@@ -131,6 +132,23 @@ public final class Options {
          */
         public static Option<ThingId> copyPolicyFromThing(final ThingId thingToCopyPolicyFrom) {
             return DefaultOption.newInstance(OptionName.Modify.COPY_POLICY_FROM_THING, thingToCopyPolicyFrom);
+        }
+
+        /**
+         * Creates an option for specifying whether the request should be applied to the thing based on the given condition
+         * <p>
+         * The returned option has the name {@link OptionName.Modify#CONDITION} and the given {@code Condition} value.
+         * </p>
+         * <p>
+         * If this Option is not specified, the request will be applied no matter what.
+         * </p>
+         *
+         * @param condition existing thing from which the policy are used
+         * @return the new option.
+         * @since 2.1.0
+         */
+        public static Option<Condition> condition(final Condition condition) {
+            return DefaultOption.newInstance(OptionName.Modify.CONDITION, condition);
         }
     }
 

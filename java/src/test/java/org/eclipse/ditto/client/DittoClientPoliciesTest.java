@@ -27,6 +27,7 @@ import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 
 import org.assertj.core.api.Assertions;
+import org.eclipse.ditto.base.model.headers.condition.Condition;
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.json.JsonFactory;
@@ -207,4 +208,25 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
     public void testUpdatePolicyWithMissingId() {
         client.policies().update(JsonFactory.newObject());
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreatePolicyWithForbiddenOption() {
+        client.policies().create(POLICY, Options.Modify.condition(Condition.of("ne(attributes/test)")));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testPutPolicyWithForbiddenOption() {
+        client.policies().put(POLICY, Options.Modify.condition(Condition.of("ne(attributes/test)")));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testUpdatePolicyWithForbiddenOption() {
+        client.policies().update(POLICY, Options.Modify.condition(Condition.of("ne(attributes/test)")));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testDeletePolicyWithForbiddenOption() {
+        client.policies().delete(POLICY_ID, Options.Modify.condition(Condition.of("ne(attributes/test)")));
+    }
+
 }
