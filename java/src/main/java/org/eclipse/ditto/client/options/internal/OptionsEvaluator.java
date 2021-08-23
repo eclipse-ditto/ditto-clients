@@ -17,7 +17,6 @@ import java.util.Optional;
 import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
-import org.eclipse.ditto.base.model.headers.condition.Condition;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.policies.model.PolicyId;
@@ -161,10 +160,11 @@ public final class OptionsEvaluator {
 
         /**
          * Returns whether a request should be applied to the thing or not.
-         * @return an Optional holding the {@link Condition} to apply to the request.
+         *
+         * @return an Optional holding the {@link String} to apply to the request.
          * @since 2.1.0
          */
-        public Optional<Condition> condition() {
+        public Optional<String> condition() {
             return getValue(new ConditionOptionVisitor());
         }
 

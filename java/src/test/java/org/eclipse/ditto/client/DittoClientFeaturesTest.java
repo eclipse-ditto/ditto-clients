@@ -26,7 +26,6 @@ import org.eclipse.ditto.base.model.acks.AcknowledgementRequest;
 import org.eclipse.ditto.base.model.common.HttpStatus;
 import org.eclipse.ditto.base.model.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
-import org.eclipse.ditto.base.model.headers.condition.Condition;
 import org.eclipse.ditto.base.model.signals.Signal;
 import org.eclipse.ditto.base.model.signals.acks.Acknowledgement;
 import org.eclipse.ditto.base.model.signals.acks.Acknowledgements;
@@ -73,7 +72,7 @@ import org.junit.Test;
 public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest {
 
     private static final String FEATURE_ID = "someFeature";
-    private static final Condition CONDITION = Condition.of("ne(attributes/test)");
+    private static final String CONDITION = "ne(attributes/test)";
     private static final Feature FEATURE = ThingsModelFactory.newFeatureBuilder()
             .properties(ThingsModelFactory.newFeaturePropertiesBuilder()
                     .set("propertyPointer", "propertyValue")

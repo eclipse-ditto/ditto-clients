@@ -14,7 +14,6 @@ package org.eclipse.ditto.client.options.internal;
 
 import javax.annotation.concurrent.ThreadSafe;
 
-import org.eclipse.ditto.base.model.headers.condition.Condition;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.OptionName;
 
@@ -26,7 +25,7 @@ import org.eclipse.ditto.client.options.OptionName;
  * @since 2.1.0
  */
 @ThreadSafe
-final class ConditionOptionVisitor extends AbstractOptionVisitor<Condition> {
+final class ConditionOptionVisitor extends AbstractOptionVisitor<String> {
 
     /**
      * Constructor.
@@ -36,8 +35,8 @@ final class ConditionOptionVisitor extends AbstractOptionVisitor<Condition> {
     }
 
     @Override
-    protected Condition getValueFromOption(final Option<?> option) {
-        return option.getValueAs(Condition.class);
+    protected String getValueFromOption(final Option<?> option) {
+        return option.getValueAs(String.class);
     }
 
 }

@@ -15,7 +15,6 @@ package org.eclipse.ditto.client.options;
 import java.util.Arrays;
 
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
-import org.eclipse.ditto.base.model.headers.condition.Condition;
 import org.eclipse.ditto.client.management.CommonManagement;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.policies.model.PolicyId;
@@ -147,7 +146,7 @@ public final class Options {
          * @return the new option.
          * @since 2.1.0
          */
-        public static Option<Condition> condition(final Condition condition) {
+        public static Option<String> condition(final String condition) {
             return DefaultOption.newInstance(OptionName.Modify.CONDITION, condition);
         }
     }

@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.base.model.headers.DittoHeaderDefinition;
-import org.eclipse.ditto.base.model.headers.condition.Condition;
 import org.eclipse.ditto.base.model.signals.Signal;
 import org.eclipse.ditto.client.internal.AbstractDittoClientThingsTest;
 import org.eclipse.ditto.client.options.Options;
@@ -58,7 +57,7 @@ import org.junit.Test;
  */
 public final class DittoClientAttributesTest extends AbstractDittoClientThingsTest {
 
-    private static final Condition CONDITION = Condition.of("ne(attributes/test)");
+    private static final String CONDITION = "ne(attributes/test)";
     private static final JsonPointer ATTRIBUTE_KEY_NEW = JsonFactory.newPointer("new");
     private static final JsonPointer ATTRIBUTE_KEY_REALLY_NEW = JsonFactory.newPointer("reallyNew");
     private static final JsonPointer ATTRIBUTE_KEY_OLD = JsonFactory.newPointer("old");
