@@ -13,11 +13,15 @@
 package org.eclipse.ditto.client.internal;
 
 import static org.eclipse.ditto.base.model.common.ConditionChecker.checkNotNull;
+import static org.eclipse.ditto.client.options.OptionName.Modify.CONDITION;
+import static org.eclipse.ditto.client.options.OptionName.Modify.EXISTS;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -35,6 +39,7 @@ import org.eclipse.ditto.client.live.messages.MessageSerializer;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.live.messages.MessageSerializers;
 import org.eclipse.ditto.client.options.Option;
+import org.eclipse.ditto.client.options.OptionName;
 import org.eclipse.ditto.client.options.internal.OptionsEvaluator;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonObject;
@@ -117,18 +122,14 @@ public final class OutgoingMessageFactory {
      * @throws NullPointerException if any argument is {@code null}.
      * @throws IllegalArgumentException if {@code thing} has no identifier.
      */
-    public CreateThing createThing(final Thing thing, @Nullable JsonObject initialPolicy,
-            final Option<?>... options) {
+    public CreateThing createThing(final Thing thing, @Nullable JsonObject initialPolicy, final Option<?>... options) {
         validateOptions(initialPolicy, options);
 
-        final DittoHeaders dittoHeaders = buildDittoHeaders(false, false, options);
+        final DittoHeaders dittoHeaders = buildDittoHeaders(Collections.emptySet(), options);
 
-        final Optional<String> optionalPolicyIdOrPlaceHolder = getPolicyIdOrPlaceholder(options);
-
-        return optionalPolicyIdOrPlaceHolder
+        return getPolicyIdOrPlaceholder(options)
                 .map(policyIdOrPlaceHolder -> CreateThing.withCopiedPolicy(thing, policyIdOrPlaceHolder, dittoHeaders))
                 .orElseGet(() -> CreateThing.of(thing, initialPolicy, dittoHeaders));
-
     }
 
     /**
@@ -140,14 +141,16 @@ public final class OutgoingMessageFactory {
      * @throws NullPointerException if any argument is {@code null}.
      * @throws IllegalArgumentException if {@code thing} has no identifier.
      */
-    public ModifyThing putThing(final Thing thing, @Nullable final JsonObject initialPolicy,
+    public ModifyThing putThing(final Thing thing,
+            @Nullable final JsonObject initialPolicy,
             final Option<?>... options) {
+
         checkNotNull(thing, ARGUMENT_THING);
         final ThingId thingId = thing.getEntityId().orElseThrow(() -> new IllegalArgumentException("Thing had no ID!"));
 
         validateOptions(initialPolicy, options);
 
-        final DittoHeaders dittoHeaders = buildDittoHeaders(true, true, options);
+        final DittoHeaders dittoHeaders = buildDittoHeaders(EnumSet.of(EXISTS, CONDITION), options);
 
         final Optional<String> optionalPolicyIdOrPlaceHolder = getPolicyIdOrPlaceholder(options);
 
@@ -169,7 +172,7 @@ public final class OutgoingMessageFactory {
         checkNotNull(thing, ARGUMENT_THING);
         final ThingId thingId = thing.getEntityId().orElseThrow(() -> new IllegalArgumentException("Thing had no ID!"));
 
-        final DittoHeaders headersWithoutIfMatch = buildDittoHeaders(false, true, options);
+        final DittoHeaders headersWithoutIfMatch = buildDittoHeaders(EnumSet.of(CONDITION), options);
         final DittoHeaders headers = headersWithoutIfMatch.toBuilder()
                 .ifMatch(ASTERISK)
                 .build();
@@ -189,8 +192,7 @@ public final class OutgoingMessageFactory {
     MergeThing mergeThing(final ThingId thingId, final Thing thing, final Option<?>[] options) {
         checkNotNull(thing, ARGUMENT_THING);
 
-        final DittoHeaders headersWithoutIfMatch = buildDittoHeaders(false, true, options);
-        final DittoHeaders headers = headersWithoutIfMatch.toBuilder()
+        final DittoHeaders headers = DittoHeaders.newBuilder(buildDittoHeaders(EnumSet.of(CONDITION), options))
                 .ifMatch(ASTERISK)
                 .build();
 
@@ -198,18 +200,18 @@ public final class OutgoingMessageFactory {
     }
 
     public RetrieveThing retrieveThing(final CharSequence thingId) {
-        return RetrieveThing.of(ThingId.of(thingId), buildDittoHeaders(false, true));
+        return RetrieveThing.of(ThingId.of(thingId), buildDittoHeaders(EnumSet.of(CONDITION)));
     }
 
     public RetrieveThing retrieveThing(final CharSequence thingId, final Iterable<JsonPointer> fields) {
-        return RetrieveThing.getBuilder(ThingId.of(thingId), buildDittoHeaders(false, true))
+        return RetrieveThing.getBuilder(ThingId.of(thingId), buildDittoHeaders(EnumSet.of(CONDITION)))
                 .withSelectedFields(JsonFactory.newFieldSelector(fields))
                 .build();
     }
 
     public RetrieveThings retrieveThings(final Iterable<ThingId> thingIds) {
         return RetrieveThings.getBuilder(makeList(thingIds))
-                .dittoHeaders(buildDittoHeaders(false, false))
+                .dittoHeaders(buildDittoHeaders(Collections.emptySet()))
                 .build();
     }
 
@@ -224,12 +226,12 @@ public final class OutgoingMessageFactory {
     public RetrieveThings retrieveThings(final Iterable<ThingId> thingIds, final Iterable<JsonPointer> fields) {
         return RetrieveThings.getBuilder(makeList(thingIds))
                 .selectedFields(JsonFactory.newFieldSelector(fields))
-                .dittoHeaders(buildDittoHeaders(false, false))
+                .dittoHeaders(buildDittoHeaders(Collections.emptySet()))
                 .build();
     }
 
     public DeleteThing deleteThing(final ThingId thingId, final Option<?>... options) {
-        return DeleteThing.of(thingId, buildDittoHeaders(false, true, options));
+        return DeleteThing.of(thingId, buildDittoHeaders(EnumSet.of(CONDITION), options));
     }
 
     /**
@@ -243,7 +245,7 @@ public final class OutgoingMessageFactory {
      * @since 1.1.0
      */
     public CreatePolicy createPolicy(final Policy policy, final Option<?>... options) {
-        return CreatePolicy.of(policy, buildDittoHeaders(false, false, options));
+        return CreatePolicy.of(policy, buildDittoHeaders(Collections.emptySet(), options));
     }
 
     /**
@@ -259,7 +261,7 @@ public final class OutgoingMessageFactory {
         final PolicyId policyId =
                 policy.getEntityId().orElseThrow(() -> new IllegalArgumentException("Policy had no ID!"));
 
-        final DittoHeaders headers = buildDittoHeaders(true, false, options);
+        final DittoHeaders headers = buildDittoHeaders(EnumSet.of(EXISTS), options);
         return ModifyPolicy.of(policyId, policy, headers);
     }
 
@@ -276,8 +278,7 @@ public final class OutgoingMessageFactory {
         final PolicyId policyId =
                 policy.getEntityId().orElseThrow(() -> new IllegalArgumentException("Policy had no ID!"));
 
-        final DittoHeaders headersWithoutIfMatch = buildDittoHeaders(false, false, options);
-        final DittoHeaders headers = headersWithoutIfMatch.toBuilder()
+        final DittoHeaders headers = DittoHeaders.newBuilder(buildDittoHeaders(Collections.emptySet(), options))
                 .ifMatch(ASTERISK)
                 .build();
         return ModifyPolicy.of(policyId, policy, headers);
@@ -292,7 +293,7 @@ public final class OutgoingMessageFactory {
      * @since 1.1.0
      */
     public RetrievePolicy retrievePolicy(final PolicyId policyId) {
-        return RetrievePolicy.of(policyId, buildDittoHeaders(false, false));
+        return RetrievePolicy.of(policyId, buildDittoHeaders(Collections.emptySet()));
     }
 
     /**
@@ -305,7 +306,7 @@ public final class OutgoingMessageFactory {
      * @since 1.1.0
      */
     public DeletePolicy deletePolicy(final PolicyId policyId, final Option<?>... options) {
-        return DeletePolicy.of(policyId, buildDittoHeaders(false, false, options));
+        return DeletePolicy.of(policyId, buildDittoHeaders(Collections.emptySet(), options));
     }
 
     public ModifyAttribute setAttribute(final ThingId thingId,
@@ -313,7 +314,7 @@ public final class OutgoingMessageFactory {
             final JsonValue value,
             final Option<?>... options) {
 
-        return ModifyAttribute.of(thingId, path, value, buildDittoHeaders(true, true, options));
+        return ModifyAttribute.of(thingId, path, value, buildDittoHeaders(EnumSet.of(EXISTS, CONDITION), options));
     }
 
     public MergeThing mergeAttribute(final ThingId thingId,
@@ -321,54 +322,61 @@ public final class OutgoingMessageFactory {
             final JsonValue value,
             final Option<?>... options) {
 
-        return MergeThing.withAttribute(thingId, path, value, buildDittoHeaders(true, true, options));
+        return MergeThing.withAttribute(thingId,
+                path,
+                value,
+                buildDittoHeaders(EnumSet.of(EXISTS, CONDITION), options));
     }
 
-    public ModifyAttributes setAttributes(final ThingId thingId, final JsonObject attributes,
+    public ModifyAttributes setAttributes(final ThingId thingId,
+            final JsonObject attributes,
             final Option<?>... options) {
-        return ModifyAttributes.of(thingId, ThingsModelFactory.newAttributes(attributes),
-                buildDittoHeaders(true,true, options));
+
+        return ModifyAttributes.of(thingId,
+                ThingsModelFactory.newAttributes(attributes),
+                buildDittoHeaders(EnumSet.of(EXISTS, CONDITION), options));
     }
 
     public MergeThing mergeAttributes(final ThingId thingId, final JsonObject attributes, final Option<?>[] options) {
-        return MergeThing.withAttributes(thingId, ThingsModelFactory.newAttributes(attributes),
-                buildDittoHeaders(true, true, options));
+        return MergeThing.withAttributes(thingId,
+                ThingsModelFactory.newAttributes(attributes),
+                buildDittoHeaders(EnumSet.of(EXISTS, CONDITION), options));
     }
 
     public DeleteAttribute deleteAttribute(final ThingId thingId, final JsonPointer path, final Option<?>... options) {
-        return DeleteAttribute.of(thingId, path, buildDittoHeaders(false, true, options));
+        return DeleteAttribute.of(thingId, path, buildDittoHeaders(EnumSet.of(CONDITION), options));
     }
 
     public DeleteAttributes deleteAttributes(final ThingId thingId, final Option<?>... options) {
-        return DeleteAttributes.of(thingId, buildDittoHeaders(false, true, options));
+        return DeleteAttributes.of(thingId, buildDittoHeaders(EnumSet.of(CONDITION), options));
     }
 
     public ModifyFeature setFeature(final ThingId thingId, final Feature feature, final Option<?>... options) {
-        return ModifyFeature.of(thingId, feature, buildDittoHeaders(true, true, options));
+        return ModifyFeature.of(thingId, feature, buildDittoHeaders(EnumSet.of(EXISTS, CONDITION), options));
     }
 
     public MergeThing mergeFeature(final ThingId thingId, final Feature feature, final Option<?>... options) {
-        return MergeThing.withFeature(thingId, feature, buildDittoHeaders(true, true, options));
+        return MergeThing.withFeature(thingId, feature, buildDittoHeaders(EnumSet.of(EXISTS, CONDITION), options));
     }
 
     public ModifyFeatures setFeatures(final ThingId thingId, final Features features, final Option<?>... options) {
-        return ModifyFeatures.of(thingId, features, buildDittoHeaders(true, true, options));
+        return ModifyFeatures.of(thingId, features, buildDittoHeaders(EnumSet.of(EXISTS, CONDITION), options));
     }
 
     public MergeThing mergeFeatures(final ThingId thingId, final Features features, final Option<?>[] options) {
-        return MergeThing.withFeatures(thingId, features, buildDittoHeaders(true, true, options));
+        return MergeThing.withFeatures(thingId, features, buildDittoHeaders(EnumSet.of(EXISTS, CONDITION), options));
     }
 
     public ModifyPolicyId setPolicyId(final ThingId thingId, final PolicyId policyId, final Option<?>... options) {
-        return ModifyPolicyId.of(thingId, policyId, buildDittoHeaders(true, true, options));
+        return ModifyPolicyId.of(thingId, policyId, buildDittoHeaders(EnumSet.of(EXISTS, CONDITION), options));
     }
 
     public MergeThing mergePolicyId(final ThingId thingId, final PolicyId policyId, final Option<?>... options) {
-        return MergeThing.withPolicyId(thingId, policyId, buildDittoHeaders(true, true, options));
+        return MergeThing.withPolicyId(thingId, policyId, buildDittoHeaders(EnumSet.of(EXISTS, CONDITION), options));
     }
 
     public RetrieveFeature retrieveFeature(final ThingId thingId, final String featureId, final Option<?>... options) {
-        return RetrieveFeature.of(thingId, featureId, buildDittoHeaders(false, true, options));
+        return RetrieveFeature.of(thingId, featureId, buildDittoHeaders(EnumSet.of(CONDITION), options));
     }
 
     public RetrieveFeature retrieveFeature(final ThingId thingId,
@@ -376,16 +384,18 @@ public final class OutgoingMessageFactory {
             final Iterable<JsonPointer> fields,
             final Option<?>... options) {
 
-        return RetrieveFeature.of(thingId, featureId, JsonFactory.newFieldSelector(fields),
-                buildDittoHeaders(false, true, options));
+        return RetrieveFeature.of(thingId,
+                featureId,
+                JsonFactory.newFieldSelector(fields),
+                buildDittoHeaders(EnumSet.of(CONDITION), options));
     }
 
     public DeleteFeature deleteFeature(final ThingId thingId, final String featureId, final Option<?>... options) {
-        return DeleteFeature.of(thingId, featureId, buildDittoHeaders(false, true, options));
+        return DeleteFeature.of(thingId, featureId, buildDittoHeaders(EnumSet.of(CONDITION), options));
     }
 
     public DeleteFeatures deleteFeatures(final ThingId thingId, final Option<?>... options) {
-        return DeleteFeatures.of(thingId, buildDittoHeaders(false, true, options));
+        return DeleteFeatures.of(thingId, buildDittoHeaders(EnumSet.of(CONDITION), options));
     }
 
     /**
@@ -403,8 +413,10 @@ public final class OutgoingMessageFactory {
             final FeatureDefinition featureDefinition,
             final Option<?>... options) {
 
-        return ModifyFeatureDefinition.of(thingId, featureId, featureDefinition,
-                buildDittoHeaders(true, true, options));
+        return ModifyFeatureDefinition.of(thingId,
+                featureId,
+                featureDefinition,
+                buildDittoHeaders(EnumSet.of(EXISTS, CONDITION), options));
     }
 
     /**
@@ -422,8 +434,10 @@ public final class OutgoingMessageFactory {
             final FeatureDefinition featureDefinition,
             final Option<?>... options) {
 
-        return MergeThing.withFeatureDefinition(thingId, featureId, featureDefinition,
-                buildDittoHeaders(true, true, options));
+        return MergeThing.withFeatureDefinition(thingId,
+                featureId,
+                featureDefinition,
+                buildDittoHeaders(EnumSet.of(EXISTS, CONDITION), options));
     }
 
     /**
@@ -435,10 +449,11 @@ public final class OutgoingMessageFactory {
      * @return the command object.
      * @throws NullPointerException if any argument is {@code null}.
      */
-    public DeleteFeatureDefinition deleteFeatureDefinition(final ThingId thingId, final String featureId,
+    public DeleteFeatureDefinition deleteFeatureDefinition(final ThingId thingId,
+            final String featureId,
             final Option<?>... options) {
 
-        return DeleteFeatureDefinition.of(thingId, featureId, buildDittoHeaders(false, true, options));
+        return DeleteFeatureDefinition.of(thingId, featureId, buildDittoHeaders(EnumSet.of(CONDITION), options));
     }
 
     public ModifyFeatureProperty setFeatureProperty(final ThingId thingId,
@@ -447,8 +462,11 @@ public final class OutgoingMessageFactory {
             final JsonValue value,
             final Option<?>... options) {
 
-        return ModifyFeatureProperty.of(thingId, featureId, path, value,
-                buildDittoHeaders(true, true, options));
+        return ModifyFeatureProperty.of(thingId,
+                featureId,
+                path,
+                value,
+                buildDittoHeaders(EnumSet.of(EXISTS, CONDITION), options));
     }
 
     public MergeThing mergeFeatureProperty(final ThingId thingId,
@@ -457,8 +475,11 @@ public final class OutgoingMessageFactory {
             final JsonValue value,
             final Option<?>... options) {
 
-        return MergeThing.withFeatureProperty(thingId, featureId, path, value,
-                buildDittoHeaders(true, true, options));
+        return MergeThing.withFeatureProperty(thingId,
+                featureId,
+                path,
+                value,
+                buildDittoHeaders(EnumSet.of(EXISTS, CONDITION), options));
     }
 
     public ModifyFeatureProperties setFeatureProperties(final ThingId thingId,
@@ -466,8 +487,10 @@ public final class OutgoingMessageFactory {
             final JsonObject properties,
             final Option<?>... options) {
 
-        return ModifyFeatureProperties.of(thingId, featureId, ThingsModelFactory.newFeatureProperties(properties),
-                buildDittoHeaders(true, true, options));
+        return ModifyFeatureProperties.of(thingId,
+                featureId,
+                ThingsModelFactory.newFeatureProperties(properties),
+                buildDittoHeaders(EnumSet.of(EXISTS, CONDITION), options));
     }
 
     public MergeThing mergeFeatureProperties(final ThingId thingId,
@@ -475,8 +498,10 @@ public final class OutgoingMessageFactory {
             final JsonObject properties,
             final Option<?>... options) {
 
-        return MergeThing.withFeatureProperties(thingId, featureId, ThingsModelFactory.newFeatureProperties(properties),
-                buildDittoHeaders(true, true, options));
+        return MergeThing.withFeatureProperties(thingId,
+                featureId,
+                ThingsModelFactory.newFeatureProperties(properties),
+                buildDittoHeaders(EnumSet.of(EXISTS, CONDITION), options));
     }
 
     public DeleteFeatureProperty deleteFeatureProperty(final ThingId thingId,
@@ -484,15 +509,14 @@ public final class OutgoingMessageFactory {
             final JsonPointer path,
             final Option<?>... options) {
 
-        return DeleteFeatureProperty.of(thingId, featureId, path,
-                buildDittoHeaders(false, true, options));
+        return DeleteFeatureProperty.of(thingId, featureId, path, buildDittoHeaders(EnumSet.of(CONDITION), options));
     }
 
-    public DeleteFeatureProperties deleteFeatureProperties(final ThingId thingId, final String featureId,
+    public DeleteFeatureProperties deleteFeatureProperties(final ThingId thingId,
+            final String featureId,
             final Option<?>... options) {
 
-        return DeleteFeatureProperties.of(thingId, featureId,
-                buildDittoHeaders(false, true, options));
+        return DeleteFeatureProperties.of(thingId, featureId, buildDittoHeaders(EnumSet.of(CONDITION), options));
     }
 
     /**
@@ -566,18 +590,20 @@ public final class OutgoingMessageFactory {
         return messageBuilder.build();
     }
 
-    private DittoHeaders buildDittoHeaders(final boolean allowExists, final boolean allowCondition, final Option<?>... options) {
+    private DittoHeaders buildDittoHeaders(final Collection<? extends OptionName> allowedOptions,
+            final Option<?>... options) {
+
         final OptionsEvaluator.Global global = OptionsEvaluator.forGlobalOptions(options);
         final OptionsEvaluator.Modify modify = OptionsEvaluator.forModifyOptions(options);
 
-        final DittoHeaders additionalHeaders = global.getDittoHeaders().orElse(DittoHeaders.empty());
+        final DittoHeaders additionalHeaders = global.getDittoHeaders().orElseGet(DittoHeaders::empty);
         final DittoHeadersBuilder<?, ?> headersBuilder = DittoHeaders.newBuilder(additionalHeaders)
                 .correlationId(additionalHeaders.getCorrelationId()
                         .orElseGet(() -> UUID.randomUUID().toString()))
                 .schemaVersion(jsonSchemaVersion)
                 .responseRequired(modify.isResponseRequired().orElse(true));
         modify.exists().ifPresent(exists -> {
-            if (!allowExists) {
+            if (!allowedOptions.contains(EXISTS)) {
                 throw new IllegalArgumentException("Option \"exists\" is not allowed for this operation.");
             }
             if (Boolean.TRUE.equals(exists)) {
@@ -587,7 +613,7 @@ public final class OutgoingMessageFactory {
             }
         });
         modify.condition().ifPresent(condition -> {
-            if (!allowCondition) {
+            if (!allowedOptions.contains(CONDITION)) {
                 throw new IllegalArgumentException("Option \"condition\" is not allowed for this operation.");
             }
             headersBuilder.condition(condition);
