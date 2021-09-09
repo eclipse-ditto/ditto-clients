@@ -18,11 +18,13 @@ import static org.eclipse.ditto.client.options.OptionName.Modify.EXISTS;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -602,10 +604,9 @@ public final class OutgoingMessageFactory {
                         .orElseGet(() -> UUID.randomUUID().toString()))
                 .schemaVersion(jsonSchemaVersion)
                 .responseRequired(modify.isResponseRequired().orElse(true));
+
         modify.exists().ifPresent(exists -> {
-            if (!allowedOptions.contains(EXISTS)) {
-                throw new IllegalArgumentException("Option \"exists\" is not allowed for this operation.");
-            }
+            validateIfOptionIsAllowed(EXISTS, allowedOptions);
             if (Boolean.TRUE.equals(exists)) {
                 headersBuilder.ifMatch(ASTERISK);
             } else {
@@ -613,13 +614,21 @@ public final class OutgoingMessageFactory {
             }
         });
         modify.condition().ifPresent(condition -> {
-            if (!allowedOptions.contains(CONDITION)) {
-                throw new IllegalArgumentException("Option \"condition\" is not allowed for this operation.");
-            }
+            validateIfOptionIsAllowed(CONDITION, allowedOptions);
             headersBuilder.condition(condition);
         });
 
         return headersBuilder.build();
+    }
+
+    private static void validateIfOptionIsAllowed(final OptionName option,
+            final Collection<? extends OptionName> allowedOptions) {
+
+        if (!allowedOptions.contains(option)) {
+            final String pattern = "Option ''{0}'' is not allowed for this operation.";
+            final String lowerCaseOptionName = option.toString().toLowerCase(Locale.ENGLISH);
+            throw new IllegalArgumentException(MessageFormat.format(pattern, lowerCaseOptionName));
+        }
     }
 
     /**
