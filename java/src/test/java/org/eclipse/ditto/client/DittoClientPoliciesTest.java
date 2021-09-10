@@ -198,12 +198,12 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
                 .build()));
     }
 
-    @Test(expected = JsonMissingFieldException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testCreatePolicyWithMissingId() {
         client.policies().create(JsonFactory.newObject());
     }
 
-    @Test(expected = JsonMissingFieldException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testUpdatePolicyWithMissingId() {
         client.policies().update(JsonFactory.newObject());
     }
