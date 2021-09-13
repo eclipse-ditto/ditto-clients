@@ -18,13 +18,11 @@ import static org.eclipse.ditto.client.options.OptionName.Modify.EXISTS;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -32,7 +30,6 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
-import org.eclipse.ditto.base.model.headers.DittoHeadersBuilder;
 import org.eclipse.ditto.base.model.headers.entitytag.EntityTagMatcher;
 import org.eclipse.ditto.base.model.headers.entitytag.EntityTagMatchers;
 import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
@@ -595,40 +592,7 @@ public final class OutgoingMessageFactory {
     private DittoHeaders buildDittoHeaders(final Collection<? extends OptionName> allowedOptions,
             final Option<?>... options) {
 
-        final OptionsEvaluator.Global global = OptionsEvaluator.forGlobalOptions(options);
-        final OptionsEvaluator.Modify modify = OptionsEvaluator.forModifyOptions(options);
-
-        final DittoHeaders additionalHeaders = global.getDittoHeaders().orElseGet(DittoHeaders::empty);
-        final DittoHeadersBuilder<?, ?> headersBuilder = DittoHeaders.newBuilder(additionalHeaders)
-                .correlationId(additionalHeaders.getCorrelationId()
-                        .orElseGet(() -> UUID.randomUUID().toString()))
-                .schemaVersion(jsonSchemaVersion)
-                .responseRequired(modify.isResponseRequired().orElse(true));
-
-        modify.exists().ifPresent(exists -> {
-            validateIfOptionIsAllowed(EXISTS, allowedOptions);
-            if (Boolean.TRUE.equals(exists)) {
-                headersBuilder.ifMatch(ASTERISK);
-            } else {
-                headersBuilder.ifNoneMatch(ASTERISK);
-            }
-        });
-        modify.condition().ifPresent(condition -> {
-            validateIfOptionIsAllowed(CONDITION, allowedOptions);
-            headersBuilder.condition(condition);
-        });
-
-        return headersBuilder.build();
-    }
-
-    private static void validateIfOptionIsAllowed(final OptionName option,
-            final Collection<? extends OptionName> allowedOptions) {
-
-        if (!allowedOptions.contains(option)) {
-            final String pattern = "Option ''{0}'' is not allowed for this operation.";
-            final String lowerCaseOptionName = option.toString().toLowerCase(Locale.ENGLISH);
-            throw new IllegalArgumentException(MessageFormat.format(pattern, lowerCaseOptionName));
-        }
+        return OptionsToDittoHeaders.getDittoHeaders(jsonSchemaVersion, allowedOptions, options);
     }
 
     /**
