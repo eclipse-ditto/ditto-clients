@@ -12,15 +12,14 @@
  */
 package org.eclipse.ditto.client;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
-import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
 import java.util.Arrays;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.TimeUnit;
 
-import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
 import org.eclipse.ditto.base.model.acks.AcknowledgementRequest;
 import org.eclipse.ditto.base.model.common.HttpStatus;
@@ -113,11 +112,8 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
                 getManagement().forId(THING_ID).mergeFeature(FEATURE, Options.Modify.exists(false))
         );
         final MergeThing command = expectMsgClass(MergeThing.class);
-        reply(MergeThingResponse.of(THING_ID,
-                path,
-                command.getDittoHeaders()));
-        assertThat(command.getResourcePath().toFieldSelector())
-                .isEqualTo(path.toFieldSelector());
+        reply(MergeThingResponse.of(THING_ID, path, command.getDittoHeaders()));
+        assertThat(command.getResourcePath().toFieldSelector()).isEqualTo(path.toFieldSelector());
         assertOnlyIfNoneMatchHeader(command);
     }
 
@@ -129,11 +125,8 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
                 getManagement().forId(THING_ID).mergeFeature(FEATURE, Options.Modify.exists(true))
         );
         final MergeThing command = expectMsgClass(MergeThing.class);
-        reply(MergeThingResponse.of(THING_ID,
-                path,
-                command.getDittoHeaders()));
-        assertThat(command.getResourcePath().toFieldSelector())
-                .isEqualTo(path.toFieldSelector());
+        reply(MergeThingResponse.of(THING_ID, path, command.getDittoHeaders()));
+        assertThat(command.getResourcePath().toFieldSelector()).isEqualTo(path.toFieldSelector());
         assertOnlyIfMatchHeader(command);
     }
 
@@ -185,7 +178,7 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
         );
         final ModifyFeatureDefinition command = expectMsgClass(ModifyFeatureDefinition.class);
         reply(ModifyFeatureDefinitionResponse.modified(THING_ID, FEATURE_ID, command.getDittoHeaders()));
-        Assertions.assertThat(command.getDefinition()).isEqualTo(definition);
+        assertThat(command.getDefinition()).isEqualTo(definition);
     }
 
     @Test
@@ -202,10 +195,8 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
                         .mergeDefinition(definition)
         );
         final MergeThing command = expectMsgClass(MergeThing.class);
-        reply(MergeThingResponse.of(THING_ID,
-                path,
-                command.getDittoHeaders()));
-        Assertions.assertThat(FeatureDefinition.fromJson(command.getValue().asArray())).isEqualTo(definition);
+        reply(MergeThingResponse.of(THING_ID, path, command.getDittoHeaders()));
+        assertThat(FeatureDefinition.fromJson(command.getValue().asArray())).isEqualTo(definition);
     }
 
     @Test
@@ -244,9 +235,7 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
                 getManagement().forId(THING_ID).forFeature(FEATURE_ID).mergeProperty(path, value)
         );
         final MergeThing mergeThing = expectMsgClass(MergeThing.class);
-        reply(MergeThingResponse.of(THING_ID,
-                completePath,
-                mergeThing.getDittoHeaders()));
+        reply(MergeThingResponse.of(THING_ID, completePath, mergeThing.getDittoHeaders()));
     }
 
     @Test
@@ -277,8 +266,7 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
         assertEventualCompletion(getManagement().forId(THING_ID).forFeature(FEATURE_ID).mergeProperties(properties));
 
         final MergeThing mergeThing = expectMsgClass(MergeThing.class);
-        reply(MergeThingResponse.of(THING_ID, path,
-                mergeThing.getDittoHeaders()));
+        reply(MergeThingResponse.of(THING_ID, path, mergeThing.getDittoHeaders()));
     }
 
     @Test
@@ -332,7 +320,7 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
                     assertThat(error).isInstanceOf(CompletionException.class)
                             .hasCauseInstanceOf(AcknowledgementsFailedException.class);
                     final AcknowledgementsFailedException cause = (AcknowledgementsFailedException) error.getCause();
-                    Assertions.assertThat(cause.getAcknowledgements().setDittoHeaders(DittoHeaders.empty()))
+                    assertThat(cause.getAcknowledgements().setDittoHeaders(DittoHeaders.empty()))
                             .isEqualTo(expectedAcknowledgements);
                     return null;
                 })
@@ -352,9 +340,9 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
         );
         final ModifyFeature command = expectMsgClass(ModifyFeature.class);
         reply(ModifyFeatureResponse.modified(THING_ID, FEATURE_ID, command.getDittoHeaders()));
+
         assertThat(command.getFeatureId()).isEqualTo(FEATURE_ID);
-        Assertions.assertThat(command.getDittoHeaders())
-                .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION.toString());
+        assertThat(command.getDittoHeaders()).containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION);
     }
 
     @Test
@@ -363,10 +351,9 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
                 getManagement().forId(THING_ID).mergeFeatures(FEATURES, Options.Modify.condition(CONDITION))
         );
         final MergeThing command = expectMsgClass(MergeThing.class);
-        reply(MergeThingResponse.of(THING_ID, JsonFactory.newPointer("/features"),
-                command.getDittoHeaders()));
-        Assertions.assertThat(command.getDittoHeaders())
-                .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION.toString());
+        reply(MergeThingResponse.of(THING_ID, JsonFactory.newPointer("/features"), command.getDittoHeaders()));
+
+        assertThat(command.getDittoHeaders()).containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION);
     }
 
     @Test
@@ -375,10 +362,11 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
                 getManagement().forId(THING_ID).mergeFeature(FEATURE, Options.Modify.condition(CONDITION))
         );
         final MergeThing command = expectMsgClass(MergeThing.class);
-        reply(MergeThingResponse.of(THING_ID, JsonFactory.newPointer("/features/" + FEATURE_ID),
+        reply(MergeThingResponse.of(THING_ID,
+                JsonFactory.newPointer("/features/" + FEATURE_ID),
                 command.getDittoHeaders()));
-        Assertions.assertThat(command.getDittoHeaders())
-                .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION.toString());
+
+        assertThat(command.getDittoHeaders()).containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION);
     }
 
     @Test
@@ -388,8 +376,8 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
         );
         final DeleteFeatures command = expectMsgClass(DeleteFeatures.class);
         reply(DeleteFeaturesResponse.of(THING_ID, command.getDittoHeaders()));
-        Assertions.assertThat(command.getDittoHeaders())
-                .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION.toString());
+
+        assertThat(command.getDittoHeaders()).containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION);
     }
 
     @Test
@@ -399,8 +387,8 @@ public final class DittoClientFeaturesTest extends AbstractDittoClientThingsTest
         );
         final DeleteFeature command = expectMsgClass(DeleteFeature.class);
         reply(DeleteFeatureResponse.of(THING_ID, FEATURE_ID, command.getDittoHeaders()));
-        Assertions.assertThat(command.getDittoHeaders())
-                .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION.toString());
+
+        assertThat(command.getDittoHeaders()).containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION);
     }
 
 }

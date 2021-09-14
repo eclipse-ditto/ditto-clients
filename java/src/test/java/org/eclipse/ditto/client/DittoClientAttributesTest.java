@@ -12,6 +12,7 @@
  */
 package org.eclipse.ditto.client;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
@@ -20,7 +21,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.base.model.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.base.model.signals.Signal;
 import org.eclipse.ditto.client.internal.AbstractDittoClientThingsTest;
@@ -62,7 +62,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
     private static final JsonPointer ATTRIBUTE_KEY_REALLY_NEW = JsonFactory.newPointer("reallyNew");
     private static final JsonPointer ATTRIBUTE_KEY_OLD = JsonFactory.newPointer("old");
     private static final String ATTRIBUTE_VALUE = "value";
-    private  static final JsonObject ATTRIBUTES = JsonFactory.newObjectBuilder()
+    private static final JsonObject ATTRIBUTES = JsonFactory.newObjectBuilder()
             .set(ATTRIBUTE_KEY_NEW, 42)
             .set(ATTRIBUTE_KEY_REALLY_NEW, true)
             .build();
@@ -94,8 +94,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
 
     @Test
     public void testMergeStringAttributeWithExistsOptionFalse() {
-        final JsonPointer absolutePath =
-                Thing.JsonFields.ATTRIBUTES.getPointer().append(ATTRIBUTE_KEY_NEW);
+        final JsonPointer absolutePath = Thing.JsonFields.ATTRIBUTES.getPointer().append(ATTRIBUTE_KEY_NEW);
 
         assertEventualCompletion(
                 getManagement()
@@ -104,9 +103,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
         );
         final Signal<?> command = expectMsgClass(MergeThing.class);
         assertOnlyIfNoneMatchHeader(command);
-        reply(MergeThingResponse.of(THING_ID,
-                absolutePath,
-                command.getDittoHeaders()));
+        reply(MergeThingResponse.of(THING_ID, absolutePath, command.getDittoHeaders()));
     }
 
     @Test
@@ -121,9 +118,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
         );
         final Signal<?> command = expectMsgClass(MergeThing.class);
         assertOnlyIfMatchHeader(command);
-        reply(MergeThingResponse.of(THING_ID,
-                absolutePath,
-                command.getDittoHeaders()));
+        reply(MergeThingResponse.of(THING_ID, absolutePath, command.getDittoHeaders()));
     }
 
     @Test
@@ -151,8 +146,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
 
     @Test
     public void testMergeAttribute() {
-        final JsonPointer absolutePath =
-                Thing.JsonFields.ATTRIBUTES.getPointer().append(ATTRIBUTE_KEY_NEW);
+        final JsonPointer absolutePath = Thing.JsonFields.ATTRIBUTES.getPointer().append(ATTRIBUTE_KEY_NEW);
         final JsonObject value = JsonFactory.newObject("{\"id\": 42, \"name\": " +
                 "\"someName\"}");
 
@@ -244,13 +238,18 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
                         .build();
 
         final Message<ThingEvent> attributeModified = MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders)
-                .payload(AttributeModified.of(THING_ID, ATTRIBUTE_KEY_NEW, JsonFactory.newValue("value"), 1,
-                        Instant.now(), headersWithChannel(), null))
+                .payload(AttributeModified.of(THING_ID,
+                        ATTRIBUTE_KEY_NEW,
+                        JsonFactory.newValue("value"),
+                        1,
+                        Instant.now(),
+                        headersWithChannel(),
+                        null))
                 .build();
 
         messaging.receiveEvent(attributeModified);
 
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
     }
 
     @Test
@@ -273,13 +272,18 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
                 MessageHeaders.newBuilder(MessageDirection.FROM, THING_ID, AttributeCreated.TYPE).build();
 
         final Message<ThingEvent> attributeCreated = MessagesModelFactory.<ThingEvent>newMessageBuilder(messageHeaders)
-                .payload(AttributeCreated.of(THING_ID, ATTRIBUTE_KEY_REALLY_NEW, JsonFactory.newValue("value"), 1,
-                        Instant.now(), headersWithChannel(), null))
+                .payload(AttributeCreated.of(THING_ID,
+                        ATTRIBUTE_KEY_REALLY_NEW,
+                        JsonFactory.newValue("value"),
+                        1,
+                        Instant.now(),
+                        headersWithChannel(),
+                        null))
                 .build();
 
         messaging.receiveEvent(attributeCreated);
 
-        Assertions.assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
+        assertThat(latch.await(TIMEOUT, TIME_UNIT)).isTrue();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -325,8 +329,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
         final ModifyAttribute command = expectMsgClass(ModifyAttribute.class);
         reply(ModifyAttributeResponse.created(THING_ID, ATTRIBUTE_KEY_NEW, JsonValue.of(ATTRIBUTE_VALUE),
                 command.getDittoHeaders()));
-        Assertions.assertThat(command.getDittoHeaders())
-                .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION.toString());
+        assertThat(command.getDittoHeaders()).containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION);
     }
 
     @Test
@@ -337,10 +340,8 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
                         .mergeAttribute(ATTRIBUTE_KEY_NEW, ATTRIBUTE_VALUE, Options.Modify.condition(CONDITION))
         );
         final MergeThing command = expectMsgClass(MergeThing.class);
-        reply(MergeThingResponse.of(THING_ID, JsonFactory.newPointer("/attributes"),
-                command.getDittoHeaders()));
-        Assertions.assertThat(command.getDittoHeaders())
-                .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION.toString());
+        reply(MergeThingResponse.of(THING_ID, JsonFactory.newPointer("/attributes"), command.getDittoHeaders()));
+        assertThat(command.getDittoHeaders()).containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION);
     }
 
     @Test
@@ -351,10 +352,8 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
                         .mergeAttributes(ATTRIBUTES, Options.Modify.condition(CONDITION))
         );
         final MergeThing command = expectMsgClass(MergeThing.class);
-        reply(MergeThingResponse.of(THING_ID, JsonFactory.newPointer("/attributes"),
-                command.getDittoHeaders()));
-        Assertions.assertThat(command.getDittoHeaders())
-                .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION.toString());
+        reply(MergeThingResponse.of(THING_ID, JsonFactory.newPointer("/attributes"), command.getDittoHeaders()));
+        assertThat(command.getDittoHeaders()).containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION);
     }
 
     @Test
@@ -365,10 +364,8 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
                         .deleteAttribute(ATTRIBUTE_KEY_NEW, Options.Modify.condition(CONDITION))
         );
         final DeleteAttribute command = expectMsgClass(DeleteAttribute.class);
-        reply(DeleteAttributeResponse.of(THING_ID, ATTRIBUTE_KEY_NEW,
-                command.getDittoHeaders()));
-        Assertions.assertThat(command.getDittoHeaders())
-                .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION.toString());
+        reply(DeleteAttributeResponse.of(THING_ID, ATTRIBUTE_KEY_NEW, command.getDittoHeaders()));
+        assertThat(command.getDittoHeaders()).containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION);
     }
 
     @Test
@@ -380,8 +377,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
         );
         final DeleteAttributes command = expectMsgClass(DeleteAttributes.class);
         reply(DeleteAttributesResponse.of(THING_ID, command.getDittoHeaders()));
-        Assertions.assertThat(command.getDittoHeaders())
-                .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION.toString());
+        assertThat(command.getDittoHeaders()).containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION);
     }
 
 }
