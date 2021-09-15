@@ -41,6 +41,7 @@
                 <include>org.eclipse.ditto:ditto-thingsearch-model</include>
                 <include>org.eclipse.ditto:ditto-messages-model</include>
                 <include>org.eclipse.ditto:ditto-connectivity-model</include> <!-- needed as ditto-protocol imports that -->
+                <include>org.eclipse.ditto:ditto-placeholders</include> <!-- needed as ditto-protocol imports that -->
                 <include>org.eclipse.ditto:ditto-protocol</include>
                 <include>org.eclipse.ditto:ditto-client</include>
             </includes>

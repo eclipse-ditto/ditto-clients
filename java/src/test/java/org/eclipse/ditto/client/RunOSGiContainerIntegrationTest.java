@@ -72,6 +72,7 @@ import org.eclipse.ditto.messages.model.Message;
 import org.eclipse.ditto.messages.model.MessagesModelFactory;
 import org.eclipse.ditto.messages.model.signals.commands.MessageCommand;
 import org.eclipse.ditto.messages.model.signals.commands.MessageCommandResponse;
+import org.eclipse.ditto.placeholders.PlaceholderFactory;
 import org.eclipse.ditto.policies.model.PoliciesModelFactory;
 import org.eclipse.ditto.policies.model.signals.announcements.PolicyAnnouncement;
 import org.eclipse.ditto.protocol.Adaptable;
@@ -131,8 +132,8 @@ public class RunOSGiContainerIntegrationTest {
         final List<Option> allOptions = new ArrayList<>();
         allOptions.add(cleanCaches());
         allOptions.addAll(bundleOptions);
-        allOptions.add(mavenBundle("ch.qos.logback", "logback-core", "1.2.3"));
-        allOptions.add(mavenBundle("ch.qos.logback", "logback-classic", "1.2.3"));
+        allOptions.add(mavenBundle("ch.qos.logback", "logback-core", "1.2.6"));
+        allOptions.add(mavenBundle("ch.qos.logback", "logback-classic", "1.2.6"));
         allOptions.add(junitBundles());
         allOptions.add(systemProperty("org.ops4j.pax.logging.DefaultServiceLog.level").value("INFO"));
 
@@ -259,6 +260,11 @@ public class RunOSGiContainerIntegrationTest {
         LOG.info("Ensuring ditto-connectivity-model is usable from OSGi..");
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(ConnectivityAnnouncement.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(ConnectionClosedAnnouncement.class));
+
+        // ditto-placeholders:
+        LOG.info("Ensuring ditto-placeholders is usable from OSGi..");
+        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(PlaceholderFactory.class));
+        instantiateClassWithNoArgStaticMethod(PlaceholderFactory.class, "newHeadersPlaceholder");
 
         // ditto-protocol:
         LOG.info("Ensuring ditto-protocol is usable from OSGi..");
