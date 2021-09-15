@@ -163,8 +163,8 @@ public final class OptionsToDittoHeadersTest {
     public void getDittoHeadersForAllowedConditionOption() {
         final String condition = "eq(attributes/manufacturer,\"ACME\"";
         final DittoHeaders dittoHeaders = OptionsToDittoHeaders.getDittoHeaders(SCHEMA_VERSION,
-                EnumSet.of(OptionName.Modify.CONDITION),
-                new Option[]{Options.Modify.condition(condition)});
+                EnumSet.of(OptionName.Global.CONDITION),
+                new Option[]{Options.condition(condition)});
 
         DittoBaseAssertions.assertThat(dittoHeaders)
                 .hasCorrelationId()
@@ -178,9 +178,9 @@ public final class OptionsToDittoHeadersTest {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> OptionsToDittoHeaders.getDittoHeaders(SCHEMA_VERSION,
                         Collections.emptySet(),
-                        new Option[]{Options.Modify.condition("eq(attributes/manufacturer,\"ACME\"")}))
+                        new Option[]{Options.condition("eq(attributes/manufacturer,\"ACME\"")}))
                 .withMessage("Option '%s' is not allowed for this operation.",
-                        OptionName.Modify.CONDITION.toString().toLowerCase(Locale.ROOT))
+                        OptionName.Global.CONDITION.toString().toLowerCase(Locale.ROOT))
                 .withNoCause();
     }
 

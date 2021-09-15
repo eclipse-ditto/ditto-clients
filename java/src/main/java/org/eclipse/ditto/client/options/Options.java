@@ -48,6 +48,27 @@ public final class Options {
     }
 
     /**
+     * Creates an option for specifying whether the operation should be performed on back-end based on the given
+     * condition.
+     * <p>
+     * The returned option has the name {@link OptionName.Global#CONDITION} and the given argument value.
+     * </p>
+     * <p>
+     * If this {@code Option} is not specified, the operation will be performed no matter what.
+     * </p>
+     *
+     * @param condition the RQL condition that determines whether the operation will be performed.
+     * @return the new option.
+     * @throws NullPointerException if {@code condition} is {@code null}.
+     * @throws IllegalArgumentException if {@code condition} is empty.
+     * @since 2.1.0
+     */
+    public static Option<String> condition(final CharSequence condition) {
+        ConditionChecker.argumentNotEmpty(condition, "condition");
+        return DefaultOption.newInstance(OptionName.Global.CONDITION, condition.toString());
+    }
+
+    /**
      * The {@code Modify} class provides static factory methods for creating Options which are related to modifying
      * operations.
      *
@@ -132,26 +153,6 @@ public final class Options {
          */
         public static Option<ThingId> copyPolicyFromThing(final ThingId thingToCopyPolicyFrom) {
             return DefaultOption.newInstance(OptionName.Modify.COPY_POLICY_FROM_THING, thingToCopyPolicyFrom);
-        }
-
-        /**
-         * Creates an option for specifying whether the command should be applied based on the given condition.
-         * <p>
-         * The returned option has the name {@link OptionName.Modify#CONDITION} and the given argument value.
-         * </p>
-         * <p>
-         * If this {@code Option} is not specified, the command will be applied no matter what.
-         * </p>
-         *
-         * @param condition the RQL condition that determines whether the command will be applied.
-         * @return the new option.
-         * @throws NullPointerException if {@code condition} is {@code null}.
-         * @throws IllegalArgumentException if {@code condition} is empty.
-         * @since 2.1.0
-         */
-        public static Option<String> condition(final CharSequence condition) {
-            ConditionChecker.argumentNotEmpty(condition, "condition");
-            return DefaultOption.newInstance(OptionName.Modify.CONDITION, condition.toString());
         }
 
     }

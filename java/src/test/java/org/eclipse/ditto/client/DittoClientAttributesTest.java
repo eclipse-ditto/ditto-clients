@@ -324,7 +324,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
         assertEventualCompletion(
                 getManagement()
                         .forId(THING_ID)
-                        .putAttribute(ATTRIBUTE_KEY_NEW, ATTRIBUTE_VALUE, Options.Modify.condition(CONDITION))
+                        .putAttribute(ATTRIBUTE_KEY_NEW, ATTRIBUTE_VALUE, Options.condition(CONDITION))
         );
         final ModifyAttribute command = expectMsgClass(ModifyAttribute.class);
         reply(ModifyAttributeResponse.created(THING_ID, ATTRIBUTE_KEY_NEW, JsonValue.of(ATTRIBUTE_VALUE),
@@ -337,7 +337,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
         assertEventualCompletion(
                 getManagement()
                         .forId(THING_ID)
-                        .mergeAttribute(ATTRIBUTE_KEY_NEW, ATTRIBUTE_VALUE, Options.Modify.condition(CONDITION))
+                        .mergeAttribute(ATTRIBUTE_KEY_NEW, ATTRIBUTE_VALUE, Options.condition(CONDITION))
         );
         final MergeThing command = expectMsgClass(MergeThing.class);
         reply(MergeThingResponse.of(THING_ID, JsonFactory.newPointer("/attributes"), command.getDittoHeaders()));
@@ -349,7 +349,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
         assertEventualCompletion(
                 getManagement()
                         .forId(THING_ID)
-                        .mergeAttributes(ATTRIBUTES, Options.Modify.condition(CONDITION))
+                        .mergeAttributes(ATTRIBUTES, Options.condition(CONDITION))
         );
         final MergeThing command = expectMsgClass(MergeThing.class);
         reply(MergeThingResponse.of(THING_ID, JsonFactory.newPointer("/attributes"), command.getDittoHeaders()));
@@ -361,7 +361,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
         assertEventualCompletion(
                 getManagement()
                         .forId(THING_ID)
-                        .deleteAttribute(ATTRIBUTE_KEY_NEW, Options.Modify.condition(CONDITION))
+                        .deleteAttribute(ATTRIBUTE_KEY_NEW, Options.condition(CONDITION))
         );
         final DeleteAttribute command = expectMsgClass(DeleteAttribute.class);
         reply(DeleteAttributeResponse.of(THING_ID, ATTRIBUTE_KEY_NEW, command.getDittoHeaders()));
@@ -373,7 +373,7 @@ public final class DittoClientAttributesTest extends AbstractDittoClientThingsTe
         assertEventualCompletion(
                 getManagement()
                         .forId(THING_ID)
-                        .deleteAttributes(Options.Modify.condition(CONDITION))
+                        .deleteAttributes(Options.condition(CONDITION))
         );
         final DeleteAttributes command = expectMsgClass(DeleteAttributes.class);
         reply(DeleteAttributesResponse.of(THING_ID, command.getDittoHeaders()));

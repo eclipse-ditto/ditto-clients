@@ -20,7 +20,7 @@ import org.eclipse.ditto.client.options.OptionName;
 
 /**
  * This visitor fetches and provides the value as {@code String} for the option with name
- * {@link org.eclipse.ditto.client.options.OptionName.Modify#CONDITION} from the user provided options.
+ * {@link OptionName.Global#CONDITION} from the user provided options.
  *
  * @since 2.1.0
  */
@@ -31,7 +31,7 @@ final class ConditionOptionVisitor extends AbstractOptionVisitor<String> {
      * Constructs a {@code ConditionOptionVisitor} object.
      */
     ConditionOptionVisitor() {
-        super(OptionName.Modify.CONDITION);
+        super(OptionName.Global.CONDITION);
     }
 
     @Override

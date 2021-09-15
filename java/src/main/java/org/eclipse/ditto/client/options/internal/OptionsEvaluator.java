@@ -109,6 +109,17 @@ public final class OptionsEvaluator {
         public Optional<DittoHeaders> getDittoHeaders() {
             return getValue(new DittoHeadersOptionVisitor());
         }
+
+        /**
+         * Returns whether an operation should be performed on back-end or not.
+         *
+         * @return an Optional holding the condition RQL expression String.
+         * @since 2.1.0
+         */
+        public Optional<String> condition() {
+            return getValue(new ConditionOptionVisitor());
+        }
+
     }
 
     /**
@@ -156,16 +167,6 @@ public final class OptionsEvaluator {
          */
         public Optional<ThingId> copyPolicyFromThingId() {
             return getValue(new CopyPolicyFromThingOptionVisitor());
-        }
-
-        /**
-         * Returns whether a request should be applied to the thing or not.
-         *
-         * @return an Optional holding the {@link String} to apply to the request.
-         * @since 2.1.0
-         */
-        public Optional<String> condition() {
-            return getValue(new ConditionOptionVisitor());
         }
 
     }

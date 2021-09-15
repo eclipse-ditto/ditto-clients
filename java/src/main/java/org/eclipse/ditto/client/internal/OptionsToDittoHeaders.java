@@ -135,9 +135,9 @@ final class OptionsToDittoHeaders {
     }
 
     private void setCondition() {
-        modifyOptionsEvaluator.condition()
+        globalOptionsEvaluator.condition()
                 .ifPresent(condition -> {
-                    validateIfOptionIsAllowed(OptionName.Modify.CONDITION);
+                    validateIfOptionIsAllowed(OptionName.Global.CONDITION);
                     headersBuilder.condition(condition);
                 });
     }

@@ -37,6 +37,14 @@ public interface OptionName extends Predicate<Object> {
     enum Global implements OptionName {
 
         /**
+         * Name of the option for defining whether the thing command should be applied, based on the specified
+         * condition.
+         *
+         * @since 2.1.0
+         */
+        CONDITION,
+
+        /**
          * Name of the option for defining the DittoHeaders to send along with a command/message to the Ditto backend.
          * @since 1.1.0
          */
@@ -82,15 +90,8 @@ public interface OptionName extends Predicate<Object> {
          *
          * @since 1.1.0
          */
-        COPY_POLICY_FROM_THING,
+        COPY_POLICY_FROM_THING
 
-        /**
-         * Name of the option for defining whether the thing command should be applied, based on the specified
-         * condition.
-         *
-         * @since 2.1.0
-         */
-        CONDITION
     }
 
     /**

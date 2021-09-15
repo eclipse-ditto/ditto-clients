@@ -18,6 +18,8 @@ import static org.eclipse.ditto.base.model.common.ConditionChecker.checkArgument
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
+import org.eclipse.ditto.base.model.common.ConditionChecker;
+import org.eclipse.ditto.base.model.signals.commands.CommandResponse;
 import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.internal.AbstractHandle;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
@@ -32,11 +34,10 @@ import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.protocol.TopicPath;
 import org.eclipse.ditto.things.model.Feature;
 import org.eclipse.ditto.things.model.FeatureDefinition;
 import org.eclipse.ditto.things.model.ThingId;
-import org.eclipse.ditto.protocol.TopicPath;
-import org.eclipse.ditto.base.model.signals.commands.CommandResponse;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeature;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureDefinition;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureProperties;
@@ -127,14 +128,27 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
 
     @Override
     public CompletionStage<Feature> retrieve() {
-        final RetrieveFeature command = outgoingMessageFactory.retrieveFeature(thingId, featureId);
+        return retrieve(new Option<?>[0]);
+    }
+
+    @Override
+    public CompletionStage<Feature> retrieve(final Option<?>... options) {
+        ConditionChecker.checkNotNull(options, "options");
+        final RetrieveFeature command = outgoingMessageFactory.retrieveFeature(thingId, featureId, options);
         return askThingCommand(command, RetrieveFeatureResponse.class, RetrieveFeatureResponse::getFeature);
     }
 
     @Override
     public CompletionStage<Feature> retrieve(final JsonFieldSelector fieldSelector) {
+        return retrieve(fieldSelector, new Option<?>[0]);
+    }
+
+    @Override
+    public CompletionStage<Feature> retrieve(final JsonFieldSelector fieldSelector, final Option<?>... options) {
+        ConditionChecker.checkNotNull(fieldSelector, "fieldSelector");
+        ConditionChecker.checkNotNull(options, "options");
         final RetrieveFeature command =
-                outgoingMessageFactory.retrieveFeature(thingId, featureId, fieldSelector.getPointers());
+                outgoingMessageFactory.retrieveFeature(thingId, featureId, fieldSelector, options);
         return askThingCommand(command, RetrieveFeatureResponse.class, RetrieveFeatureResponse::getFeature);
     }
 
@@ -149,6 +163,7 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
     @Override
     public CompletionStage<Void> mergeDefinition(final FeatureDefinition featureDefinition,
             final Option<?>... options) {
+
         final MergeThing command =
                 outgoingMessageFactory.mergeFeatureDefinition(thingId, featureId, featureDefinition, options);
         return askThingCommand(command, CommandResponse.class, this::toVoid);
@@ -156,8 +171,8 @@ public abstract class FeatureHandleImpl<T extends ThingHandle<F>, F extends Feat
 
     @Override
     public CompletionStage<Void> deleteDefinition(final Option<?>... options) {
-        final DeleteFeatureDefinition
-                command = outgoingMessageFactory.deleteFeatureDefinition(thingId, featureId, options);
+        final DeleteFeatureDefinition command =
+                outgoingMessageFactory.deleteFeatureDefinition(thingId, featureId, options);
         return askThingCommand(command, CommandResponse.class, this::toVoid);
     }
 

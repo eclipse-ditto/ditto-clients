@@ -18,6 +18,8 @@ import static org.eclipse.ditto.base.model.common.ConditionChecker.checkArgument
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 
+import org.eclipse.ditto.base.model.common.ConditionChecker;
+import org.eclipse.ditto.base.model.signals.commands.CommandResponse;
 import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.FeatureChange;
 import org.eclipse.ditto.client.changes.FeaturesChange;
@@ -39,13 +41,12 @@ import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.policies.model.PolicyId;
+import org.eclipse.ditto.protocol.TopicPath;
 import org.eclipse.ditto.things.model.Feature;
 import org.eclipse.ditto.things.model.Features;
 import org.eclipse.ditto.things.model.Thing;
 import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.things.model.ThingsModelFactory;
-import org.eclipse.ditto.protocol.TopicPath;
-import org.eclipse.ditto.base.model.signals.commands.CommandResponse;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttribute;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteAttributes;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeature;
@@ -374,15 +375,28 @@ public abstract class ThingHandleImpl<T extends ThingHandle<F>, F extends Featur
 
     @Override
     public CompletionStage<Thing> retrieve() {
-        final RetrieveThing command = outgoingMessageFactory.retrieveThing(thingId);
+        return retrieve(new Option<?>[0]);
+    }
+
+    @Override
+    public CompletionStage<Thing> retrieve(final Option<?>... options) {
+        ConditionChecker.checkNotNull(options, "options");
+        final RetrieveThing command = outgoingMessageFactory.retrieveThing(thingId, options);
         return askThingCommand(command, RetrieveThingResponse.class, RetrieveThingResponse::getThing);
     }
 
     @Override
     public CompletionStage<Thing> retrieve(final JsonFieldSelector fieldSelector) {
-        argumentNotNull(fieldSelector);
+        return retrieve(fieldSelector, new Option<?>[0]);
+    }
 
-        final RetrieveThing command = outgoingMessageFactory.retrieveThing(thingId, fieldSelector.getPointers());
+    @Override
+    public CompletionStage<Thing> retrieve(final JsonFieldSelector fieldSelector, final Option<?>... options) {
+        ConditionChecker.checkNotNull(fieldSelector, "fieldSelector");
+        ConditionChecker.checkNotNull(options, "options");
+
+        final RetrieveThing command =
+                outgoingMessageFactory.retrieveThing(thingId, fieldSelector.getPointers(), options);
         return askThingCommand(command, RetrieveThingResponse.class, RetrieveThingResponse::getThing);
     }
 
