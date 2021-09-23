@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.internal.DefaultThreadFactory;
+import org.eclipse.ditto.client.internal.VersionReader;
 import org.eclipse.ditto.client.messaging.internal.WebSocketMessagingProvider;
 
 import com.neovisionaries.ws.client.WebSocket;
@@ -126,8 +127,16 @@ public final class MessagingProviders {
      * @return the {@code ScheduledExecutorService}.
      */
     public static ScheduledExecutorService createScheduledExecutorService(final String name) {
-        // ScheduledThreadPool executor is by default unbounded in max size, so start with core-size of 0:
-        return Executors.newScheduledThreadPool(0,
+        final int corePoolSize;
+        if (VersionReader.determineJavaRuntimeVersion() <= 8) {
+            // for Java <= 8, because of bug https://bugs.openjdk.java.net/browse/JDK-8129861, the corePoolSize must be at least 1:
+            corePoolSize = 1;
+        } else {
+            // bug has been fixed since Java 9, so scale down to 0 threads if the scheduledThreadPool is not needed:
+            corePoolSize = 0;
+        }
+        // ScheduledThreadPool executor is by default unbounded in max size, so start smallest possible core-pool-size:
+        return Executors.newScheduledThreadPool(corePoolSize,
                 new DefaultThreadFactory("ditto-client-scheduled-" + name));
     }
 
