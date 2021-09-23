@@ -12,7 +12,7 @@
  */
 package org.eclipse.ditto.client;
 
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.eclipse.ditto.client.TestConstants.Policy.POLICY;
 import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_ID;
 import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_JSON_OBJECT;
@@ -73,7 +73,7 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
 
     @Test
     public void createPolicyFailsWithExistsOption() {
-        assertThatExceptionOfType(IllegalArgumentException.class)
+        assertThatIllegalArgumentException()
                 .isThrownBy(() -> client.policies()
                         .create(POLICY, Options.Modify.exists(false))
                         .toCompletableFuture()
@@ -82,7 +82,7 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
 
     @Test
     public void testPutPolicyJsonObject() throws Exception {
-        final LinkedList<Function<PolicyCommand<?>, PolicyCommandResponse<?>>> responseList =
+        final List<Function<PolicyCommand<?>, PolicyCommandResponse<?>>> responseList =
                 new LinkedList<>(Arrays.asList(
                         c -> ModifyPolicyResponse.created(POLICY_ID, POLICY, c.getDittoHeaders()),
                         c -> ModifyPolicyResponse.modified(POLICY_ID, c.getDittoHeaders()),
@@ -113,7 +113,7 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
 
     @Test
     public void testPutPolicy() throws Exception {
-        final LinkedList<Function<PolicyCommand<?>, ModifyPolicyResponse>> responseList =
+        final List<Function<PolicyCommand<?>, ModifyPolicyResponse>> responseList =
                 new LinkedList<>(Arrays.asList(
                         c -> ModifyPolicyResponse.created(POLICY_ID, POLICY, c.getDittoHeaders()),
                         c -> ModifyPolicyResponse.modified(POLICY_ID, c.getDittoHeaders()),
@@ -149,12 +149,11 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
 
     @Test
     public void updatePolicyFailsWithExistsOption() {
-        assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() ->
-                client.policies()
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> client.policies()
                         .update(POLICY, Options.Modify.exists(false))
                         .toCompletableFuture()
-                        .get(TIMEOUT, TIME_UNIT)
-        );
+                        .get(TIMEOUT, TIME_UNIT));
     }
 
     @Test
@@ -165,7 +164,7 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
 
     @Test
     public void deletePolicyFailsWithExistsOption() {
-        assertThatExceptionOfType(IllegalArgumentException.class)
+        assertThatIllegalArgumentException()
                 .isThrownBy(() -> client.policies()
                         .delete(POLICY_ID, Options.Modify.exists(false))
                         .toCompletableFuture()
@@ -207,4 +206,25 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
     public void testUpdatePolicyWithMissingId() {
         client.policies().update(JsonFactory.newObject());
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testCreatePolicyWithForbiddenOption() {
+        client.policies().create(POLICY, Options.condition("ne(attributes/test)"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testPutPolicyWithForbiddenOption() {
+        client.policies().put(POLICY, Options.condition("ne(attributes/test)"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testUpdatePolicyWithForbiddenOption() {
+        client.policies().update(POLICY, Options.condition("ne(attributes/test)"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testDeletePolicyWithForbiddenOption() {
+        client.policies().delete(POLICY_ID, Options.condition("ne(attributes/test)"));
+    }
+
 }

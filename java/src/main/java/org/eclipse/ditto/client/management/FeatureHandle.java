@@ -67,6 +67,18 @@ public interface FeatureHandle extends WithFeatureId, FeaturePropertiesManagemen
     CompletionStage<Feature> retrieve();
 
     /**
+     * Retrieves the {@code Feature} being handled by this {@code FeatureHandle}.
+     *
+     * @param options options that determine the behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing the requested Feature object, when completed successfully or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws NullPointerException if {@code options} is {@code null}.
+     * @since 2.1.0
+     */
+    CompletionStage<Feature> retrieve(Option<?>... options);
+
+    /**
      * Retrieve the {@code Feature} being handled by this {@code FeatureHandle}.
      *
      * @param fieldSelector a field selector object allowing to select a subset of fields on the Feature to be
@@ -75,5 +87,19 @@ public interface FeatureHandle extends WithFeatureId, FeaturePropertiesManagemen
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      */
     CompletionStage<Feature> retrieve(JsonFieldSelector fieldSelector);
+
+    /**
+     * Retrieves the {@code Feature} being handled by this {@code FeatureHandle}.
+     *
+     * @param fieldSelector a field selector object allowing to select a subset of fields on the Feature to be
+     * retrieved.
+     * @param options options that determine the behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing the requested Feature object, when completed successfully or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws NullPointerException if any argument is {@code null}.
+     * @since 2.1.0
+     */
+    CompletionStage<Feature> retrieve(JsonFieldSelector fieldSelector, Option<?>... options);
 
 }
