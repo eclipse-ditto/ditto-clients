@@ -12,10 +12,12 @@
  */
 package org.eclipse.ditto.client.configuration.internal;
 
+import static org.mutabilitydetector.unittesting.AllowedReason.provided;
 import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
 import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import org.eclipse.ditto.client.configuration.ClientCredentialsAuthenticationConfiguration;
+import org.eclipse.ditto.client.messaging.JsonWebTokenSupplier;
 import org.junit.Test;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
@@ -35,7 +37,8 @@ public final class ClientCredentialsAuthenticationConfigurationTest {
     @Test
     public void assertImmutability() {
         assertInstancesOf(ClientCredentialsAuthenticationConfiguration.class,
-                areImmutable());
+                areImmutable(),
+                provided(JsonWebTokenSupplier.class).isAlsoImmutable());
     }
 
 }

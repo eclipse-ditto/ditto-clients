@@ -25,6 +25,7 @@ import java.io.BufferedInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystems;
@@ -42,6 +43,18 @@ import java.util.zip.ZipFile;
 import javax.inject.Inject;
 
 import org.atteo.classindex.ClassIndex;
+import org.eclipse.ditto.base.model.auth.AuthorizationContext;
+import org.eclipse.ditto.base.model.exceptions.DittoRuntimeException;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.json.Jsonifiable;
+import org.eclipse.ditto.base.model.signals.AbstractGlobalJsonParsableRegistry;
+import org.eclipse.ditto.base.model.signals.GlobalErrorRegistry;
+import org.eclipse.ditto.base.model.signals.announcements.Announcement;
+import org.eclipse.ditto.base.model.signals.commands.GlobalCommandRegistry;
+import org.eclipse.ditto.base.model.signals.commands.GlobalCommandResponseRegistry;
+import org.eclipse.ditto.base.model.signals.events.Event;
+import org.eclipse.ditto.base.model.signals.events.EventRegistry;
+import org.eclipse.ditto.base.model.signals.events.GlobalEventRegistry;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.live.LiveThingHandle;
 import org.eclipse.ditto.client.live.messages.MessageSender;
@@ -51,32 +64,20 @@ import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.messaging.MessagingProviders;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.client.twin.TwinThingHandle;
+import org.eclipse.ditto.connectivity.model.signals.announcements.ConnectionClosedAnnouncement;
+import org.eclipse.ditto.connectivity.model.signals.announcements.ConnectivityAnnouncement;
 import org.eclipse.ditto.json.JsonFactory;
-import org.eclipse.ditto.base.model.auth.AuthorizationContext;
-import org.eclipse.ditto.base.model.exceptions.DittoRuntimeException;
-import org.eclipse.ditto.base.model.headers.DittoHeaders;
-import org.eclipse.ditto.base.model.json.Jsonifiable;
 import org.eclipse.ditto.jwt.model.JsonWebToken;
 import org.eclipse.ditto.messages.model.Message;
 import org.eclipse.ditto.messages.model.MessagesModelFactory;
-import org.eclipse.ditto.policies.model.PoliciesModelFactory;
-import org.eclipse.ditto.things.model.AttributesModelFactory;
-import org.eclipse.ditto.things.model.ThingsModelFactory;
-import org.eclipse.ditto.protocol.Adaptable;
-import org.eclipse.ditto.protocol.adapter.DittoProtocolAdapter;
-import org.eclipse.ditto.base.model.signals.announcements.Announcement;
-import org.eclipse.ditto.policies.model.signals.announcements.PolicyAnnouncement;
-import org.eclipse.ditto.base.model.signals.JsonParsable;
-import org.eclipse.ditto.base.model.signals.commands.Command;
-import org.eclipse.ditto.base.model.signals.commands.CommandResponse;
 import org.eclipse.ditto.messages.model.signals.commands.MessageCommand;
 import org.eclipse.ditto.messages.model.signals.commands.MessageCommandResponse;
-import org.eclipse.ditto.things.model.signals.commands.ThingCommand;
-import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
-import org.eclipse.ditto.things.model.signals.commands.modify.ThingModifyCommand;
-import org.eclipse.ditto.things.model.signals.commands.query.ThingQueryCommand;
-import org.eclipse.ditto.base.model.signals.events.Event;
-import org.eclipse.ditto.base.model.signals.events.EventRegistry;
+import org.eclipse.ditto.policies.model.PoliciesModelFactory;
+import org.eclipse.ditto.policies.model.signals.announcements.PolicyAnnouncement;
+import org.eclipse.ditto.protocol.Adaptable;
+import org.eclipse.ditto.protocol.adapter.DittoProtocolAdapter;
+import org.eclipse.ditto.things.model.AttributesModelFactory;
+import org.eclipse.ditto.things.model.ThingsModelFactory;
 import org.eclipse.ditto.things.model.signals.events.ThingEvent;
 import org.eclipse.ditto.thingsearch.model.signals.commands.subscription.CancelSubscription;
 import org.junit.Test;
@@ -221,6 +222,12 @@ public class RunOSGiContainerIntegrationTest {
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(Event.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(EventRegistry.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(Announcement.class));
+        // this class pulls in ClassIndex, so check if that is also configured to be imported in "ditto-base-model":
+        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(AbstractGlobalJsonParsableRegistry.class));
+        instantiateClassWithNoArgStaticMethod(GlobalCommandRegistry.class, "getInstance");
+        instantiateClassWithNoArgStaticMethod(GlobalCommandResponseRegistry.class, "getInstance");
+        instantiateClassWithNoArgStaticMethod(GlobalEventRegistry.class, "getInstance");
+        instantiateClassWithNoArgStaticMethod(GlobalErrorRegistry.class, "getInstance");
 
         // ditto-jwt-model
         LOG.info("Ensuring ditto-jwt-model is usable from OSGi..");
@@ -248,6 +255,11 @@ public class RunOSGiContainerIntegrationTest {
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(MessageCommand.class));
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(MessageCommandResponse.class));
 
+        // ditto-connectivity-model:
+        LOG.info("Ensuring ditto-connectivity-model is usable from OSGi..");
+        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(ConnectivityAnnouncement.class));
+        checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(ConnectionClosedAnnouncement.class));
+
         // ditto-protocol:
         LOG.info("Ensuring ditto-protocol is usable from OSGi..");
         checkBundleIsPresentInstalledAndActive(FrameworkUtil.getBundle(Adaptable.class));
@@ -272,6 +284,21 @@ public class RunOSGiContainerIntegrationTest {
         assertNotNull(bundle);
         assertEquals("Expecting " + bundle.getSymbolicName() + " bundle to be active", Bundle.ACTIVE,
                 bundle.getState());
+    }
+
+    private static void instantiateClassWithNoArgStaticMethod(final Class<?> clazz, final String staticMethodName) {
+        final Bundle bundle = FrameworkUtil.getBundle(clazz);
+        checkBundleIsPresentInstalledAndActive(bundle);
+
+        try {
+            final Object globalCommandRegistry = bundle
+                    .loadClass(clazz.getName())
+                    .getMethod(staticMethodName)
+                    .invoke(null);
+            assertNotNull(globalCommandRegistry);
+        } catch (final ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            throw new AssertionError("Loading class " + clazz.getName() + " failed");
+        }
     }
 
 }

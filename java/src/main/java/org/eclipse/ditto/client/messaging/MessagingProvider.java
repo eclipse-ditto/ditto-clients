@@ -136,4 +136,22 @@ public interface MessagingProvider {
      */
     void close();
 
+    /**
+     * Registers a {@code Runnable} to run when the user code performs a {@code closeChannel} in the disconnection
+     * handler of a registered disconnectionListener.
+     *
+     * @param channelCloser the runnable to run
+     * @since 2.1.0
+     */
+    void registerChannelCloser(Runnable channelCloser);
+
+    /**
+     * Injects an error provided via Ditto Protocol message into the messaging provider in order to make it available
+     * to a user code provided {@code DisconnectedContext}.
+     *
+     * @param throwable the {@code DittoRuntimeException} or another throwable providing the error.
+     * @since 2.1.0
+     */
+    void onDittoProtocolError(Throwable throwable);
+
 }

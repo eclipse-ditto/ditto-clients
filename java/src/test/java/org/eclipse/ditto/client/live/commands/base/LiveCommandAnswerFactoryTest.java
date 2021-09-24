@@ -15,9 +15,9 @@ package org.eclipse.ditto.client.live.commands.base;
 import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
 import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
-import org.eclipse.ditto.client.live.commands.assertions.LiveCommandAssertions;
 import org.eclipse.ditto.base.model.signals.commands.CommandResponse;
 import org.eclipse.ditto.base.model.signals.events.Event;
+import org.eclipse.ditto.client.live.commands.assertions.LiveCommandAssertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;

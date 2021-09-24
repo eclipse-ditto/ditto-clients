@@ -21,6 +21,11 @@ import java.util.function.Function;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
+import org.eclipse.ditto.base.model.acks.DittoAcknowledgementLabel;
+import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
+import org.eclipse.ditto.base.model.signals.Signal;
+import org.eclipse.ditto.base.model.signals.events.Event;
 import org.eclipse.ditto.client.internal.HandlerRegistry;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
 import org.eclipse.ditto.client.internal.bus.JsonPointerSelector;
@@ -37,14 +42,9 @@ import org.eclipse.ditto.client.live.messages.PendingMessageWithThingId;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.client.management.internal.ThingHandleImpl;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
-import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
-import org.eclipse.ditto.base.model.acks.DittoAcknowledgementLabel;
-import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
 import org.eclipse.ditto.messages.model.KnownMessageSubjects;
-import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.protocol.TopicPath;
-import org.eclipse.ditto.base.model.signals.Signal;
-import org.eclipse.ditto.base.model.signals.events.Event;
+import org.eclipse.ditto.things.model.ThingId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,6 +68,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
             final OutgoingMessageFactory outgoingMessageFactory,
             final HandlerRegistry<LiveThingHandle, LiveFeatureHandle> handlerRegistry,
             final MessageSerializerRegistry messageSerializerRegistry) {
+
         super(TopicPath.Channel.LIVE,
                 thingId,
                 messagingProvider,
@@ -103,40 +104,33 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
             final Class<T> type,
             final Consumer<RepliableMessage<T, U>> handler) {
 
-        argumentNotNull(registrationId, "registrationId");
-        argumentNotNull(subject, "subject");
         argumentNotNull(type, "type");
-        argumentNotNull(handler, "handler");
-
+        LiveMessagesUtil.checkSubject(subject);
         LiveMessagesUtil.checkSerializerExistForMessageType(messageSerializerRegistry, type, subject);
 
         // selector for thing messages:
         final JsonPointerSelector thingSelector = "*".equals(subject)
                 ? SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/'{subject}'",
                 getEntityId())
-                :
-                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/{1}", getEntityId(),
-                        subject);
+                : SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/'{direction}'/messages/{1}",
+                getEntityId(), subject);
         // selector for feature messages:
         final JsonPointerSelector featureSelector = "*".equals(subject)
                 ? SelectorUtil.formatJsonPointer(LOGGER,
                 "/things/{0}/features/'{featureId}'/'{direction}'/messages/'{subject}'", getEntityId())
-                :
-                SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/features/'{featureId}'/'{direction}'/messages/{0}",
-                        getEntityId(), subject);
+                : SelectorUtil.formatJsonPointer(LOGGER,
+                "/things/{0}/features/'{featureId}'/'{direction}'/messages/{1}", getEntityId(), subject);
 
         getHandlerRegistry().register(registrationId, SelectorUtil.or(thingSelector, featureSelector),
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
-                        getOutgoingMessageFactory(), messageSerializerRegistry,
-                        type, handler));
+                        getOutgoingMessageFactory(), messageSerializerRegistry, type, handler));
     }
 
     @Override
     public <U> void registerForMessage(final String registrationId, final String subject,
             final Consumer<RepliableMessage<?, U>> handler) {
-        argumentNotNull(registrationId, "registrationId");
-        argumentNotNull(subject, "subject");
-        argumentNotNull(handler, "handler");
+
+        LiveMessagesUtil.checkSubject(subject);
 
         // selector for thing messages:
         final JsonPointerSelector thingSelector = "*".equals(subject)
@@ -156,18 +150,14 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
 
         getHandlerRegistry().register(registrationId, SelectorUtil.or(thingSelector, featureSelector),
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
-                        getOutgoingMessageFactory(), messageSerializerRegistry,
-                        handler));
+                        getOutgoingMessageFactory(), messageSerializerRegistry, handler));
     }
 
     @Override
     public <T, U> void registerForClaimMessage(final String registrationId, final Class<T> type,
             final Consumer<RepliableMessage<T, U>> handler) {
 
-        argumentNotNull(registrationId, "registrationId");
         argumentNotNull(type, "type");
-        argumentNotNull(handler, "handler");
-
         LiveMessagesUtil.checkSerializerExistForMessageType(messageSerializerRegistry, type);
 
         final JsonPointerSelector selector =
@@ -176,15 +166,12 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
 
         getHandlerRegistry().register(registrationId, selector,
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
-                        getOutgoingMessageFactory(), messageSerializerRegistry,
-                        type, handler));
+                        getOutgoingMessageFactory(), messageSerializerRegistry, type, handler));
     }
 
     @Override
     public <U> void registerForClaimMessage(final String registrationId,
             final Consumer<RepliableMessage<?, U>> handler) {
-        argumentNotNull(registrationId, "registrationId");
-        argumentNotNull(handler, "handler");
 
         final JsonPointerSelector selector =
                 SelectorUtil.formatJsonPointer(LOGGER, "/things/{0}/inbox/messages/{1}", getEntityId(),
@@ -192,8 +179,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
 
         getHandlerRegistry().register(registrationId, selector,
                 LiveMessagesUtil.createEventConsumerForRepliableMessage(PROTOCOL_ADAPTER, getMessagingProvider(),
-                        getOutgoingMessageFactory(), messageSerializerRegistry,
-                        handler));
+                        getOutgoingMessageFactory(), messageSerializerRegistry, handler));
     }
 
     /*
@@ -229,4 +215,5 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
     public Logger getLogger() {
         return LOGGER;
     }
+
 }

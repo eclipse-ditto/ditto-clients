@@ -20,7 +20,7 @@ import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable
 
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.base.model.signals.commands.Command;
-import org.eclipse.ditto.things.model.signals.commands.TestConstants;
+import org.eclipse.ditto.client.live.TestConstants;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureDefinition;
 import org.junit.Before;
 import org.junit.Test;

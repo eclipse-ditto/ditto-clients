@@ -12,9 +12,15 @@
  */
 package org.eclipse.ditto.client.live.internal;
 
+import static org.eclipse.ditto.base.model.common.ConditionChecker.argumentNotNull;
+
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import org.eclipse.ditto.base.model.common.HttpStatus;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.headers.DittoHeadersBuilder;
+import org.eclipse.ditto.base.model.signals.acks.Acknowledgement;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
 import org.eclipse.ditto.client.internal.bus.PointerWithData;
 import org.eclipse.ditto.client.live.messages.MessageSerializationException;
@@ -23,23 +29,19 @@ import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.client.live.messages.internal.ImmutableDeserializingMessage;
 import org.eclipse.ditto.client.live.messages.internal.ImmutableRepliableMessage;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
-import org.eclipse.ditto.base.model.common.HttpStatus;
-import org.eclipse.ditto.base.model.headers.DittoHeaders;
-import org.eclipse.ditto.base.model.headers.DittoHeadersBuilder;
 import org.eclipse.ditto.messages.model.Message;
 import org.eclipse.ditto.messages.model.MessageBuilder;
 import org.eclipse.ditto.messages.model.MessagesModelFactory;
-import org.eclipse.ditto.things.model.ThingId;
-import org.eclipse.ditto.protocol.Adaptable;
-import org.eclipse.ditto.protocol.adapter.ProtocolAdapter;
-import org.eclipse.ditto.protocol.TopicPath;
-import org.eclipse.ditto.base.model.signals.acks.Acknowledgement;
 import org.eclipse.ditto.messages.model.signals.commands.MessageCommand;
 import org.eclipse.ditto.messages.model.signals.commands.MessageCommandResponse;
 import org.eclipse.ditto.messages.model.signals.commands.SendFeatureMessage;
 import org.eclipse.ditto.messages.model.signals.commands.SendFeatureMessageResponse;
 import org.eclipse.ditto.messages.model.signals.commands.SendThingMessage;
 import org.eclipse.ditto.messages.model.signals.commands.SendThingMessageResponse;
+import org.eclipse.ditto.protocol.Adaptable;
+import org.eclipse.ditto.protocol.TopicPath;
+import org.eclipse.ditto.protocol.adapter.ProtocolAdapter;
+import org.eclipse.ditto.things.model.ThingId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +77,10 @@ final class LiveMessagesUtil {
             final MessagingProvider messagingProvider,
             final OutgoingMessageFactory outgoingMessageFactory,
             final MessageSerializerRegistry messageSerializerRegistry,
-            final Class<T> type, final Consumer<RepliableMessage<T, U>> handler) {
+            final Class<T> type,
+            final Consumer<RepliableMessage<T, U>> handler) {
+
+        checkHandler(handler);
 
         return e ->
         {
@@ -100,6 +105,8 @@ final class LiveMessagesUtil {
             final OutgoingMessageFactory outgoingMessageFactory,
             final MessageSerializerRegistry messageSerializerRegistry,
             final Consumer<RepliableMessage<?, U>> handler) {
+
+        checkHandler(handler);
 
         return e ->
         {
@@ -182,4 +189,11 @@ final class LiveMessagesUtil {
         return adaptable;
     }
 
+    public static void checkSubject(final String subject) {
+        argumentNotNull(subject, "subject");
+    }
+
+    private static void checkHandler(final Consumer<?> handler) {
+        argumentNotNull(handler, "handler");
+    }
 }

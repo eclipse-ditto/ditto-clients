@@ -16,9 +16,9 @@ import java.util.Optional;
 
 import javax.annotation.concurrent.Immutable;
 
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.json.JsonFieldSelector;
-import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.policies.model.PolicyId;
 import org.eclipse.ditto.things.model.ThingId;
 
@@ -109,6 +109,17 @@ public final class OptionsEvaluator {
         public Optional<DittoHeaders> getDittoHeaders() {
             return getValue(new DittoHeadersOptionVisitor());
         }
+
+        /**
+         * Returns whether an operation should be performed on back-end or not.
+         *
+         * @return an Optional holding the condition RQL expression String.
+         * @since 2.1.0
+         */
+        public Optional<String> condition() {
+            return getValue(new ConditionOptionVisitor());
+        }
+
     }
 
     /**

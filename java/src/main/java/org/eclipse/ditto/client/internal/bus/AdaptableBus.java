@@ -120,7 +120,7 @@ public interface AdaptableBus {
             Duration timeout,
             Consumer<Adaptable> adaptableConsumer,
             Predicate<Adaptable> terminationPredicate,
-            final Consumer<Throwable> onTimeout);
+            Consumer<Throwable> onTimeout);
 
     /**
      * Remove a subscription from the bus. Do nothing if the subscription ID is null.
@@ -136,9 +136,9 @@ public interface AdaptableBus {
     ScheduledExecutorService getScheduledExecutor();
 
     /**
-     * Closes the executor of the adaptable bus .
+     * Closes the executors of the adaptable bus.
      */
-    void shutdownExecutor();
+    void shutdownExecutors();
 
     /**
      * Publish a string message that may or may not be an adaptable.

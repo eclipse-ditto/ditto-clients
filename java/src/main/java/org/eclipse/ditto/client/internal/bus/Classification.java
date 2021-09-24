@@ -71,6 +71,15 @@ public interface Classification {
     }
 
     /**
+     * Create an error classification key classifying all Ditto Protocol errors.
+     *
+     * @return the key.
+     */
+    static Classification forErrors() {
+        return new Errors();
+    }
+
+    /**
      * Create an error-code classification key.
      *
      * @param errorCode the error code.
@@ -200,6 +209,15 @@ public interface Classification {
 
         static <T> Optional<Classification> of(final T value) {
             return Optional.of(new Identity<>(value));
+        }
+    }
+
+    final class Errors extends Literal<String> {
+
+        private static final String ANY_ERROR = "";
+
+        private Errors() {
+            super(ANY_ERROR);
         }
     }
 

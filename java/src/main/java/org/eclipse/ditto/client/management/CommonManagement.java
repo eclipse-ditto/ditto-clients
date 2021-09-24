@@ -516,8 +516,8 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * Things.
      *
      * @param thingIds the identifiers of the Things to be retrieved.
-     * @return CompletionStage providing the requested Things, an empty list or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * @return CompletionStage providing the requested Things, an empty list or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code thingIds} is {@code null}.
      */
     CompletionStage<List<Thing>> retrieve(Iterable<ThingId> thingIds);
@@ -528,9 +528,10 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      *
      * @param fieldSelector a field selector allowing to select a subset of fields on the Things to be retrieved.
      * @param thingIds the identifiers of the Things to be retrieved.
-     * @return CompletionStage providing the requested Things, an empty list or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * @return CompletionStage providing the requested Things, an empty list or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if any argument is {@code null}.
      */
     CompletionStage<List<Thing>> retrieve(JsonFieldSelector fieldSelector, Iterable<ThingId> thingIds);
+
 }

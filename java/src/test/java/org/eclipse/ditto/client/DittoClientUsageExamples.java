@@ -37,6 +37,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.eclipse.ditto.base.model.common.HttpStatus;
+import org.eclipse.ditto.base.model.exceptions.DittoRuntimeException;
+import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
 import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.client.configuration.BasicAuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.ClientCredentialsAuthenticationConfiguration;
@@ -56,19 +59,16 @@ import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.base.model.common.HttpStatus;
-import org.eclipse.ditto.base.model.exceptions.DittoRuntimeException;
-import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
 import org.eclipse.ditto.messages.model.KnownMessageSubjects;
 import org.eclipse.ditto.policies.model.Subject;
 import org.eclipse.ditto.policies.model.SubjectId;
+import org.eclipse.ditto.protocol.JsonifiableAdaptable;
+import org.eclipse.ditto.protocol.ProtocolFactory;
 import org.eclipse.ditto.things.model.FeatureProperties;
 import org.eclipse.ditto.things.model.Thing;
 import org.eclipse.ditto.things.model.ThingBuilder;
 import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.things.model.ThingsModelFactory;
-import org.eclipse.ditto.protocol.JsonifiableAdaptable;
-import org.eclipse.ditto.protocol.ProtocolFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -350,7 +350,7 @@ public final class DittoClientUsageExamples {
     }
 
     private static void useLiveCommands(final DittoClient backendClient, final DittoClient clientAtDevice)
-            throws ExecutionException, InterruptedException {
+            throws InterruptedException {
 
         final ThingId thingId = ThingId.of(NAMESPACE + ":live-" + UUID.randomUUID().toString());
 
@@ -461,7 +461,7 @@ public final class DittoClientUsageExamples {
     }
 
     private static void useLiveMessages(final DittoClient backendClient, final DittoClient clientAtDevice)
-            throws InterruptedException, ExecutionException {
+            throws InterruptedException {
         final ThingId thingId = ThingId.of(NAMESPACE + ":messages-" + UUID.randomUUID());
 
         // first create Thing:
@@ -688,7 +688,7 @@ public final class DittoClientUsageExamples {
     }
 
     private static void performLoadTestRead(final DittoClient client, final int count, final boolean log)
-            throws InterruptedException, ExecutionException {
+            throws InterruptedException {
 
         final ThingId thingId = ThingId.of(NAMESPACE + ":load-read-" + UUID.randomUUID());
         client.twin().create(thingId).toCompletableFuture().join();

@@ -33,6 +33,13 @@ import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
+import org.eclipse.ditto.base.model.entity.id.WithEntityId;
+import org.eclipse.ditto.base.model.exceptions.DittoRuntimeException;
+import org.eclipse.ditto.base.model.headers.DittoHeaderDefinition;
+import org.eclipse.ditto.base.model.signals.Signal;
+import org.eclipse.ditto.base.model.signals.WithOptionalEntity;
+import org.eclipse.ditto.base.model.signals.commands.CommandResponse;
+import org.eclipse.ditto.base.model.signals.commands.ErrorResponse;
 import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.FeatureChange;
 import org.eclipse.ditto.client.changes.FeaturesChange;
@@ -55,24 +62,17 @@ import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.base.model.entity.id.WithEntityId;
-import org.eclipse.ditto.base.model.exceptions.DittoRuntimeException;
-import org.eclipse.ditto.base.model.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.messages.model.Message;
 import org.eclipse.ditto.messages.model.MessageDirection;
 import org.eclipse.ditto.messages.model.MessageHeaders;
 import org.eclipse.ditto.policies.model.Policy;
+import org.eclipse.ditto.protocol.Adaptable;
+import org.eclipse.ditto.protocol.TopicPath;
 import org.eclipse.ditto.things.model.Feature;
 import org.eclipse.ditto.things.model.Features;
 import org.eclipse.ditto.things.model.Thing;
 import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.things.model.ThingsModelFactory;
-import org.eclipse.ditto.protocol.Adaptable;
-import org.eclipse.ditto.protocol.TopicPath;
-import org.eclipse.ditto.base.model.signals.Signal;
-import org.eclipse.ditto.base.model.signals.WithOptionalEntity;
-import org.eclipse.ditto.base.model.signals.commands.CommandResponse;
-import org.eclipse.ditto.base.model.signals.commands.ErrorResponse;
 import org.eclipse.ditto.things.model.signals.commands.ThingErrorResponse;
 import org.eclipse.ditto.things.model.signals.commands.modify.CreateThing;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteThing;
@@ -656,10 +656,13 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
             final String protocolCommandAck,
             final CompletableFuture<Void> futureToCompleteOrFailAfterAck) {
 
-        return subscribeAndPublishMessage(previousSubscriptionId, streamingType, protocolCommand, protocolCommandAck,
-                futureToCompleteOrFailAfterAck, adaptable -> pointerBus ->
-                        asThingMessage(adaptable).ifPresent(message -> pointerBus.notify(message.getSubject(), message))
-                );
+        return subscribeAndPublishMessage(previousSubscriptionId,
+                streamingType,
+                protocolCommand,
+                protocolCommandAck,
+                futureToCompleteOrFailAfterAck,
+                adaptable -> pointerBus -> asThingMessage(adaptable).ifPresent(message -> pointerBus.notify(message.getSubject(),
+                        message)));
     }
 
     protected AdaptableBus.SubscriptionId subscribeAndPublishMessage(
@@ -668,7 +671,8 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
             final String protocolCommand,
             final String protocolCommandAck,
             final CompletableFuture<Void> futureToCompleteOrFailAfterAck,
-            final Function<Adaptable, NotifyMessage> adaptableToNotifier) {
+            final Function<Adaptable, NotifyMessage> adaptableToNotifier
+    ) {
 
         final String correlationId = UUID.randomUUID().toString();
         final String protocolCommandWithCorrelationId = appendCorrelationIdParameter(protocolCommand, correlationId);
@@ -793,7 +797,9 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     }
 
     private CompletionStage<List<Thing>> sendRetrieveThingsMessage(final RetrieveThings command) {
-        return sendSignalAndExpectResponse(command, RetrieveThingsResponse.class, RetrieveThingsResponse::getThings,
+        return sendSignalAndExpectResponse(command,
+                RetrieveThingsResponse.class,
+                RetrieveThingsResponse::getThings,
                 ErrorResponse.class,
                 ErrorResponse::getDittoRuntimeException);
     }

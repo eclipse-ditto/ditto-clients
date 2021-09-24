@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-ditto/ditto-javascript-client-api",
-  "version": "2.0.0-M2",
+  "version": "2.1.0-M2",
   "description": "API interfaces for implementing TypeScript clients for Eclipse Ditto",
   "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
   "repository": "https://github.com/eclipse/ditto-clients",
@@ -21,7 +21,6 @@
     "@types/jest": "^25.2.3",
     "barrelsby": "^2.1.1",
     "jest": "^25.4.0",
-    "lodash": "^4.17.11",
     "ts-jest": "^25.5.1",
     "tslint": "^5.18.x",
     "tslint-config-airbnb": "^5.11.1",

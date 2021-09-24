@@ -15,8 +15,8 @@ package org.eclipse.ditto.client.internal.bus;
 import java.util.EnumSet;
 import java.util.Optional;
 
-import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.base.model.exceptions.DittoRuntimeException;
+import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.protocol.Adaptable;
 import org.eclipse.ditto.protocol.TopicPath;
 import org.eclipse.ditto.thingsearch.model.signals.events.SubscriptionEvent;
@@ -65,6 +65,15 @@ public final class Classifiers {
      */
     public static Classifier<Adaptable> thingsSearch() {
         return Instances.THINGS_SEARCH_CLASSIFIER;
+    }
+
+    /**
+     * Classify all Ditto protocol errors.
+     *
+     * @return the errors classifier.
+     */
+    public static Classifier<Adaptable> errors() {
+        return Instances.ERRORS_CLASSIFIER;
     }
 
     /**
@@ -126,6 +135,18 @@ public final class Classifiers {
         }
     }
 
+    private static final class ErrorsClassifier implements Classifier<Adaptable> {
+
+        @Override
+        public Optional<Classification> classify(final Adaptable message) {
+            if (message.getTopicPath().getCriterion() == TopicPath.Criterion.ERRORS) {
+                return Optional.of(Classification.forErrors());
+            } else {
+                return Optional.empty();
+            }
+        }
+    }
+
     private static final class ErrorCodeClassifier implements Classifier<Adaptable> {
 
         @Override
@@ -152,6 +173,8 @@ public final class Classifiers {
         private static final Classifier<Adaptable> STREAMING_TYPE_CLASSIFIER = new StreamingTypeClassifier();
 
         private static final Classifier<Adaptable> THINGS_SEARCH_CLASSIFIER = new ThingsSearchClassifier();
+
+        private static final Classifier<Adaptable> ERRORS_CLASSIFIER = new ErrorsClassifier();
 
         private static final Classifier<Adaptable> ERROR_CODE_CLASSIFIER = new ErrorCodeClassifier();
     }

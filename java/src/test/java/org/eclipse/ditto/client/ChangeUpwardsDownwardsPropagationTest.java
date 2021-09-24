@@ -25,6 +25,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
 
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
 import org.eclipse.ditto.client.changes.Change;
 import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.client.changes.FeaturesChange;
@@ -33,8 +35,6 @@ import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.base.model.headers.DittoHeaders;
-import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
 import org.eclipse.ditto.messages.model.Message;
 import org.eclipse.ditto.messages.model.MessageDirection;
 import org.eclipse.ditto.messages.model.MessageHeaders;
@@ -313,8 +313,8 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
                     assertThat(thingChange.isPartial()).isTrue();
                     assertThat((CharSequence) thingChange.getPath())
                             .isEqualTo(newPointer("attributes")); // attributes were changed
-                    assertThat(thingChange.getValue().get().toString()).isEqualTo(
-                            newObjectBuilder().set("attributes", attributesToSet).build().toString());
+                    assertThat(thingChange.getValue())
+                            .contains(newObjectBuilder().set("attributes", attributesToSet).build());
 
                     latch.countDown();
                 });
@@ -361,8 +361,8 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
                             assertThat((CharSequence) thingChange.getPath())
                                     .isEqualTo(newPointer("attributes").append(
                                             newAttribute)); // single attributes was changed
-                            assertThat(thingChange.getValue().get().toString()).isEqualTo(
-                                    newObjectBuilder().set("attributes", buildObject).build().toString());
+                            assertThat(thingChange.getValue()).contains(
+                                    newObjectBuilder().set("attributes", buildObject).build());
 
                             latch.countDown();
                         });
@@ -440,8 +440,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
             assertThat((CharSequence) featuresChange.getPath())
                     .isEqualTo(newPointer(FEATURE_ID_1).append(newPointer("properties"))
                             .append(fooPointer)); // feature property was created
-            assertThat(featuresChange.getValue().get().toString())
-                    .isEqualTo(expectedChangedObject.toString());
+            assertThat(featuresChange.getValue()).contains(expectedChangedObject);
 
             latch.countDown();
         };
@@ -495,8 +494,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
                             assertThat((CharSequence) featureChange.getPath())
                                     .isEqualTo(newPointer("properties")
                                             .append(fooPointer)); // feature property was created
-                            assertThat(featureChange.getValue().get().toString())
-                                    .isEqualTo(expectedChangedObject.toString());
+                            assertThat(featureChange.getValue()).contains(expectedChangedObject);
 
                             latch.countDown();
                         });
@@ -536,8 +534,7 @@ public class ChangeUpwardsDownwardsPropagationTest extends AbstractDittoClientTe
                             assertThat(attrChange.isFull()).isTrue();
                             assertThat((CharSequence) attrChange.getPath())
                                     .isEqualTo(emptyPointer()); // empty pointer as all attributes were created
-                            assertThat(attrChange.getValue().get().toString())
-                                    .isEqualTo(ATTRIBUTES2.toJsonString());
+                            assertThat(attrChange.getValue()).contains(ATTRIBUTES2);
 
                             latch.countDown();
                         });

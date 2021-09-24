@@ -14,14 +14,15 @@ package org.eclipse.ditto.client.options;
 
 import java.util.Arrays;
 
+import org.eclipse.ditto.base.model.common.ConditionChecker;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.client.management.CommonManagement;
 import org.eclipse.ditto.json.JsonFieldSelector;
-import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.policies.model.PolicyId;
 import org.eclipse.ditto.things.model.ThingId;
 
 /**
- * This utility class allows to create {@link Option}s with custom values the Ditto Client is aware of.
+ * This utility class allows creating {@link Option}s with custom values the Ditto Client is aware of.
  *
  * @since 1.0.0
  */
@@ -35,7 +36,7 @@ public final class Options {
      * Creates an option for specifying additional/custom DittoHeaders to send along together with any command/message
      * accepting options.
      * <p>
-     * DittoHeader passed in here will be overwritten by more specific {@link Options}, when specified.
+     * DittoHeader passed in here will be overwritten by more specific {@code Options}, when specified.
      * </p>
      *
      * @param dittoHeaders the additional DittoHeaders to send along with an operation.
@@ -47,7 +48,29 @@ public final class Options {
     }
 
     /**
-     * The Modify class provides static factory methods for creating Options which are related to modifying operations.
+     * Creates an option for specifying whether the operation should be performed on back-end based on the given
+     * condition.
+     * <p>
+     * The returned option has the name {@link OptionName.Global#CONDITION} and the given argument value.
+     * </p>
+     * <p>
+     * If this {@code Option} is not specified, the operation will be performed no matter what.
+     * </p>
+     *
+     * @param condition the RQL condition that determines whether the operation will be performed.
+     * @return the new option.
+     * @throws NullPointerException if {@code condition} is {@code null}.
+     * @throws IllegalArgumentException if {@code condition} is empty.
+     * @since 2.1.0
+     */
+    public static Option<String> condition(final CharSequence condition) {
+        ConditionChecker.argumentNotEmpty(condition, "condition");
+        return DefaultOption.newInstance(OptionName.Global.CONDITION, condition.toString());
+    }
+
+    /**
+     * The {@code Modify} class provides static factory methods for creating Options which are related to modifying
+     * operations.
      *
      * @since 1.0.0
      */
@@ -99,7 +122,7 @@ public final class Options {
         }
 
         /**
-         * Creates an option for specifying whether the created policy should copied from a already existing policy
+         * Creates an option for specifying whether the created policy should copied from an already existing policy
          * <p>
          * The returned option has the name {@link OptionName.Modify#COPY_POLICY} and the given {@code boolean} value.
          * </p>
@@ -115,7 +138,6 @@ public final class Options {
             return DefaultOption.newInstance(OptionName.Modify.COPY_POLICY, copyPolicyFrom);
         }
 
-
         /**
          * Creates an option for specifying whether the created policy should be copied from an already existing thing
          * <p>
@@ -125,18 +147,19 @@ public final class Options {
          * If this Option is not specified, it does not matter whether the object exists.
          * </p>
          *
-         * @param thingToCopyPolicyFrom existing thing from which the policy are used
+         * @param thingToCopyPolicyFrom existing thing from which the policy are used.
          * @return the new option.
          * @since 1.1.0
          */
         public static Option<ThingId> copyPolicyFromThing(final ThingId thingToCopyPolicyFrom) {
             return DefaultOption.newInstance(OptionName.Modify.COPY_POLICY_FROM_THING, thingToCopyPolicyFrom);
         }
+
     }
 
     /**
-     * The Consumption class provides static factory methods for creating Options which are related to {@link
-     * CommonManagement#startConsumption() startConsumption()}.
+     * The Consumption class provides static factory methods for creating Options which are related to
+     * {@link CommonManagement#startConsumption() startConsumption()}.
      *
      * @since 1.0.0
      */
@@ -193,6 +216,7 @@ public final class Options {
         public static Option<JsonFieldSelector> extraFields(final JsonFieldSelector jsonFieldSelector) {
             return DefaultOption.newInstance(OptionName.Consumption.EXTRA_FIELDS, jsonFieldSelector);
         }
+
     }
 
 }
