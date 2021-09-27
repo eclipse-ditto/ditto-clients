@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to the Ditto JavaScript client will be documented in this file.
 
-## [2.1.0] - 2021-xx-xx
+## [2.1.0] - 2021-09-27
 
 ### \#156 Fix `http:` connections
 Fixes #155: Fixed connections via `http:` protocol, which used the wrong library and proxy agent. Also added a new option
