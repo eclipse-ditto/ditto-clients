@@ -88,6 +88,18 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
     CompletionStage<Thing> retrieve();
 
     /**
+     * Retrieves the {@code Thing} object being handled by this {@code ThingHandle}.
+     *
+     * @param options options that determine the behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing the requested {@link Thing} or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws NullPointerException if {@code options} is {@code null}.
+     * @since 2.1.0
+     */
+    CompletionStage<Thing> retrieve(Option<?>... options);
+
+    /**
      * Retrieve the {@code Thing} object being handled by this {@code ThingHandle}.
      *
      * @param fieldSelector a field selector object allowing to select a subset of fields on the Thing to be retrieved.
@@ -95,6 +107,19 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
      */
     CompletionStage<Thing> retrieve(JsonFieldSelector fieldSelector);
+
+    /**
+     * Retrieves the {@code Thing} object being handled by this {@code ThingHandle}.
+     *
+     * @param fieldSelector a field selector object allowing to select a subset of fields on the Thing to be retrieved.
+     * @param options options that determine the behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing the requested {@link Thing} or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws NullPointerException if any argument is {@code null}.
+     * @since 2.1.0
+     */
+    CompletionStage<Thing> retrieve(JsonFieldSelector fieldSelector, Option<?>... options);
 
     /**
      * Sets the given {@code policyId} to this Thing.
@@ -112,7 +137,7 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
     /**
      * Merge the given {@code policyId} to this Thing.
      *
-     * @param policyId the PolicyId of the Policy to be merge.
+     * @param policyId the PolicyId of the Policy to be merged.
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the result of the operation or a specific {@link

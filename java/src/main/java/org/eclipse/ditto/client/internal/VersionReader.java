@@ -60,4 +60,21 @@ public final class VersionReader {
     public static String determineBuildTimeStamp() {
         return PROPERTIES.getProperty(BUILD_DATE_PROPERTY_NAME, DEFAULT_VALUE);
     }
+
+    /**
+     * @return the Java major version number (e.g. 8,9,10,...) of the runtime the Ditto client runs in
+     */
+    public static int determineJavaRuntimeVersion() {
+        final String javaVersion = System.getProperty("java.version");
+        if (javaVersion.startsWith("1.")) {
+            return Integer.parseInt(javaVersion.substring(2, 3));
+        } else {
+            final int dot = javaVersion.indexOf(".");
+            if (dot != -1) {
+                return Integer.parseInt(javaVersion.substring(0, dot));
+            } else {
+                return 0;
+            }
+        }
+    }
 }

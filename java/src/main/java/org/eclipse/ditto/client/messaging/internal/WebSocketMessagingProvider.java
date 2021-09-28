@@ -153,7 +153,15 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
     }
 
     private static ScheduledExecutorService createConnectExecutor(final String sessionId) {
-        return Executors.newScheduledThreadPool(0,
+        final int corePoolSize;
+        if (VersionReader.determineJavaRuntimeVersion() <= 8) {
+            // for Java <= 8, because of bug https://bugs.openjdk.java.net/browse/JDK-8129861, the corePoolSize must be at least 1:
+            corePoolSize = 1;
+        } else {
+            // bug has been fixed since Java 9, so scale down to 0 threads if the scheduledThreadPool is not needed:
+            corePoolSize = 0;
+        }
+        return Executors.newScheduledThreadPool(corePoolSize,
                 new DefaultThreadFactory("ditto-client-reconnect-" + sessionId));
     }
 
