@@ -114,7 +114,7 @@ public final class ThingSearchSubscription implements Subscription {
     public void cancel() {
         if (!singleThreadedExecutorService.isShutdown() && !singleThreadedExecutorService.isTerminated()) {
             CompletableFuture.runAsync(this::doCancel, singleThreadedExecutorService)
-                    .thenAccept(unused -> singleThreadedExecutorService.shutdownNow());
+                    .whenComplete((result, error) -> singleThreadedExecutorService.shutdownNow());
         }
     }
 
