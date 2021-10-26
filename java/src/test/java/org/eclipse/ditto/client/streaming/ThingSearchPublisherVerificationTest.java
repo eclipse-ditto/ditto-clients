@@ -16,15 +16,15 @@ import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.signals.Signal;
 import org.eclipse.ditto.client.messaging.internal.MockMessagingProvider;
 import org.eclipse.ditto.json.JsonArray;
 import org.eclipse.ditto.json.JsonObject;
-import org.eclipse.ditto.base.model.headers.DittoHeaders;
-import org.eclipse.ditto.protocol.adapter.DittoProtocolAdapter;
 import org.eclipse.ditto.protocol.HeaderTranslator;
-import org.eclipse.ditto.protocol.adapter.ProtocolAdapter;
 import org.eclipse.ditto.protocol.ProtocolFactory;
-import org.eclipse.ditto.base.model.signals.Signal;
+import org.eclipse.ditto.protocol.adapter.DittoProtocolAdapter;
+import org.eclipse.ditto.protocol.adapter.ProtocolAdapter;
 import org.eclipse.ditto.thingsearch.model.signals.commands.ThingSearchCommand;
 import org.eclipse.ditto.thingsearch.model.signals.commands.exceptions.InvalidOptionException;
 import org.eclipse.ditto.thingsearch.model.signals.commands.subscription.CancelSubscription;
@@ -47,7 +47,7 @@ public final class ThingSearchPublisherVerificationTest extends PublisherVerific
 
     public ThingSearchPublisherVerificationTest() {
         // use new TestEnvironment(true) to debug
-        super(new TestEnvironment(false), 1000L);
+        super(new TestEnvironment(1000L, 1000L, false), 1000L);
     }
 
     @Override

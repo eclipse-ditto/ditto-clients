@@ -13,19 +13,20 @@
 package org.eclipse.ditto.client.streaming;
 
 import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.signals.Signal;
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
 import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
-import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.protocol.Adaptable;
-import org.eclipse.ditto.protocol.adapter.ProtocolAdapter;
 import org.eclipse.ditto.protocol.TopicPath;
-import org.eclipse.ditto.base.model.signals.Signal;
+import org.eclipse.ditto.protocol.adapter.ProtocolAdapter;
 import org.eclipse.ditto.thingsearch.model.signals.commands.subscription.CancelSubscription;
 import org.eclipse.ditto.thingsearch.model.signals.commands.subscription.RequestFromSubscription;
 import org.eclipse.ditto.thingsearch.model.signals.events.SubscriptionComplete;
@@ -111,7 +112,10 @@ public final class ThingSearchSubscription implements Subscription {
     // called by subscriber
     @Override
     public void cancel() {
-        singleThreadedExecutorService.submit(this::doCancel);
+        if (!singleThreadedExecutorService.isShutdown() && !singleThreadedExecutorService.isTerminated()) {
+            CompletableFuture.runAsync(this::doCancel, singleThreadedExecutorService)
+                    .whenComplete((result, error) -> singleThreadedExecutorService.shutdownNow());
+        }
     }
 
     private void doCancel() {
