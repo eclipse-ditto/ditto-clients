@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to the Ditto JavaScript client will be documented in this file.
 
+## [2.2.0] - 2021-11-22
+
+### Updated dependencies
+The `ws` dependency used in the `node` package was updated to the latest version in major version 7: `7.5.5` in order 
+to fix a critical bug in the previously used version `7.1.2` which was fixed in `7.4.6`.
+
 ## [2.1.0] - 2021-09-27
 
 ### \#156 Fix `http:` connections
