@@ -16,9 +16,9 @@
   ],
   "dependencies": {
     "http-proxy-agent": "4.0.1",
-    "https-proxy-agent": "2.2.3",
+    "https-proxy-agent": "2.2.4",
     "url": "0.11.0",
-    "ws": "7.1.2"
+    "ws": "7.5.5"
   },
   "devDependencies": {
     "@types/jest": "^25.2.3",
