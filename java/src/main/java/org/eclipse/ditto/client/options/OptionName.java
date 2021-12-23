@@ -46,9 +46,21 @@ public interface OptionName extends Predicate<Object> {
 
         /**
          * Name of the option for defining the DittoHeaders to send along with a command/message to the Ditto backend.
+         *
          * @since 1.1.0
          */
-        DITTO_HEADERS
+        DITTO_HEADERS,
+
+        /**
+         * Name of the option for defining a "live channel condition", which, when evaluating to {@code true}, shall
+         * switch the channel to use to {@code "live"}.
+         * The condition is defined via an RQL expression, which is evaluated in the Things service persistence.
+         * If the condition evaluates to {@code true}, then the live channel is used instead of the regular
+         * twin channel.
+         *
+         * @since 2.3.0
+         */
+        LIVE_CHANNEL_CONDITION,
 
     }
 

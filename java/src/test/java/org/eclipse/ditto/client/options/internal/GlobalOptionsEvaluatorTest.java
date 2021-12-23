@@ -18,13 +18,14 @@ import static org.mutabilitydetector.unittesting.AllowedReason.provided;
 import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
 import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
-import java.util.UUID;
-
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.Options;
-import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -34,50 +35,93 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public final class GlobalOptionsEvaluatorTest {
 
-    private static final DittoHeaders KNOWN_DITTO_HEADERS = DittoHeaders.newBuilder()
-            .correlationId(UUID.randomUUID().toString())
-            .build();
-    private static final Option<DittoHeaders> DITTO_HEADERS_OPTION = Options.headers(KNOWN_DITTO_HEADERS);
+    private static final String CONDITION_EXPRESSION = "ne(attributes/test)";
+    private static final String LIVE_CHANNEL_CONDITION_EXPRESSION = "eq(attributes/value,\"livePolling\")";
 
-    private OptionsEvaluator.Global underTest = null;
+    private static Option<String> conditionOption;
+    private static Option<String> liveChannelConditionOption;
+    private static Option<?>[] emptyGlobalOptions;
 
+    @Rule
+    public final TestName testName = new TestName();
+
+    private Option<DittoHeaders> dittoHeadersOption;
+    private Option<?>[] allGlobalOptions;
+
+    @BeforeClass
+    public static void beforeClass() {
+        conditionOption = Options.condition(CONDITION_EXPRESSION);
+        liveChannelConditionOption = Options.liveChannelCondition(LIVE_CHANNEL_CONDITION_EXPRESSION);
+        emptyGlobalOptions = new Option<?>[0];
+    }
 
     @Before
-    public void setUp() {
-        final Option<?>[] options = new Option<?>[]{DITTO_HEADERS_OPTION};
-        underTest = OptionsEvaluator.forGlobalOptions(options);
+    public void before() {
+        dittoHeadersOption = Options.headers(DittoHeaders.newBuilder().correlationId(testName.getMethodName()).build());
+        allGlobalOptions = new Option<?>[]{dittoHeadersOption, conditionOption, liveChannelConditionOption};
     }
 
     @Test
     public void assertImmutability() {
-        assertInstancesOf(OptionsEvaluator.Global.class, areImmutable(),
+        assertInstancesOf(OptionsEvaluator.Global.class,
+                areImmutable(),
                 provided(OptionsEvaluator.class).isAlsoImmutable());
     }
 
     @Test
     public void tryToCreateInstanceWithNullOptions() {
-        assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> OptionsEvaluator.forGlobalOptions(null))
+        assertThatExceptionOfType(NullPointerException.class)
+                .isThrownBy(() -> OptionsEvaluator.forGlobalOptions(null))
                 .withMessage("The options must not be null!");
     }
 
     @Test
     public void createInstanceWithEmptyOptions() {
-        final OptionsEvaluator.Global underTest = OptionsEvaluator.forGlobalOptions(new Option<?>[0]);
+        final OptionsEvaluator.Global underTest = OptionsEvaluator.forGlobalOptions(emptyGlobalOptions);
 
         assertThat(underTest).isNotNull();
     }
 
     @Test
-    public void getResponseTimeoutReturnsExpectedIfProvided() {
-        assertThat(underTest.getDittoHeaders()).contains(DITTO_HEADERS_OPTION.getValue());
+    public void getDittoHeadersReturnsExpectedDittoHeadersIfOptionProvided() {
+        final OptionsEvaluator.Global underTest = OptionsEvaluator.forGlobalOptions(allGlobalOptions);
+
+        assertThat(underTest.getDittoHeaders()).contains(dittoHeadersOption.getValue());
     }
 
     @Test
-    public void getResponseTimeoutReturnsEmptyOptionalIfNotProvided() {
-        final Option<?>[] options = new Option<?>[]{};
-        underTest = OptionsEvaluator.forGlobalOptions(options);
+    public void getDittoHeadersReturnsEmptyOptionalIfNotProvided() {
+        final OptionsEvaluator.Global underTest = OptionsEvaluator.forGlobalOptions(emptyGlobalOptions);
 
         assertThat(underTest.getDittoHeaders()).isEmpty();
+    }
+
+    @Test
+    public void conditionReturnsExpectedConditionExpressionIfOptionProvided() {
+        final OptionsEvaluator.Global underTest = OptionsEvaluator.forGlobalOptions(allGlobalOptions);
+
+        assertThat(underTest.condition()).contains(conditionOption.getValue());
+    }
+
+    @Test
+    public void conditionReturnsEmptyOptionalIfOptionNotProvided() {
+        final OptionsEvaluator.Global underTest = OptionsEvaluator.forGlobalOptions(emptyGlobalOptions);
+
+        assertThat(underTest.condition()).isEmpty();
+    }
+
+    @Test
+    public void getLiveChannelConditionReturnsExpectedLiveChannelConditionExpressionIfOptionProvided() {
+        final OptionsEvaluator.Global underTest = OptionsEvaluator.forGlobalOptions(allGlobalOptions);
+
+        assertThat(underTest.getLiveChannelCondition()).contains(liveChannelConditionOption.getValue());
+    }
+
+    @Test
+    public void getLiveChannelConditionReturnsEmptyOptionalIfOptionNotProvided() {
+        final OptionsEvaluator.Global underTest = OptionsEvaluator.forGlobalOptions(emptyGlobalOptions);
+
+        assertThat(underTest.getLiveChannelCondition()).isEmpty();
     }
 
 }
