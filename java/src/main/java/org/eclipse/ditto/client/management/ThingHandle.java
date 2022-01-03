@@ -55,9 +55,9 @@ import org.eclipse.ditto.things.model.WithThingId;
  * @param <F> the type of {@link FeatureHandle} for handling {@code Feature}s
  * @since 1.0.0
  */
-public interface ThingHandle<F extends FeatureHandle> extends WithThingId, ThingAttributeManagement,
-        ThingAttributeChangeRegistration,
-        FeatureChangeRegistration, ThingChangeRegistration {
+public interface ThingHandle<F extends FeatureHandle>
+        extends WithThingId, ThingAttributeManagement, ThingAttributeChangeRegistration, FeatureChangeRegistration,
+        ThingChangeRegistration {
 
     /**
      * Creates a new instance of {@link FeatureHandle} which aggregates all operations of an already existing
@@ -75,7 +75,9 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @param options options to be applied configuring behaviour of this method, see
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing for handling the deletion a specific
-     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * @throws IllegalArgumentException if {@code options} contains an option that is not allowed for deleting
+     * a thing.
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      */
     CompletionStage<Void> delete(Option<?>... options);
 
@@ -95,6 +97,8 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @return CompletionStage providing the requested {@link Thing} or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws NullPointerException if {@code options} is {@code null}.
+     * @throws IllegalArgumentException if {@code options} contains an option that is not allowed for retrieving
+     * a thing.
      * @since 2.1.0
      */
     CompletionStage<Thing> retrieve(Option<?>... options);
@@ -117,6 +121,8 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @return CompletionStage providing the requested {@link Thing} or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws NullPointerException if any argument is {@code null}.
+     * @throws IllegalArgumentException if {@code options} contains an option that is not allowed for retrieving
+     * a thing.
      * @since 2.1.0
      */
     CompletionStage<Thing> retrieve(JsonFieldSelector fieldSelector, Option<?>... options);
@@ -128,8 +134,9 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the result of the operation or a specific
-     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code policyId} is {@code null}.
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code policyId} is {@code null} or if {@code options} contains an option
+     * that is not allowed for setting a policy ID to a thing.
      * @since 1.1.0
      */
     CompletionStage<Void> setPolicyId(PolicyId policyId, Option<?>... options);
@@ -138,11 +145,12 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * Merge the given {@code policyId} to this Thing.
      *
      * @param policyId the PolicyId of the Policy to be merged.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage for handling the result of the operation or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code policyId} is {@code null}.
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage for handling the result of the operation or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code policyId} is {@code null} or if {@code options} contains an option
+     * that is not allowed for merging a policy ID to a thing.
      * @since 2.0.0
      */
     CompletionStage<Void> mergePolicyId(PolicyId policyId, Option<?>... options);
@@ -154,8 +162,9 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the result of the operation or a specific
-     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code features} is {@code null}.
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code features} is {@code null} or if {@code options} contains an option
+     * that is not allowed for setting features to a thing.
      */
     CompletionStage<Void> setFeatures(Features features, Option<?>... options);
 
@@ -167,7 +176,8 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the result of the operation or a specific {@link
      * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code features} is {@code null}.
+     * @throws IllegalArgumentException if {@code features} is {@code null} or if {@code options} contains an option
+     * that is not allowed for merging features to a thing.
      * @since 2.0.0
      */
     CompletionStage<Void> mergeFeatures(Features features, Option<?>... options);
@@ -179,8 +189,9 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the result of this operation or a specific
-     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code feature} is {@code null}.
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code feature} is {@code null} or if {@code options} contains an option
+     * that is not allowed for putting a feature to a thing.
      */
     CompletionStage<Void> putFeature(Feature feature, Option<?>... options);
 
@@ -188,11 +199,12 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * Merges the given Feature of this Thing or creates a new one if it does not yet exist.
      *
      * @param feature Feature to be merged.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage for handling the result of this operation or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code feature} is {@code null}.
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage for handling the result of this operation or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code feature} is {@code null} or if {@code options} contains an option
+     * that is not allowed for merging a feature to a thing.
      * @since 2.0.0
      */
     CompletionStage<Void> mergeFeature(Feature feature, Option<?>... options);
@@ -204,9 +216,9 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the deletion or a specific
-     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException}
-     * if the operation failed
-     * @throws IllegalArgumentException if {@code featureId} is {@code null}.
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code featureId} is {@code null} or if {@code options} contains an option
+     * that is not allowed for deleting a feature from a thing.
      */
     CompletionStage<Void> deleteFeature(String featureId, Option<?>... options);
 
@@ -216,8 +228,9 @@ public interface ThingHandle<F extends FeatureHandle> extends WithThingId, Thing
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the deletion or a specific
-     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException}
-     * if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException or if {@code options} contains an option that is not allowed for deleting
+     * features from a thing.
      */
     CompletionStage<Void> deleteFeatures(Option<?>... options);
 

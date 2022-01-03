@@ -130,10 +130,12 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
     /**
      * Creates an empty {@link Thing} with an auto-generated identifier.
      *
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage providing the created Thing object or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing the created Thing object or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code options} contains an option
+     * that is not allowed for creating a thing.
      */
     CompletionStage<Thing> create(Option<?>... options);
 
@@ -142,11 +144,13 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      *
      * @param thingId the identifier of the Thing to be created. It must conform to the namespaced
      * entity ID notation (see Ditto documentation).
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage providing the created Thing object or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code thingId} is {@code null} or empty.
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing the created Thing object or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code thingId} is {@code null} or empty
+     * or if {@code options} contains an option that is not allowed for
+     * creating a thing.
      * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
      */
     CompletionStage<Thing> create(ThingId thingId, Option<?>... options);
@@ -155,11 +159,13 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * Creates the given {@link Thing}.
      *
      * @param thing the Thing to be created.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the created Thing object or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier.
+     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier
+     * or if {@code options} contains an option that is not allowed for
+     * creating a thing.
      * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
      */
     CompletionStage<Thing> create(Thing thing, Option<?>... options);
@@ -172,10 +178,10 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * to be created. It must conform to the namespaced entity ID notation (see Ditto documentation).
      * @param options options to be applied configuring behaviour of this method, see
      * {@link org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage providing the created Thing object or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * @return CompletionStage providing the created Thing object or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
-     * {@code "thingId"}.
+     * {@code "thingId"} or if {@code options} contains an option that is not allowed for creating a thing.
      * @throws org.eclipse.ditto.base.model.exceptions.DittoJsonException if {@code thing} cannot be parsed to a
      * {@link Thing}.
      * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
@@ -184,13 +190,15 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
     CompletionStage<Thing> create(JsonObject thing, Option<?>... options);
 
     /**
-     * Creates an empty {@link Thing} with an auto-generated identifier as well as an initial Policy
+     * Creates an empty {@link Thing} with an auto-generated identifier as well as an initial Policy.
      *
      * @param initialPolicy a custom policy to use for the Thing instead of the default Policy.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage providing the created Thing object or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing the created Thing object or a specific
+     * @throws IllegalArgumentException if {@code options} contains an option
+     * that is not allowed for creating a thing.
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @since 1.1.0
      */
     CompletionStage<Thing> create(Policy initialPolicy, Option<?>... options);
@@ -200,12 +208,13 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      *
      * @param thing the Thing to be created.
      * @param initialPolicy a custom policy to use for the Thing instead of the default Policy.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage providing the created Thing object or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing the created Thing object or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier, or if
-     * {@code initialPolicy} is {@code null}.
+     * {@code initialPolicy} is {@code null} or if {@code options} contains an option
+     * that is not allowed for creating a thing.
      * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
      * @since 1.1.0
      */
@@ -217,12 +226,12 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @param thingId the identifier of the Thing to be created. It must conform to the namespaced
      * entity ID notation (see Ditto documentation).
      * @param initialPolicy a custom policy to use for the Thing instead of the default Policy.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage providing the created Thing object or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing the created Thing object or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code thingId} is {@code null} or empty, or if {@code initialPolicy} is
-     * {@code null}.
+     * {@code null} or if {@code options} contains an option that is not allowed for creating a thing.
      * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
      * @since 1.1.0
      */
@@ -235,14 +244,15 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * contain a field named {@code "thingId"} of the basic JSON type String which contains the identifier of the Thing
      * to be created. It must conform to the namespaced entity ID notation (see Ditto documentation).
      * @param initialPolicy a custom policy to use for the Thing instead of the default Policy.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage providing the created Thing object or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing the created Thing object or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
-     * {@code "thingId"}, or if {@code initialPolicy} is {@code null}.
-     * @throws org.eclipse.ditto.base.model.exceptions.DittoJsonException if {@code thing} cannot be parsed to a {@link
-     * Thing}.
+     * {@code "thingId"}, or if {@code initialPolicy} is {@code null} or if {@code options} contains an option that
+     * is not allowed for creating a thing.
+     * @throws org.eclipse.ditto.base.model.exceptions.DittoJsonException if {@code thing} cannot be parsed to a
+     * {@link Thing}.
      * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
      * @since 1.1.0
      */
@@ -253,12 +263,13 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      *
      * @param thing the Thing to be created.
      * @param initialPolicy a custom policy to use for the Thing instead of the default Policy.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage providing the created Thing object or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing the created Thing object or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier, or if
-     * {@code initialPolicy} is {@code null}.
+     * {@code initialPolicy} is {@code null} or if {@code options} contains an option that
+     * is not allowed for creating a thing.
      * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
      * @since 1.1.0
      */
@@ -270,12 +281,12 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @param thingId the identifier of the Thing to be created. It must conform to the namespaced
      * entity ID notation (see Ditto documentation).
      * @param initialPolicy a custom policy to use for the Thing instead of the default Policy.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage providing the created Thing object or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing the created Thing object or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code thingId} is {@code null} or empty, or if {@code initialPolicy} is
-     * {@code null}.
+     * {@code null} or if {@code options} contains an option that is not allowed for creating a thing.
      * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
      * @since 1.1.0
      */
@@ -288,14 +299,15 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * contain a field named {@code "thingId"} of the basic JSON type String which contains the identifier of the Thing
      * to be created. It must conform to the namespaced entity ID notation (see Ditto documentation).
      * @param initialPolicy a custom policy to use for the Thing instead of the default Policy.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage providing the created Thing object or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing the created Thing object or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
-     * {@code "thingId"}, or if {@code initialPolicy} is {@code null}.
-     * @throws org.eclipse.ditto.base.model.exceptions.DittoJsonException if {@code thing} cannot be parsed to a {@link
-     * Thing}.
+     * {@code "thingId"}, or if {@code initialPolicy} is {@code null} or if {@code options} contains an option that
+     * is not allowed for creating a thing.
+     * @throws org.eclipse.ditto.base.model.exceptions.DittoJsonException if {@code thing} cannot be parsed to a
+     * {@link Thing}.
      * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
      * @since 1.1.0
      */
@@ -306,11 +318,12 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      *
      * @param thingId the Thing to be merged.
      * @param thing which should be used for merged.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return completable future providing {@code null} in case of success or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
-     * @throws IllegalArgumentException if {@code argument} is {@code null}.
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return completable future providing {@code null} in case of success or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code argument} is {@code null} or if {@code options} contains an option
+     * that is not allowed for merging a thing.
      * @since 2.0.0
      */
     CompletionStage<Void> merge(ThingId thingId, Thing thing, Option<?>... options);
@@ -320,11 +333,12 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      *
      * @param thingId the Thing to be merged.
      * @param thing a JSON object representation of the Thing which should be used for merged.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return completable future providing {@code null} in case of success or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
-     * @throws IllegalArgumentException if {@code argument} is {@code null}.
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return completable future providing {@code null} in case of success or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code argument} is {@code null} or if {@code options} contains an option
+     * that is not allowed for merging a thing.
      * @since 2.0.0
      */
     CompletionStage<Void> merge(ThingId thingId, JsonObject thing, Option<?>... options);
@@ -334,30 +348,32 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * restricted with option {@link org.eclipse.ditto.client.options.Options.Modify#exists(boolean)}.
      *
      * @param thing the Thing to be put.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing an {@link Optional} containing the created Thing object, in case the Thing
-     * has been created, or an empty Optional, in case the Thing has been updated. Provides a {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
-     * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier.
+     * has been created, or an empty Optional, in case the Thing has been updated. Provides a
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier or if {@code options}
+     * contains an option that is not allowed for putting a thing.
      * @since 1.0.0
      */
     CompletionStage<Optional<Thing>> put(Thing thing, Option<?>... options);
 
     /**
      * Puts a {@link Thing} based on the given {@link JsonObject}, which means that the Thing might be created or
-     * updated. The behaviour can be restricted with option {@link org.eclipse.ditto.client.options.Options.Modify#exists(boolean)}.
+     * updated. The behaviour can be restricted with option
+     * {@link org.eclipse.ditto.client.options.Options.Modify#exists(boolean)}.
      *
      * @param thing a JSON object representation of the Thing to be put. The provided JSON object is required to contain
      * a field named {@code "thingId"} of the basic JSON type String which contains the identifier of the Thing to be
      * put.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing an {@link Optional} containing the created Thing object, in case the Thing
-     * has been created, or an empty Optional, in case the Thing has been updated. Provides a {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * has been created, or an empty Optional, in case the Thing has been updated. Provides a
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
-     * {@code "thingId"}.
+     * {@code "thingId"} or if {@code options} contains an option that is not allowed for putting a thing.
      * @throws org.eclipse.ditto.base.model.exceptions.DittoJsonException if {@code thing} cannot be parsed to a
      * {@link Thing}.
      * @since 1.0.0
@@ -371,13 +387,14 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @param thing the Thing to be put.
      * @param initialPolicy a custom policy to use for the Thing instead of the default Policy. This will only apply if
      * the Thing does not already exist.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing an {@link Optional} containing the created Thing object, in case the Thing
-     * has been created, or an empty Optional, in case the Thing has been updated. Provides a {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * has been created, or an empty Optional, in case the Thing has been updated. Provides a
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier, or if
-     * {@code initialPolicy} is {@code null}.
+     * {@code initialPolicy} is {@code null} or if {@code options} contains an option that is not allowed for putting
+     * a thing.
      * @since 1.1.0
      */
     CompletionStage<Optional<Thing>> put(Thing thing, JsonObject initialPolicy, Option<?>... options);
@@ -391,13 +408,14 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * put.
      * @param initialPolicy a custom policy to use for the Thing instead of the default Policy. This will only apply if
      * the Thing does not already exist.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing an {@link Optional} containing the created Thing object, in case the Thing
-     * has been created, or an empty Optional, in case the Thing has been updated. Provides a {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * has been created, or an empty Optional, in case the Thing has been updated. Provides a
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
-     * {@code "thingId"}, or if {@code initialPolicy} is {@code null}.
+     * {@code "thingId"}, or if {@code initialPolicy} is {@code null} or if {@code options} contains an option that is
+     * not allowed for putting a thing.
      * @throws org.eclipse.ditto.base.model.exceptions.DittoJsonException if {@code thing} cannot be parsed to a
      * {@link Thing}.
      * @since 1.1.0
@@ -411,13 +429,14 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @param thing the Thing to be put.
      * @param initialPolicy a custom policy to use for the Thing instead of the default Policy. This will only apply if
      * the Thing does not already exist.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing an {@link Optional} containing the created Thing object, in case the Thing
-     * has been created, or an empty Optional, in case the Thing has been updated. Provides a {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * has been created, or an empty Optional, in case the Thing has been updated. Provides a
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier, or if
-     * {@code initialPolicy} is {@code null}.
+     * {@code initialPolicy} is {@code null} or if {@code options} contains an option that is
+     * not allowed for putting a thing.
      * @since 1.1.0
      */
     CompletionStage<Optional<Thing>> put(Thing thing, Policy initialPolicy, Option<?>... options);
@@ -432,13 +451,14 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * put.
      * @param initialPolicy a custom policy to use for the Thing instead of the default Policy. This will only apply if
      * the Thing does not already exist.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing an {@link Optional} containing the created Thing object, in case the Thing
-     * has been created, or an empty Optional, in case the Thing has been updated. Provides a {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * has been created, or an empty Optional, in case the Thing has been updated. Provides a
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
-     * {@code "thingId"}, or if {@code initialPolicy} is {@code null}.
+     * {@code "thingId"}, or if {@code initialPolicy} is {@code null} or if {@code options} contains an option that is
+     * not allowed for putting a thing.
      * @throws org.eclipse.ditto.base.model.exceptions.DittoJsonException if {@code thing} cannot be parsed to a
      * {@link Thing}.
      * @since 1.1.0
@@ -449,11 +469,12 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * Updates the given {@link Thing} if it does exist.
      *
      * @param thing the Thing to be updated.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage providing {@code null} in case of success or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
-     * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier.
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing {@code null} in case of success or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier
+     * or if {@code options} contains an option that is not allowed for updating a thing.
      */
     CompletionStage<Void> update(Thing thing, Option<?>... options);
 
@@ -463,12 +484,12 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @param thing a JSON object representation of the Thing to be updated. The provided JSON object is required to
      * contain a field named {@code "thingId"} of the basic JSON type String which contains the identifier of the Thing
      * to be updated.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage providing {@code null} in case of success or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing {@code null} in case of success or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
-     * {@code "thingId"}.
+     * {@code "thingId"} or if {@code options} contains an option that is not allowed for updating a thing.
      * @throws org.eclipse.ditto.base.model.exceptions.DittoJsonException if {@code thing} cannot be parsed to a
      * {@link Thing}.
      */
@@ -478,11 +499,12 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * Deletes the {@link Thing} specified by the given identifier.
      *
      * @param thingId the identifier of the Thing to be deleted.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage for handling the result of deletion or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code thingId} is {@code null}.
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage for handling the result of deletion or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code thingId} is {@code null} or if {@code options} contains an option
+     * that is not allowed for updating a thing.
      */
     CompletionStage<Void> delete(ThingId thingId, Option<?>... options);
 
@@ -492,8 +514,8 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      *
      * @param thingId the first identifier of the Thing to be retrieved.
      * @param thingIds additional identifiers of Things to be retrieved.
-     * @return CompletionStage providing the requested Things, an empty list or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * @return CompletionStage providing the requested Things, an empty list or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if any argument is {@code null}.
      */
     CompletionStage<List<Thing>> retrieve(ThingId thingId, ThingId... thingIds);
@@ -505,8 +527,8 @@ public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle
      * @param fieldSelector a field selector allowing to select a subset of fields on the Things to be retrieved.
      * @param thingId the first identifier of the Thing to be retrieved.
      * @param thingIds additional identifiers of Things to be retrieved.
-     * @return CompletionStage providing the requested Things, an empty list or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * @return CompletionStage providing the requested Things, an empty list or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if any argument is {@code null}.
      */
     CompletionStage<List<Thing>> retrieve(JsonFieldSelector fieldSelector, ThingId thingId, ThingId... thingIds);

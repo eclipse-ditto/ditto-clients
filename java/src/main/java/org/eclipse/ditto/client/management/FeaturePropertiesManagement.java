@@ -43,12 +43,14 @@ public interface FeaturePropertiesManagement {
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty or if {@code options} contains
+     * an option that is not allowed for putting a feature property.
      */
-    default CompletionStage<Void> putProperty(final CharSequence path, final boolean value,
+    default CompletionStage<Void> putProperty(final CharSequence path,
+            final boolean value,
             final Option<?>... options) {
-        argumentNotNull(path);
-        return putProperty(JsonFactory.newPointer(path), value, options);
+
+        return putProperty(JsonFactory.newPointer(argumentNotNull(path)), value, options);
     }
 
     /**
@@ -60,7 +62,8 @@ public interface FeaturePropertiesManagement {
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty or if {@code options} contains
+     * an option that is not allowed for putting a feature property.
      */
     CompletionStage<Void> putProperty(JsonPointer path, boolean value, Option<?>... options);
 
@@ -74,12 +77,11 @@ public interface FeaturePropertiesManagement {
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty or if {@code options} contains
+     * an option that is not allowed for putting a feature property.
      */
-    default CompletionStage<Void> putProperty(final CharSequence path, final double value,
-            final Option<?>... options) {
-        argumentNotNull(path);
-        return putProperty(JsonFactory.newPointer(path), value, options);
+    default CompletionStage<Void> putProperty(final CharSequence path, final double value, final Option<?>... options) {
+        return putProperty(JsonFactory.newPointer(argumentNotNull(path)), value, options);
     }
 
     /**
@@ -105,11 +107,11 @@ public interface FeaturePropertiesManagement {
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty or if {@code options} contains
+     * an option that is not allowed for putting a feature property.
      */
     default CompletionStage<Void> putProperty(final CharSequence path, final int value, final Option<?>... options) {
-        argumentNotNull(path);
-        return putProperty(JsonFactory.newPointer(path), value, options);
+        return putProperty(JsonFactory.newPointer(argumentNotNull(path)), value, options);
     }
 
     /**
@@ -121,7 +123,8 @@ public interface FeaturePropertiesManagement {
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty or if {@code options} contains
+     * an option that is not allowed for putting a feature property.
      */
     CompletionStage<Void> putProperty(JsonPointer path, int value, Option<?>... options);
 
@@ -135,11 +138,11 @@ public interface FeaturePropertiesManagement {
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty or if {@code options} contains
+     * an option that is not allowed for putting a feature property.
      */
     default CompletionStage<Void> putProperty(final CharSequence path, final long value, final Option<?>... options) {
-        argumentNotNull(path);
-        return putProperty(JsonFactory.newPointer(path), value, options);
+        return putProperty(JsonFactory.newPointer(argumentNotNull(path)), value, options);
     }
 
     /**
@@ -151,7 +154,8 @@ public interface FeaturePropertiesManagement {
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty or if {@code options} contains
+     * an option that is not allowed for putting a feature property.
      */
     CompletionStage<Void> putProperty(JsonPointer path, long value, Option<?>... options);
 
@@ -165,12 +169,11 @@ public interface FeaturePropertiesManagement {
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty or if {@code options} contains
+     * an option that is not allowed for putting a feature property.
      */
-    default CompletionStage<Void> putProperty(final CharSequence path, final String value,
-            final Option<?>... options) {
-        argumentNotNull(path);
-        return putProperty(JsonFactory.newPointer(path), value, options);
+    default CompletionStage<Void> putProperty(final CharSequence path, final String value, final Option<?>... options) {
+        return putProperty(JsonFactory.newPointer(argumentNotNull(path)), value, options);
     }
 
     /**
@@ -182,7 +185,8 @@ public interface FeaturePropertiesManagement {
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty or if {@code options} contains
+     * an option that is not allowed for putting a feature property.
      */
     CompletionStage<Void> putProperty(JsonPointer path, String value, Option<?>... options);
 
@@ -196,12 +200,14 @@ public interface FeaturePropertiesManagement {
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty or if {@code options} contains
+     * an option that is not allowed for putting a feature property.
      */
-    default CompletionStage<Void> putProperty(final CharSequence path, final JsonValue value,
+    default CompletionStage<Void> putProperty(final CharSequence path,
+            final JsonValue value,
             final Option<?>... options) {
-        argumentNotNull(path);
-        return putProperty(JsonFactory.newPointer(path), value, options);
+
+        return putProperty(JsonFactory.newPointer(argumentNotNull(path)), value, options);
     }
 
     /**
@@ -213,7 +219,8 @@ public interface FeaturePropertiesManagement {
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty or if {@code options} contains
+     * an option that is not allowed for putting a feature property.
      */
     CompletionStage<Void> putProperty(JsonPointer path, JsonValue value, Option<?>... options);
 
@@ -227,13 +234,15 @@ public interface FeaturePropertiesManagement {
      * org.eclipse.ditto.client.options.Options}.
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty or if {@code options} contains
+     * an option that is not allowed for merging a feature property.
      * @since 2.0.0
      */
-    default CompletionStage<Void> mergeProperty(final CharSequence path, final boolean value,
+    default CompletionStage<Void> mergeProperty(final CharSequence path,
+            final boolean value,
             final Option<?>... options) {
-        argumentNotNull(path);
-        return mergeProperty(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
+
+        return mergeProperty(JsonFactory.newPointer(argumentNotNull(path)), JsonFactory.newValue(value), options);
     }
 
     /**
@@ -246,13 +255,15 @@ public interface FeaturePropertiesManagement {
      * org.eclipse.ditto.client.options.Options}.
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty or if {@code options} contains
+     * an option that is not allowed for merging a feature property.
      * @since 2.0.0
      */
-    default CompletionStage<Void> mergeProperty(final CharSequence path, final double value,
+    default CompletionStage<Void> mergeProperty(final CharSequence path,
+            final double value,
             final Option<?>... options) {
-        argumentNotNull(path);
-        return mergeProperty(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
+
+        return mergeProperty(JsonFactory.newPointer(argumentNotNull(path)), JsonFactory.newValue(value), options);
     }
 
     /**
@@ -266,13 +277,12 @@ public interface FeaturePropertiesManagement {
      * org.eclipse.ditto.client.options.Options}.
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty or if {@code options} contains
+     * an option that is not allowed for merging a feature property.
      * @since 2.0.0
      */
-    default CompletionStage<Void> mergeProperty(final CharSequence path, final int value,
-            final Option<?>... options) {
-        argumentNotNull(path);
-        return mergeProperty(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
+    default CompletionStage<Void> mergeProperty(final CharSequence path, final int value, final Option<?>... options) {
+        return mergeProperty(JsonFactory.newPointer(argumentNotNull(path)), JsonFactory.newValue(value), options);
     }
 
     /**
@@ -286,13 +296,12 @@ public interface FeaturePropertiesManagement {
      * org.eclipse.ditto.client.options.Options}.
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty or if {@code options} contains
+     * an option that is not allowed for merging a feature property.
      * @since 2.0.0
      */
-    default CompletionStage<Void> mergeProperty(final CharSequence path, final long value,
-            final Option<?>... options) {
-        argumentNotNull(path);
-        return mergeProperty(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
+    default CompletionStage<Void> mergeProperty(final CharSequence path, final long value, final Option<?>... options) {
+        return mergeProperty(JsonFactory.newPointer(argumentNotNull(path)), JsonFactory.newValue(value), options);
     }
 
     /**
@@ -306,13 +315,15 @@ public interface FeaturePropertiesManagement {
      * org.eclipse.ditto.client.options.Options}.
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty or if {@code options} contains
+     * an option that is not allowed for merging a feature property.
      * @since 2.0.0
      */
-    default CompletionStage<Void> mergeProperty(final CharSequence path, final String value,
+    default CompletionStage<Void> mergeProperty(final CharSequence path,
+            final String value,
             final Option<?>... options) {
-        argumentNotNull(path);
-        return mergeProperty(JsonFactory.newPointer(path), JsonFactory.newValue(value), options);
+
+        return mergeProperty(JsonFactory.newPointer(argumentNotNull(path)), JsonFactory.newValue(value), options);
     }
 
     /**
@@ -325,13 +336,15 @@ public interface FeaturePropertiesManagement {
      * org.eclipse.ditto.client.options.Options}.
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty or if {@code options} contains
+     * an option that is not allowed for merging a feature property.
      * @since 2.0.0
      */
-    default CompletionStage<Void> mergeProperty(final CharSequence path, final JsonValue value,
+    default CompletionStage<Void> mergeProperty(final CharSequence path,
+            final JsonValue value,
             final Option<?>... options) {
-        argumentNotNull(path);
-        return mergeProperty(JsonFactory.newPointer(path), value, options);
+
+        return mergeProperty(JsonFactory.newPointer(argumentNotNull(path)), value, options);
     }
 
     /**
@@ -343,7 +356,8 @@ public interface FeaturePropertiesManagement {
      * org.eclipse.ditto.client.options.Options}.
      * @return a completable future providing the result of this operation or a specific {@link
      * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty or if {@code options} contains
+     * an option that is not allowed for merging a feature property.
      * @since 2.0.0
      */
     CompletionStage<Void> mergeProperty(JsonPointer path, JsonValue value, Option<?>... options);
@@ -356,6 +370,8 @@ public interface FeaturePropertiesManagement {
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * @throws IllegalArgumentException if {@code options} contains an option
+     * that is not allowed for setting feature properties.
      */
     CompletionStage<Void> setProperties(JsonObject value, Option<?>... options);
 
@@ -363,10 +379,12 @@ public interface FeaturePropertiesManagement {
      * Merge the given properties of the Feature.
      *
      * @param value the properties to be merged.
-     * @param options options to be applied configuring behaviour of this method, see {@link
-     * org.eclipse.ditto.client.options.Options}.
-     * @return a completable future providing the result of this operation or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * @param options options to be applied configuring behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return a completable future providing the result of this operation or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * @throws IllegalArgumentException if {@code options} contains an option
+     * that is not allowed for merging feature properties.
      * @since 2.0.0
      */
     CompletionStage<Void> mergeProperties(JsonObject value, Option<?>... options);
@@ -378,12 +396,13 @@ public interface FeaturePropertiesManagement {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
-     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty
+     * or if {@code options} contains an option that is not allowed for
+     * deleting a feature property.
      */
     default CompletionStage<Void> deleteProperty(final CharSequence path, final Option<?>... options) {
-        argumentNotNull(path);
-        return deleteProperty(JsonFactory.newPointer(path), options);
+        return deleteProperty(JsonFactory.newPointer(argumentNotNull(path)), options);
     }
 
     /**
@@ -393,8 +412,10 @@ public interface FeaturePropertiesManagement {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
-     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
-     * @throws IllegalArgumentException if {@code path} is {@code null} or empty.
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code path} is {@code null} or empty
+     * or if {@code options} contains an option that is not allowed for
+     * deleting a feature property.
      */
     CompletionStage<Void> deleteProperty(JsonPointer path, Option<?>... options);
 
@@ -404,7 +425,9 @@ public interface FeaturePropertiesManagement {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
-     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code options} contains an option
+     * that is not allowed for deleting feature properties.
      */
     CompletionStage<Void> deleteProperties(Option<?>... options);
 

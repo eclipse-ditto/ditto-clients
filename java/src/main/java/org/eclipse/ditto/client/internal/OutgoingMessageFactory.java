@@ -14,11 +14,11 @@ package org.eclipse.ditto.client.internal;
 
 import static org.eclipse.ditto.base.model.common.ConditionChecker.checkNotNull;
 import static org.eclipse.ditto.client.options.OptionName.Global.CONDITION;
+import static org.eclipse.ditto.client.options.OptionName.Global.LIVE_CHANNEL_CONDITION;
 import static org.eclipse.ditto.client.options.OptionName.Modify.EXISTS;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -27,7 +27,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.annotation.Nullable;
 
@@ -37,6 +38,7 @@ import org.eclipse.ditto.base.model.headers.entitytag.EntityTagMatchers;
 import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
 import org.eclipse.ditto.client.live.messages.MessageSerializationException;
 import org.eclipse.ditto.client.live.messages.MessageSerializer;
+import org.eclipse.ditto.client.live.messages.MessageSerializerKey;
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.live.messages.MessageSerializers;
 import org.eclipse.ditto.client.options.Option;
@@ -212,34 +214,31 @@ public final class OutgoingMessageFactory {
     }
 
     public RetrieveThing retrieveThing(final ThingId thingId, final Option<?>... options) {
-        return RetrieveThing.of(thingId, buildDittoHeaders(EnumSet.of(CONDITION), options));
+        return RetrieveThing.of(thingId, buildDittoHeaders(EnumSet.of(CONDITION, LIVE_CHANNEL_CONDITION), options));
     }
 
     public RetrieveThing retrieveThing(final ThingId thingId,
             final Iterable<JsonPointer> fields,
             final Option<?>... options) {
 
-        return RetrieveThing.getBuilder(thingId, buildDittoHeaders(EnumSet.of(CONDITION), options))
+        return RetrieveThing.getBuilder(thingId,
+                        buildDittoHeaders(EnumSet.of(CONDITION, LIVE_CHANNEL_CONDITION), options))
                 .withSelectedFields(JsonFactory.newFieldSelector(fields))
                 .build();
     }
 
     public RetrieveThings retrieveThings(final Iterable<ThingId> thingIds) {
-        return RetrieveThings.getBuilder(makeList(thingIds))
+        return RetrieveThings.getBuilder(getAsList(thingIds))
                 .dittoHeaders(buildDittoHeaders(Collections.emptySet()))
                 .build();
     }
 
-    private static <E> List<E> makeList(final Iterable<E> iter) {
-        final List<E> list = new ArrayList<>();
-        for (final E item : iter) {
-            list.add(item);
-        }
-        return list;
+    private static <E> List<E> getAsList(final Iterable<E> iterable) {
+        return StreamSupport.stream(iterable.spliterator(), false).collect(Collectors.toList());
     }
 
     public RetrieveThings retrieveThings(final Iterable<ThingId> thingIds, final Iterable<JsonPointer> fields) {
-        return RetrieveThings.getBuilder(makeList(thingIds))
+        return RetrieveThings.getBuilder(getAsList(thingIds))
                 .selectedFields(JsonFactory.newFieldSelector(fields))
                 .dittoHeaders(buildDittoHeaders(Collections.emptySet()))
                 .build();
@@ -391,7 +390,9 @@ public final class OutgoingMessageFactory {
     }
 
     public RetrieveFeature retrieveFeature(final ThingId thingId, final String featureId, final Option<?>... options) {
-        return RetrieveFeature.of(thingId, featureId, buildDittoHeaders(EnumSet.of(CONDITION), options));
+        return RetrieveFeature.of(thingId,
+                featureId,
+                buildDittoHeaders(EnumSet.of(CONDITION, LIVE_CHANNEL_CONDITION), options));
     }
 
     public RetrieveFeature retrieveFeature(final ThingId thingId,
@@ -399,7 +400,10 @@ public final class OutgoingMessageFactory {
             final JsonFieldSelector fieldSelector,
             final Option<?>... options) {
 
-        return RetrieveFeature.of(thingId, featureId, fieldSelector, buildDittoHeaders(EnumSet.of(CONDITION), options));
+        return RetrieveFeature.of(thingId,
+                featureId,
+                fieldSelector,
+                buildDittoHeaders(EnumSet.of(CONDITION, LIVE_CHANNEL_CONDITION), options));
     }
 
     public DeleteFeature deleteFeature(final ThingId thingId, final String featureId, final Option<?>... options) {
@@ -555,14 +559,14 @@ public final class OutgoingMessageFactory {
                     // if no content-type was explicitly set, but a payload
                     if (!msgContentType.isPresent()) {
                         // find out the content-type by the payload java-type:
-                        final String implicitContentType = registry.findKeyFor(payloadType, subject)
-                                .orElseThrow(
-                                        () -> new MessageSerializationException(
-                                                "No content-type could be determined for payload of type '" +
-                                                        payloadType + "'. "
-                                                        +
-                                                        "Ensure that a a MessageSerializer for that payload-type is registered"))
-                                .getContentType();
+                        final MessageSerializerKey<T> serializerKey = registry.findKeyFor(payloadType, subject)
+                                .orElseThrow(() -> new MessageSerializationException(
+                                        "No content-type could be determined for payload of type '"
+                                                + payloadType + "'."
+                                                + " Ensure that a MessageSerializer for that payload-type is"
+                                                + " registered"
+                                ));
+                        final String implicitContentType = serializerKey.getContentType();
 
                         final MessageHeaders adjustedHeaders =
                                 messageHeaders.toBuilder().contentType(implicitContentType).build();
@@ -630,20 +634,17 @@ public final class OutgoingMessageFactory {
     }
 
     private Optional<String> getPolicyIdOrPlaceholder(final Option<?>... options) {
+        final Optional<String> result;
         final OptionsEvaluator.Modify optionsEvaluator = OptionsEvaluator.forModifyOptions(options);
-        final Optional<String> copyPolicy = optionsEvaluator.copyPolicy().map(PolicyId::toString);
-
-        return ifPresentOrElse(copyPolicy,
-                () -> optionsEvaluator.copyPolicyFromThingId()
-                        .map(ThingId::toString)
-                        .map(thingId -> "{{ ref:things/" + thingId + "/policyId }}"));
-    }
-
-    private static <T> Optional<T> ifPresentOrElse(final Optional<T> optional, final Supplier<Optional<T>> otherwise) {
-        if (optional.isPresent()) {
-            return optional;
+        final Optional<PolicyId> copyPolicy = optionsEvaluator.copyPolicy();
+        if (copyPolicy.isPresent()) {
+            result = copyPolicy.map(PolicyId::toString);
+        } else {
+            result = optionsEvaluator.copyPolicyFromThingId()
+                    .map(ThingId::toString)
+                    .map(thingId -> "{{ ref:things/" + thingId + "/policyId }}");
         }
-        return otherwise.get();
+        return result;
     }
 
 }

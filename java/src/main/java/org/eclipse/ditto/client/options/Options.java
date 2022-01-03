@@ -69,6 +69,28 @@ public final class Options {
     }
 
     /**
+     * Creates an option for specifying the RQL expression that acts as live channel condition.
+     * <p>
+     * The returned option has the name {@link OptionName.Global#LIVE_CHANNEL_CONDITION} and the given argument value.
+     * </p>
+     *
+     * @param liveChannelConditionExpression the RQL expression that acts as live channel condition.
+     * @return the new {@code Option}.
+     * @throws NullPointerException if {@code liveChannelConditionExpression} is {@code null}.
+     * @throws IllegalArgumentException if {@code liveChannelConditionExpression} is blank.
+     * @since 2.3.0
+     */
+    public static Option<String> liveChannelCondition(final CharSequence liveChannelConditionExpression) {
+        ConditionChecker.checkNotNull(liveChannelConditionExpression, "liveChannelConditionExpression");
+        ConditionChecker.checkArgument(liveChannelConditionExpression,
+                argument -> 0 < argument.chars().filter(ch -> !Character.isWhitespace(ch)).count(),
+                () -> "The liveChannelConditionExpression must not be blank.");
+
+        return DefaultOption.newInstance(OptionName.Global.LIVE_CHANNEL_CONDITION,
+                liveChannelConditionExpression.toString());
+    }
+
+    /**
      * The {@code Modify} class provides static factory methods for creating Options which are related to modifying
      * operations.
      *
@@ -122,7 +144,7 @@ public final class Options {
         }
 
         /**
-         * Creates an option for specifying whether the created policy should copied from an already existing policy
+         * Creates an option for specifying whether the created policy should be copied from an already existing policy.
          * <p>
          * The returned option has the name {@link OptionName.Modify#COPY_POLICY} and the given {@code boolean} value.
          * </p>
@@ -141,7 +163,8 @@ public final class Options {
         /**
          * Creates an option for specifying whether the created policy should be copied from an already existing thing
          * <p>
-         * The returned option has the name {@link OptionName.Modify#COPY_POLICY_FROM_THING} and the given {@code boolean} value.
+         * The returned option has the name {@link OptionName.Modify#COPY_POLICY_FROM_THING} and the given
+         * {@code boolean} value.
          * </p>
          * <p>
          * If this Option is not specified, it does not matter whether the object exists.

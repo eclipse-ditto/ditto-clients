@@ -120,6 +120,18 @@ public final class OptionsEvaluator {
             return getValue(new ConditionOptionVisitor());
         }
 
+        /**
+         * Returns the live channel condition RQL expression as provided by
+         * the user.
+         *
+         * @return an Optional containing the live channel condition
+         * RQL expression if provided by the user, an empty Optional else.
+         * @since 2.3.0
+         */
+        public Optional<String> getLiveChannelCondition() {
+            return getValue(new LiveChannelConditionOptionVisitor());
+        }
+
     }
 
     /**

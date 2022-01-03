@@ -55,6 +55,8 @@ public interface FeatureHandle extends WithFeatureId, FeaturePropertiesManagemen
      * @param options options to be applied configuring behaviour of this method, see
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage
+     * @throws IllegalArgumentException if {@code options} contains an option that is not allowed for deleting a
+     * feature.
      */
     CompletionStage<Void> delete(Option<?>... options);
 
@@ -74,6 +76,8 @@ public interface FeatureHandle extends WithFeatureId, FeaturePropertiesManagemen
      * @return CompletionStage providing the requested Feature object, when completed successfully or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws NullPointerException if {@code options} is {@code null}.
+     * @throws IllegalArgumentException if {@code options} contains an option that is not allowed for retrieving a
+     * feature.
      * @since 2.1.0
      */
     CompletionStage<Feature> retrieve(Option<?>... options);
@@ -98,6 +102,8 @@ public interface FeatureHandle extends WithFeatureId, FeaturePropertiesManagemen
      * @return CompletionStage providing the requested Feature object, when completed successfully or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws NullPointerException if any argument is {@code null}.
+     * @throws IllegalArgumentException if {@code options} contains an option that is not allowed for retrieving a
+     * feature.
      * @since 2.1.0
      */
     CompletionStage<Feature> retrieve(JsonFieldSelector fieldSelector, Option<?>... options);

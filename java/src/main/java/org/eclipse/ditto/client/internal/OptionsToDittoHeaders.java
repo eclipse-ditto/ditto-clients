@@ -15,10 +15,10 @@ package org.eclipse.ditto.client.internal;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Locale;
+import java.util.Comparator;
 import java.util.Optional;
-import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.eclipse.ditto.base.model.common.ConditionChecker;
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
@@ -39,19 +39,25 @@ final class OptionsToDittoHeaders {
             EntityTagMatchers.fromList(Collections.singletonList(EntityTagMatcher.asterisk()));
 
     private final JsonSchemaVersion jsonSchemaVersion;
-    private final Set<? extends OptionName> allowedOptions;
+    private final SortedSet<? extends OptionName> allowedOptions;
     private final OptionsEvaluator.Global globalOptionsEvaluator;
     private final OptionsEvaluator.Modify modifyOptionsEvaluator;
 
     private final DittoHeadersBuilder<?, ?> headersBuilder;
 
     private OptionsToDittoHeaders(final JsonSchemaVersion jsonSchemaVersion,
-            final Collection<? extends OptionName> allowedOptions,
+            final Collection<? extends OptionName> explicitlyAllowedOptions,
             final OptionsEvaluator.Global globalOptionsEvaluator,
             final OptionsEvaluator.Modify modifyOptionsEvaluator) {
 
         this.jsonSchemaVersion = jsonSchemaVersion;
-        this.allowedOptions = Collections.unmodifiableSet(new HashSet<>(allowedOptions));
+
+        final SortedSet<OptionName> allAllowedOptions = new TreeSet<>(Comparator.comparing(Object::toString));
+        allAllowedOptions.addAll(explicitlyAllowedOptions);
+        allAllowedOptions.add(OptionName.Global.DITTO_HEADERS);
+        allAllowedOptions.add(OptionName.Modify.RESPONSE_REQUIRED);
+        allowedOptions = Collections.unmodifiableSortedSet(allAllowedOptions);
+
         this.globalOptionsEvaluator = globalOptionsEvaluator;
         this.modifyOptionsEvaluator = modifyOptionsEvaluator;
 
@@ -62,18 +68,20 @@ final class OptionsToDittoHeaders {
      * Returns {@link DittoHeaders} that are based on the specified arguments.
      *
      * @param schemaVersion the JSON schema version to be used.
-     * @param allowedOptions the options that are allowed for a particular outgoing message.
+     * @param explicitlyAllowedOptions the options that are explicitly allowed for a particular outgoing message.
      * @param options the user provided options.
      * @return the {@code DittoHeaders}.
      * @throws NullPointerException if any argument is {@code null}.
+     * @throws IllegalArgumentException if {@code options} contains items that are not within
+     * {@code explicitlyAllowedOptions} or that are not implicitly allowed.
      */
     static DittoHeaders getDittoHeaders(final JsonSchemaVersion schemaVersion,
-            final Collection<? extends OptionName> allowedOptions,
+            final Collection<? extends OptionName> explicitlyAllowedOptions,
             final Option<?>[] options) {
 
         final OptionsToDittoHeaders optionsToDittoHeaders = new OptionsToDittoHeaders(
                 ConditionChecker.checkNotNull(schemaVersion, "schemaVersion"),
-                ConditionChecker.checkNotNull(allowedOptions, "allowedOptions"),
+                ConditionChecker.checkNotNull(explicitlyAllowedOptions, "explicitlyAllowedOptions"),
                 OptionsEvaluator.forGlobalOptions(options),
                 OptionsEvaluator.forModifyOptions(options)
         );
@@ -88,6 +96,7 @@ final class OptionsToDittoHeaders {
         setResponseRequired();
         setEntityTagMatchers();
         setCondition();
+        setLiveChannelCondition();
         return buildDittoHeaders();
     }
 
@@ -96,7 +105,22 @@ final class OptionsToDittoHeaders {
     }
 
     private DittoHeaders getAdditionalHeaders() {
-        return globalOptionsEvaluator.getDittoHeaders().orElseGet(DittoHeaders::empty);
+        final DittoHeaders result;
+        final Optional<DittoHeaders> dittoHeadersOptional = globalOptionsEvaluator.getDittoHeaders();
+        if (dittoHeadersOptional.isPresent()) {
+            validateIfOptionIsAllowed(OptionName.Global.DITTO_HEADERS);
+            result = dittoHeadersOptional.get();
+        } else {
+            result = DittoHeaders.empty();
+        }
+        return result;
+    }
+
+    private void validateIfOptionIsAllowed(final OptionName optionName) {
+        if (!allowedOptions.contains(optionName)) {
+            final String pattern = "Option ''{0}'' is not allowed. This operation only allows {1}.";
+            throw new IllegalArgumentException(MessageFormat.format(pattern, optionName, allowedOptions));
+        }
     }
 
     private void setRandomCorrelationIdIfMissing(final DittoHeaders additionalHeaders) {
@@ -126,19 +150,19 @@ final class OptionsToDittoHeaders {
                 });
     }
 
-    private void validateIfOptionIsAllowed(final OptionName option) {
-        if (!allowedOptions.contains(option)) {
-            final String pattern = "Option ''{0}'' is not allowed for this operation.";
-            final String lowerCaseOptionName = option.toString().toLowerCase(Locale.ENGLISH);
-            throw new IllegalArgumentException(MessageFormat.format(pattern, lowerCaseOptionName));
-        }
-    }
-
     private void setCondition() {
         globalOptionsEvaluator.condition()
                 .ifPresent(condition -> {
                     validateIfOptionIsAllowed(OptionName.Global.CONDITION);
                     headersBuilder.condition(condition);
+                });
+    }
+
+    private void setLiveChannelCondition() {
+        globalOptionsEvaluator.getLiveChannelCondition()
+                .ifPresent(liveChannelCondition -> {
+                    validateIfOptionIsAllowed(OptionName.Global.LIVE_CHANNEL_CONDITION);
+                    headersBuilder.liveChannelCondition(liveChannelCondition);
                 });
     }
 

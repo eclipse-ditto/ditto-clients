@@ -40,6 +40,8 @@ public interface FeatureDefinitionManagement {
      * @return a CompletionStage providing the result of this operation or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws NullPointerException if any argument is {@code null}.
+     * @throws IllegalArgumentException if {@code options} contains an option that is not allowed for setting
+     * a feature definition.
      */
     CompletionStage<Void> setDefinition(FeatureDefinition definition, Option<?>... options);
 
@@ -52,6 +54,8 @@ public interface FeatureDefinitionManagement {
      * @return a CompletionStage providing the result of this operation or a specific {@link
      * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws NullPointerException if any argument is {@code null}.
+     * @throws IllegalArgumentException if {@code options} contains an option that is not allowed for merging
+     * a feature definition.
      * @since 2.0.0
      */
     CompletionStage<Void> mergeDefinition(FeatureDefinition definition, Option<?>... options);
@@ -63,6 +67,8 @@ public interface FeatureDefinitionManagement {
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return a CompletionStage providing the result of this operation or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws IllegalArgumentException if {@code options} contains an option that is not allowed for deleting
+     * a feature definition.
      */
     CompletionStage<Void> deleteDefinition(Option<?>... options);
 

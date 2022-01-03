@@ -14,12 +14,11 @@ package org.eclipse.ditto.client.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.Locale;
 
-import org.assertj.core.api.Assertions;
 import org.eclipse.ditto.base.model.assertions.DittoBaseAssertions;
 import org.eclipse.ditto.base.model.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
@@ -37,29 +36,31 @@ import org.junit.rules.TestName;
 public final class OptionsToDittoHeadersTest {
 
     private static final JsonSchemaVersion SCHEMA_VERSION = JsonSchemaVersion.V_2;
+    private static final String CONDITION_EXPRESSION = "ne(attributes/test)";
+    private static final String LIVE_CHANNEL_CONDITION_EXPRESSION = "eq(attributes/value,\"livePolling\")";
 
     @Rule
     public final TestName testName = new TestName();
 
     @Test
     public void getDittoHeadersForNullJsonSchemaVersion() {
-        Assertions.assertThatNullPointerException()
+        assertThatNullPointerException()
                 .isThrownBy(() -> OptionsToDittoHeaders.getDittoHeaders(null, Collections.emptySet(), new Option<?>[0]))
                 .withMessage("The schemaVersion must not be null!")
                 .withNoCause();
     }
 
     @Test
-    public void getDittoHeadersForNullAllowedOptions() {
-        Assertions.assertThatNullPointerException()
+    public void getDittoHeadersForNullExplicitlyAllowedOptions() {
+        assertThatNullPointerException()
                 .isThrownBy(() -> OptionsToDittoHeaders.getDittoHeaders(SCHEMA_VERSION, null, new Option<?>[0]))
-                .withMessage("The allowedOptions must not be null!")
+                .withMessage("The explicitlyAllowedOptions must not be null!")
                 .withNoCause();
     }
 
     @Test
     public void getDittoHeadersForNullOptions() {
-        Assertions.assertThatNullPointerException()
+        assertThatNullPointerException()
                 .isThrownBy(() -> OptionsToDittoHeaders.getDittoHeaders(SCHEMA_VERSION, Collections.emptySet(), null))
                 .withMessage("The options must not be null!")
                 .withNoCause();
@@ -130,8 +131,10 @@ public final class OptionsToDittoHeadersTest {
                 .isThrownBy(() -> OptionsToDittoHeaders.getDittoHeaders(SCHEMA_VERSION,
                         Collections.emptySet(),
                         new Option[]{Options.Modify.exists(true)}))
-                .withMessage("Option '%s' is not allowed for this operation.",
-                        OptionName.Modify.EXISTS.toString().toLowerCase(Locale.ROOT))
+                .withMessage("Option '%s' is not allowed. This operation only allows [%s, %s].",
+                        OptionName.Modify.EXISTS,
+                        OptionName.Global.DITTO_HEADERS,
+                        OptionName.Modify.RESPONSE_REQUIRED)
                 .withNoCause();
     }
 
@@ -154,14 +157,16 @@ public final class OptionsToDittoHeadersTest {
                 .isThrownBy(() -> OptionsToDittoHeaders.getDittoHeaders(SCHEMA_VERSION,
                         Collections.emptySet(),
                         new Option[]{Options.Modify.exists(false)}))
-                .withMessage("Option '%s' is not allowed for this operation.",
-                        OptionName.Modify.EXISTS.toString().toLowerCase(Locale.ROOT))
+                .withMessage("Option '%s' is not allowed. This operation only allows [%s, %s].",
+                        OptionName.Modify.EXISTS,
+                        OptionName.Global.DITTO_HEADERS,
+                        OptionName.Modify.RESPONSE_REQUIRED)
                 .withNoCause();
     }
 
     @Test
     public void getDittoHeadersForAllowedConditionOption() {
-        final String condition = "eq(attributes/manufacturer,\"ACME\"";
+        final String condition = CONDITION_EXPRESSION;
         final DittoHeaders dittoHeaders = OptionsToDittoHeaders.getDittoHeaders(SCHEMA_VERSION,
                 EnumSet.of(OptionName.Global.CONDITION),
                 new Option[]{Options.condition(condition)});
@@ -178,9 +183,38 @@ public final class OptionsToDittoHeadersTest {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> OptionsToDittoHeaders.getDittoHeaders(SCHEMA_VERSION,
                         Collections.emptySet(),
-                        new Option[]{Options.condition("eq(attributes/manufacturer,\"ACME\"")}))
-                .withMessage("Option '%s' is not allowed for this operation.",
-                        OptionName.Global.CONDITION.toString().toLowerCase(Locale.ROOT))
+                        new Option[]{Options.condition(CONDITION_EXPRESSION)}))
+                .withMessage("Option '%s' is not allowed. This operation only allows [%s, %s].",
+                        OptionName.Global.CONDITION,
+                        OptionName.Global.DITTO_HEADERS,
+                        OptionName.Modify.RESPONSE_REQUIRED)
+                .withNoCause();
+    }
+
+    @Test
+    public void getDittoHeadersForAllowedLiveChannelConditionOption() {
+        final String expression = LIVE_CHANNEL_CONDITION_EXPRESSION;
+        final DittoHeaders dittoHeaders = OptionsToDittoHeaders.getDittoHeaders(SCHEMA_VERSION,
+                EnumSet.of(OptionName.Global.LIVE_CHANNEL_CONDITION),
+                new Option<?>[]{Options.liveChannelCondition(expression)});
+
+        DittoBaseAssertions.assertThat(dittoHeaders)
+                .hasCorrelationId()
+                .hasIsResponseRequired(true);
+
+        assertThat(dittoHeaders).containsEntry(DittoHeaderDefinition.LIVE_CHANNEL_CONDITION.getKey(), expression);
+    }
+
+    @Test
+    public void getDittoHeadersForDisallowedLiveChannelConditionOption() {
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> OptionsToDittoHeaders.getDittoHeaders(SCHEMA_VERSION,
+                        Collections.emptySet(),
+                        new Option[]{Options.liveChannelCondition(LIVE_CHANNEL_CONDITION_EXPRESSION)}))
+                .withMessage("Option '%s' is not allowed. This operation only allows [%s, %s].",
+                        OptionName.Global.LIVE_CHANNEL_CONDITION,
+                        OptionName.Global.DITTO_HEADERS,
+                        OptionName.Modify.RESPONSE_REQUIRED)
                 .withNoCause();
     }
 
