@@ -1,5 +1,5 @@
 com.eclipsesource.minimal-json:minimal-json:jar:0.9.5:compile
 com.neovisionaries:nv-websocket-client:jar:2.12:compile
-org.atteo.classindex:classindex:jar:3.8:compile
+org.atteo.classindex:classindex:jar:3.11:compile
 org.reactivestreams:reactive-streams:jar:1.0.3:compile
-org.slf4j:slf4j-api:jar:1.7.28:compile
+org.slf4j:slf4j-api:jar:1.7.32:compile
