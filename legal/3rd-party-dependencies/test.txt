@@ -1,9 +1,9 @@
 biz.aQute.bnd:bndlib:jar:2.4.0:test
-ch.qos.logback:logback-classic:jar:1.2.3:test
-ch.qos.logback:logback-core:jar:1.2.3:test
+ch.qos.logback:logback-classic:jar:1.2.10:test
+ch.qos.logback:logback-core:jar:1.2.10:test
 com.beust:jcommander:jar:1.72:test
 com.vaadin.external.google:android-json:jar:0.0.20131108.vaadin1:test
-junit:junit:jar:4.13.1:test
+junit:junit:jar:4.13.2:test
 net.bytebuddy:byte-buddy-agent:jar:1.9.10:test
 net.bytebuddy:byte-buddy:jar:1.9.10:test
 nl.jqno.equalsverifier:equalsverifier:jar:3.1.10:test
