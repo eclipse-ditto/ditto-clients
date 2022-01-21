@@ -1,6 +1,11 @@
 # Changelog
 All notable changes to the Ditto JavaScript client will be documented in this file.
 
+## [2.3.0] - 2022-01-21
+
+### No changes
+No changes comparing to 2.2.0 were done.
+
 ## [2.2.0] - 2021-11-22
 
 ### Updated dependencies
