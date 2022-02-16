@@ -192,7 +192,7 @@
         <!-- ### Compile dependencies versions -->
         <ditto.version>${revision}</ditto.version>
         <minimal-json.version>0.9.5</minimal-json.version>
-        <nv-websocket-client.version>2.12</nv-websocket-client.version>
+        <nv-websocket-client.version>2.14</nv-websocket-client.version>
         <classindex.version>3.11</classindex.version>
         <slf4j.version>1.7.32</slf4j.version>
 
@@ -202,21 +202,21 @@
         <!-- ### Testing dependencies versions -->
         <logback.version>1.2.10</logback.version>
         <junit.version>4.13.2</junit.version>
-        <assertj.version>3.19.0</assertj.version>
+        <assertj.version>3.22.0</assertj.version>
         <mutability-detector.version>0.10.4</mutability-detector.version>
-        <equals-verifier.version>3.1.10</equals-verifier.version>
-        <mockito.version>3.1.0</mockito.version>
+        <equals-verifier.version>3.8.2</equals-verifier.version>
+        <mockito.version>4.2.0</mockito.version>
         <jsonassert.version>1.5.0</jsonassert.version>
-        <awaitility.version>4.0.3</awaitility.version>
+        <awaitility.version>4.1.1</awaitility.version>
 
         <!-- reactive streams versions -->
         <reactive-streams.version>1.0.3</reactive-streams.version>
         <reactive-streams-tck.version>${reactive-streams.version}</reactive-streams-tck.version>
         <!-- carefully set testng version to one whose junit dependency is equal to ${junit.version} -->
-        <reactive-streams-tck.testng.version>6.14.3</reactive-streams-tck.testng.version>
+        <reactive-streams-tck.testng.version>7.5</reactive-streams-tck.testng.version>
 
-        <pax.exam.version>4.13.4</pax.exam.version>
-        <felix.version>6.0.4</felix.version>
+        <pax.exam.version>4.13.5</pax.exam.version>
+        <felix.version>7.0.3</felix.version>
 
 
         <javac.source>1.8</javac.source>
