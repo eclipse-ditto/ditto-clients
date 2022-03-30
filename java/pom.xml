@@ -194,13 +194,13 @@
         <minimal-json.version>0.9.5</minimal-json.version>
         <nv-websocket-client.version>2.14</nv-websocket-client.version>
         <classindex.version>3.11</classindex.version>
-        <slf4j.version>1.7.32</slf4j.version>
+        <slf4j.version>1.7.36</slf4j.version>
 
         <!-- ### Provided dependencies versions -->
         <jsr305.version>3.0.2</jsr305.version>
 
         <!-- ### Testing dependencies versions -->
-        <logback.version>1.2.10</logback.version>
+        <logback.version>1.2.11</logback.version>
         <junit.version>4.13.2</junit.version>
         <assertj.version>3.22.0</assertj.version>
         <mutability-detector.version>0.10.4</mutability-detector.version>
@@ -714,7 +714,7 @@
                             <skipAddThirdParty>${skipLicenseMavenPlugin}</skipAddThirdParty>
                             <outputDirectory>${project.build.outputDirectory}/META-INF</outputDirectory>
                             <excludedGroups>${ditto.thirdPartyLicences.excludedGroups}</excludedGroups>
-                            <includedScopes>compile</includedScopes>
+                            <includedScopes>compile,runtime</includedScopes>
                             <failOnMissing>true</failOnMissing>
                             <fileTemplate>../legal/templates/third-party-file.ftl
                             </fileTemplate>
@@ -1020,7 +1020,7 @@
                                 <configuration>
                                     <outputDirectory>../legal</outputDirectory>
                                     <excludedGroups>${ditto.thirdPartyLicences.excludedGroups}</excludedGroups>
-                                    <includedScopes>compile</includedScopes>
+                                    <includedScopes>compile,runtime</includedScopes>
                                     <failOnMissing>true</failOnMissing>
                                     <fileTemplate>../legal/templates/third-party-file.ftl</fileTemplate>
                                     <thirdPartyFilename>NOTICE-THIRD-PARTY.md</thirdPartyFilename>
