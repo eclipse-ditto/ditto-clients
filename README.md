@@ -27,7 +27,7 @@ based environments.
 
 ## [Go](https://github.com/eclipse/ditto-clients-golang)
 
-[![Build Status](https://github.com/eclipse/ditto-clients-golang/workflows/Go/badge.svg)](https://github.com/eclipse/ditto-clients-golang/actions?query=workflow%3AGo)
+[![Go Reference](https://pkg.go.dev/badge/github.com/eclipse/ditto-clients-golang.svg)](https://pkg.go.dev/github.com/eclipse/ditto-clients-golang)
 
 Implemented in Go, target for use in Go. Source is contained in separate GitHub repository because of Go specific GitHub based versioning/dependency mechanisms.
 
