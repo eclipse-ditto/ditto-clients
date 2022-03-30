@@ -30,3 +30,7 @@ based environments.
 [![Build Status](https://github.com/eclipse/ditto-clients-golang/workflows/Go/badge.svg)](https://github.com/eclipse/ditto-clients-golang/actions?query=workflow%3AGo)
 
 Implemented in Go, target for use in Go. Source is contained in separate GitHub repository because of Go specific GitHub based versioning/dependency mechanisms.
+
+## [Python](https://github.com/eclipse/ditto-clients-python)
+
+This repository contains the Python client SDK for Ditto. Source is contained in separate GitHub repository because of specific GitHub based versioning/dependency mechanisms.
