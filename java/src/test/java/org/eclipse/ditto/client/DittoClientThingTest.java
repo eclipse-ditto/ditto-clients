@@ -582,6 +582,15 @@ public final class DittoClientThingTest extends AbstractDittoClientThingsTest {
     }
 
     @Test
+    public void retrieveThingWithExtraFieldsOption() {
+        assertEventualCompletion(getManagement().forId(THING_ID)
+                .retrieve(Options.Consumption.extraFields(JsonFieldSelector.newInstance("_revision"))));
+        final RetrieveThing retrieveThing = expectMsgClass(RetrieveThing.class);
+        reply(RetrieveThingResponse.of(THING_ID, TestConstants.Thing.THING_V2.toJson(), retrieveThing.getDittoHeaders()));
+        assertThat(retrieveThing.getSelectedFields()).contains(JsonFieldSelector.newInstance("_revision"));
+    }
+
+    @Test
     public void retrieveThingWithFieldSelectorAndConditionOption() {
         final JsonFieldSelector jsonFieldSelector = JsonFieldSelector.newInstance("attributes/manufacturer");
 

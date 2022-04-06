@@ -217,6 +217,12 @@ public final class TestConstants {
         public static final org.eclipse.ditto.policies.model.Policy POLICY =
                 PoliciesModelFactory.newPolicy(POLICY_JSON_OBJECT);
 
+        public static final JsonObject POLICY_REVISION_ONLY_JSON_OBJECT = JsonObject.of("{\n" +
+                "    \"_revision\": " + 1 + "\n" + "}");
+
+        public static final org.eclipse.ditto.policies.model.Policy REVISION_ONLY_POLICY =
+                PoliciesModelFactory.newPolicy(POLICY_REVISION_ONLY_JSON_OBJECT);
+
     }
 
 }

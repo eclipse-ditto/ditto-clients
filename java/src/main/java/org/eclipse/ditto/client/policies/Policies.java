@@ -16,9 +16,11 @@ import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 import org.eclipse.ditto.client.options.Option;
+import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.policies.model.Policy;
 import org.eclipse.ditto.policies.model.PolicyId;
+import org.eclipse.ditto.things.model.Thing;
 
 /**
  * A {@code Policy} provides the basic functionality, which can be used to manage (i.e. create and delete)
@@ -153,7 +155,7 @@ public interface Policies {
     CompletionStage<Void> delete(PolicyId policyId, Option<?>... options);
 
     /**
-     * Gets the {@link org.eclipse.ditto.policies.model.Policy} specified by the given identifier.
+     * Gets the {@code Policy} specified by the given identifier.
      *
      * @param policyId the identifier of the Policy to be retrieved.
      * @return CompletionStage providing the requested Policy or a specific
@@ -161,4 +163,46 @@ public interface Policies {
      * @throws IllegalArgumentException if {@code policyId} is {@code null}.
      */
     CompletionStage<Policy> retrieve(PolicyId policyId);
+
+
+    /**
+     * Gets the {@code Policy} specified by the given identifier with the given options.
+     *
+     * @param options options that determine the behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing the requested {@link Thing} or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws NullPointerException if {@code options} is {@code null}.
+     * @throws IllegalArgumentException if {@code options} contains an option that is not allowed for retrieving
+     * a thing.
+     * @since 2.4.0
+     */
+    CompletionStage<Policy> retrieve(PolicyId policyId, Option<?>... options);
+
+    /**
+     * Retrieve the {@code Policy} specified by the given identifier, containing the fields specified by
+     * the given {@code fieldSelector}.
+     *
+     * @param fieldSelector a field selector object allowing to select a subset of fields on the Policy to be retrieved.
+     * @return CompletionStage providing the requested {@link Policy} or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * @since 2.4.0
+     */
+    CompletionStage<Policy> retrieve(PolicyId policyId, JsonFieldSelector fieldSelector);
+
+    /**
+     * Gets the {@code Policy} specified by the given identifier with the given options, containing the fields
+     * specified by the given {@code fieldSelector}.
+     *
+     * @param fieldSelector a field selector object allowing to select a subset of fields on the Policy to be retrieved.
+     * @param options options that determine the behaviour of this method, see
+     * {@link org.eclipse.ditto.client.options.Options}.
+     * @return CompletionStage providing the requested {@link Policy} or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * @throws NullPointerException if any argument is {@code null}.
+     * @throws IllegalArgumentException if {@code options} contains an option that is not allowed for retrieving
+     * a policy.
+     * @since 2.4.0
+     */
+    CompletionStage<Policy> retrieve(PolicyId policyId, JsonFieldSelector fieldSelector, Option<?>... options);
 }

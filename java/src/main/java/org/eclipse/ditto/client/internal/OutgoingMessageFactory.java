@@ -222,7 +222,7 @@ public final class OutgoingMessageFactory {
             final Option<?>... options) {
 
         return RetrieveThing.getBuilder(thingId,
-                        buildDittoHeaders(EnumSet.of(CONDITION, LIVE_CHANNEL_CONDITION), options))
+                buildDittoHeaders(EnumSet.of(CONDITION, LIVE_CHANNEL_CONDITION), options))
                 .withSelectedFields(JsonFactory.newFieldSelector(fields))
                 .build();
     }
@@ -298,16 +298,17 @@ public final class OutgoingMessageFactory {
         return ModifyPolicy.of(policyId, policy, headers);
     }
 
-    /**
-     * Builds a command to retrieve the policy with ID {@code policyId}.
-     *
-     * @param policyId the policy to retrieve.
-     * @return the {@link RetrievePolicy} command.
-     * @throws NullPointerException if the policyId is {@code null}.
-     * @since 1.1.0
-     */
-    public RetrievePolicy retrievePolicy(final PolicyId policyId) {
-        return RetrievePolicy.of(policyId, buildDittoHeaders(Collections.emptySet()));
+    public RetrievePolicy retrievePolicy(final PolicyId policyId, final Option<?>... options) {
+        return RetrievePolicy.of(policyId, buildDittoHeaders(Collections.emptySet(), options));
+    }
+
+    public RetrievePolicy retrievePolicy(final PolicyId policyId,
+            final Iterable<JsonPointer> fields,
+            final Option<?>... options) {
+
+        return RetrievePolicy.of(policyId,
+                buildDittoHeaders(Collections.emptySet(), options),
+                JsonFactory.newFieldSelector(fields));
     }
 
     /**

@@ -30,6 +30,7 @@ import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.policies.Policies;
+import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.policies.model.PoliciesModelFactory;
@@ -176,12 +177,32 @@ public final class PoliciesImpl extends AbstractHandle implements Policies {
     }
 
     @Override
-    public CompletionStage<Policy> retrieve(PolicyId policyId) {
+    public CompletionStage<Policy> retrieve(final PolicyId policyId) {
         final RetrievePolicy command = outgoingMessageFactory.retrievePolicy(policyId);
         return askPolicyCommand(command, RetrievePolicyResponse.class, response -> {
             final Policy policyFromResponse = response.getPolicy();
             return appendRevisionFromHeadersIfNeeded(policyFromResponse, response.getDittoHeaders());
         });
+    }
+
+    @Override
+    public CompletionStage<Policy> retrieve(final PolicyId policyId, final Option<?>... options) {
+        final RetrievePolicy command = outgoingMessageFactory.retrievePolicy(policyId, options);
+        return askPolicyCommand(command, RetrievePolicyResponse.class, RetrievePolicyResponse::getPolicy);
+    }
+
+    @Override
+    public CompletionStage<Policy> retrieve(final PolicyId policyId, final JsonFieldSelector fieldSelector) {
+        final RetrievePolicy command = outgoingMessageFactory.retrievePolicy(policyId, fieldSelector);
+        return askPolicyCommand(command, RetrievePolicyResponse.class, RetrievePolicyResponse::getPolicy);
+    }
+
+    @Override
+    public CompletionStage<Policy> retrieve(final PolicyId policyId, final JsonFieldSelector fieldSelector,
+            final Option<?>... options) {
+
+        final RetrievePolicy command = outgoingMessageFactory.retrievePolicy(policyId, fieldSelector, options);
+        return askPolicyCommand(command, RetrievePolicyResponse.class, RetrievePolicyResponse::getPolicy);
     }
 
     private static void assertThatPolicyHasId(final Policy policy) {
