@@ -20,22 +20,21 @@ import java.util.concurrent.CompletionStage;
 
 import javax.annotation.Nonnull;
 
-import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
-import org.eclipse.ditto.base.model.acks.DittoAcknowledgementLabel;
-import org.eclipse.ditto.base.model.headers.DittoHeaders;
-import org.eclipse.ditto.base.model.headers.entitytag.EntityTag;
 import org.eclipse.ditto.client.internal.AbstractHandle;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.policies.Policies;
+import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonValue;
+import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
+import org.eclipse.ditto.base.model.acks.DittoAcknowledgementLabel;
 import org.eclipse.ditto.policies.model.PoliciesModelFactory;
 import org.eclipse.ditto.policies.model.Policy;
 import org.eclipse.ditto.policies.model.PolicyId;
-import org.eclipse.ditto.policies.model.PolicyRevision;
+import org.eclipse.ditto.protocol.TopicPath;
 import org.eclipse.ditto.policies.model.signals.commands.modify.CreatePolicy;
 import org.eclipse.ditto.policies.model.signals.commands.modify.CreatePolicyResponse;
 import org.eclipse.ditto.policies.model.signals.commands.modify.DeletePolicy;
@@ -44,7 +43,6 @@ import org.eclipse.ditto.policies.model.signals.commands.modify.ModifyPolicyResp
 import org.eclipse.ditto.policies.model.signals.commands.modify.PolicyModifyCommandResponse;
 import org.eclipse.ditto.policies.model.signals.commands.query.RetrievePolicy;
 import org.eclipse.ditto.policies.model.signals.commands.query.RetrievePolicyResponse;
-import org.eclipse.ditto.protocol.TopicPath;
 
 /**
  * Default implementation for {@link Policies}.
@@ -78,33 +76,6 @@ public final class PoliciesImpl extends AbstractHandle implements Policies {
         return new PoliciesImpl(messagingProvider, outgoingMessageFactory, bus);
     }
 
-    private static Optional<PolicyRevision> getRevisionFromDittoHeaders(final DittoHeaders dittoHeaders) {
-        return dittoHeaders
-                .getETag()
-                .map(EntityTag::getOpaqueTag)
-                .filter(tag -> tag.contains("rev:"))
-                .map(tag -> tag.replace("rev:", "").replaceAll("\"", ""))
-                .map(Long::parseLong)
-                .map(PolicyRevision::newInstance);
-    }
-
-    private static Policy setRevisionToPolicy(final PolicyRevision policyRevision, final Policy policy) {
-        return policy.toBuilder()
-                .setRevision(policyRevision)
-                .build();
-    }
-
-    private static Policy appendRevisionFromHeadersIfNeeded(final Policy policy, final DittoHeaders dittoHeaders) {
-        final Policy policyWithRevision;
-        final Optional<PolicyRevision> revisionFromPolicy = policy.getRevision();
-        policyWithRevision = revisionFromPolicy
-                .map(policyRevision -> setRevisionToPolicy(policyRevision, policy))
-                .orElseGet(() -> getRevisionFromDittoHeaders(dittoHeaders)
-                        .map(revisionFromHeaders -> setRevisionToPolicy(revisionFromHeaders, policy))
-                        .orElse(policy));
-        return policyWithRevision;
-    }
-
     @Override
     public CompletionStage<Policy> create(final Policy policy, final Option<?>... options) {
         argumentNotNull(policy);
@@ -112,10 +83,7 @@ public final class PoliciesImpl extends AbstractHandle implements Policies {
 
         final CreatePolicy command = outgoingMessageFactory.createPolicy(policy, options);
         return askPolicyCommand(command, CreatePolicyResponse.class,
-                response -> response.getPolicyCreated()
-                        .map(policyFromResponse -> appendRevisionFromHeadersIfNeeded(policyFromResponse,
-                                response.getDittoHeaders()))
-                        .orElse(null));
+                response -> response.getPolicyCreated().orElse(null));
     }
 
     @Override
@@ -137,8 +105,6 @@ public final class PoliciesImpl extends AbstractHandle implements Policies {
                 response -> response.getEntity(response.getImplementedSchemaVersion())
                         .map(JsonValue::asObject)
                         .map(PoliciesModelFactory::newPolicy)
-                        .map(policyFromResponse -> appendRevisionFromHeadersIfNeeded(policyFromResponse,
-                                response.getDittoHeaders()))
         );
     }
 
@@ -176,12 +142,29 @@ public final class PoliciesImpl extends AbstractHandle implements Policies {
     }
 
     @Override
-    public CompletionStage<Policy> retrieve(PolicyId policyId) {
+    public CompletionStage<Policy> retrieve(final PolicyId policyId) {
         final RetrievePolicy command = outgoingMessageFactory.retrievePolicy(policyId);
-        return askPolicyCommand(command, RetrievePolicyResponse.class, response -> {
-            final Policy policyFromResponse = response.getPolicy();
-            return appendRevisionFromHeadersIfNeeded(policyFromResponse, response.getDittoHeaders());
-        });
+        return askPolicyCommand(command, RetrievePolicyResponse.class, RetrievePolicyResponse::getPolicy);
+    }
+
+    @Override
+    public CompletionStage<Policy> retrieve(final PolicyId policyId, final Option<?>... options) {
+        final RetrievePolicy command = outgoingMessageFactory.retrievePolicy(policyId, options);
+        return askPolicyCommand(command, RetrievePolicyResponse.class, RetrievePolicyResponse::getPolicy);
+    }
+
+    @Override
+    public CompletionStage<Policy> retrieve(final PolicyId policyId, final JsonFieldSelector fieldSelector) {
+        final RetrievePolicy command = outgoingMessageFactory.retrievePolicy(policyId, fieldSelector);
+        return askPolicyCommand(command, RetrievePolicyResponse.class, RetrievePolicyResponse::getPolicy);
+    }
+
+    @Override
+    public CompletionStage<Policy> retrieve(final PolicyId policyId, final JsonFieldSelector fieldSelector,
+            final Option<?>... options) {
+
+        final RetrievePolicy command = outgoingMessageFactory.retrievePolicy(policyId, fieldSelector, options);
+        return askPolicyCommand(command, RetrievePolicyResponse.class, RetrievePolicyResponse::getPolicy);
     }
 
     private static void assertThatPolicyHasId(final Policy policy) {

@@ -83,7 +83,7 @@ public final class WebSocketMessagingProviderTest {
         expectNoMsg(errors);
     }
 
-    @Test(timeout = 10_000)
+    @Test(timeout = 15_000)
     public void serviceUnavailable() throws Exception {
         final int numberOfRecoverableErrors = 3;
         final BlockingQueue<ServerSocket> serverSocket = new LinkedBlockingQueue<>();

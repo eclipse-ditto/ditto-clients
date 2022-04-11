@@ -16,6 +16,8 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import static org.eclipse.ditto.client.TestConstants.Policy.POLICY;
 import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_ID;
 import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_JSON_OBJECT;
+import static org.eclipse.ditto.client.TestConstants.Policy.POLICY_REVISION_ONLY_JSON_OBJECT;
+import static org.eclipse.ditto.client.TestConstants.Policy.REVISION_ONLY_POLICY;
 import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 
 import java.util.Arrays;
@@ -27,10 +29,11 @@ import java.util.concurrent.CompletionException;
 import java.util.function.Function;
 
 import org.assertj.core.api.Assertions;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
 import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.json.JsonFactory;
-import org.eclipse.ditto.json.JsonMissingFieldException;
+import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.policies.model.Policy;
 import org.eclipse.ditto.policies.model.signals.commands.PolicyCommand;
 import org.eclipse.ditto.policies.model.signals.commands.PolicyCommandResponse;
@@ -179,6 +182,54 @@ public final class DittoClientPoliciesTest extends AbstractDittoClientTest {
         reply(RetrievePolicyResponse.of(POLICY_ID, POLICY, expectMsgClass(RetrievePolicy.class).getDittoHeaders()));
         retrievePolicyResponse.get(TIMEOUT, TIME_UNIT);
         Assertions.assertThat(retrievePolicyResponse).isCompletedWithValue(POLICY);
+    }
+
+    @Test
+    public void testRetrievePolicyWithOptions() {
+        final String correlationId = "abc";
+        client.policies()
+                .retrieve(POLICY_ID, Options.headers(DittoHeaders.newBuilder().correlationId(correlationId).build()))
+                .toCompletableFuture();
+        final RetrievePolicy command = expectMsgClass(RetrievePolicy.class);
+        Assertions.assertThat(command.getDittoHeaders().getCorrelationId()).contains(correlationId);
+    }
+
+    @Test
+    public void testRetrievePolicyWithInvalidOptions() {
+        Assertions.assertThatIllegalArgumentException().isThrownBy(() -> client.policies()
+                .retrieve(POLICY_ID, Options.condition("exists(entry)")));
+    }
+
+    @Test
+    public void testRetrievePolicyWithFieldSelector() throws Exception {
+        final CompletableFuture<Policy> retrievePolicyResponse = client.policies()
+                .retrieve(POLICY_ID, JsonFieldSelector.newInstance("_revision"))
+                .toCompletableFuture();
+        reply(RetrievePolicyResponse.of(POLICY_ID, POLICY_REVISION_ONLY_JSON_OBJECT,
+                expectMsgClass(RetrievePolicy.class).getDittoHeaders()));
+        retrievePolicyResponse.get(TIMEOUT, TIME_UNIT);
+        Assertions.assertThat(retrievePolicyResponse).isCompletedWithValue(REVISION_ONLY_POLICY);
+    }
+
+    @Test
+    public void testRetrievePolicyWithFieldSelectorAndOptions() throws Exception {
+        final String correlationId = "abc";
+        final CompletableFuture<Policy> retrievePolicyResponse = client.policies()
+                .retrieve(POLICY_ID, JsonFieldSelector.newInstance("_revision"),
+                        Options.headers(DittoHeaders.newBuilder().correlationId(correlationId).build()))
+                .toCompletableFuture();
+        final RetrievePolicy command = expectMsgClass(RetrievePolicy.class);
+        Assertions.assertThat(command.getDittoHeaders().getCorrelationId()).contains(correlationId);
+        reply(RetrievePolicyResponse.of(POLICY_ID, POLICY_REVISION_ONLY_JSON_OBJECT,
+                command.getDittoHeaders()));
+        retrievePolicyResponse.get(TIMEOUT, TIME_UNIT);
+        Assertions.assertThat(retrievePolicyResponse).isCompletedWithValue(REVISION_ONLY_POLICY);
+    }
+
+    @Test
+    public void testRetrievePolicyWithFieldSelectorAndInvalidOptions() {
+        Assertions.assertThatIllegalArgumentException().isThrownBy(() -> client.policies()
+                .retrieve(POLICY_ID, JsonFieldSelector.newInstance("_revision"), Options.condition("exists(entry)")));
     }
 
     @Test
