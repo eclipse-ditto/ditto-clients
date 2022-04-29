@@ -211,7 +211,7 @@ public final class DittoClientUsageExamples {
 
     private static void addNewSubjectToExistingPolicy(final DittoClient client) {
         client.twin().create()
-                .thenApply(thing -> thing.getPolicyEntityId()
+                .thenApply(thing -> thing.getPolicyId()
                         .orElseThrow(() -> new IllegalStateException(("Could not get PolicyId from created Thing."))))
                 .thenCompose(policyId -> client.policies().retrieve(policyId))
                 .thenApply(policy -> {
