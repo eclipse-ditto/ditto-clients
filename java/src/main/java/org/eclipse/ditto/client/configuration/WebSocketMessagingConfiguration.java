@@ -43,6 +43,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
 
     private final Duration timeout;
     private final JsonSchemaVersion jsonSchemaVersion;
+    @Nullable private final String defaultNamespace;
     private final URI endpointUri;
     private final boolean reconnectEnabled;
     private final boolean initialConnectRetryEnabled;
@@ -56,6 +57,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
             final URI endpointUri) {
 
         jsonSchemaVersion = builder.jsonSchemaVersion;
+        defaultNamespace = builder.defaultNamespace;
         reconnectEnabled = builder.reconnectEnabled;
         initialConnectRetryEnabled = builder.initialConnectRetryEnabled;
         proxyConfiguration = builder.proxyConfiguration;
@@ -79,6 +81,11 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
     @Override
     public JsonSchemaVersion getJsonSchemaVersion() {
         return jsonSchemaVersion;
+    }
+
+    @Override
+    public Optional<String> getDefaultNamespace() {
+        return Optional.ofNullable(defaultNamespace);
     }
 
     @Override
@@ -130,6 +137,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
         private JsonSchemaVersion jsonSchemaVersion;
         private Duration timeout = Duration.ofSeconds(60L);
         private URI endpointUri;
+        @Nullable private String defaultNamespace;
         private boolean reconnectEnabled;
         private boolean initialConnectRetryEnabled;
         @Nullable private ProxyConfiguration proxyConfiguration;
@@ -140,6 +148,7 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
 
         private WebSocketMessagingConfigurationBuilder() {
             jsonSchemaVersion = JsonSchemaVersion.LATEST;
+            defaultNamespace = null;
             reconnectEnabled = true;
             initialConnectRetryEnabled = false;
             proxyConfiguration = null;
@@ -169,6 +178,12 @@ public final class WebSocketMessagingConfiguration implements MessagingConfigura
             });
 
             endpointUri = uri;
+            return this;
+        }
+
+        @Override
+        public Builder defaultNamespace(final String defaultNamespace) {
+            this.defaultNamespace = checkNotNull(defaultNamespace, "defaultNamespace");
             return this;
         }
 

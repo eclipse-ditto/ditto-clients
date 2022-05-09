@@ -19,6 +19,7 @@ import java.util.function.Consumer;
 
 import org.eclipse.ditto.base.model.acks.AcknowledgementLabelNotDeclaredException;
 import org.eclipse.ditto.base.model.acks.AcknowledgementLabelNotUniqueException;
+import org.eclipse.ditto.base.model.common.DittoSystemProperties;
 import org.eclipse.ditto.base.model.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.base.model.headers.DittoHeadersBuilder;
 import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
@@ -32,6 +33,7 @@ import org.eclipse.ditto.client.changes.internal.ImmutableChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeatureChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeaturesChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableThingChange;
+import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
 import org.eclipse.ditto.client.internal.bus.BusFactory;
 import org.eclipse.ditto.client.internal.bus.Classification;
@@ -212,7 +214,10 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
         final String name = TopicPath.Channel.TWIN.getName();
         final PointerBus bus = BusFactory.createPointerBus(name, messagingProvider.getExecutorService());
         init(bus, messagingProvider);
-        final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
+        final MessagingConfiguration messagingConfiguration = messagingProvider.getMessagingConfiguration();
+        messagingConfiguration.getDefaultNamespace().ifPresent(defaultNamespace ->
+                System.setProperty(DittoSystemProperties.DITTO_ENTITY_CREATION_DEFAULT_NAMESPACE, defaultNamespace));
+        final JsonSchemaVersion schemaVersion = messagingConfiguration.getJsonSchemaVersion();
         final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion);
         return TwinImpl.newInstance(messagingProvider, messageFactory, bus);
     }
@@ -232,6 +237,9 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
         final String busName = TopicPath.Channel.NONE.getName();
         final PointerBus bus = BusFactory.createPointerBus(busName, messagingProvider.getExecutorService());
         init(bus, messagingProvider);
+        final MessagingConfiguration messagingConfiguration = messagingProvider.getMessagingConfiguration();
+        messagingConfiguration.getDefaultNamespace().ifPresent(defaultNamespace ->
+                System.setProperty(DittoSystemProperties.DITTO_ENTITY_CREATION_DEFAULT_NAMESPACE, defaultNamespace));
         final OutgoingMessageFactory messageFactory = getOutgoingMessageFactoryForPolicies(messagingProvider);
         return PoliciesImpl.newInstance(messagingProvider, messageFactory, bus);
     }

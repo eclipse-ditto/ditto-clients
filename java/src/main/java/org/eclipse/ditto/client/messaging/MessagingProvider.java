@@ -114,7 +114,7 @@ public interface MessagingProvider {
      * @param adaptable the adaptable to be sent
      * @return a CompletionStage containing the correlated response to the sent {@code dittoProtocolAdaptable}
      */
-    default CompletionStage<Adaptable> sendAdaptable(Adaptable adaptable) {
+    default CompletionStage<Adaptable> sendAdaptable(final Adaptable adaptable) {
         final String correlationId = adaptable.getDittoHeaders()
                 .getCorrelationId()
                 .orElseGet(() -> UUID.randomUUID().toString());

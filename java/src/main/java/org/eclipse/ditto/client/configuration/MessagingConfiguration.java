@@ -46,6 +46,15 @@ public interface MessagingConfiguration {
     JsonSchemaVersion getJsonSchemaVersion();
 
     /**
+     * Returns the default namespace for entity creation (things/policies) when no explicit namespace was
+     * provided, e.g. for "create" methods.
+     *
+     * @return the default namespace.
+     * @since 3.0.0
+     */
+    Optional<String> getDefaultNamespace();
+
+    /**
      * Returns the Ditto endpoint URI to use for messaging.
      *
      * @return the URI.
@@ -131,6 +140,16 @@ public interface MessagingConfiguration {
          * @return this builder.
          */
         Builder endpoint(String endpoint);
+
+        /**
+         * Configures the default namespace for entity creation (things/policies) when no explicit namespace was
+         * provided, e.g. for "create" methods.
+         *
+         * @param defaultNamespace the default namespace to use within the messaging configuration.
+         * @return this builder.
+         * @since 3.0.0
+         */
+        Builder defaultNamespace(String defaultNamespace);
 
         /**
          * Sets the labels of all acknowledgements that are declared to be provided by this client session/connection.
