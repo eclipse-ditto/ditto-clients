@@ -55,7 +55,8 @@ pipeline {
             agent {
                 docker {
                     args "$DITTO_DOCKER_ARGS"
-                    image "$DITTO_DOCKER_IMAGE_MAVEN_JDK_8"
+                    image "$DITTO_DOCKER_IMAGE_MAVEN_JDK_17"
+                    reuseNode true
                 }
             }
             when {
@@ -67,7 +68,7 @@ pipeline {
                 dir("$WORKSPACE/java") {
                     configFileProvider([configFile(fileId: 'mvn-bdc-settings', variable: 'MVN_SETTINGS')]) {
                         echo 'Sonar Scan'
-                        withSonarQubeEnv(installationName: "${env.SONAR_QUBE_ENV}", credentialsId: "$SONAR_QUBE_CREDENTIAL_NAME") {
+                        withSonarQubeEnv(installationName: "${env.SONAR_QUBE_ENV}", credentialsId: 'sonarqube') {
                             sh "mvn -s $MVN_SETTINGS --batch-mode --errors $SONAR_MAVEN_GOAL " +
                                     "-Dsonar.host.url=$SONAR_HOST_URL " +
                                     "-Dsonar.projectKey=org.eclipse.ditto:${theBranch} " +
