@@ -19,7 +19,6 @@ import java.util.function.Consumer;
 
 import org.eclipse.ditto.base.model.acks.AcknowledgementLabelNotDeclaredException;
 import org.eclipse.ditto.base.model.acks.AcknowledgementLabelNotUniqueException;
-import org.eclipse.ditto.base.model.common.DittoSystemProperties;
 import org.eclipse.ditto.base.model.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.base.model.headers.DittoHeadersBuilder;
 import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
@@ -215,8 +214,6 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
         final PointerBus bus = BusFactory.createPointerBus(name, messagingProvider.getExecutorService());
         init(bus, messagingProvider);
         final MessagingConfiguration messagingConfiguration = messagingProvider.getMessagingConfiguration();
-        messagingConfiguration.getDefaultNamespace().ifPresent(defaultNamespace ->
-                System.setProperty(DittoSystemProperties.DITTO_ENTITY_CREATION_DEFAULT_NAMESPACE, defaultNamespace));
         final JsonSchemaVersion schemaVersion = messagingConfiguration.getJsonSchemaVersion();
         final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion);
         return TwinImpl.newInstance(messagingProvider, messageFactory, bus);
@@ -238,8 +235,6 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
         final PointerBus bus = BusFactory.createPointerBus(busName, messagingProvider.getExecutorService());
         init(bus, messagingProvider);
         final MessagingConfiguration messagingConfiguration = messagingProvider.getMessagingConfiguration();
-        messagingConfiguration.getDefaultNamespace().ifPresent(defaultNamespace ->
-                System.setProperty(DittoSystemProperties.DITTO_ENTITY_CREATION_DEFAULT_NAMESPACE, defaultNamespace));
         final OutgoingMessageFactory messageFactory = getOutgoingMessageFactoryForPolicies(messagingProvider);
         return PoliciesImpl.newInstance(messagingProvider, messageFactory, bus);
     }
