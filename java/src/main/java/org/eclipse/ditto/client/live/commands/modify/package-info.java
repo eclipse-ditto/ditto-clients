@@ -16,4 +16,5 @@
  * LiveCommand} and {@link org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder
  * LiveCommandAnswerBuilder} for modification operations like create, update and delete.
  */
+@org.eclipse.ditto.utils.jsr305.annotations.AllParametersAndReturnValuesAreNonnullByDefault
 package org.eclipse.ditto.client.live.commands.modify;

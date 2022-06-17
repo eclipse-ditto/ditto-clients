@@ -17,9 +17,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.concurrent.Immutable;
 
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.signals.commands.Command;
 import org.eclipse.ditto.things.model.Thing;
 import org.eclipse.ditto.things.model.ThingId;
-import org.eclipse.ditto.base.model.signals.commands.Command;
 import org.eclipse.ditto.things.model.signals.commands.modify.CreateThing;
 
 /**
@@ -55,7 +55,7 @@ final class CreateThingLiveCommandImpl
 
     @Override
     public ThingId getEntityId() {
-        return thing.getEntityId().orElse(null);
+        return thing.getEntityId().orElseThrow(() -> new NullPointerException("Thing has no ID!"));
     }
 
     @Override
@@ -65,7 +65,7 @@ final class CreateThingLiveCommandImpl
 
     @Override
     public Category getCategory() {
-        return Category.MODIFY;
+        return Category.CREATE;
     }
 
     @Override
