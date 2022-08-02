@@ -453,6 +453,7 @@
                                 <!-- this builder is an internal implementation of a builder interface and should not be handled as API: -->
                                 <exclude>org.eclipse.ditto.client.configuration.ClientCredentialsAuthenticationConfiguration$ClientCredentialsAuthenticationConfigurationBuilder</exclude>
                                 <exclude>org.eclipse.ditto.client.streaming.ThingSearchPublisher#of(org.eclipse.ditto.base.model.signals.Signal,org.eclipse.ditto.protocol.adapter.ProtocolAdapter,org.eclipse.ditto.client.messaging.MessagingProvider)</exclude>
+                                <exclude>org.eclipse.ditto.client.live.commands.query.RetrieveThingsLiveCommand</exclude>
                             </excludes>
                         </parameter>
                     </configuration>
