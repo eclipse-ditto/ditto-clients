@@ -60,7 +60,7 @@ import org.eclipse.ditto.things.model.ThingId;
  * @param <F> the type of {@link FeatureHandle} for handling {@code Feature}s
  * @since 1.0.0
  */
-public interface CommonManagement<T extends ThingHandle, F extends FeatureHandle>
+public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHandle>
         extends ThingAttributeChangeRegistration, ThingChangeRegistration, FeatureChangeRegistration,
         ThingFeaturePropertiesChangeRegistration {
 

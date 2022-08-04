@@ -203,7 +203,7 @@
         <logback.version>1.2.11</logback.version>
         <junit.version>4.13.2</junit.version>
         <assertj.version>3.22.0</assertj.version>
-        <mutability-detector.version>0.10.4</mutability-detector.version>
+        <mutability-detector.version>0.10.6</mutability-detector.version>
         <equals-verifier.version>3.8.2</equals-verifier.version>
         <mockito.version>4.2.0</mockito.version>
         <jsonassert.version>1.5.0</jsonassert.version>
@@ -452,6 +452,7 @@
                                 <exclude>org.eclipse.ditto.client.twin.internal</exclude>
                                 <!-- this builder is an internal implementation of a builder interface and should not be handled as API: -->
                                 <exclude>org.eclipse.ditto.client.configuration.ClientCredentialsAuthenticationConfiguration$ClientCredentialsAuthenticationConfigurationBuilder</exclude>
+                                <exclude>org.eclipse.ditto.client.streaming.ThingSearchPublisher#of(org.eclipse.ditto.base.model.signals.Signal,org.eclipse.ditto.protocol.adapter.ProtocolAdapter,org.eclipse.ditto.client.messaging.MessagingProvider)</exclude>
                             </excludes>
                         </parameter>
                     </configuration>

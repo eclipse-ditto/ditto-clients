@@ -17,11 +17,12 @@ import static org.eclipse.ditto.base.model.common.ConditionChecker.checkNotNull;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.eclipse.ditto.base.model.signals.Signal;
+import org.eclipse.ditto.base.model.signals.commands.ErrorResponse;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.protocol.Adaptable;
 import org.eclipse.ditto.protocol.adapter.ProtocolAdapter;
-import org.eclipse.ditto.base.model.signals.Signal;
-import org.eclipse.ditto.base.model.signals.commands.ErrorResponse;
+import org.eclipse.ditto.thingsearch.model.signals.commands.subscription.CreateSubscription;
 import org.eclipse.ditto.thingsearch.model.signals.events.SubscriptionCreated;
 import org.eclipse.ditto.thingsearch.model.signals.events.SubscriptionHasNextPage;
 import org.reactivestreams.Publisher;
@@ -39,7 +40,7 @@ public final class ThingSearchPublisher implements Publisher<SubscriptionHasNext
     private final CompletionStage<SubscriptionCreated> subscriptionFuture;
     private final AtomicBoolean subscribed;
 
-    private ThingSearchPublisher(final Signal<?> createSubscription,
+    private ThingSearchPublisher(final CreateSubscription createSubscription,
             final ProtocolAdapter protocolAdapter,
             final MessagingProvider messagingProvider) {
         this.protocolAdapter = protocolAdapter;
@@ -57,7 +58,7 @@ public final class ThingSearchPublisher implements Publisher<SubscriptionHasNext
      * @param messagingProvider the messaging provider.
      * @return the single-use publisher.
      */
-    public static Publisher<SubscriptionHasNextPage> of(final Signal<?> createSubscription,
+    public static Publisher<SubscriptionHasNextPage> of(final CreateSubscription createSubscription,
             final ProtocolAdapter protocolAdapter,
             final MessagingProvider messagingProvider) {
 

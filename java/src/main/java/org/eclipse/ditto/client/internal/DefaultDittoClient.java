@@ -32,6 +32,7 @@ import org.eclipse.ditto.client.changes.internal.ImmutableChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeatureChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableFeaturesChange;
 import org.eclipse.ditto.client.changes.internal.ImmutableThingChange;
+import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
 import org.eclipse.ditto.client.internal.bus.BusFactory;
 import org.eclipse.ditto.client.internal.bus.Classification;
@@ -212,7 +213,8 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
         final String name = TopicPath.Channel.TWIN.getName();
         final PointerBus bus = BusFactory.createPointerBus(name, messagingProvider.getExecutorService());
         init(bus, messagingProvider);
-        final JsonSchemaVersion schemaVersion = messagingProvider.getMessagingConfiguration().getJsonSchemaVersion();
+        final MessagingConfiguration messagingConfiguration = messagingProvider.getMessagingConfiguration();
+        final JsonSchemaVersion schemaVersion = messagingConfiguration.getJsonSchemaVersion();
         final OutgoingMessageFactory messageFactory = OutgoingMessageFactory.newInstance(schemaVersion);
         return TwinImpl.newInstance(messagingProvider, messageFactory, bus);
     }
@@ -232,6 +234,7 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
         final String busName = TopicPath.Channel.NONE.getName();
         final PointerBus bus = BusFactory.createPointerBus(busName, messagingProvider.getExecutorService());
         init(bus, messagingProvider);
+        final MessagingConfiguration messagingConfiguration = messagingProvider.getMessagingConfiguration();
         final OutgoingMessageFactory messageFactory = getOutgoingMessageFactoryForPolicies(messagingProvider);
         return PoliciesImpl.newInstance(messagingProvider, messageFactory, bus);
     }

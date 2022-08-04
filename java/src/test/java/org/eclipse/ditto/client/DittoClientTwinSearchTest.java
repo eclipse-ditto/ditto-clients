@@ -24,6 +24,8 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.eclipse.ditto.base.model.exceptions.DittoInternalErrorException;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
 import org.eclipse.ditto.client.streaming.SpliteratorSubscriber;
 import org.eclipse.ditto.client.twin.SearchQueryBuilder;
@@ -32,10 +34,8 @@ import org.eclipse.ditto.json.JsonCollectors;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonPointer;
-import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.things.model.Thing;
 import org.eclipse.ditto.things.model.ThingId;
-import org.eclipse.ditto.base.model.signals.commands.exceptions.GatewayInternalErrorException;
 import org.eclipse.ditto.thingsearch.model.signals.commands.subscription.CancelSubscription;
 import org.eclipse.ditto.thingsearch.model.signals.commands.subscription.CreateSubscription;
 import org.eclipse.ditto.thingsearch.model.signals.commands.subscription.RequestFromSubscription;
@@ -125,12 +125,12 @@ public final class DittoClientTwinSearchTest extends AbstractDittoClientTest {
         reply(SubscriptionCreated.of(subscriptionId, createSubscription.getDittoHeaders()));
         expectMsgClass(RequestFromSubscription.class);
         reply(hasNext(subscriptionId, 0, 1));
-        reply(SubscriptionFailed.of(subscriptionId, GatewayInternalErrorException.newBuilder().message("sorry").build(),
+        reply(SubscriptionFailed.of(subscriptionId, DittoInternalErrorException.newBuilder().message("sorry").build(),
                 DittoHeaders.empty()));
         final AtomicReference<Thing> thingBox = new AtomicReference<>();
         assertThat(searchResultSpliterator.tryAdvance(thingBox::set)).isTrue();
         assertThat(thingBox).hasValue(Thing.newBuilder().setId(ThingId.of("x:0")).build());
-        assertThatExceptionOfType(GatewayInternalErrorException.class)
+        assertThatExceptionOfType(DittoInternalErrorException.class)
                 .isThrownBy(() -> searchResultSpliterator.forEachRemaining(thing -> {}));
     }
 
