@@ -63,7 +63,7 @@ public final class ThingSearchPublisherTest extends AbstractDittoClientTest {
         final RequestFromSubscription futileRequest = expectMsgClass(RequestFromSubscription.class);
         reply(SubscriptionComplete.of(subscriptionId, futileRequest.getDittoHeaders()));
         subscriberFuture.get(1L, TimeUnit.SECONDS);
-        executor.shutdown();
+        executor.shutdownNow();
         assertThat(subscriberFuture).isCompletedWithValue(expectedResult);
     }
 }

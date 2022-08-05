@@ -13,11 +13,12 @@
 package org.eclipse.ditto.client.streaming;
 
 import java.time.Duration;
-import java.util.concurrent.CompletableFuture;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import javax.annotation.Nullable;
 
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.base.model.signals.Signal;
@@ -53,7 +54,7 @@ public final class ThingSearchSubscription implements Subscription {
     private final Subscriber<? super SubscriptionHasNextPage> subscriber;
     private final AtomicBoolean cancelled;
     private final AtomicReference<AdaptableBus.SubscriptionId> busSubscription;
-    private final ExecutorService singleThreadedExecutorService;
+    @Nullable private volatile ExecutorService singleThreadedExecutor;
 
     private ThingSearchSubscription(final String subscriptionId,
             final ProtocolAdapter protocolAdapter,
@@ -65,8 +66,6 @@ public final class ThingSearchSubscription implements Subscription {
         this.subscriber = subscriber;
         cancelled = new AtomicBoolean(false);
         busSubscription = new AtomicReference<>();
-
-        singleThreadedExecutorService = Executors.newSingleThreadExecutor();
     }
 
     /**
@@ -93,7 +92,7 @@ public final class ThingSearchSubscription implements Subscription {
     // called by subscriber
     @Override
     public void request(final long n) {
-        singleThreadedExecutorService.submit(() -> {
+        singleThreaded(() -> {
             if (n <= 0) {
                 doCancel();
                 subscriber.onError(new IllegalArgumentException("Expect positive demand, got: " + n));
@@ -111,9 +110,26 @@ public final class ThingSearchSubscription implements Subscription {
     // called by subscriber
     @Override
     public void cancel() {
-        if (!singleThreadedExecutorService.isShutdown() && !singleThreadedExecutorService.isTerminated()) {
-            CompletableFuture.runAsync(this::doCancel, singleThreadedExecutorService)
-                    .whenComplete((result, error) -> singleThreadedExecutorService.shutdownNow());
+        singleThreaded(this::doCancel);
+    }
+
+    /**
+     * Set the single-threaded executor of this subscription.
+     * Subscription methods run in the executor in order to maintain element order.
+     * Creating the executor within this class is not possible because the garbage collector may not stop the executor.
+     *
+     * @param singleThreadedExecutor The single-threaded executor.
+     */
+    public void setSingleThreadedExecutor(final ExecutorService singleThreadedExecutor) {
+        // TODO: After upgrading to Java 9, consider using the Cleaner interface instead.
+        this.singleThreadedExecutor = singleThreadedExecutor;
+    }
+
+    private void singleThreaded(final Runnable runnable) {
+        if (singleThreadedExecutor != null) {
+            Objects.requireNonNull(singleThreadedExecutor).submit(runnable);
+        } else {
+            runnable.run();
         }
     }
 
@@ -126,19 +142,18 @@ public final class ThingSearchSubscription implements Subscription {
 
     // called by bus
     private void onTimeout(final Throwable timeoutError) {
-        singleThreadedExecutorService.submit(() -> {
+        singleThreaded(() -> {
             if (!cancelled.getAndSet(true)) {
                 // bus subscription already cancelled
                 // trust back-end to free resources on its own
                 subscriber.onError(timeoutError);
             }
         });
-        singleThreadedExecutorService.shutdown();
     }
 
     // called by bus
     private void onNext(final Adaptable adaptable) {
-        singleThreadedExecutorService.submit(() -> {
+        singleThreaded(() -> {
             LOGGER.trace("Received from bus: <{}>", adaptable);
             handleAdaptable(adaptable);
         });
