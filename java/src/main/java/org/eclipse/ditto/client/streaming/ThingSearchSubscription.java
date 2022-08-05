@@ -66,7 +66,6 @@ public final class ThingSearchSubscription implements Subscription {
         cancelled = new AtomicBoolean(false);
         busSubscription = new AtomicReference<>();
 
-        // not shutdown to handle queued messages; will be shutdown by garbage collector
         singleThreadedExecutorService = Executors.newSingleThreadExecutor();
     }
 
@@ -134,6 +133,7 @@ public final class ThingSearchSubscription implements Subscription {
                 subscriber.onError(timeoutError);
             }
         });
+        singleThreadedExecutorService.shutdown();
     }
 
     // called by bus

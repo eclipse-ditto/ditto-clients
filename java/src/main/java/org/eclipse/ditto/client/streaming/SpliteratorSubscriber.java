@@ -130,15 +130,23 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
     @Override
     public void onError(final Throwable t) {
         LOGGER.trace("onError", t);
-        cancelled.set(true);
+        cancel();
         addErrors(t);
     }
 
     @Override
     public void onComplete() {
         LOGGER.trace("onComplete");
-        cancelled.set(true);
+        cancel();
         addEos();
+    }
+
+    private void cancel() {
+        cancelled.set(true);
+        final Subscription s = subscription.get();
+        if (s != null) {
+            s.cancel();
+        }
     }
 
     // always cancel the stream on error thrown, because user code catching the error is outside
@@ -148,12 +156,8 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
         try {
             consumer.accept(element);
         } catch (final RuntimeException e) {
-            cancelled.set(true);
+            cancel();
             addErrors(e);
-            final Subscription s = subscription.get();
-            if (s != null) {
-                s.cancel();
-            }
             throw e;
         }
     }

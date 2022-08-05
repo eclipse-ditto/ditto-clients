@@ -17,14 +17,15 @@ import static org.eclipse.ditto.client.assertions.ClientAssertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.client.internal.AbstractDittoClientTest;
 import org.eclipse.ditto.json.JsonArray;
 import org.eclipse.ditto.json.JsonObject;
-import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.thingsearch.model.signals.commands.subscription.CreateSubscription;
 import org.eclipse.ditto.thingsearch.model.signals.commands.subscription.RequestFromSubscription;
 import org.eclipse.ditto.thingsearch.model.signals.events.SubscriptionComplete;
@@ -43,9 +44,9 @@ public final class ThingSearchPublisherTest extends AbstractDittoClientTest {
         final Publisher<SubscriptionHasNextPage> underTest =
                 ThingSearchPublisher.of(CreateSubscription.of(DittoHeaders.empty()), PROTOCOL_ADAPTER, messaging);
         final SpliteratorSubscriber<SubscriptionHasNextPage> subscriber = SpliteratorSubscriber.of();
+        final ExecutorService executor = Executors.newSingleThreadExecutor();
         final CompletableFuture<List<SubscriptionHasNextPage>> subscriberFuture =
-                CompletableFuture.supplyAsync(() -> subscriber.asStream().collect(Collectors.toList()),
-                        Executors.newSingleThreadExecutor());
+                CompletableFuture.supplyAsync(() -> subscriber.asStream().collect(Collectors.toList()), executor);
         underTest.subscribe(subscriber);
         final CreateSubscription createSubscription = expectMsgClass(CreateSubscription.class);
         final String subscriptionId = "subscription1234";
@@ -62,6 +63,7 @@ public final class ThingSearchPublisherTest extends AbstractDittoClientTest {
         final RequestFromSubscription futileRequest = expectMsgClass(RequestFromSubscription.class);
         reply(SubscriptionComplete.of(subscriptionId, futileRequest.getDittoHeaders()));
         subscriberFuture.get(1L, TimeUnit.SECONDS);
+        executor.shutdown();
         assertThat(subscriberFuture).isCompletedWithValue(expectedResult);
     }
 }
