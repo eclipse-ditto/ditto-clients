@@ -30,14 +30,14 @@
    * Maven sources: https://search.maven.org/remotecontent?filepath=org/atteo/classindex/classindex/3.11/classindex-3.11-sources.jar
 
 
-## reactive-streams (1.0.3)
+## reactive-streams (1.0.4)
 
-* Maven coordinates: `org.reactivestreams:reactive-streams:1.0.3`
-* License: [CC0](https://spdx.org/licenses/CC0.html)
+* Maven coordinates: `org.reactivestreams:reactive-streams:1.0.4`
+* License: [MIT-0](https://spdx.org/licenses/MIT-0.html)
 * Project: http://www.reactive-streams.org/
 * Sources: 
    * declared as SCM: https://github.com/reactive-streams/reactive-streams
-   * Maven sources: https://search.maven.org/remotecontent?filepath=org/reactivestreams/reactive-streams/1.0.3/reactive-streams-1.0.3-sources.jar
+   * Maven sources: https://search.maven.org/remotecontent?filepath=org/reactivestreams/reactive-streams/1.0.4/reactive-streams-1.0.4-sources.jar
 
 
 ## SLF4J API Module (1.7.36)
