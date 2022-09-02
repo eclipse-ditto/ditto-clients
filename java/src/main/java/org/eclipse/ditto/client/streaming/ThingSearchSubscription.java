@@ -13,8 +13,10 @@
 package org.eclipse.ditto.client.streaming;
 
 import java.time.Duration;
-import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -54,7 +56,7 @@ public final class ThingSearchSubscription implements Subscription {
     private final Subscriber<? super SubscriptionHasNextPage> subscriber;
     private final AtomicBoolean cancelled;
     private final AtomicReference<AdaptableBus.SubscriptionId> busSubscription;
-    @Nullable private volatile ExecutorService singleThreadedExecutor;
+    private final ExecutorService singleThreadedExecutorService;
 
     private ThingSearchSubscription(final String subscriptionId,
             final ProtocolAdapter protocolAdapter,
@@ -66,6 +68,8 @@ public final class ThingSearchSubscription implements Subscription {
         this.subscriber = subscriber;
         cancelled = new AtomicBoolean(false);
         busSubscription = new AtomicReference<>();
+
+        singleThreadedExecutorService = Executors.newSingleThreadExecutor();
     }
 
     /**
@@ -89,10 +93,29 @@ public final class ThingSearchSubscription implements Subscription {
         thingSearchSubscription.startForwarding();
     }
 
+    /**
+     * Terminate the executor of any {@code ThingSearchSubscription}, or do nothing if the subscription is not a
+     * {@code ThingSearchSubscription}.
+     * After upgrading to Java 9, it is better to replace this method by the {@code Cleaner} interface.
+     *
+     * @param subscription the subscription.
+     * @since 3.0.0
+     */
+    public static void terminate(@Nullable final Subscription subscription) {
+        if (subscription instanceof ThingSearchSubscription) {
+            final ThingSearchSubscription s = (ThingSearchSubscription) subscription;
+            try {
+                s.singleThreadedExecutorService.submit(s.singleThreadedExecutorService::shutdown);
+            } catch (final RejectedExecutionException e) {
+                // executor already shut down
+            }
+        }
+    }
+
     // called by subscriber
     @Override
     public void request(final long n) {
-        singleThreaded(() -> {
+        singleThreadedExecutorService.submit(() -> {
             if (n <= 0) {
                 doCancel();
                 subscriber.onError(new IllegalArgumentException("Expect positive demand, got: " + n));
@@ -110,26 +133,9 @@ public final class ThingSearchSubscription implements Subscription {
     // called by subscriber
     @Override
     public void cancel() {
-        singleThreaded(this::doCancel);
-    }
-
-    /**
-     * Set the single-threaded executor of this subscription.
-     * Subscription methods run in the executor in order to maintain element order.
-     * Creating the executor within this class is not possible because the garbage collector may not stop the executor.
-     *
-     * @param singleThreadedExecutor The single-threaded executor.
-     */
-    public void setSingleThreadedExecutor(final ExecutorService singleThreadedExecutor) {
-        // TODO: After upgrading to Java 9, consider using the Cleaner interface instead.
-        this.singleThreadedExecutor = singleThreadedExecutor;
-    }
-
-    private void singleThreaded(final Runnable runnable) {
-        if (singleThreadedExecutor != null) {
-            Objects.requireNonNull(singleThreadedExecutor).submit(runnable);
-        } else {
-            runnable.run();
+        if (!singleThreadedExecutorService.isShutdown() && !singleThreadedExecutorService.isTerminated()) {
+            CompletableFuture.runAsync(this::doCancel, singleThreadedExecutorService)
+                    .whenComplete((result, error) -> singleThreadedExecutorService.shutdownNow());
         }
     }
 
@@ -142,18 +148,19 @@ public final class ThingSearchSubscription implements Subscription {
 
     // called by bus
     private void onTimeout(final Throwable timeoutError) {
-        singleThreaded(() -> {
+        singleThreadedExecutorService.submit(() -> {
             if (!cancelled.getAndSet(true)) {
                 // bus subscription already cancelled
                 // trust back-end to free resources on its own
                 subscriber.onError(timeoutError);
             }
         });
+        singleThreadedExecutorService.shutdown();
     }
 
     // called by bus
     private void onNext(final Adaptable adaptable) {
-        singleThreaded(() -> {
+        singleThreadedExecutorService.submit(() -> {
             LOGGER.trace("Received from bus: <{}>", adaptable);
             handleAdaptable(adaptable);
         });

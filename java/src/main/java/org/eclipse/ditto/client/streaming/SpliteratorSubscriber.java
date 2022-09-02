@@ -16,13 +16,10 @@ import static org.eclipse.ditto.base.model.common.ConditionChecker.checkNotNull;
 
 import java.time.Duration;
 import java.util.Collections;
-import java.util.Objects;
 import java.util.Spliterator;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -32,8 +29,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-
-import javax.annotation.Nullable;
 
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -59,7 +54,6 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
     private final AtomicInteger splits;
     private final AtomicInteger quota;
     private final AtomicBoolean cancelled;
-    @Nullable private volatile ExecutorService subscriptionExecutor;
 
     private SpliteratorSubscriber(final long timeoutMillis, final int bufferSize, final int batchSize) {
         // reserve 2*bufferSize+1 space in buffer for <=bufferSize elements and bufferSize+1 EOS markers
@@ -116,10 +110,6 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
             previousSubscription = subscription.get();
             if (previousSubscription == null) {
                 subscription.set(s);
-                if (s instanceof ThingSearchSubscription) {
-                    subscriptionExecutor = Executors.newSingleThreadExecutor();
-                    ((ThingSearchSubscription) s).setSingleThreadedExecutor(subscriptionExecutor);
-                }
             }
         }
         if (previousSubscription == null) {
@@ -127,7 +117,7 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
             s.request(capacity);
         } else {
             LOGGER.warn("onSubscribe() called a second time; cancelling subscription <{}>.", s);
-            s.cancel();
+            cancelSubscription(s);
         }
     }
 
@@ -153,10 +143,13 @@ public final class SpliteratorSubscriber<T> implements Subscriber<T>, Spliterato
 
     private void goToCancelledState() {
         if (!cancelled.getAndSet(true)) {
-            if (subscriptionExecutor != null) {
-                Objects.requireNonNull(subscriptionExecutor).shutdown();
-            }
+            ThingSearchSubscription.terminate(subscription.get());
         }
+    }
+
+    private void cancelSubscription(final Subscription s) {
+        s.cancel();
+        ThingSearchSubscription.terminate(s);
     }
 
     // always cancel the stream on error thrown, because user code catching the error is outside
