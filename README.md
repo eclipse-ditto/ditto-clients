@@ -1,13 +1,14 @@
-<a href="https://eclipse.org/ditto/">
-  <img src="https://eclipse.org/ditto/images/ditto.svg" alt="Ditto Logo" width="100%" height="250">
-</a>
+<div align="center">
+  <img src="https://raw.githubusercontent.com/eclipse/ditto/master/logo/ditto_fordarkbg.svg?sanitize=true#gh-dark-mode-only" alt="Ditto Logo dark" height="250">
+  <img src="https://raw.githubusercontent.com/eclipse/ditto/master/logo/ditto.svg?sanitize=true#gh-light-mode-only" alt="Ditto Logo light" height="250">
+</div>
 
 # Eclipse Ditto™ Client SDKs
 
 [![Join the chat at https://gitter.im/eclipse/ditto](https://badges.gitter.im/eclipse/ditto.svg)](https://gitter.im/eclipse/ditto?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![License](https://img.shields.io/badge/License-EPL%202.0-green.svg)](https://opensource.org/licenses/EPL-2.0)
 
-This repository contains client SDKs in different languages for [Eclipse Ditto](https://eclipse.org/ditto/).
+This repository contains client SDKs in different languages for [Eclipse Ditto](https://websites.eclipseprojects.io/ditto/).
 
 ## [Java](java/)
 
