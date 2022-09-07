@@ -761,7 +761,7 @@ public final class DittoClientUsageExamples {
         }
 
         final AuthenticationProvider<WebSocket> authenticationProvider;
-        if (DITTO_DUMMY_AUTH_USER != null) {
+        if (DITTO_DUMMY_AUTH_USER != null && !DITTO_DUMMY_AUTH_USER.isEmpty()) {
             authenticationProvider =
                     AuthenticationProviders.dummy(DummyAuthenticationConfiguration.newBuilder()
                             .dummyUsername(DITTO_DUMMY_AUTH_USER)
