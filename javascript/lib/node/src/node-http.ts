@@ -11,10 +11,10 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { GenericResponse } from '../../api/src/model/response';
-import { HttpRequester } from '../../api/src/client/request-factory/http-request-sender';
 import * as http from 'http';
 import * as https from 'https';
+import { HttpRequester } from '../../api/src/client/request-factory/http-request-sender';
+import { BasicErrorResponse, ErrorResponse, GenericResponse } from '../../api/src/model/response';
 import { ProxyAgent } from './proxy-settings';
 
 /**
@@ -26,7 +26,7 @@ export class NodeRequester implements HttpRequester {
   }
 
   private static createResponseHandler(resolve: (value?: (PromiseLike<GenericResponse> | GenericResponse)) => void,
-                                       reject: (reason?: any) => void):
+                                       reject: (reason?: ErrorResponse) => void):
     (response: http.IncomingMessage) => void {
     return response => {
       this.handleResponse(resolve, reject, response);
@@ -34,28 +34,34 @@ export class NodeRequester implements HttpRequester {
   }
 
   private static handleResponse(resolve: (value?: (PromiseLike<GenericResponse> | GenericResponse)) => void,
-                                reject: (reason?: any) => void,
+                                reject: (reason?: ErrorResponse) => void,
                                 response: http.IncomingMessage): void {
     let data = '';
     response.on('data', chunk => {
       data += chunk;
     });
     response.on('end', () => {
-      let body: object;
+      let body: any;
       if (data === '') {
         body = {};
       } else {
-        body = JSON.parse(data);
+        try {
+          body = JSON.parse(data);
+        } catch (e) {
+          body = data;
+        }
       }
-      const status: number = response.statusCode !== undefined ? response.statusCode : 0;
-      if (status < 200 || status >= 300) {
-        reject(body);
-      }
+
       const headersObj = response.headers;
       const headers = Object.keys(headersObj).reduce((map, name) => {
         map.set(name, headersObj[name] as string);
         return map;
       }, new Map<string, string>());
+
+      const status: number = response.statusCode !== undefined ? response.statusCode : 0;
+      if (status < 200 || status >= 300) {
+        reject(new BasicErrorResponse(body, status, headers));
+      }
       resolve({ status, headers, body });
     });
   }

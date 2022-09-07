@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-ditto/ditto-javascript-client-dom",
-  "version": "2.4.0",
+  "version": "3.0.0",
   "description": "DOM implementation of Eclipse Ditto JavaScript API to be used in browsers.",
   "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
   "repository": "https://github.com/eclipse/ditto-clients",
@@ -23,7 +23,7 @@
     "tslint": "^5.18.x",
     "tslint-config-airbnb": "^5.11.1",
     "tslint-sonarts": "^1.8.0",
-    "typescript": "^3.4.3"
+    "typescript": "^3.9.10"
   },
   "scripts": {
     "build": "npm run build:tsc && npm run build:barrels",

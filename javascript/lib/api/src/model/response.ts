@@ -26,6 +26,18 @@ export interface GenericResponse {
   headers: Map<string, string>;
 }
 
+/**
+ * A generic server response to a request.
+ */
+export interface ErrorResponse {
+  /** The status code of the error response. */
+  status: number;
+  /** The body of the error response. */
+  body: any;
+  /** The headers of the error response inside a map. */
+  headers: Map<string, string>;
+}
+
 export class PutResponse<T> implements GenericResponse {
   public constructor(private readonly _value: T | null,
                      private readonly _status: number,
@@ -38,6 +50,25 @@ export class PutResponse<T> implements GenericResponse {
 
   public wasUpdated(): boolean {
     return !this.wasCreated();
+  }
+
+  get body(): T | null {
+    return this._value;
+  }
+
+  get status(): number {
+    return this._status;
+  }
+
+  get headers(): Map<string, string> {
+    return this._headers;
+  }
+}
+
+export class BasicErrorResponse<T> implements ErrorResponse {
+  public constructor(private readonly _value: T | null,
+                     private readonly _status: number,
+                     private readonly _headers: Map<string, string>) {
   }
 
   get body(): T | null {
