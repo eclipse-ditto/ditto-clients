@@ -11,9 +11,9 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { ProtocolResponseValue } from '../request-factory/websocket-request-handler';
 /* tslint:disable:bool-param-default no-identical-functions */
 import { SubscribeRequest } from '../request-factory/websocket-request-sender';
-import { ProtocolResponseValue } from '../request-factory/websocket-request-handler';
 
 /**
  * Handle to receive Events. To be able to subscribe to Events requestEvents() needs to be called first
@@ -136,6 +136,7 @@ export interface EventsHandle {
    *
    * @param thingId - The ID of the Thing the Feature belongs to.
    * @param featureId - The ID of the Feature the Property belongs to.
+   * @param propertyPath - The path of the Feature Property.
    * @param callback - The function that gets called for every Event.
    * @param action - The action to listen for (eg. modify).
    * @param subResources - Whether or not sub-resources of the Property should also trigger the callback.

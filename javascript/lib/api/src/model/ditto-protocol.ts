@@ -74,7 +74,7 @@ interface DittoProtocolResponse {
   path: string;
   status: number;
   headers: { [key: string]: any };
-  value: object;
+  value: any;
 
   correlationId(): string | undefined;
 }
@@ -86,7 +86,7 @@ class DefaultDittoProtocolResponse implements DittoProtocolResponse {
   value: object;
   status: number;
 
-  constructor(topic: string, headers: object, path: string, value: object, status: number) {
+  constructor(topic: string, headers: object, path: string, value: any, status: number) {
     this.topic = topic;
     this.headers = headers;
     this.path = path;

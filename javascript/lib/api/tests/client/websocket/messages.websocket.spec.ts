@@ -11,11 +11,11 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { jest } from '@jest/globals';
 /* tslint:disable:no-duplicate-string */
 import { ProtocolResponseValue } from '../../../src/client/request-factory/websocket-request-handler';
-import { EventsHelper as H } from './events.helper';
 import { GenericResponse } from '../../../src/model/response';
-import { jest } from '@jest/globals';
+import { EventsHelper as H } from './events.helper';
 
 const testWithoutResponse: (method: () => void, request: Request) => Promise<void> = (method: () => void, request: Request) => {
   return new Promise<void>(resolve => {
@@ -171,6 +171,7 @@ describe('WebSocket Messages Handle', () => {
         topic: standardTopic,
         action: subject,
         path: '/',
+        headers: {},
         value: H.thing.toObject()
       }
     });
@@ -186,6 +187,7 @@ describe('WebSocket Messages Handle', () => {
         topic: standardTopic,
         action: subject,
         path: `/features/${H.feature.id}/outbox`,
+        headers: {},
         value: H.thing.toObject()
       }
     });
@@ -201,6 +203,7 @@ describe('WebSocket Messages Handle', () => {
         topic: standardTopic,
         action: subject,
         path: '/',
+        headers: {},
         value: H.thing.toObject()
       }
     });
