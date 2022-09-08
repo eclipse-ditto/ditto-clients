@@ -11,11 +11,11 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { bufferFullError, connectionLostError } from '../../../src/client/request-factory/resilience/websocket-resilience-interfaces';
+import { jest } from '@jest/globals';
+import { DittoWebSocketLiveClient } from '../../../src/client/ditto-client-websocket';
+import { bufferFullError } from '../../../src/client/request-factory/resilience/websocket-resilience-interfaces';
 import { MockWebSocketStates, MockWebSocketStateTracker, WebSocketHelper as H } from './websocket.helper';
 import { DefaultMockWebSocket } from './websocket.mock';
-import { DittoWebSocketLiveClient } from '../../../src/client/ditto-client-websocket';
-import { jest } from '@jest/globals';
 
 jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
 
@@ -101,7 +101,7 @@ describe('WebSocket Resilience Handler with buffer', () => {
     await handle.requestMessages();
     requester.closeWebSocket(1000);
     await new Promise(resolve => setTimeout(resolve, 1));
-    const promise = handle.messageToThingWithoutResponse(H.thing.thingId, messageSubject, message, contentType)
+    handle.messageToThingWithoutResponse(H.thing.thingId, messageSubject, message, contentType)
       .then(() => {
         resolved = true;
       });
@@ -160,19 +160,4 @@ describe('WebSocket Resilience Handler with buffer', () => {
     });
   });
 
-  it('disconnects', async () => {
-    const handle = thingsClient.getMessagesHandle();
-    await requester.closeWebSocket().catch(() => {// we expect an exception due to the implementation of websocket.mock.ts
-    });
-
-    return handle.messageToThingWithoutResponse(H.thing.thingId, messageSubject, message, contentType)
-      .then(() => {
-        fail('Request on closed connection worked');
-      })
-      .catch(error => {
-        expect(error).toEqual(connectionLostError);
-        expect(stateTracker.events).toEqual([MockWebSocketStates.CONNECTED, MockWebSocketStates.RECONNECTING,
-          MockWebSocketStates.DISCONNECTED]);
-      });
-  });
 });
