@@ -22,7 +22,7 @@
     "lint": "lerna run lint --stream"
   },
   "devDependencies": {
-    "lerna": "^4.0.0"
+    "lerna": "^5.5.0"
   },
   "keywords": [
     "ditto",
