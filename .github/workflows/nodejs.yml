@@ -24,6 +24,8 @@ on:
       - 'javascript/**'
       - '.github/workflows/nodejs.yml'
 
+  workflow_dispatch:
+
 jobs:
   build:
 
