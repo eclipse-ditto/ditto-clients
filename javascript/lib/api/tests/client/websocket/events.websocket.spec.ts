@@ -11,10 +11,10 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { ProtocolResponseValue } from '../../../src/client/request-factory/websocket-request-handler';
-import { EventsHelper as H } from './events.helper';
-import { Features } from '../../../src/model/things.model';
 import { jest } from '@jest/globals';
+import { ProtocolResponseValue } from '../../../src/client/request-factory/websocket-request-handler';
+import { Features } from '../../../src/model/things.model';
+import { EventsHelper as H } from './events.helper';
 
 describe('WebSocket Events Handle', () => {
   jest.setTimeout(5000); // we need to tell jest, that it should also wait on promises ... default is 0 ms
@@ -35,6 +35,7 @@ describe('WebSocket Events Handle', () => {
         topic,
         action,
         path: '/',
+        headers: {},
         value: H.thing.toObject()
       }
     });
@@ -49,6 +50,7 @@ describe('WebSocket Events Handle', () => {
         topic,
         action,
         path: '/',
+        headers: {},
         value: H.thing.toObject()
       }
     });
@@ -63,6 +65,7 @@ describe('WebSocket Events Handle', () => {
         topic,
         action,
         path: `/attributes`,
+        headers: {},
         value: H.attributes
       }
     });
@@ -77,6 +80,7 @@ describe('WebSocket Events Handle', () => {
         topic,
         action,
         path: `/attributes/${H.attributePath}`,
+        headers: {},
         value: H.attribute
       }
     });
@@ -91,6 +95,7 @@ describe('WebSocket Events Handle', () => {
         topic,
         action,
         path: '/features',
+        headers: {},
         value: Features.toObject(H.features)
       }
     });
@@ -105,6 +110,7 @@ describe('WebSocket Events Handle', () => {
         topic,
         action,
         path: `/features/${H.feature.id}`,
+        headers: {},
         value: H.feature.toObject()
       }
     });
@@ -119,6 +125,7 @@ describe('WebSocket Events Handle', () => {
         topic,
         action,
         path: `/features/${H.feature.id}/definition`,
+        headers: {},
         value: H.definition
       }
     });
@@ -133,6 +140,7 @@ describe('WebSocket Events Handle', () => {
         topic,
         action,
         path: `/features/${H.feature.id}/properties`,
+        headers: {},
         value: H.properties
       }
     });
@@ -147,6 +155,7 @@ describe('WebSocket Events Handle', () => {
         topic,
         action,
         path: `/features/${H.feature.id}/properties/${H.propertyPath}`,
+        headers: {},
         value: H.property
       }
     });

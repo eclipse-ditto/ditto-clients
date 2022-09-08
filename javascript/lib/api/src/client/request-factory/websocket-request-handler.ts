@@ -11,18 +11,18 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { AuthProvider, DittoURL } from '../../auth/auth-provider';
+import { DefaultDittoProtocolEnvelope, DittoProtocolEnvelope, DittoProtocolResponse } from '../../model/ditto-protocol';
+import { GenericResponse } from '../../model/response';
 /* tslint:disable:no-duplicate-string */
 import {
   PromiseResponse,
   RequestHandler,
   ResilienceHandler,
   ResilienceHandlerFactoryBuildStep,
-  WebSocketImplementationBuilderHandler,
-  WebSocketBindingMessage
+  WebSocketBindingMessage,
+  WebSocketImplementationBuilderHandler
 } from './resilience/websocket-resilience-interfaces';
-import { AuthProvider, DittoURL } from '../../auth/auth-provider';
-import { DefaultDittoProtocolEnvelope, DittoProtocolEnvelope, DittoProtocolResponse } from '../../model/ditto-protocol';
-import { GenericResponse } from '../../model/response';
 
 /**
  * A Factory for a WebSocketRequestSender.
@@ -245,6 +245,7 @@ abstract class Subscription {
       action,
       topic: message.topic,
       path: message.path,
+      headers: message.headers,
       value: message.value
     });
   }
@@ -314,6 +315,6 @@ export interface ProtocolResponseValue {
   topic: string;
   path: string;
   action: string;
-  headers?: string;
+  headers?: { [key: string]: any };
   value?: any;
 }
