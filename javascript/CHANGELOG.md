@@ -1,6 +1,17 @@
 # Changelog
 All notable changes to the Ditto JavaScript client will be documented in this file.
 
+## [3.0.0] - 2022-09-xx
+
+### Updated dependencies
+TODO text
+
+### \#169 Improved error handling for HTTP rejections
+TODO text
+
+### \#193 Preserve headers when responding to messages
+TODO text
+
 ## [2.4.0] - 2022-04-14
 
 ### No changes

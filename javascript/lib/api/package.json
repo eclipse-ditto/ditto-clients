@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-ditto/ditto-javascript-client-api",
-  "version": "2.4.0",
+  "version": "3.0.0",
   "description": "API interfaces for implementing TypeScript clients for Eclipse Ditto",
   "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
   "repository": "https://github.com/eclipse/ditto-clients",
@@ -25,7 +25,7 @@
     "tslint": "^5.18.x",
     "tslint-config-airbnb": "^5.11.1",
     "tslint-sonarts": "^1.8.0",
-    "typescript": "^3.4.3"
+    "typescript": "^3.9.10"
   },
   "scripts": {
     "build": "npm run build:tsc && npm run build:barrels",

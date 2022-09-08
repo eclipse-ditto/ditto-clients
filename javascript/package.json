@@ -1,7 +1,7 @@
 {
   "name": "@eclipse-ditto/ditto-javascript-client",
-  "version": "2.4.0",
-  "description": "A library supporting you to work with the APIs of Eclipse Ditto 2.3.x.",
+  "version": "3.0.0",
+  "description": "A library supporting you to work with the APIs of Eclipse Ditto 3.x.",
   "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
   "repository": "https://github.com/eclipse/ditto-clients",
   "license": "EPL-2.0",
@@ -22,7 +22,7 @@
     "lint": "lerna run lint --stream"
   },
   "devDependencies": {
-    "lerna": "^4.0.0"
+    "lerna": "^5.5.0"
   },
   "keywords": [
     "ditto",
