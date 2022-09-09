@@ -16,10 +16,11 @@
     "dist"
   ],
   "devDependencies": {
-    "@types/jest": "^25.2.3",
+    "@types/jest": "^26.0.24",
+    "@types/prettier": "<2.6.0",
     "barrelsby": "^2.1.1",
-    "jest": "^25.4.0",
-    "ts-jest": "^25.5.1",
+    "jest": "^26.6.3",
+    "ts-jest": "^26.5.6",
     "tslint": "^5.18.x",
     "tslint-config-airbnb": "^5.11.1",
     "tslint-sonarts": "^1.8.0",

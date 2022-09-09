@@ -11,14 +11,13 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { jest } from '@jest/globals';
+import { DittoWebSocketLiveClient } from '../../../src/client/ditto-client-websocket';
 import {
-  connectionLostError,
   connectionUnavailableError
 } from '../../../src/client/request-factory/resilience/websocket-resilience-interfaces';
 import { MockWebSocketStates, MockWebSocketStateTracker, WebSocketHelper as H } from './websocket.helper';
 import { DefaultMockWebSocket } from './websocket.mock';
-import { DittoWebSocketLiveClient } from '../../../src/client/ditto-client-websocket';
-import { jest } from '@jest/globals';
 
 describe('WebSocket Resilience Handler without buffer', () => {
   jest.setTimeout(5000); // we need to tell jest, that it should also wait on promises ... default is 0 ms
@@ -90,20 +89,5 @@ describe('WebSocket Resilience Handler without buffer', () => {
 
   });
 
-  it('disconnects', async () => {
-    const handle = thingsClient.getMessagesHandle();
-    await requester.closeWebSocket()
-      .catch(() => {// we expect an exception due to the implementation of websocket.mock.ts
-      });
-    return handle.messageToThingWithoutResponse(H.thing.thingId, messageSubject, message, contentType)
-      .then(() => {
-        fail('Request on closed connection worked');
-      })
-      .catch(error => {
-        expect(error).toEqual(connectionLostError);
-        expect(stateTracker.events).toEqual([MockWebSocketStates.CONNECTED, MockWebSocketStates.RECONNECTING,
-          MockWebSocketStates.DISCONNECTED]);
-      });
-  });
 })
 ;
