@@ -178,6 +178,7 @@ public final class TestConstants {
                 "    \"policyId\": \"" + POLICY_ID + "\",\n" +
                 "    \"entries\": {\n" +
                 "        \"maker\": {\n" +
+                "            \"importable\": false,\n" +
                 "            \"subjects\": {\n" +
                 "                \"{{ request:subjectId }}\": {\n" +
                 "                    \"type\": \"suite-auth\"\n" +
