@@ -1,16 +1,46 @@
 # Changelog
 All notable changes to the Ditto JavaScript client will be documented in this file.
 
-## [3.0.0] - 2022-09-xx
+## [3.0.0] - 2022-09-28
 
-### Updated dependencies
-TODO text
+### Dependencies
+
+No dependencies were explicitly updated.
 
 ### \#169 Improved error handling for HTTP rejections
-TODO text
+
+Error handling for the Ditto JavaScript client did not return the status code.
+And if the error response was not JSON formatted, the error could not be parsed and `undefined` was resolved as `error`.
+
+This has been fixed by adding an ErrorResponse which is returned instead:
+```typescript
+interface ErrorResponse {
+  /** The status code of the error response. */
+  status: number;
+  /** The body of the error response. */
+  body: any;
+  /** The headers of the error response inside a map. */
+  headers: Map<string, string>;
+}
+```
 
 ### \#193 Preserve headers when responding to messages
-TODO text
+
+The `DittoHeaders` of a message were not preserved when subscribing to consume messages via the Ditto JavaScript client.  
+Without access to the headers and the contained `correlation-id` it was not possible to send back a correlated 
+response message.
+
+This has been fixed. The headers are now available when e.g. using the API in such a way:
+```typescript
+const messages = client.getMessagesHandle();
+await messages.requestMessages();
+messages.subscribeToThing(thingId, (msg) => {
+  console.log(msg.headers);
+  console.log(msg);
+});
+```
+
+
 
 ## [2.4.0] - 2022-04-14
 
