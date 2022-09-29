@@ -50,6 +50,7 @@ import org.eclipse.ditto.client.live.events.internal.ImmutableGlobalEventFactory
 import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
 import org.eclipse.ditto.client.live.messages.PendingMessage;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
+import org.eclipse.ditto.client.management.ClientReconnectingException;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.json.JsonKey;
 import org.eclipse.ditto.messages.model.KnownMessageSubjects;
@@ -158,44 +159,58 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
                 CompletableFuture.allOf(completableFutureEvents, completableFutureMessages,
                         completableFutureLiveCommands);
 
-        // register message handler which handles live events:
-        subscriptionIds.compute(Classification.StreamingType.LIVE_EVENT, (streamingType, previousSubscriptionId) -> {
-            final String subscriptionMessage = buildProtocolCommand(streamingType.start(), consumptionConfig);
-            messagingProvider.registerSubscriptionMessage(streamingType, subscriptionMessage);
-            return subscribe(previousSubscriptionId,
-                    streamingType,
-                    subscriptionMessage,
-                    streamingType.startAck(),
-                    completableFutureEvents
-            );
-        });
+        try {
+            // register message handler which handles live events:
+            subscriptionIds.compute(Classification.StreamingType.LIVE_EVENT,
+                    (streamingType, previousSubscriptionId) -> {
+                        final String subscriptionMessage =
+                                buildProtocolCommand(streamingType.start(), consumptionConfig);
+                        messagingProvider.registerSubscriptionMessage(streamingType, subscriptionMessage);
+                        return subscribe(previousSubscriptionId,
+                                streamingType,
+                                subscriptionMessage,
+                                streamingType.startAck(),
+                                completableFutureEvents
+                        );
+                    });
 
-        // register message handler which handles incoming messages:
-        subscriptionIds.compute(Classification.StreamingType.LIVE_MESSAGE, (streamingType, previousSubscriptionId) -> {
-            final String subscriptionMessage = buildProtocolCommand(streamingType.start(), consumptionConfig);
-            messagingProvider.registerSubscriptionMessage(streamingType, subscriptionMessage);
-            return subscribeAndPublishMessage(previousSubscriptionId,
-                    streamingType,
-                    subscriptionMessage,
-                    streamingType.startAck(),
-                    completableFutureMessages,
-                    adaptable -> bus -> bus.notify(getPointerBusKey(adaptable), adaptableAsLiveMessage(adaptable)));
-        });
+            // register message handler which handles incoming messages:
+            subscriptionIds.compute(Classification.StreamingType.LIVE_MESSAGE,
+                    (streamingType, previousSubscriptionId) -> {
+                        final String subscriptionMessage =
+                                buildProtocolCommand(streamingType.start(), consumptionConfig);
+                        messagingProvider.registerSubscriptionMessage(streamingType, subscriptionMessage);
+                        return subscribeAndPublishMessage(previousSubscriptionId,
+                                streamingType,
+                                subscriptionMessage,
+                                streamingType.startAck(),
+                                completableFutureMessages,
+                                adaptable -> bus -> bus.notify(getPointerBusKey(adaptable),
+                                        adaptableAsLiveMessage(adaptable)));
+                    });
 
-        // register message handler which handles live commands:
-        subscriptionIds.compute(Classification.StreamingType.LIVE_COMMAND, (streamingType, previousSubscriptionId) -> {
-            final String subscriptionMessage = buildProtocolCommand(streamingType.start(), consumptionConfig);
-            messagingProvider.registerSubscriptionMessage(streamingType, subscriptionMessage);
+            // register message handler which handles live commands:
+            subscriptionIds.compute(Classification.StreamingType.LIVE_COMMAND,
+                    (streamingType, previousSubscriptionId) -> {
+                        final String subscriptionMessage =
+                                buildProtocolCommand(streamingType.start(), consumptionConfig);
+                        messagingProvider.registerSubscriptionMessage(streamingType, subscriptionMessage);
 
-            return subscribeAndPublishMessage(previousSubscriptionId,
-                    streamingType,
-                    subscriptionMessage,
-                    streamingType.startAck(),
-                    completableFutureLiveCommands,
-                    adaptable -> bus -> bus.getExecutor().submit(() -> handleLiveCommandOrResponse(adaptable))
-            );
-        });
-        return completableFutureCombined;
+                        return subscribeAndPublishMessage(previousSubscriptionId,
+                                streamingType,
+                                subscriptionMessage,
+                                streamingType.startAck(),
+                                completableFutureLiveCommands,
+                                adaptable -> bus -> bus.getExecutor()
+                                        .submit(() -> handleLiveCommandOrResponse(adaptable))
+                        );
+                    });
+            return completableFutureCombined;
+        } catch (final ClientReconnectingException cre) {
+            return CompletableFuture.supplyAsync(() -> {
+               throw cre;
+            });
+        }
     }
 
     /*

@@ -228,6 +228,8 @@ public interface MessageSender<T> {
          * by its potential targets. </p>
          *
          * @throws IllegalStateException if the {@code Message} to be sent is in an invalid state.
+         * @throws org.eclipse.ditto.client.management.ClientReconnectingException if the client is in a reconnecting
+         * state.
          */
         void send();
 
@@ -238,6 +240,8 @@ public interface MessageSender<T> {
          * @param responseConsumer the Consumer which should be notified with the response ot the Throwable in case of
          * an error.
          * @throws IllegalStateException if the {@code Message} to be sent is in an invalid state.
+         * @throws org.eclipse.ditto.client.management.ClientReconnectingException if the client is in a reconnecting
+         * state.
          */
         default void send(final BiConsumer<Message<ByteBuffer>, Throwable> responseConsumer) {
             send(ByteBuffer.class, responseConsumer);
@@ -253,6 +257,8 @@ public interface MessageSender<T> {
          * an error.
          * @param <R> the type of the response message's payload.
          * @throws IllegalStateException if the {@code Message} to be sent is in an invalid state.
+         * @throws org.eclipse.ditto.client.management.ClientReconnectingException if the client is in a reconnecting
+         * state.
          * @since 1.0.0
          */
         <R> void send(Class<R> responseType, BiConsumer<Message<R>, Throwable> responseConsumer);

@@ -14,6 +14,7 @@ package org.eclipse.ditto.client.messaging;
 
 import java.time.Duration;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 
@@ -21,6 +22,7 @@ import org.eclipse.ditto.client.configuration.AuthenticationConfiguration;
 import org.eclipse.ditto.client.configuration.MessagingConfiguration;
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
 import org.eclipse.ditto.client.internal.bus.Classification;
+import org.eclipse.ditto.client.management.ClientReconnectingException;
 import org.eclipse.ditto.protocol.Adaptable;
 import org.eclipse.ditto.protocol.ProtocolFactory;
 
@@ -94,6 +96,8 @@ public interface MessagingProvider {
      * Send a message into the channel provided by this provider.
      *
      * @param message the message to emit.
+     * @throws org.eclipse.ditto.client.management.ClientReconnectingException if the client is reconnecting and thus
+     * can't emit the message.
      * @since 1.1.0
      */
     void emit(String message);
@@ -102,6 +106,8 @@ public interface MessagingProvider {
      * Emit an adaptable message in a fire-and-forget manner.
      *
      * @param message the message to emit.
+     * @throws org.eclipse.ditto.client.management.ClientReconnectingException if the client is reconnecting and thus
+     * can't emit the message.
      * @since 1.1.0
      */
     default void emitAdaptable(Adaptable message) {
@@ -112,23 +118,31 @@ public interface MessagingProvider {
      * Send Ditto Protocol {@link Adaptable} using the underlying connection and expect a response.
      *
      * @param adaptable the adaptable to be sent
-     * @return a CompletionStage containing the correlated response to the sent {@code dittoProtocolAdaptable}
+     * @return a CompletionStage containing the correlated response to the sent {@code dittoProtocolAdaptable} or is
+     * failed with a {@link org.eclipse.ditto.client.management.ClientReconnectingException}, when the client is in a
+     * reconnecting state.
      */
     default CompletionStage<Adaptable> sendAdaptable(final Adaptable adaptable) {
-        final String correlationId = adaptable.getDittoHeaders()
-                .getCorrelationId()
-                .orElseGet(() -> UUID.randomUUID().toString());
-        final Adaptable adaptableToSend = adaptable.getDittoHeaders()
-                .getCorrelationId()
-                .map(cid -> adaptable)
-                .orElseGet(() -> adaptable.setDittoHeaders(
-                        adaptable.getDittoHeaders().toBuilder().correlationId(correlationId).build())
-                );
-        final Duration timeout = getMessagingConfiguration().getTimeout();
-        final CompletionStage<Adaptable> result = getAdaptableBus()
-                .subscribeOnceForAdaptable(Classification.forCorrelationId(correlationId), timeout);
-        emitAdaptable(adaptableToSend);
-        return result;
+        try {
+            final String correlationId = adaptable.getDittoHeaders()
+                    .getCorrelationId()
+                    .orElseGet(() -> UUID.randomUUID().toString());
+            final Adaptable adaptableToSend = adaptable.getDittoHeaders()
+                    .getCorrelationId()
+                    .map(cid -> adaptable)
+                    .orElseGet(() -> adaptable.setDittoHeaders(
+                            adaptable.getDittoHeaders().toBuilder().correlationId(correlationId).build())
+                    );
+            final Duration timeout = getMessagingConfiguration().getTimeout();
+            final CompletionStage<Adaptable> result = getAdaptableBus()
+                    .subscribeOnceForAdaptable(Classification.forCorrelationId(correlationId), timeout);
+            emitAdaptable(adaptableToSend);
+            return result;
+        } catch (final ClientReconnectingException cre) {
+            return CompletableFuture.supplyAsync(() -> {
+                throw cre;
+            });
+        }
     }
 
     /**

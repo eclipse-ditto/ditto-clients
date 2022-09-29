@@ -103,7 +103,9 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
     /**
      * Start consuming changes (for {@code twin()} and additionally messages and commands (for {@code live()}.
      *
-     * @return a CompletionStage that terminates when the start operation was successful.
+     * @return a CompletionStage that terminates when the start operation was successful or fails with
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException} if the client
+     * is in a reconnecting state.
      */
     CompletionStage<Void> startConsumption();
 
@@ -116,14 +118,18 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * <pre>{@code Options.Consumption.namespaces("org.eclipse.ditto.namespace1","org.eclipse.ditto.namespace2");
      * Options.Consumption.filter("gt(attributes/counter,42)");}
      * </pre>
-     * @return a CompletionStage that terminates when the start operation was successful.
+     * @return a CompletionStage that terminates when the start operation was successful or fails with
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException} if the client
+     * is in a reconnecting state.
      */
     CompletionStage<Void> startConsumption(Option<?>... consumptionOptions);
 
     /**
      * Suspend consuming events from Eclipse Ditto.
      *
-     * @return a CompletionStage that terminates when the suspend operation was successful.
+     * @return a CompletionStage that terminates when the suspend operation was successful or fails with
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException} if the client
+     * is in a reconnecting state.
      */
     CompletionStage<Void> suspendConsumption();
 
@@ -134,6 +140,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the created Thing object or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code options} contains an option
      * that is not allowed for creating a thing.
      */
@@ -148,6 +156,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the created Thing object or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code thingId} is {@code null} or empty
      * or if {@code options} contains an option that is not allowed for
      * creating a thing.
@@ -163,6 +173,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the created Thing object or a specific {@link
      * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier
      * or if {@code options} contains an option that is not allowed for
      * creating a thing.
@@ -180,6 +192,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the created Thing object or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
      * {@code "thingId"} or if {@code options} contains an option that is not allowed for creating a thing.
      * @throws org.eclipse.ditto.base.model.exceptions.DittoJsonException if {@code thing} cannot be parsed to a
@@ -198,6 +212,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * @return CompletionStage providing the created Thing object or a specific
      * @throws IllegalArgumentException if {@code options} contains an option
      * that is not allowed for creating a thing.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @since 1.1.0
      */
@@ -212,6 +228,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the created Thing object or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier, or if
      * {@code initialPolicy} is {@code null} or if {@code options} contains an option
      * that is not allowed for creating a thing.
@@ -230,6 +248,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the created Thing object or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code thingId} is {@code null} or empty, or if {@code initialPolicy} is
      * {@code null} or if {@code options} contains an option that is not allowed for creating a thing.
      * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
@@ -248,6 +268,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the created Thing object or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
      * {@code "thingId"}, or if {@code initialPolicy} is {@code null} or if {@code options} contains an option that
      * is not allowed for creating a thing.
@@ -267,6 +289,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the created Thing object or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier, or if
      * {@code initialPolicy} is {@code null} or if {@code options} contains an option that
      * is not allowed for creating a thing.
@@ -285,6 +309,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the created Thing object or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code thingId} is {@code null} or empty, or if {@code initialPolicy} is
      * {@code null} or if {@code options} contains an option that is not allowed for creating a thing.
      * @throws org.eclipse.ditto.things.model.ThingIdInvalidException if the {@code thingId} was invalid.
@@ -303,6 +329,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the created Thing object or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
      * {@code "thingId"}, or if {@code initialPolicy} is {@code null} or if {@code options} contains an option that
      * is not allowed for creating a thing.
@@ -322,6 +350,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return completable future providing {@code null} in case of success or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code argument} is {@code null} or if {@code options} contains an option
      * that is not allowed for merging a thing.
      * @since 2.0.0
@@ -337,6 +367,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return completable future providing {@code null} in case of success or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code argument} is {@code null} or if {@code options} contains an option
      * that is not allowed for merging a thing.
      * @since 2.0.0
@@ -353,6 +385,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * @return CompletionStage providing an {@link Optional} containing the created Thing object, in case the Thing
      * has been created, or an empty Optional, in case the Thing has been updated. Provides a
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier or if {@code options}
      * contains an option that is not allowed for putting a thing.
      * @since 1.0.0
@@ -372,6 +406,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * @return CompletionStage providing an {@link Optional} containing the created Thing object, in case the Thing
      * has been created, or an empty Optional, in case the Thing has been updated. Provides a
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
      * {@code "thingId"} or if {@code options} contains an option that is not allowed for putting a thing.
      * @throws org.eclipse.ditto.base.model.exceptions.DittoJsonException if {@code thing} cannot be parsed to a
@@ -392,6 +428,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * @return CompletionStage providing an {@link Optional} containing the created Thing object, in case the Thing
      * has been created, or an empty Optional, in case the Thing has been updated. Provides a
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier, or if
      * {@code initialPolicy} is {@code null} or if {@code options} contains an option that is not allowed for putting
      * a thing.
@@ -413,6 +451,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * @return CompletionStage providing an {@link Optional} containing the created Thing object, in case the Thing
      * has been created, or an empty Optional, in case the Thing has been updated. Provides a
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
      * {@code "thingId"}, or if {@code initialPolicy} is {@code null} or if {@code options} contains an option that is
      * not allowed for putting a thing.
@@ -434,6 +474,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * @return CompletionStage providing an {@link Optional} containing the created Thing object, in case the Thing
      * has been created, or an empty Optional, in case the Thing has been updated. Provides a
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier, or if
      * {@code initialPolicy} is {@code null} or if {@code options} contains an option that is
      * not allowed for putting a thing.
@@ -456,6 +498,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * @return CompletionStage providing an {@link Optional} containing the created Thing object, in case the Thing
      * has been created, or an empty Optional, in case the Thing has been updated. Provides a
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
      * {@code "thingId"}, or if {@code initialPolicy} is {@code null} or if {@code options} contains an option that is
      * not allowed for putting a thing.
@@ -473,6 +517,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing {@code null} in case of success or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or has no identifier
      * or if {@code options} contains an option that is not allowed for updating a thing.
      */
@@ -488,6 +534,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing {@code null} in case of success or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code thing} is {@code null} or if it does not contain the field named
      * {@code "thingId"} or if {@code options} contains an option that is not allowed for updating a thing.
      * @throws org.eclipse.ditto.base.model.exceptions.DittoJsonException if {@code thing} cannot be parsed to a
@@ -503,6 +551,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the result of deletion or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code thingId} is {@code null} or if {@code options} contains an option
      * that is not allowed for updating a thing.
      */
@@ -516,6 +566,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * @param thingIds additional identifiers of Things to be retrieved.
      * @return CompletionStage providing the requested Things, an empty list or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if any argument is {@code null}.
      */
     CompletionStage<List<Thing>> retrieve(ThingId thingId, ThingId... thingIds);
@@ -529,6 +581,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * @param thingIds additional identifiers of Things to be retrieved.
      * @return CompletionStage providing the requested Things, an empty list or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if any argument is {@code null}.
      */
     CompletionStage<List<Thing>> retrieve(JsonFieldSelector fieldSelector, ThingId thingId, ThingId... thingIds);
@@ -540,6 +594,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * @param thingIds the identifiers of the Things to be retrieved.
      * @return CompletionStage providing the requested Things, an empty list or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if {@code thingIds} is {@code null}.
      */
     CompletionStage<List<Thing>> retrieve(Iterable<ThingId> thingIds);
@@ -552,6 +608,8 @@ public interface CommonManagement<T extends ThingHandle<F>, F extends FeatureHan
      * @param thingIds the identifiers of the Things to be retrieved.
      * @return CompletionStage providing the requested Things, an empty list or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * The CompletionStage fails with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if
+     * the client is in a reconnecting state.
      * @throws IllegalArgumentException if any argument is {@code null}.
      */
     CompletionStage<List<Thing>> retrieve(JsonFieldSelector fieldSelector, Iterable<ThingId> thingIds);

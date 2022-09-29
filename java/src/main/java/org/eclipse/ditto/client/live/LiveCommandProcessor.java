@@ -41,6 +41,7 @@ public interface LiveCommandProcessor {
      * Publish a signal.
      *
      * @param signal the signal to publish.
+     * @throws org.eclipse.ditto.client.management.ClientReconnectingException if the client is in a reconnecting state.
      */
     void publishLiveSignal(Signal<?> signal);
 
