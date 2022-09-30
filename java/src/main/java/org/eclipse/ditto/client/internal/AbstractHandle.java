@@ -140,7 +140,7 @@ public abstract class AbstractHandle {
      * @param <R> type of the result.
      * @return future of the result if the expected response arrives or a failed future on error.
      * Type is {@code CompletionStage} to signify that the future will complete or fail without caller intervention.
-     * If the client is reconnecting while this method is called the future fails with a a
+     * If the client is reconnecting while this method is called the future fails with a
      * {@link ClientReconnectingException}.
      */
     protected <T extends PolicyCommand<T>, S extends PolicyCommandResponse<?>, R> CompletionStage<R> askPolicyCommand(
@@ -163,7 +163,7 @@ public abstract class AbstractHandle {
      * @param <R> type of the result.
      * @return future of the result if the expected response arrives or a failed future on error.
      * Type is {@code CompletionStage} to signify that the future will complete or fail without caller intervention.
-     * If the client is reconnecting while this method is called the future fails with a a
+     * If the client is reconnecting while this method is called the future fails with a
      * {@link ClientReconnectingException}.
      */
     protected <T extends ThingCommand<T>, S extends CommandResponse<?>, R> CompletionStage<R> askThingCommand(
