@@ -67,7 +67,7 @@ public interface FeatureHandle extends WithFeatureId, FeaturePropertiesManagemen
      * @return CompletionStage providing the requested Feature object, when completed successfully or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * If the client is reconnecting the CompletionStage fails with a
-     * @link org.eclipse.ditto.client.management.ClientReconnectingException}.
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      */
     CompletionStage<Feature> retrieve();
 

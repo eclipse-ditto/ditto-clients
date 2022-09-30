@@ -184,6 +184,7 @@ public interface Policies {
     /**
      * Gets the {@code Policy} specified by the given identifier with the given options.
      *
+     * @param policyId the policyId to retrieve.
      * @param options options that determine the behaviour of this method, see
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the requested {@link Thing} or a specific
@@ -201,6 +202,7 @@ public interface Policies {
      * Retrieve the {@code Policy} specified by the given identifier, containing the fields specified by
      * the given {@code fieldSelector}.
      *
+     * @param policyId the policyId to retrieve.
      * @param fieldSelector a field selector object allowing to select a subset of fields on the Policy to be retrieved.
      * @return CompletionStage providing the requested {@link Policy} or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
@@ -214,6 +216,7 @@ public interface Policies {
      * Gets the {@code Policy} specified by the given identifier with the given options, containing the fields
      * specified by the given {@code fieldSelector}.
      *
+     * @param policyId the policyId to retrieve.
      * @param fieldSelector a field selector object allowing to select a subset of fields on the Policy to be retrieved.
      * @param options options that determine the behaviour of this method, see
      * {@link org.eclipse.ditto.client.options.Options}.
