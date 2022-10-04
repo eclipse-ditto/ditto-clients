@@ -28,7 +28,9 @@ public interface Twin extends CommonManagement<TwinThingHandle, TwinFeatureHandl
     /**
      * Start consuming changes on this {@code twin()} channel.
      *
-     * @return a CompletionStage that terminates when the start operation was successful.
+     * @return a CompletionStage that terminates when the start operation was successful or fails with
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException} if the client
+     * is in a reconnecting state.
      */
     @Override
     // overwritten in order to display a better suiting javadoc for the user
@@ -42,7 +44,9 @@ public interface Twin extends CommonManagement<TwinThingHandle, TwinFeatureHandl
      * <pre>{@code Options.Consumption.namespaces("org.eclipse.ditto.namespace1","org.eclipse.ditto.namespace2");
      * Options.Consumption.filter("gt(attributes/counter,42)");}
      * </pre>
-     * @return a CompletionStage that terminates when the start operation was successful.
+     * @return a CompletionStage that terminates when the start operation was successful or fails with
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException} if the client
+     * is in a reconnecting state.
      */
     @Override
     // overwritten in order to display a better suiting javadoc for the user

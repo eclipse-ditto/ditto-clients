@@ -234,7 +234,6 @@ public final class DefaultDittoClient implements DittoClient, DisconnectedDittoC
         final String busName = TopicPath.Channel.NONE.getName();
         final PointerBus bus = BusFactory.createPointerBus(busName, messagingProvider.getExecutorService());
         init(bus, messagingProvider);
-        final MessagingConfiguration messagingConfiguration = messagingProvider.getMessagingConfiguration();
         final OutgoingMessageFactory messageFactory = getOutgoingMessageFactoryForPolicies(messagingProvider);
         return PoliciesImpl.newInstance(messagingProvider, messageFactory, bus);
     }

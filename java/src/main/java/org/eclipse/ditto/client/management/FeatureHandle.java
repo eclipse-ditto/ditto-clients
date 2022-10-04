@@ -54,7 +54,8 @@ public interface FeatureHandle extends WithFeatureId, FeaturePropertiesManagemen
      *
      * @param options options to be applied configuring behaviour of this method, see
      * {@link org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage
+     * @return CompletionStage for handling the result of the operation or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
      * @throws IllegalArgumentException if {@code options} contains an option that is not allowed for deleting a
      * feature.
      */
@@ -64,7 +65,9 @@ public interface FeatureHandle extends WithFeatureId, FeaturePropertiesManagemen
      * Retrieve the {@code Feature} being handled by this {@code FeatureHandle}.
      *
      * @return CompletionStage providing the requested Feature object, when completed successfully or a specific
-     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      */
     CompletionStage<Feature> retrieve();
 
@@ -75,6 +78,8 @@ public interface FeatureHandle extends WithFeatureId, FeaturePropertiesManagemen
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the requested Feature object, when completed successfully or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws NullPointerException if {@code options} is {@code null}.
      * @throws IllegalArgumentException if {@code options} contains an option that is not allowed for retrieving a
      * feature.
@@ -88,7 +93,9 @@ public interface FeatureHandle extends WithFeatureId, FeaturePropertiesManagemen
      * @param fieldSelector a field selector object allowing to select a subset of fields on the Feature to be
      * retrieved.
      * @return CompletionStage providing the requested Feature object, when completed successfully or a specific
-     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      */
     CompletionStage<Feature> retrieve(JsonFieldSelector fieldSelector);
 
@@ -101,6 +108,8 @@ public interface FeatureHandle extends WithFeatureId, FeaturePropertiesManagemen
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the requested Feature object, when completed successfully or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws NullPointerException if any argument is {@code null}.
      * @throws IllegalArgumentException if {@code options} contains an option that is not allowed for retrieving a
      * feature.

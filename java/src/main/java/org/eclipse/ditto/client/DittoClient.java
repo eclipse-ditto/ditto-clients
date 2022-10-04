@@ -52,7 +52,9 @@ public interface DittoClient {
      * Directly sends a Ditto Protocol {@link Adaptable} message to the established Ditto backend connection.
      *
      * @param dittoProtocolAdaptable the adaptable to send
-     * @return a CompletionStage containing the correlated response to the sent {@code dittoProtocolAdaptable}
+     * @return a CompletionStage containing the correlated response to the sent {@code dittoProtocolAdaptable} or
+     * which failed with a {@link org.eclipse.ditto.client.management.ClientReconnectingException} if the client is
+     * in a reconnecting state.
      * @throws IllegalStateException when no twin/live connection was configured for this client
      */
     CompletionStage<Adaptable> sendDittoProtocol(Adaptable dittoProtocolAdaptable);

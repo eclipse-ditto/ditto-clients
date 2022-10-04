@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -40,6 +41,7 @@ import org.eclipse.ditto.base.model.signals.commands.ErrorResponse;
 import org.eclipse.ditto.client.ack.internal.AcknowledgementRequestsValidator;
 import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.client.management.AcknowledgementsFailedException;
+import org.eclipse.ditto.client.management.ClientReconnectingException;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.json.JsonField;
 import org.eclipse.ditto.json.JsonObject;
@@ -138,6 +140,8 @@ public abstract class AbstractHandle {
      * @param <R> type of the result.
      * @return future of the result if the expected response arrives or a failed future on error.
      * Type is {@code CompletionStage} to signify that the future will complete or fail without caller intervention.
+     * If the client is reconnecting while this method is called the future fails with a
+     * {@link ClientReconnectingException}.
      */
     protected <T extends PolicyCommand<T>, S extends PolicyCommandResponse<?>, R> CompletionStage<R> askPolicyCommand(
             final T command,
@@ -159,11 +163,14 @@ public abstract class AbstractHandle {
      * @param <R> type of the result.
      * @return future of the result if the expected response arrives or a failed future on error.
      * Type is {@code CompletionStage} to signify that the future will complete or fail without caller intervention.
+     * If the client is reconnecting while this method is called the future fails with a
+     * {@link ClientReconnectingException}.
      */
     protected <T extends ThingCommand<T>, S extends CommandResponse<?>, R> CompletionStage<R> askThingCommand(
             final T command,
             final Class<S> expectedResponse,
             final Function<S, R> onSuccess) {
+
         final ThingCommand<?> commandWithChannel = validateAckRequests(setChannel(command, channel));
         return sendSignalAndExpectResponse(commandWithChannel, expectedResponse, onSuccess, ErrorResponse.class,
                 ErrorResponse::getDittoRuntimeException);
@@ -180,7 +187,8 @@ public abstract class AbstractHandle {
      * @param <S> type of the expected success response.
      * @param <E> type of the expected error response.
      * @param <R> type of the result.
-     * @return future of the result.
+     * @return future of the result. The future can be exceptional with a {@link ClientReconnectingException} if the
+     * client is reconnecting while this method is called.
      */
     protected <S, E, R> CompletionStage<R> sendSignalAndExpectResponse(final Signal<?> signal,
             final Class<S> expectedResponseClass,
@@ -188,25 +196,33 @@ public abstract class AbstractHandle {
             final Class<E> expectedErrorResponseClass,
             final Function<E, ? extends RuntimeException> onError) {
 
-        final CompletionStage<Adaptable> responseFuture = messagingProvider.getAdaptableBus()
-                .subscribeOnceForAdaptable(Classification.forCorrelationId(signal), getTimeout());
+        try {
+            final CompletionStage<Adaptable> responseFuture = messagingProvider.getAdaptableBus()
+                    .subscribeOnceForAdaptable(Classification.forCorrelationId(signal), getTimeout());
 
-        messagingProvider.emit(signalToJsonString(signal));
-        return responseFuture.thenApply(responseAdaptable -> {
-            final Signal<?> response = signalFromAdaptable(responseAdaptable);
-            if (expectedErrorResponseClass.isInstance(response)) {
-                // extracted runtime exception will be wrapped in CompletionException.
-                throw onError.apply(expectedErrorResponseClass.cast(response));
-            } else if (response instanceof Acknowledgements) {
-                final CommandResponse<?> commandResponse =
-                        extractCommandResponseFromAcknowledgements(signal, (Acknowledgements) response);
-                return onSuccess.apply(expectedResponseClass.cast(commandResponse));
-            } else if (expectedResponseClass.isInstance(response)) {
-                return onSuccess.apply(expectedResponseClass.cast(response));
-            } else {
-                throw new ClassCastException("Expect " + expectedResponseClass.getSimpleName() + ", got: " + response);
-            }
-        });
+            messagingProvider.emit(signalToJsonString(signal));
+            return responseFuture.thenApply(responseAdaptable -> {
+                final Signal<?> response = signalFromAdaptable(responseAdaptable);
+                if (expectedErrorResponseClass.isInstance(response)) {
+                    // extracted runtime exception will be wrapped in CompletionException.
+                    throw onError.apply(expectedErrorResponseClass.cast(response));
+                } else if (response instanceof Acknowledgements) {
+                    final CommandResponse<?> commandResponse =
+                            extractCommandResponseFromAcknowledgements(signal, (Acknowledgements) response);
+                    return onSuccess.apply(expectedResponseClass.cast(commandResponse));
+                } else if (expectedResponseClass.isInstance(response)) {
+                    return onSuccess.apply(expectedResponseClass.cast(response));
+                } else {
+                    throw new ClassCastException(
+                            "Expect " + expectedResponseClass.getSimpleName() + ", got: " + response);
+                }
+            });
+        } catch (final ClientReconnectingException cre) {
+            return CompletableFuture.supplyAsync(() -> {
+                throw cre;
+            });
+        }
+
     }
 
     /**

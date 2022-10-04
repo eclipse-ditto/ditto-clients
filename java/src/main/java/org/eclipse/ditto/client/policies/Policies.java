@@ -52,7 +52,9 @@ public interface Policies {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the created Policy object or a specific
-     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws IllegalArgumentException if {@code policy} is {@code null} or has no identifier.
      * @throws org.eclipse.ditto.policies.model.PolicyIdInvalidException if the {@code policyId} was invalid.
      */
@@ -69,7 +71,9 @@ public interface Policies {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the created Policy object or a specific
-     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws IllegalArgumentException if {@code jsonObject} is {@code null} or if it does not contain the field named
      * {@code "policyId"}.
      * @throws org.eclipse.ditto.base.model.exceptions.DittoJsonException if {@code jsonObject} cannot be parsed to a
@@ -89,6 +93,8 @@ public interface Policies {
      * @return CompletionStage providing an {@link java.util.Optional} containing the created Policy object,
      * in case the Policy has been created, or an empty Optional, in case the Policy has been updated.
      * Provides a {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws IllegalArgumentException if {@code policy} is {@code null} or has no identifier.
      */
     CompletionStage<Optional<Policy>> put(Policy policy, Option<?>... options);
@@ -106,6 +112,8 @@ public interface Policies {
      * @return CompletionStage providing an {@link Optional} containing the created Policy object, in case the Policy
      * has been created, or an empty Optional, in case the Policy has been updated.
      * Provides a {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws IllegalArgumentException if {@code jsonObject} is {@code null} or if it does not contain the field named
      * {@code "policyId"}.
      * @throws org.eclipse.ditto.base.model.exceptions.DittoJsonException if {@code jsonObject} cannot be parsed to a
@@ -121,6 +129,8 @@ public interface Policies {
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing for handling a successful update or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws IllegalArgumentException if {@code policy} is {@code null} or has no identifier.
      */
     CompletionStage<Void> update(Policy policy, Option<?>... options);
@@ -135,6 +145,8 @@ public interface Policies {
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing for handling a successful update or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws IllegalArgumentException if {@code jsonObject} is {@code null} or if it does not contain the field named
      * {@code "policyId"}.
      * @throws org.eclipse.ditto.base.model.exceptions.DittoJsonException if {@code jsonObject} cannot be parsed to a
@@ -149,7 +161,9 @@ public interface Policies {
      * @param options options to be applied configuring behaviour of this method,
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the result of deletion or a specific
-     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws IllegalArgumentException if {@code policyId} is {@code null}.
      */
     CompletionStage<Void> delete(PolicyId policyId, Option<?>... options);
@@ -159,7 +173,9 @@ public interface Policies {
      *
      * @param policyId the identifier of the Policy to be retrieved.
      * @return CompletionStage providing the requested Policy or a specific
-     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws IllegalArgumentException if {@code policyId} is {@code null}.
      */
     CompletionStage<Policy> retrieve(PolicyId policyId);
@@ -168,10 +184,13 @@ public interface Policies {
     /**
      * Gets the {@code Policy} specified by the given identifier with the given options.
      *
+     * @param policyId the policyId to retrieve.
      * @param options options that determine the behaviour of this method, see
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the requested {@link Thing} or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws NullPointerException if {@code options} is {@code null}.
      * @throws IllegalArgumentException if {@code options} contains an option that is not allowed for retrieving
      * a thing.
@@ -183,9 +202,12 @@ public interface Policies {
      * Retrieve the {@code Policy} specified by the given identifier, containing the fields specified by
      * the given {@code fieldSelector}.
      *
+     * @param policyId the policyId to retrieve.
      * @param fieldSelector a field selector object allowing to select a subset of fields on the Policy to be retrieved.
      * @return CompletionStage providing the requested {@link Policy} or a specific
-     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @since 2.4.0
      */
     CompletionStage<Policy> retrieve(PolicyId policyId, JsonFieldSelector fieldSelector);
@@ -194,11 +216,14 @@ public interface Policies {
      * Gets the {@code Policy} specified by the given identifier with the given options, containing the fields
      * specified by the given {@code fieldSelector}.
      *
+     * @param policyId the policyId to retrieve.
      * @param fieldSelector a field selector object allowing to select a subset of fields on the Policy to be retrieved.
      * @param options options that determine the behaviour of this method, see
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the requested {@link Policy} or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws NullPointerException if any argument is {@code null}.
      * @throws IllegalArgumentException if {@code options} contains an option that is not allowed for retrieving
      * a policy.
