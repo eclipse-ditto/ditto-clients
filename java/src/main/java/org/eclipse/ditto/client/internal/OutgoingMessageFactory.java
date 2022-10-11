@@ -52,6 +52,7 @@ import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.messages.model.Message;
 import org.eclipse.ditto.messages.model.MessageBuilder;
 import org.eclipse.ditto.messages.model.MessageHeaders;
+import org.eclipse.ditto.messages.model.MessageHeadersBuilder;
 import org.eclipse.ditto.messages.model.MessagesModelFactory;
 import org.eclipse.ditto.policies.model.Policy;
 import org.eclipse.ditto.policies.model.PolicyId;
@@ -544,11 +545,16 @@ public final class OutgoingMessageFactory {
      * @param <T> the type of the payload.
      * @return a sendMessage message.
      */
-    public <T> Message<T> sendMessage(final MessageSerializerRegistry registry, final Message<T> message) {
+    public <T> Message<T> sendMessage(final MessageSerializerRegistry registry, final Message<T> message,
+            final Option<?>... options) {
 
-        final MessageHeaders messageHeaders = message.getHeaders().toBuilder()
-                .correlationId(message.getHeaders().getCorrelationId().orElseGet(() -> UUID.randomUUID().toString()))
-                .build();
+        final DittoHeaders dittoHeaders = buildDittoHeaders(EnumSet.of(CONDITION), options);
+        final MessageHeadersBuilder messageHeadersBuilder = message.getHeaders().toBuilder()
+                .correlationId(message.getHeaders().getCorrelationId().orElseGet(() -> UUID.randomUUID().toString()));
+        if (dittoHeaders.getCondition().isPresent()) {
+            messageHeadersBuilder.condition(dittoHeaders.getCondition().get());
+        }
+        MessageHeaders messageHeaders = messageHeadersBuilder.build();
 
         final MessageBuilder<T> messageBuilder = message.getPayload()
                 .map(payload -> {

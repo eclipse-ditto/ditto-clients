@@ -42,6 +42,7 @@ import org.eclipse.ditto.client.live.messages.PendingMessageWithFeatureId;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.client.management.internal.FeatureHandleImpl;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
+import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.protocol.TopicPath;
 import org.eclipse.ditto.things.model.ThingId;
 import org.slf4j.Logger;
@@ -85,6 +86,12 @@ final class LiveFeatureHandleImpl extends FeatureHandleImpl<LiveThingHandle, Liv
 
     @Override
     public <T> PendingMessageWithFeatureId<T> message() {
+        return PendingMessageImpl.<T>of(LOGGER, outgoingMessageFactory, messageSerializerRegistry, PROTOCOL_ADAPTER,
+                messagingProvider).withThingAndFeatureIds(getEntityId(), getFeatureId());
+    }
+
+    @Override
+    public <T> PendingMessageWithFeatureId<T> message(final Option<?>... options) {
         return PendingMessageImpl.<T>of(LOGGER, outgoingMessageFactory, messageSerializerRegistry, PROTOCOL_ADAPTER,
                 messagingProvider).withThingAndFeatureIds(getEntityId(), getFeatureId());
     }
