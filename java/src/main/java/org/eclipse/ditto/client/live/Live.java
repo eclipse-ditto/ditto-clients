@@ -58,6 +58,27 @@ public interface Live extends CommonManagement<LiveThingHandle, LiveFeatureHandl
     <T> PendingMessage<T> message();
 
     /**
+     * Provides the functionality to create and send a new {@link org.eclipse.ditto.messages.model.Message}
+     * <em>FROM</em> or <em>TO</em> a "Live" {@link Thing} or a "Live" Thing's {@link
+     * org.eclipse.ditto.things.model.Feature Feature}. <p> Example: </p>
+     * <pre>
+     * client.live().message()
+     *    .from("org.eclipse.ditto:fireDetectionDevice")
+     *    .featureId("smokeDetector")
+     *    .subject("fireAlert")
+     *    .payload(JsonFactory.newObject("{\"action\" : \"call fire department\"}"))
+     *    .send();
+     * </pre>
+     *
+     * @param <T> the type of the Message's payload.
+     * @param options options sent to the outbound message.
+     * @param options options sent to the outbound message.
+     * @return a new message builder that offers the functionality to create and send the message.
+     * @since 3.1.0
+     */
+    <T> PendingMessage<T> message(Option<?>... options);
+
+    /**
      * Start consuming changes, messages and commands on this {@code live()} channel.
      *
      * @return a CompletionStage that terminates when the start operation was successful.

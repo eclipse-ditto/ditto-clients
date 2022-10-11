@@ -23,7 +23,6 @@ import javax.annotation.concurrent.ThreadSafe;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.OptionName;
 
-
 /**
  * This abstract implementation of {@link OptionVisitor} implements the parts which are common for all option visitors
  * like comparing the name of the option with the expected name, getting the value from the option and handling

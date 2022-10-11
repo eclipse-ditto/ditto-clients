@@ -19,8 +19,18 @@ import org.assertj.core.api.Assertions;
 import org.assertj.core.api.JUnitSoftAssertions;
 import org.eclipse.ditto.base.model.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
+import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
+import org.eclipse.ditto.client.live.messages.MessageSerializers;
+import org.eclipse.ditto.client.live.messages.internal.DefaultMessageSerializerRegistry;
 import org.eclipse.ditto.client.options.OptionName;
 import org.eclipse.ditto.client.options.Options;
+import org.eclipse.ditto.json.JsonObject;
+import org.eclipse.ditto.messages.model.Message;
+import org.eclipse.ditto.messages.model.MessageDirection;
+import org.eclipse.ditto.messages.model.MessageHeaders;
+import org.eclipse.ditto.messages.model.MessagesModelFactory;
+import org.eclipse.ditto.messages.model.signals.commands.SendThingMessage;
+import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeature;
 import org.junit.Before;
 import org.junit.Rule;
@@ -79,6 +89,41 @@ public final class OutgoingMessageFactoryTest {
                         OptionName.Global.DITTO_HEADERS,
                         OptionName.Modify.RESPONSE_REQUIRED)
                 .withNoCause();
+    }
+
+    @Test
+    public void LiveMessageWithOnlyAllowedOptionsReturnsExpected() {
+        final Message<?> liveMessage = underTest.sendMessage(new DefaultMessageSerializerRegistry(), getMessage(),
+                Options.condition(CONDITION_EXPRESSION));
+
+        softly.assertThat((CharSequence) liveMessage.getEntityId())
+                .as("entity ID")
+                .isEqualTo(THING_ID);
+        softly.assertThat(liveMessage.getHeaders())
+                .as("Ditto headers")
+                .satisfies(dittoHeaders -> {
+                    softly.assertThat(dittoHeaders)
+                            .as("condition expression")
+                            .containsEntry(DittoHeaderDefinition.CONDITION.getKey(), CONDITION_EXPRESSION);
+                });
+    }
+
+    @Test
+    public void liverMessageWithLiveChannelConditionExpressionThrowsException() {
+        Assertions.assertThatIllegalArgumentException()
+                .isThrownBy(() -> underTest.sendMessage(new DefaultMessageSerializerRegistry(), getMessage(),
+                        Options.liveChannelCondition(LIVE_CHANNEL_CONDITION_EXPRESSION)))
+                .withMessage("Option '%s' is not allowed. This operation only allows [%s, %s, %s].",
+                        OptionName.Global.LIVE_CHANNEL_CONDITION,
+                        OptionName.Global.CONDITION,
+                        OptionName.Global.DITTO_HEADERS,
+                        OptionName.Modify.RESPONSE_REQUIRED)
+                .withNoCause();
+    }
+
+    private static Message<?> getMessage() {
+        return MessagesModelFactory.newMessageBuilder(MessageHeaders.newBuilder(MessageDirection.TO,
+                THING_ID, "subject").build()).build();
     }
 
 }
