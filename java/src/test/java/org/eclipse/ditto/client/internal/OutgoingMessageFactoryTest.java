@@ -19,18 +19,13 @@ import org.assertj.core.api.Assertions;
 import org.assertj.core.api.JUnitSoftAssertions;
 import org.eclipse.ditto.base.model.headers.DittoHeaderDefinition;
 import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
-import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
-import org.eclipse.ditto.client.live.messages.MessageSerializers;
 import org.eclipse.ditto.client.live.messages.internal.DefaultMessageSerializerRegistry;
 import org.eclipse.ditto.client.options.OptionName;
 import org.eclipse.ditto.client.options.Options;
-import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.messages.model.Message;
 import org.eclipse.ditto.messages.model.MessageDirection;
 import org.eclipse.ditto.messages.model.MessageHeaders;
 import org.eclipse.ditto.messages.model.MessagesModelFactory;
-import org.eclipse.ditto.messages.model.signals.commands.SendThingMessage;
-import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.things.model.signals.commands.query.RetrieveFeature;
 import org.junit.Before;
 import org.junit.Rule;
@@ -92,7 +87,7 @@ public final class OutgoingMessageFactoryTest {
     }
 
     @Test
-    public void LiveMessageWithOnlyAllowedOptionsReturnsExpected() {
+    public void liveMessageWithOnlyAllowedOptionsReturnsExpected() {
         final Message<?> liveMessage = underTest.sendMessage(new DefaultMessageSerializerRegistry(), getMessage(),
                 Options.condition(CONDITION_EXPRESSION));
 

@@ -72,7 +72,6 @@ public interface Live extends CommonManagement<LiveThingHandle, LiveFeatureHandl
      *
      * @param <T> the type of the Message's payload.
      * @param options options sent to the outbound message.
-     * @param options options sent to the outbound message.
      * @return a new message builder that offers the functionality to create and send the message.
      * @since 3.1.0
      */
