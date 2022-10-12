@@ -64,10 +64,11 @@ final class PendingMessageImpl<T> implements PendingMessage<T> {
             final OutgoingMessageFactory outgoingMessageFactory,
             final MessageSerializerRegistry messageSerializerRegistry,
             final ProtocolAdapter protocolAdapter,
-            final MessagingProvider messagingProvider) {
+            final MessagingProvider messagingProvider,
+            final Option<?>... options) {
 
         return new PendingMessageImpl<>(logger, outgoingMessageFactory, messageSerializerRegistry, protocolAdapter,
-                messagingProvider);
+                messagingProvider, options);
     }
 
     PendingMessageWithThingId<T> withThingId(final ThingId thingId) {

@@ -213,7 +213,7 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
     @Override
     public <T> PendingMessage<T> message(final Option<?>... options) {
         return PendingMessageImpl.of(LOGGER, outgoingMessageFactory, messageSerializerRegistry, PROTOCOL_ADAPTER,
-                messagingProvider);
+                messagingProvider, options);
     }
 
     @Override

@@ -102,7 +102,7 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
     @Override
     public <T> PendingMessageWithThingId<T> message(final Option<?>... options) {
         return PendingMessageImpl.<T>of(LOGGER, outgoingMessageFactory, messageSerializerRegistry, PROTOCOL_ADAPTER,
-                messagingProvider).withThingId(getEntityId());
+                messagingProvider, options).withThingId(getEntityId());
     }
 
     @Override
