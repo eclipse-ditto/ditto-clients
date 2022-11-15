@@ -68,7 +68,7 @@ export abstract class EntityModel {
  * Entity with an 'id' field
  */
 export abstract class EntityWithId extends EntityModel {
-  id!: string;
+  abstract id: string;
 
   equals(toCompare: EntityWithId): boolean {
     return super.equals(toCompare) && this.id === toCompare.id;
