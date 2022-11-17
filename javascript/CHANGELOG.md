@@ -1,6 +1,18 @@
 # Changelog
 All notable changes to the Ditto JavaScript client will be documented in this file.
 
+## [3.0.1] - 2022-11-17
+
+### Dependencies
+
+No dependencies were explicitly updated.
+
+### \#202 JS Client was incompatible with Typescript 4.7
+
+The released Ditto JavaScript client 3.0.0 did not work in Typescript projects.  
+PR #203 provides a fix for that.
+
+
 ## [3.0.0] - 2022-09-28
 
 ### Dependencies
