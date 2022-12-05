@@ -230,6 +230,10 @@ describe('Search Options', () => {
     searchOptions.withPageSize(10);
     expect(searchOptions.getOptions().get('option')).toEqual('size(10)');
   });
+  it('sets cursor and size', () => {
+    searchOptions.withCursor('eJylkD1PwzAQhv-LpxQc5YM0SbNBBBJDp0oslMGxz82JYJfLBQbEf8cpQupGKfZ29zz3Su').withPageSize(42);
+    expect(searchOptions.getOptions().get('option')).toEqual(encodeURIComponent('cursor(eJylkD1PwzAQhv-LpxQc5YM0SbNBBBJDp0oslMGxz82JYJfLBQbEf8cpQupGKfZ29zz3Su),size(42)'));
+  });
 });
 
 describe('Get Things Options', () => {
