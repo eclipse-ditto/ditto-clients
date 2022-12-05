@@ -353,7 +353,7 @@ export class DefaultSearchOptions extends AbstractRequestOptions<DefaultSearchOp
     return this.setOption();
   }
 
-  public withCursor(cursor: string): DefaultCountOptions {
+  public withCursor(cursor: string): DefaultSearchOptions {
     this.optionParameters.set(`cursor`, cursor);
     return this.setOption();
   }
