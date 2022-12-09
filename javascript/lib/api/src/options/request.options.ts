@@ -148,7 +148,8 @@ export interface HasFilterAndNamespace<T extends HasFilterAndNamespace<T>> {
 
 export interface RequestOptionsWithMatchOptions<T extends RequestOptionsWithMatchOptions<T>>
   extends AddRequestOptions<RequestOptionsWithMatchOptions<T>>,
-  HasMatch<RequestOptionsWithMatchOptions<T>> { }
+    HasMatch<RequestOptionsWithMatchOptions<T>> {
+}
 
 
 export abstract class AbstractRequestOptionsWithMatchOptions<T extends AbstractRequestOptionsWithMatchOptions<T>>
@@ -178,7 +179,8 @@ export abstract class AbstractRequestOptionsWithMatchOptions<T extends AbstractR
 /**
  * Option provider for If-Match / If-None-Match headers
  */
-export interface MatchOptions extends RequestOptionsWithMatchOptions<MatchOptions> {}
+export interface MatchOptions extends RequestOptionsWithMatchOptions<MatchOptions> {
+}
 
 export class DefaultMatchOptions extends AbstractRequestOptionsWithMatchOptions<DefaultMatchOptions> implements MatchOptions {
 
@@ -267,11 +269,12 @@ export class DefaultCountOptions extends AbstractRequestOptions<DefaultCountOpti
  */
 export interface SearchOptions extends AddRequestOptions<SearchOptions>, HasFilterAndNamespace<SearchOptions>, HasFields<SearchOptions> {
   /**
-   * Sets a limit option.
-   *
    * @param offset - The index to start at.
    * @param count - The number of things to return.
    * @returns The instance of SearchOptions with the added option
+   *
+   * @Deprecated See {@link https://www.eclipse.org/ditto/basic-search.html#rql-paging-deprecated} Use cursor pagination instead
+   * Sets a limit option.
    */
   withLimit(offset: number, count: number): SearchOptions;
 
@@ -283,18 +286,34 @@ export interface SearchOptions extends AddRequestOptions<SearchOptions>, HasFilt
    */
   withSort(sortOperation: string): SearchOptions;
 
+  /**
+   * Sets a cursor option
+   *
+   * @param cursor - The cursor to use for pagination, returned by a previous search request
+   */
+  withCursor(cursor: string): SearchOptions;
+
+  /**
+   * Sets the page size for pagination.
+   * Only works with cursor pagination.
+   * Maximum page size supported by ditto is 200.
+   * @param pageSize Number of items to return per page
+   */
+  withPageSize(pageSize: number): SearchOptions;
 }
 
 
 export class DefaultSearchOptions extends AbstractRequestOptions<DefaultSearchOptions>
   implements SearchOptions {
-  private sort: string;
-  private limit: string;
+
+  /**
+   * Map of name-value pairs to add to the request parameters as "option"
+   */
+  private optionParameters: Map<string, string> = new Map();
 
   private constructor() {
     super();
-    this.sort = '';
-    this.limit = '';
+
   }
 
   /**
@@ -327,12 +346,31 @@ export class DefaultSearchOptions extends AbstractRequestOptions<DefaultSearchOp
   }
 
   public withLimit(offset: number, count: number): DefaultSearchOptions {
-    this.limit = `limit(${offset},${count})`;
+    if (this.optionParameters.has('cursor') || this.optionParameters.has('size')) {
+      throw new Error('Cursor/size and limit options cannot be set at the same time');
+    }
+    this.optionParameters.set('limit', `${offset},${count}`);
     return this.setOption();
   }
 
   public withSort(sortOperation: string): DefaultSearchOptions {
-    this.sort = `sort(${sortOperation})`;
+    this.optionParameters.set(`sort`, sortOperation);
+    return this.setOption();
+  }
+
+  public withCursor(cursor: string): DefaultSearchOptions {
+    if (this.optionParameters.has('limit')) {
+      throw new Error('Limit and cursor options cannot be set at the same time');
+    }
+    this.optionParameters.set(`cursor`, cursor);
+    return this.setOption();
+  }
+
+  public withPageSize(pageSize: number): DefaultSearchOptions {
+    if (this.optionParameters.has('limit')) {
+      throw new Error('Limit and cursor options cannot be set at the same time');
+    }
+    this.optionParameters.set('size', pageSize.toFixed(0));
     return this.setOption();
   }
 
@@ -342,14 +380,11 @@ export class DefaultSearchOptions extends AbstractRequestOptions<DefaultSearchOp
    * @returns The instance of DefaultSearchOptions with the constructed option
    */
   private setOption(): DefaultSearchOptions {
-    let parameter: string;
-    if (this.sort === '') {
-      parameter = this.limit;
-    } else if (this.limit === '') {
-      parameter = this.sort;
-    } else {
-      parameter = `${this.limit},${this.sort}`;
-    }
+
+    const parameter = Array.from(this.optionParameters.entries())
+      .map(([key, value]) => `${key}(${value})`)
+      .join(',');
+
     this.addRequestParameter('option', encodeURIComponent(parameter));
     return this;
   }

@@ -212,6 +212,41 @@ describe('Search Options', () => {
     searchOptions.withLimit(3, 4).withSort('-B');
     expect(searchOptions.getOptions().get('option')).toEqual(encodeURIComponent('limit(3,4),sort(-B)'));
   });
+  it('sets cursor', () => {
+    searchOptions.withCursor('eJylkD1PwzAQhv-LpxQc5YM0SbNBBBJDp0oslMGxz82JYJfLBQbEf8cpQupGKfZ29zz3Su');
+    expect(searchOptions.getOptions().get('option')).toEqual('cursor(eJylkD1PwzAQhv-LpxQc5YM0SbNBBBJDp0oslMGxz82JYJfLBQbEf8cpQupGKfZ29zz3Su)');
+  });
+  it('overrides cursor', () => {
+    searchOptions.withCursor('foo');
+    searchOptions.withCursor('bar');
+    expect(searchOptions.getOptions().get('option')).toEqual('cursor(bar)');
+  });
+  it('sets page size', () => {
+    searchOptions.withPageSize(42);
+    expect(searchOptions.getOptions().get('option')).toEqual('size(42)');
+  });
+  it('overrides page size', () => {
+    searchOptions.withPageSize(42);
+    searchOptions.withPageSize(10);
+    expect(searchOptions.getOptions().get('option')).toEqual('size(10)');
+  });
+  it('sets cursor and size', () => {
+    searchOptions.withCursor('eJylkD1PwzAQhv-LpxQc5YM0SbNBBBJDp0oslMGxz82JYJfLBQbEf8cpQupGKfZ29zz3Su').withPageSize(42);
+    expect(searchOptions.getOptions().get('option')).toEqual(encodeURIComponent('cursor(eJylkD1PwzAQhv-LpxQc5YM0SbNBBBJDp0oslMGxz82JYJfLBQbEf8cpQupGKfZ29zz3Su),size(42)'));
+  });
+  it('throws an error when setting limit and cursor is already set', () => {
+    searchOptions.withCursor('foo');
+    expect(() => searchOptions.withLimit(10, 10)).toThrowError();
+  });
+  it('throws an error when setting pageSize and limit is already set', () => {
+    searchOptions.withLimit(10, 10);
+    expect(() => searchOptions.withPageSize(10)).toThrowError();
+  });
+  it('throws an error when setting cursor and limit is already set', () => {
+    searchOptions.withLimit(10, 10);
+    expect(() => searchOptions.withCursor('foo')).toThrowError();
+  });
+
 });
 
 describe('Get Things Options', () => {
