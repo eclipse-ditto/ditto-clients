@@ -74,7 +74,10 @@ public interface ThingHandle<F extends FeatureHandle>
      *
      * @param options options to be applied configuring behaviour of this method, see
      * {@link org.eclipse.ditto.client.options.Options}.
-     * @return CompletionStage providing for handling the deletion a specific
+     * @return CompletionStage for handling the result of the operation or a specific
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws IllegalArgumentException if {@code options} contains an option that is not allowed for deleting
      * a thing.
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
@@ -85,7 +88,9 @@ public interface ThingHandle<F extends FeatureHandle>
      * Retrieve the {@code Thing} object being handled by this {@code ThingHandle}.
      *
      * @return CompletionStage providing the requested {@link Thing} or a specific
-     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      */
     CompletionStage<Thing> retrieve();
 
@@ -96,6 +101,8 @@ public interface ThingHandle<F extends FeatureHandle>
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the requested {@link Thing} or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws NullPointerException if {@code options} is {@code null}.
      * @throws IllegalArgumentException if {@code options} contains an option that is not allowed for retrieving
      * a thing.
@@ -108,7 +115,9 @@ public interface ThingHandle<F extends FeatureHandle>
      *
      * @param fieldSelector a field selector object allowing to select a subset of fields on the Thing to be retrieved.
      * @return CompletionStage providing the requested {@link Thing} or a specific
-     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      */
     CompletionStage<Thing> retrieve(JsonFieldSelector fieldSelector);
 
@@ -120,6 +129,8 @@ public interface ThingHandle<F extends FeatureHandle>
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage providing the requested {@link Thing} or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws NullPointerException if any argument is {@code null}.
      * @throws IllegalArgumentException if {@code options} contains an option that is not allowed for retrieving
      * a thing.
@@ -135,6 +146,8 @@ public interface ThingHandle<F extends FeatureHandle>
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the result of the operation or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws IllegalArgumentException if {@code policyId} is {@code null} or if {@code options} contains an option
      * that is not allowed for setting a policy ID to a thing.
      * @since 1.1.0
@@ -149,6 +162,8 @@ public interface ThingHandle<F extends FeatureHandle>
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the result of the operation or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws IllegalArgumentException if {@code policyId} is {@code null} or if {@code options} contains an option
      * that is not allowed for merging a policy ID to a thing.
      * @since 2.0.0
@@ -163,6 +178,8 @@ public interface ThingHandle<F extends FeatureHandle>
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the result of the operation or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws IllegalArgumentException if {@code features} is {@code null} or if {@code options} contains an option
      * that is not allowed for setting features to a thing.
      */
@@ -175,7 +192,9 @@ public interface ThingHandle<F extends FeatureHandle>
      * @param options options to be applied configuring behaviour of this method, see {@link
      * org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the result of the operation or a specific {@link
-     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed
+     * org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws IllegalArgumentException if {@code features} is {@code null} or if {@code options} contains an option
      * that is not allowed for merging features to a thing.
      * @since 2.0.0
@@ -190,6 +209,8 @@ public interface ThingHandle<F extends FeatureHandle>
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the result of this operation or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws IllegalArgumentException if {@code feature} is {@code null} or if {@code options} contains an option
      * that is not allowed for putting a feature to a thing.
      */
@@ -203,6 +224,8 @@ public interface ThingHandle<F extends FeatureHandle>
      * {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the result of this operation or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws IllegalArgumentException if {@code feature} is {@code null} or if {@code options} contains an option
      * that is not allowed for merging a feature to a thing.
      * @since 2.0.0
@@ -217,6 +240,8 @@ public interface ThingHandle<F extends FeatureHandle>
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the deletion or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws IllegalArgumentException if {@code featureId} is {@code null} or if {@code options} contains an option
      * that is not allowed for deleting a feature from a thing.
      */
@@ -229,6 +254,8 @@ public interface ThingHandle<F extends FeatureHandle>
      * see {@link org.eclipse.ditto.client.options.Options}.
      * @return CompletionStage for handling the deletion or a specific
      * {@link org.eclipse.ditto.base.model.exceptions.DittoRuntimeException} if the operation failed.
+     * If the client is reconnecting the CompletionStage fails with a
+     * {@link org.eclipse.ditto.client.management.ClientReconnectingException}.
      * @throws IllegalArgumentException or if {@code options} contains an option that is not allowed for deleting
      * features from a thing.
      */

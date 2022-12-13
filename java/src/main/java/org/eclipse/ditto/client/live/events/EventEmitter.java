@@ -30,6 +30,7 @@ public interface EventEmitter<F extends EventFactory> {
      *
      * @param eventFunction Function providing a EventFactory and requiring a Event as result.
      * @throws NullPointerException if {@code eventFunction} is {@code null}.
+     * @throws org.eclipse.ditto.client.management.ClientReconnectingException if the client is reconnecting.
      */
     void emitEvent(Function<F, Event<?>> eventFunction);
 

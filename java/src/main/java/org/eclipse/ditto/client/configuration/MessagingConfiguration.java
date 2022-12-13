@@ -182,6 +182,7 @@ public interface MessagingConfiguration {
          * Register a consumer of errors which occur during opening the connection initially and on reconnects.
          *
          * @param handler the handler that will be called with the cause of the connection error.
+         * @return this builder.
          * @since 1.2.0
          */
         Builder connectionErrorHandler(@Nullable Consumer<Throwable> handler);
@@ -190,6 +191,7 @@ public interface MessagingConfiguration {
          * Register a contextListener which is notified whenever the connection is disconnected.
          *
          * @param contextListener the handler that will be called with details about the disconnection.
+         * @return this builder.
          * @since 2.1.0
          */
         Builder disconnectedListener(@Nullable Consumer<DisconnectedContext> contextListener);

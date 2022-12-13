@@ -34,6 +34,7 @@ public interface LiveCommandHandler<L extends LiveCommand<L, B>, B extends LiveC
      * @param type the type of live commands. MUST be an interface satisfying the recursive type bound.
      * @param commandHandler constructor of any response or event to publish.
      * @param <L> type of live commands.
+     * @param <B> type of live command answers.
      * @return the live command handler.
      */
     static <L extends LiveCommand<L, B>, B extends LiveCommandAnswerBuilder> LiveCommandHandler<L, B> of(
@@ -49,6 +50,7 @@ public interface LiveCommandHandler<L extends LiveCommand<L, B>, B extends LiveC
      * @param type the type of live commands. MUST be an interface satisfying the recursive type bound.
      * @param commandHandler constructor of any response or event to publish and sender of any acknowledgements.
      * @param <L> type of live commands.
+     * @param <B> type of live command answers.
      * @return the live command handler.
      */
     static <L extends LiveCommand<L, B>, B extends LiveCommandAnswerBuilder> LiveCommandHandler<L, B> withAcks(
@@ -77,6 +79,7 @@ public interface LiveCommandHandler<L extends LiveCommand<L, B>, B extends LiveC
      * To be called after runtime type check of the live command.
      *
      * @param liveCommand the live command.
+     * @param signalPublisher the signal publisher.
      * @return the result of calling the command handler on the command.
      */
     default LiveCommandAnswerBuilder.BuildStep castAndApply(final LiveCommand<?, ?> liveCommand,

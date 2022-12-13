@@ -50,6 +50,7 @@ import org.eclipse.ditto.client.internal.DefaultThreadFactory;
 import org.eclipse.ditto.client.internal.VersionReader;
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
 import org.eclipse.ditto.client.internal.bus.BusFactory;
+import org.eclipse.ditto.client.management.ClientReconnectingException;
 import org.eclipse.ditto.client.messaging.AuthenticationException;
 import org.eclipse.ditto.client.messaging.AuthenticationProvider;
 import org.eclipse.ditto.client.messaging.MessagingException;
@@ -297,7 +298,11 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
 
     @Override
     public void emit(final String message) {
-        sendToWebsocket(message);
+        if (reconnecting.get()) {
+            throw ClientReconnectingException.newInstance();
+        } else {
+            sendToWebsocket(message);
+        }
     }
 
     private void sendToWebsocket(final String stringMessage) {

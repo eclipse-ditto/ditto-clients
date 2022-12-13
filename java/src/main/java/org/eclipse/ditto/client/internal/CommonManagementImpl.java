@@ -163,7 +163,8 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
      * Starts the consumption of twin events / messages / live events and commands.
      *
      * @param consumptionConfig the configuration Map to apply for the consumption.
-     * @return a CompletionStage that terminates when the start operation was successful.
+     * @return a CompletionStage that terminates when the start operation was successful or fails if the client is in
+     * a reconnecting state
      */
     protected abstract CompletionStage<Void> doStartConsumption(Map<String, String> consumptionConfig);
 
@@ -648,6 +649,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
      * @param futureToCompleteOrFailAfterAck the future to complete or fail after receiving the expected acknowledgement
      * or not.
      * @return the subscription ID.
+     * @throws org.eclipse.ditto.client.management.ClientReconnectingException if the client client is reconnecting.
      */
     protected AdaptableBus.SubscriptionId subscribe(
             @Nullable final AdaptableBus.SubscriptionId previousSubscriptionId,
@@ -730,6 +732,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
      * @param protocolCommandAck the expected acknowledgement.
      * @param futureToCompleteOrFailAfterAck the future to complete or fail after receiving the expected acknowledgement
      * or not.
+     * @throws org.eclipse.ditto.client.management.ClientReconnectingException if the client client is reconnecting.
      */
     protected void unsubscribe(@Nullable final AdaptableBus.SubscriptionId subscriptionId,
             final String protocolCommand,

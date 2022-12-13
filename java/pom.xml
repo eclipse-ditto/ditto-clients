@@ -239,7 +239,7 @@
         <!-- globally set version for checking binary compatibility against -->
         <!-- whoever changes this to ${revision} or ${project.version} is responsible for API breakage caused by this! -->
         <!-- in other words: never do that here! exclude the 'breakages' locally in the japicmp maven plugin if you intentionally break something -->
-        <binary-compatibility-check.version>2.4.0</binary-compatibility-check.version>
+        <binary-compatibility-check.version>3.0.0</binary-compatibility-check.version>
         <!-- skip until first release: -->
         <binary-compatibility-check.skip>false</binary-compatibility-check.skip>
 
@@ -452,8 +452,6 @@
                                 <exclude>org.eclipse.ditto.client.twin.internal</exclude>
                                 <!-- this builder is an internal implementation of a builder interface and should not be handled as API: -->
                                 <exclude>org.eclipse.ditto.client.configuration.ClientCredentialsAuthenticationConfiguration$ClientCredentialsAuthenticationConfigurationBuilder</exclude>
-                                <exclude>org.eclipse.ditto.client.streaming.ThingSearchPublisher#of(org.eclipse.ditto.base.model.signals.Signal,org.eclipse.ditto.protocol.adapter.ProtocolAdapter,org.eclipse.ditto.client.messaging.MessagingProvider)</exclude>
-                                <exclude>org.eclipse.ditto.client.live.commands.query.RetrieveThingsLiveCommand</exclude>
                             </excludes>
                         </parameter>
                     </configuration>

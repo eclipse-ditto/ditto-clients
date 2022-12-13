@@ -25,6 +25,7 @@ import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
 import org.eclipse.ditto.client.internal.bus.AdaptableBus;
 import org.eclipse.ditto.client.internal.bus.Classification;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
+import org.eclipse.ditto.client.management.ClientReconnectingException;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
 import org.eclipse.ditto.client.twin.Twin;
 import org.eclipse.ditto.client.twin.TwinFeatureHandle;
@@ -94,33 +95,45 @@ public final class TwinImpl extends CommonManagementImpl<TwinThingHandle, TwinFe
 
     @Override
     protected CompletionStage<Void> doStartConsumption(final Map<String, String> consumptionConfig) {
-        final CompletableFuture<Void> ackFuture = new CompletableFuture<>();
-        final Classification.StreamingType streamingType = Classification.StreamingType.TWIN_EVENT;
-        final String subscriptionMessage = buildProtocolCommand(streamingType.start(), consumptionConfig);
-        messagingProvider.registerSubscriptionMessage(streamingType, subscriptionMessage);
-        synchronized (twinEventSubscription) {
-            final AdaptableBus.SubscriptionId previousSubscriptionId = twinEventSubscription.get();
-            twinEventSubscription.set(subscribe(
-                    previousSubscriptionId,
-                    streamingType,
-                    subscriptionMessage,
-                    streamingType.startAck(),
-                    ackFuture
-            ));
+        try {
+            final CompletableFuture<Void> ackFuture = new CompletableFuture<>();
+            final Classification.StreamingType streamingType = Classification.StreamingType.TWIN_EVENT;
+            final String subscriptionMessage = buildProtocolCommand(streamingType.start(), consumptionConfig);
+            messagingProvider.registerSubscriptionMessage(streamingType, subscriptionMessage);
+            synchronized (twinEventSubscription) {
+                final AdaptableBus.SubscriptionId previousSubscriptionId = twinEventSubscription.get();
+                twinEventSubscription.set(subscribe(
+                        previousSubscriptionId,
+                        streamingType,
+                        subscriptionMessage,
+                        streamingType.startAck(),
+                        ackFuture
+                ));
+            }
+            return ackFuture;
+        } catch (final ClientReconnectingException cre) {
+            return CompletableFuture.supplyAsync(() -> {
+                throw cre;
+            });
         }
-        return ackFuture;
     }
 
     @Override
     public CompletionStage<Void> suspendConsumption() {
-        final Classification.StreamingType streamingType = Classification.StreamingType.TWIN_EVENT;
-        messagingProvider.unregisterSubscriptionMessage(streamingType);
-        final CompletableFuture<Void> ackFuture = new CompletableFuture<>();
-        synchronized (twinEventSubscription) {
-            unsubscribe(twinEventSubscription.get(), streamingType.stop(), streamingType.stopAck(), ackFuture);
-            twinEventSubscription.set(null);
+        try {
+            final Classification.StreamingType streamingType = Classification.StreamingType.TWIN_EVENT;
+            messagingProvider.unregisterSubscriptionMessage(streamingType);
+            final CompletableFuture<Void> ackFuture = new CompletableFuture<>();
+            synchronized (twinEventSubscription) {
+                unsubscribe(twinEventSubscription.get(), streamingType.stop(), streamingType.stopAck(), ackFuture);
+                twinEventSubscription.set(null);
+            }
+            return ackFuture;
+        } catch (final ClientReconnectingException cre) {
+            return CompletableFuture.supplyAsync(() -> {
+                throw cre;
+            });
         }
-        return ackFuture;
     }
 
     @Override
