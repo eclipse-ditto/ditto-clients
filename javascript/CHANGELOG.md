@@ -1,6 +1,20 @@
 # Changelog
 All notable changes to the Ditto JavaScript client will be documented in this file.
 
+## [3.1.0] - 2022-12-15
+
+### Dependencies
+
+No dependencies were explicitly updated.
+
+### \#208 Add support for cursor pagination to JS clients
+
+As per the [documentation](https://www.eclipse.org/ditto/basic-search.html#rql-paging-deprecated), 
+pagination via the `limit` parameter is deprecated and might get removed in the future.  
+PR #208 adds support for cursor pagination to the JS client so applications using the client can use the new 
+pagination style.
+
+
 ## [3.0.1] - 2022-11-17
 
 ### Dependencies
