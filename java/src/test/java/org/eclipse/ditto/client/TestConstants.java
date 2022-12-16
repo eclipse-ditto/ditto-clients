@@ -176,6 +176,7 @@ public final class TestConstants {
          */
         public static final JsonObject POLICY_JSON_OBJECT = JsonObject.of("{\n" +
                 "    \"policyId\": \"" + POLICY_ID + "\",\n" +
+                "    \"imports\": {},\n" +
                 "    \"entries\": {\n" +
                 "        \"maker\": {\n" +
                 "            \"subjects\": {\n" +
@@ -205,7 +206,8 @@ public final class TestConstants {
                 "                    ],\n" +
                 "                    \"revoke\": []\n" +
                 "                }\n" +
-                "            }\n" +
+                "            },\n" +
+                "            \"importable\":\"implicit\"\n" +
                 "        }\n" +
                 "    }\n" +
                 "}");
