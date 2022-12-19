@@ -42,6 +42,7 @@ import org.eclipse.ditto.client.live.messages.PendingMessageWithThingId;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.client.management.internal.ThingHandleImpl;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
+import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.messages.model.KnownMessageSubjects;
 import org.eclipse.ditto.protocol.TopicPath;
 import org.eclipse.ditto.things.model.ThingId;
@@ -96,6 +97,12 @@ public final class LiveThingHandleImpl extends ThingHandleImpl<LiveThingHandle, 
     public <T> PendingMessageWithThingId<T> message() {
         return PendingMessageImpl.<T>of(LOGGER, outgoingMessageFactory, messageSerializerRegistry, PROTOCOL_ADAPTER,
                 messagingProvider).withThingId(getEntityId());
+    }
+
+    @Override
+    public <T> PendingMessageWithThingId<T> message(final Option<?>... options) {
+        return PendingMessageImpl.<T>of(LOGGER, outgoingMessageFactory, messageSerializerRegistry, PROTOCOL_ADAPTER,
+                messagingProvider, options).withThingId(getEntityId());
     }
 
     @Override

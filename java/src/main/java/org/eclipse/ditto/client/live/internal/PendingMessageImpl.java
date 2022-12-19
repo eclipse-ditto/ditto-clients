@@ -26,6 +26,8 @@ import org.eclipse.ditto.client.live.messages.PendingMessageWithFeatureId;
 import org.eclipse.ditto.client.live.messages.PendingMessageWithThingId;
 import org.eclipse.ditto.client.live.messages.internal.ImmutableMessageSender;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
+import org.eclipse.ditto.client.options.Option;
+import org.eclipse.ditto.client.options.Options;
 import org.eclipse.ditto.messages.model.Message;
 import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.protocol.adapter.ProtocolAdapter;
@@ -41,27 +43,32 @@ final class PendingMessageImpl<T> implements PendingMessage<T> {
     private final MessageSerializerRegistry messageSerializerRegistry;
     private final ProtocolAdapter protocolAdapter;
     private final MessagingProvider messagingProvider;
+    private final Option<?>[] options;
 
     private PendingMessageImpl(final Logger logger,
             final OutgoingMessageFactory outgoingMessageFactory,
             final MessageSerializerRegistry messageSerializerRegistry,
             final ProtocolAdapter protocolAdapter,
-            final MessagingProvider messagingProvider) {
+            final MessagingProvider messagingProvider,
+            final Option<?>... options) {
+
         this.logger = logger;
         this.outgoingMessageFactory = outgoingMessageFactory;
         this.messageSerializerRegistry = messageSerializerRegistry;
         this.protocolAdapter = protocolAdapter;
         this.messagingProvider = messagingProvider;
+        this.options = options;
     }
 
     static <T> PendingMessageImpl<T> of(final Logger logger,
             final OutgoingMessageFactory outgoingMessageFactory,
             final MessageSerializerRegistry messageSerializerRegistry,
             final ProtocolAdapter protocolAdapter,
-            final MessagingProvider messagingProvider) {
+            final MessagingProvider messagingProvider,
+            final Option<?>... options) {
 
         return new PendingMessageImpl<>(logger, outgoingMessageFactory, messageSerializerRegistry, protocolAdapter,
-                messagingProvider);
+                messagingProvider, options);
     }
 
     PendingMessageWithThingId<T> withThingId(final ThingId thingId) {
@@ -120,7 +127,7 @@ final class PendingMessageImpl<T> implements PendingMessage<T> {
 
     private void sendMessage(final Message<T> message, @Nullable final ResponseConsumer<?> responseConsumer) {
         final Message<?> toBeSentMessage =
-                outgoingMessageFactory.sendMessage(messageSerializerRegistry, message);
+                outgoingMessageFactory.sendMessage(messageSerializerRegistry, message, options);
         logger.trace("Message about to send: {}", toBeSentMessage);
         if (responseConsumer != null) {
             toBeSentMessage.getCorrelationId().ifPresent(correlationId ->

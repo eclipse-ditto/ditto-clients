@@ -52,6 +52,7 @@ import org.eclipse.ditto.client.live.messages.PendingMessage;
 import org.eclipse.ditto.client.live.messages.RepliableMessage;
 import org.eclipse.ditto.client.management.ClientReconnectingException;
 import org.eclipse.ditto.client.messaging.MessagingProvider;
+import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.json.JsonKey;
 import org.eclipse.ditto.messages.model.KnownMessageSubjects;
 import org.eclipse.ditto.messages.model.Message;
@@ -222,6 +223,12 @@ public final class LiveImpl extends CommonManagementImpl<LiveThingHandle, LiveFe
     public <T> PendingMessage<T> message() {
         return PendingMessageImpl.of(LOGGER, outgoingMessageFactory, messageSerializerRegistry, PROTOCOL_ADAPTER,
                 messagingProvider);
+    }
+
+    @Override
+    public <T> PendingMessage<T> message(final Option<?>... options) {
+        return PendingMessageImpl.of(LOGGER, outgoingMessageFactory, messageSerializerRegistry, PROTOCOL_ADAPTER,
+                messagingProvider, options);
     }
 
     @Override

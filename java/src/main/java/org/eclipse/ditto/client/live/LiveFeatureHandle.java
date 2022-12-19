@@ -18,6 +18,7 @@ import org.eclipse.ditto.client.live.events.FeatureEventFactory;
 import org.eclipse.ditto.client.live.messages.MessageRegistration;
 import org.eclipse.ditto.client.live.messages.PendingMessageWithFeatureId;
 import org.eclipse.ditto.client.management.FeatureHandle;
+import org.eclipse.ditto.client.options.Option;
 
 /**
  * A {@code LiveFeatureHandle} provides management and registration functionality for specific {@code Live Thing}
@@ -47,5 +48,27 @@ public interface LiveFeatureHandle extends FeatureHandle, MessageRegistration, F
      * @return a new message builder that offers the functionality to create and send the message.
      */
     <T> PendingMessageWithFeatureId<T> message();
+
+    /**
+     * Provides the functionality to create and send a new {@link org.eclipse.ditto.messages.model.Message} <em>TO</em>
+     * or <em>FROM</em> the {@code Feature} handled by this {@code LiveFeatureHandle}. <p> Example: </p>
+     * <pre>
+     * client.live()
+     *    .forId("org.eclipse.ditto:fireDetectionDevice")
+     *    .forFeature("smokeDetector")
+     *    .message()
+     *    .from()
+     *    .subject("fireAlert")
+     *    .payload("{\"action\" : \"call fire department\"}")
+     *    .contentType("application/json")
+     *    .send();
+     * </pre>
+     *
+     * @param <T> the type of the Message's payload.
+     * @param options options sent to the outbound message.
+     * @return a new message builder that offers the functionality to create and send the message.
+     * @since 3.1.0
+     */
+    <T> PendingMessageWithFeatureId<T> message(Option<?>... options);
 
 }

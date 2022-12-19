@@ -22,6 +22,7 @@ import org.eclipse.ditto.client.live.messages.ClaimMessageRegistration;
 import org.eclipse.ditto.client.live.messages.MessageRegistration;
 import org.eclipse.ditto.client.live.messages.PendingMessageWithThingId;
 import org.eclipse.ditto.client.management.ThingHandle;
+import org.eclipse.ditto.client.options.Option;
 
 /**
  * A {@code LiveThingHandle} provides management and registration functionality for specific <em>Live Things</em>.
@@ -49,5 +50,24 @@ public interface LiveThingHandle
      * @return a new message builder that offers the functionality to create and send the message.
      */
     <T> PendingMessageWithThingId<T> message();
+
+    /**
+     * Provides the functionality to create and send a new {@link org.eclipse.ditto.messages.model.Message}
+     * <em>FROM</em> or <em>TO</em> the {@code Thing} handled by this {@code LiveThingHandle}. <p> Example: </p>
+     * <pre>
+     * client.live().forId("org.eclipse.ditto:fireDetectionDevice").message()
+     *    .from()
+     *    .subject("fireAlert")
+     *    .payload("{\"action\" : \"call fire department\"}")
+     *    .contentType("application/json")
+     *    .send();
+     * </pre>
+     *
+     * @param <T> the type of the Message's payload.
+     * @param options options sent to the outbound message.
+     * @return a new message builder that offers the functionality to create and send the message.
+     * @since 3.1.0
+     */
+    <T> PendingMessageWithThingId<T> message(Option<?>... options);
 
 }
