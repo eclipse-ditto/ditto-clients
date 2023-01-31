@@ -39,7 +39,7 @@
 
     <issueManagement>
         <system>GitHub Issues</system>
-        <url>https://github.com/eclipse/ditto-clients/issues</url>
+        <url>https://github.com/eclipse-ditto/ditto-clients/issues</url>
     </issueManagement>
 
     <prerequisites>

@@ -1,5 +1,5 @@
 # Ditto JavaScript client
-[![Build Status](https://github.com/eclipse/ditto-clients/workflows/javascript-build/badge.svg)](https://github.com/eclipse/ditto-clients/actions?query=workflow%3Ajavascript-build)
+[![Build Status](https://github.com/eclipse-ditto/ditto-clients/workflows/javascript-build/badge.svg)](https://github.com/eclipse-ditto/ditto-clients/actions?query=workflow%3Ajavascript-build)
 [![npm node](https://img.shields.io/npm/v/@eclipse-ditto/ditto-javascript-client-node?label=npm%3A%20node)](https://www.npmjs.com/package/@eclipse-ditto/ditto-javascript-client-node)
 [![npm dom](https://img.shields.io/npm/v/@eclipse-ditto/ditto-javascript-client-dom?label=npm%3A%20dom)](https://www.npmjs.com/package/@eclipse-ditto/ditto-javascript-client-dom)
 
@@ -14,7 +14,7 @@ More information can be found in the descriptions of the subpackages:
 * [@eclipse-ditto/ditto-javascript-client-dom](./lib/dom/README.md) for the DOM implementation
 * [@eclipse-ditto/ditto-javascript-client-node](./lib/node/README.md) for the NodeJs implementation
 
-### Compatibility with [Eclipse Ditto](https://github.com/eclipse/ditto)
+### Compatibility with [Eclipse Ditto](https://github.com/eclipse-ditto/ditto)
 
 The newest release of the JavaScript client will always try to cover as much API
 functionality of the same Eclipse Ditto version as possible. There might

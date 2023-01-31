@@ -23,7 +23,7 @@ SPDX-License-Identifier: EPL-2.0
 
 # Source Code
 
-* https://github.com/eclipse/ditto-clients
+* https://github.com/eclipse-ditto/ditto-clients
 
 # Third-party Content
 
