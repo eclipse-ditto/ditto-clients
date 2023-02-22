@@ -13,6 +13,8 @@
 
 import { WebSocketHelper as H } from './websocket.helper';
 import { Features } from '../../../src/model/things.model';
+import { ContentType } from '../../../src/client/constants/content-type';
+import { DittoAction } from '../../../src/client/constants/ditto-actions';
 
 // tslint:disable-next-line:no-big-function
 describe('WebSocket Features Handle', () => {
@@ -23,7 +25,7 @@ describe('WebSocket Features Handle', () => {
   it('retrieves Features', () => {
     return H.test({
       toTest: () => handle.getFeatures(),
-      topic: `${baseTopic}/retrieve`,
+      topic: `${baseTopic}/${DittoAction.RETRIEVE}`,
       path: '/features',
       status: 200,
       responseBody: Features.toObject(H.features),
@@ -34,7 +36,7 @@ describe('WebSocket Features Handle', () => {
   it('retrieves a Feature', () => {
     return H.test({
       toTest: () => handle.getFeature(H.feature.id),
-      topic: `${baseTopic}/retrieve`,
+      topic: `${baseTopic}/${DittoAction.RETRIEVE}`,
       path: `/features/${H.feature.id}`,
       status: 200,
       responseBody: H.feature.toObject(),
@@ -45,7 +47,7 @@ describe('WebSocket Features Handle', () => {
   it('retrieves a Definition', () => {
     return H.test({
       toTest: () => handle.getDefinition(H.feature.id),
-      topic: `${baseTopic}/retrieve`,
+      topic: `${baseTopic}/${DittoAction.RETRIEVE}`,
       path: `/features/${H.feature.id}/definition`,
       status: 200,
       responseBody: H.definition,
@@ -56,7 +58,7 @@ describe('WebSocket Features Handle', () => {
   it('retrieves Properties', () => {
     return H.test({
       toTest: () => handle.getProperties(H.feature.id),
-      topic: `${baseTopic}/retrieve`,
+      topic: `${baseTopic}/${DittoAction.RETRIEVE}`,
       path: `/features/${H.feature.id}/properties`,
       status: 200,
       responseBody: H.properties,
@@ -67,7 +69,7 @@ describe('WebSocket Features Handle', () => {
   it('retrieves a Property', () => {
     return H.test({
       toTest: () => handle.getProperty(H.feature.id, H.propertyPath),
-      topic: `${baseTopic}/retrieve`,
+      topic: `${baseTopic}/${DittoAction.RETRIEVE}`,
       path: `/features/${H.feature.id}/properties/${H.propertyPath}`,
       status: 200,
       responseBody: H.property,
@@ -78,7 +80,7 @@ describe('WebSocket Features Handle', () => {
   it('modifies Features', () => {
     return H.test({
       toTest: () => handle.putFeatures(H.features),
-      topic: `${baseTopic}/modify`,
+      topic: `${baseTopic}/${DittoAction.MODIFY}`,
       path: '/features',
       status: 204,
       requestBody: Features.toObject(H.features)
@@ -88,7 +90,7 @@ describe('WebSocket Features Handle', () => {
   it('modifies a Feature', () => {
     return H.test({
       toTest: () => handle.putFeature(H.feature),
-      topic: `${baseTopic}/modify`,
+      topic: `${baseTopic}/${DittoAction.MODIFY}`,
       path: `/features/${H.feature.id}`,
       status: 204,
       requestBody: H.feature.toObject()
@@ -98,7 +100,7 @@ describe('WebSocket Features Handle', () => {
   it('modifies a Definition', () => {
     return H.test({
       toTest: () => handle.putDefinition(H.feature.id, H.definition),
-      topic: `${baseTopic}/modify`,
+      topic: `${baseTopic}/${DittoAction.MODIFY}`,
       path: `/features/${H.feature.id}/definition`,
       status: 204,
       requestBody: H.definition
@@ -108,7 +110,7 @@ describe('WebSocket Features Handle', () => {
   it('modifies Properties', () => {
     return H.test({
       toTest: () => handle.putProperties(H.feature.id, H.properties),
-      topic: `${baseTopic}/modify`,
+      topic: `${baseTopic}/${DittoAction.MODIFY}`,
       path: `/features/${H.feature.id}/properties`,
       status: 204,
       requestBody: H.properties
@@ -118,10 +120,66 @@ describe('WebSocket Features Handle', () => {
   it('modifies a Property', () => {
     return H.test({
       toTest: () => handle.putProperty(H.feature.id, H.propertyPath, H.property),
-      topic: `${baseTopic}/modify`,
+      topic: `${baseTopic}/${DittoAction.MODIFY}`,
       path: `/features/${H.feature.id}/properties/${H.propertyPath}`,
       status: 204,
       requestBody: H.property
+    });
+  });
+
+  it('merges Properties', () => {
+    return H.test({
+      toTest: () => handle.patchProperties(H.feature.id, H.properties),
+      topic: `${baseTopic}/${DittoAction.MERGE}`,
+      path: `/features/${H.feature.id}/properties`,
+      status: 204,
+      requestBody: H.properties,
+      requestHeaders: { "Content-Type": ContentType.MERGE_PATCH_JSON, "version": 2 },
+    });
+  });
+
+  it("merges a Property", () => {
+    return H.test({
+      toTest: () =>
+        handle.patchProperty(H.feature.id, H.propertyPath, H.property),
+      topic: `${baseTopic}/${DittoAction.MERGE}`,
+      path: `/features/${H.feature.id}/properties/${H.propertyPath}`,
+      status: 204,
+      requestBody: H.property,
+      requestHeaders: { "Content-Type": ContentType.MERGE_PATCH_JSON, "version": 2 },
+    });
+  });
+
+  it('merges Features', () => {
+    return H.test({
+      toTest: () => handle.patchFeatures(H.features),
+      topic: `${baseTopic}/${DittoAction.MERGE}`,
+      path: '/features',
+      status: 204,
+      requestBody: Features.toObject(H.features),
+      requestHeaders: { "Content-Type": ContentType.MERGE_PATCH_JSON, "version": 2 },
+    });
+  });
+
+  it('merges a Feature', () => {
+    return H.test({
+      toTest: () => handle.putFeature(H.feature),
+      topic: `${baseTopic}/${DittoAction.MERGE}`,
+      path: `/features/${H.feature.id}`,
+      status: 204,
+      requestBody: H.feature.toObject(),
+      requestHeaders: { "Content-Type": ContentType.MERGE_PATCH_JSON, "version": 2 },
+    });
+  });
+
+  it('merges a Definition', () => {
+    return H.test({
+      toTest: () => handle.patchDefinition(H.feature.id, H.definition),
+      topic: `${baseTopic}/${DittoAction.MERGE}`,
+      path: `/features/${H.feature.id}/definition`,
+      status: 204,
+      requestBody: H.definition,
+      requestHeaders: { "Content-Type": ContentType.MERGE_PATCH_JSON, "version": 2 },
     });
   });
 
@@ -209,6 +267,26 @@ describe('WebSocket Features Handle', () => {
 
   it('returns an update property error message', () => {
     return H.testError(() => errorHandle.putProperty(H.feature.id, H.propertyPath, H.property));
+  });
+
+  it('returns a merge features error message', () => {
+    return H.testError(() => errorHandle.patchFeatures(H.features));
+  });
+
+  it('returns a merge feature error message', () => {
+    return H.testError(() => errorHandle.patchFeature(H.feature));
+  });
+
+  it('returns a merge properties error message', () => {
+    return H.testError(() => errorHandle.patchProperties(H.feature.id, H.properties));
+  });
+
+  it('returns a merge property error message', () => {
+    return H.testError(() => errorHandle.patchProperty(H.feature.id, H.propertyPath, H.property));
+  });
+
+  it('returns a merge definition error message', () => {
+    return H.testError(() => errorHandle.patchDefinition(H.feature.id, H.definition));
   });
 
   it('returns a delete features error message', () => {

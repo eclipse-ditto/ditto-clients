@@ -12,6 +12,8 @@
  */
 
 import { jest } from '@jest/globals';
+import { ContentType } from '../../../src/client/constants/content-type';
+import { Header } from '../../../src/client/constants/header';
 /* tslint:disable:no-duplicate-string */
 import { ProtocolResponseValue } from '../../../src/client/request-factory/websocket-request-handler';
 import { GenericResponse } from '../../../src/model/response';
@@ -27,13 +29,13 @@ const testWithoutResponse: (method: () => void, request: Request) => Promise<voi
 describe('WebSocket Messages Handle', () => {
   jest.setTimeout(5000); // we need to tell jest, that it should also wait on promises ... default is 0 ms
   const handle = H.thingsClient.getMessagesHandle();
-  const type = 'text/plain';
+  const type = ContentType.TEXT;
   const message = 'A Message!';
   const subject = 'dosomething';
   const baseTopic = `${H.splitNamespace}/${H.splitThingId}/things/live/messages`;
   const standardTopic = `${baseTopic}/${subject}`;
   const standardHeaders = () => {
-    return Object.assign(H.standardHeaders, { 'content-type': 'text/plain' });
+    return Object.assign(H.standardHeaders, { [Header.CONTENT_TYPE]: ContentType.TEXT });
   };
   const standardHeadersMap: () => Map<string, string> = () => {
     const headers = standardHeaders();

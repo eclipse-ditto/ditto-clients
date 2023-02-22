@@ -13,6 +13,7 @@
 
 import { SearchThingsResponse } from '../../model/response';
 import { CountOptions, SearchOptions } from '../../options/request.options';
+import { HttpVerb } from '../constants/http-verb';
 import { RequestSender, RequestSenderFactory } from '../request-factory/request-sender';
 
 export interface SearchHandle {
@@ -59,7 +60,7 @@ export class DefaultSearchHandle implements SearchHandle {
    */
   search(options?: SearchOptions): Promise<SearchThingsResponse> {
     return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
+      verb: HttpVerb.GET,
       parser: SearchThingsResponse.fromObject,
       requestOptions: options
     });
@@ -73,7 +74,7 @@ export class DefaultSearchHandle implements SearchHandle {
    */
   count(options?: CountOptions): Promise<number> {
     return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
+      verb: HttpVerb.GET,
       parser: Number,
       path: 'count',
       requestOptions: options

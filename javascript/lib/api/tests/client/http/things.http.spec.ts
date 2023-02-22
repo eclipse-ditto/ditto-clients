@@ -12,6 +12,7 @@
  */
 
 /* tslint:disable:no-big-function */
+import { HttpVerb } from '../../../src/client/constants/http-verb';
 import { HttpThingsHandle } from '../../../src/client/handles/things.interfaces';
 import { PutResponse } from '../../../src/model/response';
 import {
@@ -36,7 +37,7 @@ describe('Http Things Handle', () => {
       testBody: H.thing.toObject(),
       expected: H.thing,
       request: `${baseRequest}?fields=A%2CB`,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200,
       requestHeaders: headers
     });
@@ -48,7 +49,7 @@ describe('Http Things Handle', () => {
       testBody: [H.thing.toObject()],
       expected: [H.thing],
       request: `things?ids=${encodeURIComponent(H.thing.thingId)}`,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });
@@ -60,7 +61,7 @@ describe('Http Things Handle', () => {
       testBody: [H.thing.toObject()],
       expected: [H.thing],
       request: `things?fields=A%2CB&ids=${encodeURIComponent(H.thing.thingId)}`,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });
@@ -72,7 +73,7 @@ describe('Http Things Handle', () => {
       testBody: 'ID',
       expected: 'ID',
       request: `${baseRequest}/policyId`,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });
@@ -83,7 +84,7 @@ describe('Http Things Handle', () => {
       testBody: H.attribute,
       expected: H.attribute,
       request: `${baseRequest}/attributes/anAttribute`,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });
@@ -94,7 +95,7 @@ describe('Http Things Handle', () => {
       testBody: H.attributes,
       expected: H.attributes,
       request: `${baseRequest}/attributes`,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });
@@ -105,7 +106,7 @@ describe('Http Things Handle', () => {
       testBody: 'example:test:definition',
       expected: 'example:test:definition',
       request: `${baseRequest}/definition`,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });
@@ -119,19 +120,31 @@ describe('Http Things Handle', () => {
       testBody: H.thing.toObject(),
       expected: H.thing,
       request: 'things',
-      method: 'post',
+      method: HttpVerb.POST,
       status: 201,
       payload: JSON.stringify(thing)
     });
   });
 
-  it('puts a new Thing', () => {
+  it('merges a Thing', () => {
+    return H.test({
+      toTest: () => handle.patchThing(H.thing),
+      testBody: H.thing.toObject(),
+      expected: new PutResponse(H.thing, 201, undefined),
+      request: `${baseRequest}`,
+      method: HttpVerb.PATCH,
+      status: 201,
+      payload: H.thing.toJson()
+    });
+  });
+
+  it('puts a Thing', () => {
     return H.test({
       toTest: () => handle.putThing(H.thing),
       testBody: H.thing.toObject(),
       expected: new PutResponse(H.thing, 201, undefined),
       request: `${baseRequest}`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 201,
       payload: H.thing.toJson()
     });
@@ -143,7 +156,7 @@ describe('Http Things Handle', () => {
       testBody: H.thing.toObject(),
       expected: new PutResponse(null, 204, undefined),
       request: `${baseRequest}`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 204,
       payload: H.thing.toJson()
     });
@@ -155,7 +168,19 @@ describe('Http Things Handle', () => {
       testBody: 'ID',
       expected: new PutResponse('ID', 201, undefined),
       request: `${baseRequest}/policyId`,
-      method: 'put',
+      method: HttpVerb.PUT,
+      status: 201,
+      payload: JSON.stringify('ID')
+    });
+  });
+
+  it('merges a policyId', () => {
+    return H.test({
+      toTest: () => handle.patchPolicyId(H.thing.thingId, 'ID'),
+      testBody: 'ID',
+      expected: new PutResponse('ID', 201, undefined),
+      request: `${baseRequest}/policyId`,
+      method: HttpVerb.PATCH,
       status: 201,
       payload: JSON.stringify('ID')
     });
@@ -167,7 +192,7 @@ describe('Http Things Handle', () => {
       testBody: H.attributes,
       expected: new PutResponse(H.attributes, 201, undefined),
       request: `${baseRequest}/attributes`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 201,
       payload: JSON.stringify(H.attributes)
     });
@@ -179,7 +204,19 @@ describe('Http Things Handle', () => {
       testBody: H.attributes,
       expected: new PutResponse(null, 204, undefined),
       request: `${baseRequest}/attributes`,
-      method: 'put',
+      method: HttpVerb.PUT,
+      status: 204,
+      payload: JSON.stringify(H.attributes)
+    });
+  });
+
+  it('merges Attributes', () => {
+    return H.test({
+      toTest: () => handle.patchAttributes(H.thing.thingId, H.attributes),
+      testBody: H.attributes,
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/attributes`,
+      method: HttpVerb.PATCH,
       status: 204,
       payload: JSON.stringify(H.attributes)
     });
@@ -191,7 +228,7 @@ describe('Http Things Handle', () => {
       testBody: H.attribute,
       expected: new PutResponse(H.attribute, 201, undefined),
       request: `${baseRequest}/attributes/${H.attributePath}`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 201,
       payload: JSON.stringify(H.attribute)
     });
@@ -203,7 +240,19 @@ describe('Http Things Handle', () => {
       testBody: H.attribute,
       expected: new PutResponse(null, 204, undefined),
       request: `${baseRequest}/attributes/${H.attributePath}`,
-      method: 'put',
+      method: HttpVerb.PUT,
+      status: 204,
+      payload: JSON.stringify(H.attribute)
+    });
+  });
+
+  it('merges an Attribute', () => {
+    return H.test({
+      toTest: () => handle.patchAttribute(H.thing.thingId, H.attributePath, H.attribute),
+      testBody: H.attribute,
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/attributes/${H.attributePath}`,
+      method: HttpVerb.PATCH,
       status: 204,
       payload: JSON.stringify(H.attribute)
     });
@@ -215,7 +264,7 @@ describe('Http Things Handle', () => {
       testBody: 'example:test:definition',
       expected: new PutResponse('example:test:definition', 201, undefined),
       request: `${baseRequest}/definition`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 201,
       payload: JSON.stringify('example:test:definition')
     });
@@ -227,7 +276,19 @@ describe('Http Things Handle', () => {
       testBody: 'example:test:definition',
       expected: new PutResponse(null, 204, undefined),
       request: `${baseRequest}/definition`,
-      method: 'put',
+      method: HttpVerb.PUT,
+      status: 204,
+      payload: JSON.stringify('example:test:definition')
+    });
+  });
+
+  it('merges the definition', () => {
+    return H.test({
+      toTest: () => handle.patchDefinition(H.thing.thingId, 'example:test:definition'),
+      testBody: 'example:test:definition',
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/definition`,
+      method: HttpVerb.PATCH,
       status: 204,
       payload: JSON.stringify('example:test:definition')
     });
@@ -237,7 +298,7 @@ describe('Http Things Handle', () => {
     return H.test({
       toTest: () => handle.deleteThing(H.thing.thingId),
       request: baseRequest,
-      method: 'delete',
+      method: HttpVerb.DELETE,
       status: 204
     });
   });
@@ -246,7 +307,7 @@ describe('Http Things Handle', () => {
     return H.test({
       toTest: () => handle.deleteAttributes(H.thing.thingId),
       request: `${baseRequest}/attributes`,
-      method: 'delete',
+      method: HttpVerb.DELETE,
       status: 204
     });
   });
@@ -255,7 +316,7 @@ describe('Http Things Handle', () => {
     return H.test({
       toTest: () => handle.deleteAttribute(H.thing.thingId, H.attributePath),
       request: `${baseRequest}/attributes/${H.attributePath}`,
-      method: 'delete',
+      method: HttpVerb.DELETE,
       status: 204
     });
   });
@@ -264,7 +325,7 @@ describe('Http Things Handle', () => {
     return H.test({
       toTest: () => handle.deleteDefinition(H.thing.thingId),
       request: `${baseRequest}/definition`,
-      method: 'delete',
+      method: HttpVerb.DELETE,
       status: 204
     });
   });
@@ -297,16 +358,36 @@ describe('Http Things Handle', () => {
     return H.testError(() => errorHandle.putThing(H.thing));
   });
 
+  it('returns a merge thing error message', () => {
+    return H.testError(() => errorHandle.patchThing(H.thing));
+  });
+
   it('returns an update policyid error message', () => {
     return H.testError(() => errorHandle.putPolicyId(H.thing.thingId, 'ID'));
+  });
+
+  it('returns a merge policyid error message', () => {
+    return H.testError(() => errorHandle.patchPolicyId(H.thing.thingId, 'ID'));
   });
 
   it('returns an update attributes error message', () => {
     return H.testError(() => errorHandle.putAttributes(H.thing.thingId, H.attributes));
   });
 
+  it('returns a merge attributes error message', () => {
+    return H.testError(() => errorHandle.patchAttributes(H.thing.thingId, H.attributes));
+  });
+
   it('returns an update attribute error message', () => {
     return H.testError(() => errorHandle.putAttribute(H.thing.thingId, H.attributePath, H.attribute));
+  });
+
+  it('returns a merge attribute error message', () => {
+    return H.testError(() => errorHandle.patchAttribute(H.thing.thingId, H.attributePath, H.attribute));
+  });
+
+  it('returns a merge definition error message', () => {
+    return H.testError(() => errorHandle.patchDefinition(H.thing.thingId, 'example:test:definition'));
   });
 
   it('returns a delete thing error message', () => {

@@ -18,6 +18,7 @@ import { AllSubscription, ProtocolResponseValue, WebSocketRequestHandler } from 
 import { WebSocketBindingMessage } from '../request-factory/resilience/websocket-resilience-interfaces';
 import { MessagesHandle } from './messages';
 import { GenericResponse } from '../../model/response';
+import { ContentType } from '../constants/content-type';
 
 export interface WebSocketMessagesHandle extends MessagesHandle {
 
@@ -195,7 +196,7 @@ export class DefaultWebSocketMessagesHandle implements WebSocketMessagesHandle {
       messageSubject: 'claim',
       message: claimMessage,
       direction: 'inbox',
-      contentType: 'text/plain'
+      contentType: ContentType.TEXT
     });
   }
 
@@ -213,7 +214,7 @@ export class DefaultWebSocketMessagesHandle implements WebSocketMessagesHandle {
       messageSubject: 'claim',
       message: claimMessage,
       direction: 'inbox',
-      contentType: 'text/plain'
+      contentType: ContentType.TEXT
     });
   }
 

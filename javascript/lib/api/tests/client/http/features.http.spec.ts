@@ -16,6 +16,7 @@ import { FeaturesHandle } from '../../../src/client/handles/features.interfaces'
 import { PutResponse } from '../../../src/model/response';
 import { HttpHelper as H } from './http.helper';
 import { Features } from '../../../src/model/things.model';
+import { HttpVerb } from '../../../src/client/constants/http-verb';
 
 describe('Http Features Handle', () => {
   const baseRequest = `things/${H.thing.thingId}/features`;
@@ -28,7 +29,7 @@ describe('Http Features Handle', () => {
       testBody: Features.toObject(H.features),
       expected: H.features,
       request: baseRequest,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });
@@ -39,7 +40,7 @@ describe('Http Features Handle', () => {
       testBody: H.feature.toObject(),
       expected: H.feature,
       request: `${baseRequest}/${H.feature.id}`,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });
@@ -50,7 +51,7 @@ describe('Http Features Handle', () => {
       testBody: H.definition,
       expected: H.definition,
       request: `${baseRequest}/${H.feature.id}/definition`,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });
@@ -61,7 +62,7 @@ describe('Http Features Handle', () => {
       testBody: H.properties,
       expected: H.properties,
       request: `${baseRequest}/${H.feature.id}/properties`,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });
@@ -72,7 +73,7 @@ describe('Http Features Handle', () => {
       testBody: H.property,
       expected: H.property,
       request: `${baseRequest}/${H.feature.id}/properties/${H.propertyPath}`,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });
@@ -83,7 +84,7 @@ describe('Http Features Handle', () => {
       testBody: Features.toObject(H.features),
       expected: new PutResponse(H.features, 201, undefined),
       request: baseRequest,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 201,
       payload: Features.toJson(H.features)
     });
@@ -95,11 +96,24 @@ describe('Http Features Handle', () => {
       testBody: Features.toObject(H.features),
       expected: new PutResponse(null, 204, undefined),
       request: baseRequest,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 204,
       payload: Features.toJson(H.features)
     });
   });
+
+  it('merges Features', () => {
+    return H.test({
+      toTest: () => handle.patchFeatures(H.features),
+      testBody: Features.toObject(H.features),
+      expected: new PutResponse(null, 204, undefined),
+      request: baseRequest,
+      method: HttpVerb.PATCH,
+      status: 204,
+      payload: Features.toJson(H.features)
+    });
+  });
+
 
   it('creates a Feature', () => {
     return H.test({
@@ -107,7 +121,7 @@ describe('Http Features Handle', () => {
       testBody: H.feature.toObject(),
       expected: new PutResponse(H.feature, 201, undefined),
       request: `${baseRequest}/${H.feature.id}`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 201,
       payload: H.feature.toJson()
     });
@@ -119,7 +133,19 @@ describe('Http Features Handle', () => {
       testBody: H.feature.toObject(),
       expected: new PutResponse(null, 204, undefined),
       request: `${baseRequest}/${H.feature.id}`,
-      method: 'put',
+      method: HttpVerb.PUT,
+      status: 204,
+      payload: H.feature.toJson()
+    });
+  });
+
+  it('merges a Feature', () => {
+    return H.test({
+      toTest: () => handle.patchFeature(H.feature),
+      testBody: H.feature.toObject(),
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/${H.feature.id}`,
+      method: HttpVerb.PATCH,
       status: 204,
       payload: H.feature.toJson()
     });
@@ -131,7 +157,7 @@ describe('Http Features Handle', () => {
       testBody: H.definition,
       expected: new PutResponse(H.definition, 201, undefined),
       request: `${baseRequest}/${H.feature.id}/definition`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 201,
       payload: JSON.stringify(H.definition)
     });
@@ -143,7 +169,19 @@ describe('Http Features Handle', () => {
       testBody: H.definition,
       expected: new PutResponse(null, 204, undefined),
       request: `${baseRequest}/${H.feature.id}/definition`,
-      method: 'put',
+      method: HttpVerb.PUT,
+      status: 204,
+      payload: JSON.stringify(H.definition)
+    });
+  });
+
+  it('merges a Definition', () => {
+    return H.test({
+      toTest: () => handle.patchDefinition(H.feature.id, H.definition),
+      testBody: H.definition,
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/${H.feature.id}/definition`,
+      method: HttpVerb.PATCH,
       status: 204,
       payload: JSON.stringify(H.definition)
     });
@@ -155,7 +193,7 @@ describe('Http Features Handle', () => {
       testBody: H.properties,
       expected: new PutResponse(H.properties, 201, undefined),
       request: `${baseRequest}/${H.feature.id}/properties`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 201,
       payload: JSON.stringify(H.properties)
     });
@@ -167,7 +205,19 @@ describe('Http Features Handle', () => {
       testBody: H.properties,
       expected: new PutResponse(null, 204, undefined),
       request: `${baseRequest}/${H.feature.id}/properties`,
-      method: 'put',
+      method: HttpVerb.PUT,
+      status: 204,
+      payload: JSON.stringify(H.properties)
+    });
+  });
+
+  it('merges Properties', () => {
+    return H.test({
+      toTest: () => handle.patchProperties(H.feature.id, H.properties),
+      testBody: H.properties,
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/${H.feature.id}/properties`,
+      method: HttpVerb.PATCH,
       status: 204,
       payload: JSON.stringify(H.properties)
     });
@@ -179,7 +229,7 @@ describe('Http Features Handle', () => {
       testBody: H.property,
       expected: new PutResponse(H.property, 201, undefined),
       request: `${baseRequest}/${H.feature.id}/properties/${H.propertyPath}`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 201,
       payload: JSON.stringify(H.property)
     });
@@ -191,9 +241,21 @@ describe('Http Features Handle', () => {
       testBody: H.property,
       expected: new PutResponse(null, 204, undefined),
       request: `${baseRequest}/${H.feature.id}/properties/${H.propertyPath}`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 204,
       payload: JSON.stringify(H.property)
+    });
+  });
+
+  it("merges a Property", () => {
+    return H.test({
+      toTest: () => handle.patchProperty(H.feature.id, H.propertyPath, H.property),
+      testBody: H.property,
+      expected: new PutResponse(null, 204, undefined),
+      request: `${baseRequest}/${H.feature.id}/properties/${H.propertyPath}`,
+      method: "patch",
+      status: 204,
+      payload: JSON.stringify(H.property),
     });
   });
 
@@ -201,7 +263,7 @@ describe('Http Features Handle', () => {
     return H.test({
       toTest: () => handle.deleteFeatures(),
       request: baseRequest,
-      method: 'delete',
+      method: HttpVerb.DELETE,
       status: 204
     });
   });
@@ -210,7 +272,7 @@ describe('Http Features Handle', () => {
     return H.test({
       toTest: () => handle.deleteFeature(H.feature.id),
       request: `${baseRequest}/${H.feature.id}`,
-      method: 'delete',
+      method: HttpVerb.DELETE,
       status: 204
     });
   });
@@ -219,7 +281,7 @@ describe('Http Features Handle', () => {
     return H.test({
       toTest: () => handle.deleteDefinition(H.feature.id),
       request: `${baseRequest}/${H.feature.id}/definition`,
-      method: 'delete',
+      method: HttpVerb.DELETE,
       status: 204
     });
   });
@@ -228,7 +290,7 @@ describe('Http Features Handle', () => {
     return H.test({
       toTest: () => handle.deleteProperties(H.feature.id),
       request: `${baseRequest}/${H.feature.id}/properties`,
-      method: 'delete',
+      method: HttpVerb.DELETE,
       status: 204
     });
   });
@@ -237,7 +299,7 @@ describe('Http Features Handle', () => {
     return H.test({
       toTest: () => handle.deleteProperty(H.feature.id, H.propertyPath),
       request: `${baseRequest}/${H.feature.id}/properties/${H.propertyPath}`,
-      method: 'delete',
+      method: HttpVerb.DELETE,
       status: 204
     });
   });
@@ -280,6 +342,26 @@ describe('Http Features Handle', () => {
 
   it('returns an update property error message', () => {
     return H.testError(() => errorHandle.putProperty(H.feature.id, H.propertyPath, H.property));
+  });
+
+  it('returns a merge features error message', () => {
+    return H.testError(() => errorHandle.patchFeatures(H.features));
+  });
+
+  it('returns a merge feature error message', () => {
+    return H.testError(() => errorHandle.patchFeature(H.feature));
+  });
+
+  it('returns a merge properties error message', () => {
+    return H.testError(() => errorHandle.patchProperties(H.feature.id, H.properties));
+  });
+
+  it('returns a merge property error message', () => {
+    return H.testError(() => errorHandle.patchProperty(H.feature.id, H.propertyPath, H.property));
+  });
+
+  it('returns a merge definition error message', () => {
+    return H.testError(() => errorHandle.patchDefinition(H.feature.id, H.definition));
   });
 
   it('returns a delete features error message', () => {

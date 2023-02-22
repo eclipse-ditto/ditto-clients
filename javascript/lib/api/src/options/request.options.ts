@@ -11,6 +11,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { ContentType } from '../client/constants/content-type';
+import { Header } from '../client/constants/header';
 import { Filter } from './filter.options';
 
 export interface RequestOptions {
@@ -195,6 +197,13 @@ export class DefaultMatchOptions extends AbstractRequestOptionsWithMatchOptions<
    */
   public static getInstance(): DefaultMatchOptions {
     return new DefaultMatchOptions();
+  }
+}
+
+export class MatchOptionsHelper {
+  public static getWithMergeHeader(options?: MatchOptions): MatchOptions {
+    const optionsWithMergeHeader = options ? options : DefaultMatchOptions.getInstance();
+    return optionsWithMergeHeader.addHeader(Header.CONTENT_TYPE, ContentType.MERGE_PATCH_JSON);
   }
 }
 

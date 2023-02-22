@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { HttpVerb } from '../../../src/client/constants/http-verb';
 import { SearchHandle } from '../../../src/client/handles/search';
 import { SearchThingsResponse } from '../../../src/model/response';
 import { HttpHelper as H } from './http.helper';
@@ -27,7 +28,7 @@ describe('Http Search Handle', () => {
       testBody: response.toObject(),
       expected: response,
       request: baseRequest,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });
@@ -38,7 +39,7 @@ describe('Http Search Handle', () => {
       testBody: 4,
       expected: 4,
       request: `${baseRequest}/count`,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });

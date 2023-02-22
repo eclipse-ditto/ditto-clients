@@ -37,7 +37,7 @@ export class TestRequester implements HttpRequester {
   }
 
   private matches(method: string, url: string, header: Map<string, string>, body: string, request: Request): boolean {
-    if (method.toLowerCase() === request.method && url === request.url && body === request.body) {
+    if (method.toLowerCase() === request.method.toLowerCase() && url === request.url && body === request.body) {
       let hasHeaders = true;
       if (request.header !== undefined) {
         request.header.forEach((v, k) => {

@@ -14,6 +14,7 @@
 import { ProxyAgent } from '../src/proxy-settings';
 import { NodeRequester } from '../src/node-http';
 import nock = require('nock');
+import { HttpVerb } from '../../api/src/client/constants/http-verb';
 
 describe('NodeHttp', () => {
 
@@ -44,7 +45,7 @@ describe('NodeHttp', () => {
 
     const underTest = new NodeRequester(proxyAgent);
 
-    const request = underTest.doRequest('GET', 'http://localhost:8080/get', new Map(), payload);
+    const request = underTest.doRequest(HttpVerb.GET, 'http://localhost:8080/get', new Map(), payload);
     return request
       .then(response => {
         expect(response.body).toEqual(expectedResponsePayload);
@@ -71,7 +72,7 @@ describe('NodeHttp', () => {
 
     const underTest = new NodeRequester(proxyAgent);
 
-    const request = underTest.doRequest('GET', 'http://localhost:8080/get', new Map(), payload);
+    const request = underTest.doRequest(HttpVerb.GET, 'http://localhost:8080/get', new Map(), payload);
     return request
       .then(response => {
         expect(response.body).toEqual(expectedResponsePayload);
@@ -98,7 +99,7 @@ describe('NodeHttp', () => {
 
     const underTest = new NodeRequester(proxyAgent);
 
-    const request = underTest.doRequest('GET', 'https://localhost:8080/get', new Map(), payload);
+    const request = underTest.doRequest(HttpVerb.GET, 'https://localhost:8080/get', new Map(), payload);
     return request
       .then(response => {
         expect(response.body).toEqual(expectedResponsePayload);
@@ -118,7 +119,7 @@ describe('NodeHttp', () => {
 
     const underTest = new NodeRequester(new ProxyAgent({}));
 
-    const request = underTest.doRequest('GET', 'https://localhost:8080/get?bum=baz', new Map(), payload);
+    const request = underTest.doRequest(HttpVerb.GET, 'https://localhost:8080/get?bum=baz', new Map(), payload);
     return request
       .then(response => {
         expect(response.body).toEqual(expectedResponsePayload);

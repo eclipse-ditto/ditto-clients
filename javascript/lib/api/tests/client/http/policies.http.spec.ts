@@ -12,6 +12,7 @@
  */
 
 /* tslint:disable:no-big-function */
+import { HttpVerb } from '../../../src/client/constants/http-verb';
 import {
   AccessRight,
   Entries,
@@ -52,7 +53,7 @@ describe('Http Policies Handle', () => {
       testBody: policy.toObject(),
       expected: policy,
       request: baseRequest,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });
@@ -63,7 +64,7 @@ describe('Http Policies Handle', () => {
       testBody: Entries.toObject(entries),
       expected: entries,
       request: `${baseRequest}/entries`,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });
@@ -74,7 +75,7 @@ describe('Http Policies Handle', () => {
       testBody: anEntry.toObject(),
       expected: anEntry,
       request: `${baseRequest}/entries/${label}`,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });
@@ -85,7 +86,7 @@ describe('Http Policies Handle', () => {
       testBody: Subjects.toObject(subjects),
       expected: subjects,
       request: `${baseRequest}/entries/${label}/subjects`,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });
@@ -96,7 +97,7 @@ describe('Http Policies Handle', () => {
       testBody: aSubject.toObject(),
       expected: aSubject,
       request: `${baseRequest}/entries/${label}/subjects/${subjectId}`,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });
@@ -107,7 +108,7 @@ describe('Http Policies Handle', () => {
       testBody: Resources.toObject(resources),
       expected: resources,
       request: `${baseRequest}/entries/${label}/resources`,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });
@@ -118,7 +119,7 @@ describe('Http Policies Handle', () => {
       testBody: aResource.toObject(),
       expected: aResource,
       request: `${baseRequest}/entries/${label}/resources/${resourcePath}`,
-      method: 'get',
+      method: HttpVerb.GET,
       status: 200
     });
   });
@@ -129,7 +130,7 @@ describe('Http Policies Handle', () => {
       testBody: policy.toObject(),
       expected: new PutResponse(policy, 201, undefined),
       request: baseRequest,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 201,
       payload: policy.toJson()
     });
@@ -141,7 +142,7 @@ describe('Http Policies Handle', () => {
       testBody: policy.toObject(),
       expected: new PutResponse(null, 204, undefined),
       request: baseRequest,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 204,
       payload: policy.toJson()
     });
@@ -153,7 +154,7 @@ describe('Http Policies Handle', () => {
       testBody: Entries.toObject(entries),
       expected: new PutResponse(null, 204, undefined),
       request: `${baseRequest}/entries`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 204,
       payload: Entries.toJson(entries)
     });
@@ -165,7 +166,7 @@ describe('Http Policies Handle', () => {
       testBody: Entries.toObject(entries),
       expected: new PutResponse(entries, 201, undefined),
       request: `${baseRequest}/entries`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 201,
       payload: Entries.toJson(entries)
     });
@@ -177,7 +178,7 @@ describe('Http Policies Handle', () => {
       testBody: anEntry.toObject(),
       expected: new PutResponse(anEntry, 201, undefined),
       request: `${baseRequest}/entries/${label}`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 201,
       payload: anEntry.toJson()
     });
@@ -189,7 +190,7 @@ describe('Http Policies Handle', () => {
       testBody: anEntry.toObject(),
       expected: new PutResponse(null, 204, undefined),
       request: `${baseRequest}/entries/${label}`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 204,
       payload: anEntry.toJson()
     });
@@ -201,7 +202,7 @@ describe('Http Policies Handle', () => {
       testBody: Subjects.toObject(subjects),
       expected: new PutResponse(subjects, 201, undefined),
       request: `${baseRequest}/entries/${label}/subjects`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 201,
       payload: Subjects.toJson(subjects)
     });
@@ -213,7 +214,7 @@ describe('Http Policies Handle', () => {
       testBody: Subjects.toObject(subjects),
       expected: new PutResponse(null, 204, undefined),
       request: `${baseRequest}/entries/${label}/subjects`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 204,
       payload: Subjects.toJson(subjects)
     });
@@ -225,7 +226,7 @@ describe('Http Policies Handle', () => {
       testBody: aSubject.toObject(),
       expected: new PutResponse(aSubject, 201, undefined),
       request: `${baseRequest}/entries/${label}/subjects/${subjectId}`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 201,
       payload: aSubject.toJson()
     });
@@ -237,7 +238,7 @@ describe('Http Policies Handle', () => {
       testBody: aSubject.toObject(),
       expected: new PutResponse(null, 204, undefined),
       request: `${baseRequest}/entries/${label}/subjects/${subjectId}`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 204,
       payload: aSubject.toJson()
     });
@@ -249,7 +250,7 @@ describe('Http Policies Handle', () => {
       testBody: Resources.toObject(resources),
       expected: new PutResponse(resources, 201, undefined),
       request: `${baseRequest}/entries/${label}/resources`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 201,
       payload: Resources.toJson(resources)
     });
@@ -261,7 +262,7 @@ describe('Http Policies Handle', () => {
       testBody: Resources.toObject(resources),
       expected: new PutResponse(null, 204, undefined),
       request: `${baseRequest}/entries/${label}/resources`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 204,
       payload: Resources.toJson(resources)
     });
@@ -273,7 +274,7 @@ describe('Http Policies Handle', () => {
       testBody: aResource.toObject(),
       expected: new PutResponse(aResource, 201, undefined),
       request: `${baseRequest}/entries/${label}/resources/${resourcePath}`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 201,
       payload: aResource.toJson()
     });
@@ -285,7 +286,7 @@ describe('Http Policies Handle', () => {
       testBody: aResource.toObject(),
       expected: new PutResponse(null, 204, undefined),
       request: `${baseRequest}/entries/${label}/resources/${resourcePath}`,
-      method: 'put',
+      method: HttpVerb.PUT,
       status: 204,
       payload: aResource.toJson()
     });
@@ -295,7 +296,7 @@ describe('Http Policies Handle', () => {
     return H.test({
       toTest: () => handle.deletePolicy(policy.id),
       request: baseRequest,
-      method: 'delete',
+      method: HttpVerb.DELETE,
       status: 204
     });
   });
@@ -304,7 +305,7 @@ describe('Http Policies Handle', () => {
     return H.test({
       toTest: () => handle.deleteEntry(policy.id, label),
       request: `${baseRequest}/entries/${label}`,
-      method: 'delete',
+      method: HttpVerb.DELETE,
       status: 204
     });
   });
@@ -313,7 +314,7 @@ describe('Http Policies Handle', () => {
     return H.test({
       toTest: () => handle.deleteSubject(policy.id, label, subjectId),
       request: `${baseRequest}/entries/${label}/subjects/${subjectId}`,
-      method: 'delete',
+      method: HttpVerb.DELETE,
       status: 204
     });
   });
@@ -322,7 +323,7 @@ describe('Http Policies Handle', () => {
     return H.test({
       toTest: () => handle.deleteResource(policy.id, label, resourcePath),
       request: `${baseRequest}/entries/${label}/resources/${resourcePath}`,
-      method: 'delete',
+      method: HttpVerb.DELETE,
       status: 204
     });
   });

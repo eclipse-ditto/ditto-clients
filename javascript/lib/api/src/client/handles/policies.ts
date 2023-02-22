@@ -14,6 +14,7 @@
 import { Entries, Entry, Policy, Resource, Resources, Subject, Subjects } from '../../model/policies.model';
 import { GenericResponse, PutResponse } from '../../model/response';
 import { MatchOptions } from '../../options/request.options';
+import { HttpVerb } from '../constants/http-verb';
 import { RequestSender, RequestSenderFactory } from '../request-factory/request-sender';
 
 export interface PoliciesHandle {
@@ -232,7 +233,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    */
   getPolicy(policyId: string, options?: MatchOptions): Promise<Policy> {
     return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
+      verb: HttpVerb.GET,
       parser: o => Policy.fromObject(o, policyId),
       id: policyId,
       requestOptions: options
@@ -248,7 +249,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    */
   getEntries(policyId: string, options?: MatchOptions): Promise<Entries> {
     return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
+      verb: HttpVerb.GET,
       parser: Entries.fromObject,
       id: policyId,
       path: 'entries',
@@ -266,7 +267,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    */
   getEntry(policyId: string, label: string, options?: MatchOptions): Promise<Entry> {
     return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
+      verb: HttpVerb.GET,
       parser: o => Entry.fromObject(o, label),
       id: policyId,
       path: `entries/${label}`,
@@ -284,7 +285,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    */
   getSubjects(policyId: string, label: string, options?: MatchOptions): Promise<Subjects> {
     return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
+      verb: HttpVerb.GET,
       parser: Subjects.fromObject,
       id: policyId,
       path: `entries/${label}/subjects`,
@@ -303,7 +304,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    */
   getSubject(policyId: string, label: string, subjectId: string, options?: MatchOptions): Promise<Subject> {
     return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
+      verb: HttpVerb.GET,
       parser: o => Subject.fromObject(o, subjectId),
       id: policyId,
       path: `entries/${label}/subjects/${subjectId}`,
@@ -321,7 +322,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    */
   getResources(policyId: string, label: string, options?: MatchOptions): Promise<Resources> {
     return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
+      verb: HttpVerb.GET,
       parser: Resources.fromObject,
       id: policyId,
       path: `entries/${label}/resources`,
@@ -340,7 +341,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    */
   getResource(policyId: string, label: string, resourcePath: string, options?: MatchOptions): Promise<Resource> {
     return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
+      verb: HttpVerb.GET,
       parser: o => Resource.fromObject(o, resourcePath),
       id: policyId,
       path: `entries/${label}/resources/${resourcePath}`,
@@ -357,7 +358,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    */
   putPolicy(policy: Policy, options?: MatchOptions): Promise<PutResponse<Policy>> {
     return this.requestFactory.fetchPutRequest({
-      verb: 'PUT',
+      verb: HttpVerb.PUT,
       parser: o => Policy.fromObject(o, policy.id),
       id: policy.id,
       requestOptions: options,
@@ -375,7 +376,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    */
   putEntries(policyId: string, entries: Entries, options?: MatchOptions): Promise<PutResponse<Entries>> {
     return this.requestFactory.fetchPutRequest({
-      verb: 'PUT',
+      verb: HttpVerb.PUT,
       parser: Entries.fromObject,
       id: policyId,
       path: 'entries',
@@ -394,7 +395,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    */
   putEntry(policyId: string, entry: Entry, options?: MatchOptions): Promise<PutResponse<Entry>> {
     return this.requestFactory.fetchPutRequest({
-      verb: 'PUT',
+      verb: HttpVerb.PUT,
       parser: o => Entry.fromObject(o, entry.id),
       id: policyId,
       path: `entries/${entry.id}`,
@@ -414,7 +415,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    */
   putSubjects(policyId: string, label: string, subjects: Subjects, options?: MatchOptions): Promise<PutResponse<Subjects>> {
     return this.requestFactory.fetchPutRequest({
-      verb: 'PUT',
+      verb: HttpVerb.PUT,
       parser: Subjects.fromObject,
       id: policyId,
       path: `entries/${label}/subjects`,
@@ -434,7 +435,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    */
   putSubject(policyId: string, label: string, subject: Subject, options?: MatchOptions): Promise<PutResponse<Subject>> {
     return this.requestFactory.fetchPutRequest({
-      verb: 'PUT',
+      verb: HttpVerb.PUT,
       parser: o => Subject.fromObject(o, subject.id),
       id: policyId,
       path: `entries/${label}/subjects/${subject.id}`,
@@ -454,7 +455,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    */
   putResources(policyId: string, label: string, resources: Resources, options?: MatchOptions): Promise<PutResponse<Resources>> {
     return this.requestFactory.fetchPutRequest({
-      verb: 'PUT',
+      verb: HttpVerb.PUT,
       parser: Resources.fromObject,
       id: policyId,
       path: `entries/${label}/resources`,
@@ -477,7 +478,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
               resource: Resource,
               options?: MatchOptions): Promise<PutResponse<Resource>> {
     return this.requestFactory.fetchPutRequest({
-      verb: 'PUT',
+      verb: HttpVerb.PUT,
       parser: o => Resource.fromObject(o, resource.id),
       id: policyId,
       path: `entries/${label}/resources/${resource.id}`,
@@ -495,7 +496,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    */
   deletePolicy(policyId: string, options?: MatchOptions): Promise<GenericResponse> {
     return this.requestFactory.fetchRequest({
-      verb: 'DELETE',
+      verb: HttpVerb.DELETE,
       id: policyId,
       requestOptions: options
     });
@@ -511,7 +512,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    */
   deleteEntry(policyId: string, label: string, options?: MatchOptions): Promise<GenericResponse> {
     return this.requestFactory.fetchRequest({
-      verb: 'DELETE',
+      verb: HttpVerb.DELETE,
       id: policyId,
       path: `entries/${label}`,
       requestOptions: options
@@ -529,7 +530,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    */
   deleteSubject(policyId: string, label: string, subjectId: string, options?: MatchOptions): Promise<GenericResponse> {
     return this.requestFactory.fetchRequest({
-      verb: 'DELETE',
+      verb: HttpVerb.DELETE,
       id: policyId,
       path: `entries/${label}/subjects/${subjectId}`,
       requestOptions: options
@@ -547,7 +548,7 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    */
   deleteResource(policyId: string, label: string, resourcePath: string, options?: MatchOptions): Promise<GenericResponse> {
     return this.requestFactory.fetchRequest({
-      verb: 'DELETE',
+      verb: HttpVerb.DELETE,
       id: policyId,
       path: `entries/${label}/resources/${resourcePath}`,
       requestOptions: options
