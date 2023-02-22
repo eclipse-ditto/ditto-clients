@@ -56,7 +56,7 @@ Please make sure any file you newly create contains a proper license header. Fin
 Adjusted for Java classes:
 ```java
 /*
- * Copyright (c) 2019 Contributors to the Eclipse Foundation
+ * Copyright (c) 2023 Contributors to the Eclipse Foundation
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information regarding copyright ownership.
@@ -72,7 +72,7 @@ Adjusted for Java classes:
 Adjusted for XML files:
 ```xml
 <!--
-  ~ Copyright (c) 2019 Contributors to the Eclipse Foundation
+  ~ Copyright (c) 2023 Contributors to the Eclipse Foundation
   ~
   ~ See the NOTICE file(s) distributed with this work for additional
   ~ information regarding copyright ownership.
@@ -84,14 +84,6 @@ Adjusted for XML files:
   ~ SPDX-License-Identifier: EPL-2.0
   -->
 ```
-
-### Important
-    
-Please do not forget to add your name/organization to the [legal/NOTICE.md](legal/NOTICE.md) file's Copyright Holders 
-section. If this is not the first contribution you make, then simply update the time period contained in the copyright
-entry to use the year of your first contribution as the lower boundary and the current year as the upper boundary, e.g.
-
-    Copyright 2018-2019 ACME Corporation
 
 ## Submitting the Changes
 
