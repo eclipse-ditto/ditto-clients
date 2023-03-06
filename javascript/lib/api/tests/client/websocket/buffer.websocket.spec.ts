@@ -12,6 +12,9 @@
  */
 
 import { jest } from '@jest/globals';
+import { ContentType } from '../../../src/client/constants/content-type';
+import { DittoAction } from '../../../src/client/constants/ditto-actions';
+import { Header } from '../../../src/client/constants/header';
 import { DittoWebSocketLiveClient } from '../../../src/client/ditto-client-websocket';
 import { bufferFullError } from '../../../src/client/request-factory/resilience/websocket-resilience-interfaces';
 import { MockWebSocketStates, MockWebSocketStateTracker, WebSocketHelper as H } from './websocket.helper';
@@ -21,7 +24,7 @@ jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
 
 describe('WebSocket Resilience Handler with buffer', () => {
   jest.setTimeout(5000); // we need to tell jest, that it should also wait on promises ... default is 0 ms
-  const topic = `${H.splitNamespace}/${H.splitThingId}/things/live/commands/retrieve`;
+  const topic = `${H.splitNamespace}/${H.splitThingId}/things/live/commands/${DittoAction.RETRIEVE}`;
   const pressureBody = {
     status: 429,
     error: 'things:thing.toomanymodifyingrequests',
@@ -32,11 +35,11 @@ describe('WebSocket Resilience Handler with buffer', () => {
   const thingRequest = H.buildRequest({ topic });
   const messageSubject = 'A SUBJECT';
   const message = 'CONTENT';
-  const contentType = 'text/plain';
+  const contentType = ContentType.TEXT;
   const messageRequest = {
     topic: `${H.splitNamespace}/${H.splitThingId}/things/live/messages/${messageSubject}`,
     path: `/inbox/messages/${messageSubject}`,
-    headers: Object.assign(H.standardHeaders, { 'content-type': contentType })
+    headers: Object.assign(H.standardHeaders, { [Header.CONTENT_TYPE]: contentType })
   };
   const pressureResponse = H.buildResponse({
     topic,

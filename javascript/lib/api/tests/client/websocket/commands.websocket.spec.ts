@@ -12,13 +12,14 @@
  */
 
 import { jest } from '@jest/globals';
+import { DittoAction } from '../../../src/client/constants/ditto-actions';
 import { ProtocolResponseValue } from '../../../src/client/request-factory/websocket-request-handler';
 import { Features } from '../../../src/model/things.model';
 import { EventsHelper as H } from './events.helper';
 
 describe('WebSocket Commands Handle', () => {
   jest.setTimeout(5000); // we need to tell jest, that it should also wait on promises ... default is 0 ms
-  const action = 'create';
+  const action = DittoAction.CREATE;
   const topic = `${H.splitNamespace}/${H.splitThingId}/things/live/commands/${action}`;
   const handle = H.thingsClient.getCommandsHandle();
 

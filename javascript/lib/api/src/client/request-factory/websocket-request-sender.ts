@@ -17,6 +17,10 @@ import { FetchRequest, RequestSender, RequestSenderFactory } from './request-sen
 import { ProtocolResponseValue, StandardSubscription, WebSocketRequestHandler } from './websocket-request-handler';
 import { ApiVersion, Channel } from '../../model/ditto-protocol';
 import { GenericResponse } from '../../model/response';
+import { ContentType } from '../constants/content-type';
+import { Header } from '../constants/header';
+import { HttpVerb } from '../constants/http-verb';
+import { DittoAction } from '../constants/ditto-actions';
 
 /**
  * Handle to send web socket requests.
@@ -73,14 +77,20 @@ export class WebSocketRequestSender extends RequestSender {
    * @returns The translated verb
    */
   private static translateVerb(verb: string): string {
-    const action = verb.toLowerCase();
-    if (action === 'get') {
-      return 'retrieve';
+    switch (verb) {
+      case HttpVerb.POST:
+        return DittoAction.CREATE;
+      case HttpVerb.GET:
+        return DittoAction.RETRIEVE;
+      case HttpVerb.PUT:
+        return DittoAction.MODIFY;
+      case HttpVerb.PATCH:
+        return DittoAction.MERGE;
+      case HttpVerb.DELETE:
+        return DittoAction.DELETE;
+      default:
+        return verb.toLowerCase();
     }
-    if (action === 'put') {
-      return 'modify';
-    }
-    return action;
   }
 
   /**
@@ -95,7 +105,11 @@ export class WebSocketRequestSender extends RequestSender {
   public fetchRequest(options: FetchRequest): Promise<GenericResponse> {
     const topic = this.buildTopic(options.id, this.group, 'commands', WebSocketRequestSender.translateVerb(options.verb));
     const path = WebSocketRequestSender.buildPath(options.path);
-    const headers = this.buildHeaders(options.requestOptions, { 'content-type': 'application/json' });
+    const requestOptions = options?.requestOptions;
+    const headers = this.buildHeaders(
+      requestOptions,
+      requestOptions?.getHeaders().has(Header.CONTENT_TYPE) === true ? undefined : { [Header.CONTENT_TYPE]: ContentType.JSON }
+    );
     return this.requester.sendRequest(topic, path, options.payload, headers)
       .then(response => {
         if (response.status >= 200 && response.status < 300) {
@@ -114,7 +128,7 @@ export class WebSocketRequestSender extends RequestSender {
   public sendMessageWithResponse(options: MessageRequest): Promise<GenericResponse> {
     const topic = this.buildMessageTopic(options.id, options.messageSubject);
     const path = WebSocketRequestSender.buildMessagePath(options.path, options.direction, options.messageSubject);
-    const headers = this.buildHeaders(options.options, { 'content-type': options.contentType });
+    const headers = this.buildHeaders(options.options, { [Header.CONTENT_TYPE]: options.contentType });
     return this.requester.sendRequest(topic, path, options.message, headers);
   }
 
@@ -127,7 +141,7 @@ export class WebSocketRequestSender extends RequestSender {
   public sendMessage(options: MessageRequest): Promise<void> {
     const topic = this.buildMessageTopic(options.id, options.messageSubject);
     const path = WebSocketRequestSender.buildMessagePath(options.path, options.direction, options.messageSubject);
-    const headers = this.buildHeaders(options.options, { 'content-type': options.contentType });
+    const headers = this.buildHeaders(options.options, { [Header.CONTENT_TYPE]: options.contentType });
     return this.requester.sendMessage(topic, path, options.message, headers);
   }
 

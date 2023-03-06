@@ -16,6 +16,9 @@ import { MessagesOptions, DefaultMessagesOptions } from '../../options/request.o
 import { RequestSender, RequestSenderFactory } from '../request-factory/request-sender';
 import { MessagesHandle } from './messages';
 import { GenericResponse } from '../../model/response';
+import { HttpVerb } from '../constants/http-verb';
+import { Header } from '../constants/header';
+import { ContentType } from '../constants/content-type';
 
 /**
  * Http handle to send Messages requests.
@@ -108,9 +111,9 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
    */
   claim(thingId: string, claimMessage: any, options?: MessagesOptions): Promise<GenericResponse> {
     const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
-    messageOptions.addHeader('Content-Type', 'application/json');
+    messageOptions.addHeader(Header.CONTENT_TYPE, ContentType.JSON);
     return this.requestFactory.fetchRequest({
-      verb: 'POST',
+      verb: HttpVerb.POST,
       id: thingId,
       path: 'inbox/claim',
       requestOptions: messageOptions,
@@ -129,11 +132,11 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
    * @returns A Promise for the server response
    */
   messageToThing(thingId: string, messageSubject: string, message: string,
-                 contentType: string = 'application/json', options?: MessagesOptions): Promise<GenericResponse> {
+                 contentType: string = ContentType.JSON, options?: MessagesOptions): Promise<GenericResponse> {
     const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
-    messageOptions.addHeader('Content-Type', contentType);
+    messageOptions.addHeader(Header.CONTENT_TYPE, contentType);
     return this.requestFactory.fetchRequest({
-      verb: 'POST',
+      verb: HttpVerb.POST,
       id: thingId,
       path: `inbox/messages/${messageSubject}`,
       requestOptions: messageOptions,
@@ -152,11 +155,11 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
    * @returns A Promise for the server response
    */
   messageFromThing(thingId: string, messageSubject: string, message: string,
-                   contentType: string = 'application/json', options?: MessagesOptions): Promise<GenericResponse> {
+                   contentType: string = ContentType.JSON, options?: MessagesOptions): Promise<GenericResponse> {
     const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
-    messageOptions.addHeader('Content-Type', contentType);
+    messageOptions.addHeader(Header.CONTENT_TYPE, contentType);
     return this.requestFactory.fetchRequest({
-      verb: 'POST',
+      verb: HttpVerb.POST,
       id: thingId,
       path: `outbox/messages/${messageSubject}`,
       requestOptions: messageOptions,
@@ -176,12 +179,12 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
    * @returns A Promise for the server response
    */
   messageToFeature(thingId: string, featureId: string, messageSubject: string, message: string,
-                   contentType: string = 'application/json', options?: MessagesOptions):
+                   contentType: string = ContentType.JSON, options?: MessagesOptions):
     Promise<GenericResponse> {
     const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
-    messageOptions.addHeader('Content-Type', contentType);
+    messageOptions.addHeader(Header.CONTENT_TYPE, contentType);
     return this.requestFactory.fetchRequest({
-      verb: 'POST',
+      verb: HttpVerb.POST,
       id: thingId,
       path: `features/${featureId}/inbox/messages/${messageSubject}`,
       requestOptions: messageOptions,
@@ -201,12 +204,12 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
    * @returns A Promise for the server response
    */
   messageFromFeature(thingId: string, featureId: string, messageSubject: string, message: string,
-                     contentType: string = 'application/json', options?: MessagesOptions):
+                     contentType: string = ContentType.JSON, options?: MessagesOptions):
     Promise<GenericResponse> {
     const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
-    messageOptions.addHeader('Content-Type', contentType);
+    messageOptions.addHeader(Header.CONTENT_TYPE, contentType);
     return this.requestFactory.fetchRequest({
-      verb: 'POST',
+      verb: HttpVerb.POST,
       id: thingId,
       path: `features/${featureId}/outbox/messages/${messageSubject}`,
       requestOptions: messageOptions,

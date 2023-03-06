@@ -14,7 +14,9 @@
 /* tslint:disable:no-duplicate-string */
 import { GenericResponse, PutResponse } from '../../model/response';
 import { Thing } from '../../model/things.model';
-import { FieldsOptions, GetThingsOptions, MatchOptions, DefaultGetThingsOptions } from '../../options/request.options';
+import { FieldsOptions, GetThingsOptions, MatchOptions, DefaultGetThingsOptions, MatchOptionsHelper } from '../../options/request.options';
+import { DittoAction } from '../constants/ditto-actions';
+import { HttpVerb } from '../constants/http-verb';
 import { RequestSender, RequestSenderFactory } from '../request-factory/request-sender';
 import { HttpThingsHandle, WebSocketThingsHandle } from './things.interfaces';
 
@@ -38,7 +40,7 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
 
   public getThing(thingId: string, options?: FieldsOptions): Promise<Thing> {
     return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
+      verb: HttpVerb.GET,
       parser: Thing.fromObject,
       id: thingId,
       requestOptions: options
@@ -47,7 +49,7 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
 
   public getAttributes(thingId: string, options?: FieldsOptions): Promise<object> {
     return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
+      verb: HttpVerb.GET,
       parser: o => o,
       id: thingId,
       path: 'attributes',
@@ -57,7 +59,7 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
 
   public getAttribute(thingId: string, attributePath: string, options?: MatchOptions): Promise<any> {
     return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
+      verb: HttpVerb.GET,
       parser: o => o,
       id: thingId,
       path: `attributes/${attributePath}`,
@@ -75,7 +77,7 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
 
   public deleteThing(thingId: string, options?: MatchOptions): Promise<GenericResponse> {
     return this.requestFactory.fetchRequest({
-      verb: 'DELETE',
+      verb: HttpVerb.DELETE,
       id: thingId,
       requestOptions: options
     });
@@ -100,7 +102,7 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
       actualOptions = options.setThingIds(thingIds);
     }
     return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
+      verb: HttpVerb.GET,
       parser: o => Object(o).map((obj: any) => Thing.fromObject(obj)),
       requestOptions: actualOptions
     });
@@ -108,23 +110,27 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
 
   public postThing(thingWithoutId: Object): Promise<Thing> {
     return this.requestFactory.fetchJsonRequest({
-      verb: 'POST',
+      verb: HttpVerb.POST,
       parser: Thing.fromObject,
       payload: thingWithoutId
     });
   }
 
   public putThing(thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>> {
-    return this.changeThing('PUT', thing, options);
+    return this.changeThing(HttpVerb.PUT, thing, options);
   }
 
   public createThing(thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>> {
-    return this.changeThing('create', thing, options);
+    return this.changeThing(DittoAction.CREATE, thing, options);
+  }
+
+  public patchThing(thing: Thing, options?: MatchOptions | undefined): Promise<PutResponse<Thing>> {
+    return this.changeThing(HttpVerb.PATCH, thing, MatchOptionsHelper.getWithMergeHeader(options));
   }
 
   public putAttributes(thingId: string, attributes: object, options?: MatchOptions): Promise<PutResponse<object>> {
     return this.requestFactory.fetchPutRequest({
-      verb: 'PUT',
+      verb: HttpVerb.PUT,
       parser: o => o,
       id: thingId,
       path: 'attributes',
@@ -136,7 +142,7 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
   public putAttribute(thingId: string, attributePath: string,
                       attributeValue: any, options?: MatchOptions): Promise<PutResponse<any>> {
     return this.requestFactory.fetchPutRequest({
-      verb: 'PUT',
+      verb: HttpVerb.PUT,
       parser: o => o,
       id: thingId,
       path: `attributes/${attributePath}`,
@@ -145,9 +151,32 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
     });
   }
 
+  public patchAttributes(thingId: string, attributes: object, options?: MatchOptions): Promise<PutResponse<object>> {
+    return this.requestFactory.fetchPutRequest({
+      verb: HttpVerb.PATCH,
+      parser: o => o,
+      id: thingId,
+      path: 'attributes',
+      requestOptions: MatchOptionsHelper.getWithMergeHeader(options),
+      payload: attributes
+    });
+  }
+
+  public patchAttribute(thingId: string, attributePath: string,
+                      attributeValue: any, options?: MatchOptions): Promise<PutResponse<any>> {
+    return this.requestFactory.fetchPutRequest({
+      verb: HttpVerb.PATCH,
+      parser: o => o,
+      id: thingId,
+      path: `attributes/${attributePath}`,
+      requestOptions: MatchOptionsHelper.getWithMergeHeader(options),
+      payload: attributeValue
+    });
+  }
+
   public putPolicyId(thingId: string, policyId: string, options?: MatchOptions): Promise<PutResponse<string>> {
     return this.requestFactory.fetchPutRequest({
-      verb: 'PUT',
+      verb: HttpVerb.PUT,
       parser: String,
       id: thingId,
       path: 'policyId',
@@ -156,13 +185,35 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
     });
   }
 
+  public patchPolicyId(thingId: string, policyId: string, options?: MatchOptions): Promise<PutResponse<string>> {
+    return this.requestFactory.fetchPutRequest({
+      verb: HttpVerb.PATCH,
+      parser: String,
+      id: thingId,
+      path: 'policyId',
+      requestOptions: MatchOptionsHelper.getWithMergeHeader(options),
+      payload: policyId
+    });
+  }
+
   public putDefinition(thingId: string, definition: string, options?: MatchOptions): Promise<PutResponse<string>> {
     return this.requestFactory.fetchPutRequest({
-      verb: 'PUT',
+      verb: HttpVerb.PUT,
       parser: String,
       id: thingId,
       path: 'definition',
       requestOptions: options,
+      payload: definition
+    });
+  }
+
+  public patchDefinition(thingId: string, definition: string, options?: MatchOptions): Promise<PutResponse<string>> {
+    return this.requestFactory.fetchPutRequest({
+      verb: HttpVerb.PATCH,
+      parser: String,
+      id: thingId,
+      path: 'definition',
+      requestOptions: MatchOptionsHelper.getWithMergeHeader(options),
       payload: definition
     });
   }
@@ -180,7 +231,7 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
   public getStringAtPath(thingId: string, path: string, options?: MatchOptions): Promise<string> {
     return this.requestFactory.fetchJsonRequest({
       path,
-      verb: 'GET',
+      verb: HttpVerb.GET,
       parser: String,
       id: thingId,
       requestOptions: options
@@ -190,7 +241,7 @@ export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHan
   public deleteItemAtPath(thingId: string, path: string, options?: MatchOptions): Promise<GenericResponse> {
     return this.requestFactory.fetchRequest({
       path,
-      verb: 'DELETE',
+      verb: HttpVerb.DELETE,
       id: thingId,
       requestOptions: options
     });

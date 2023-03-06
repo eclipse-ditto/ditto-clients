@@ -16,6 +16,8 @@ import { DefaultMockWebSocket, ErrorMockWebSocket, MockWebSocket, MockWebSocketB
 import { Helper } from '../test.helper';
 import { WebSocketBuilderInitialStep, WebSocketClientBuilder } from '../../../src/client/websocket-client-builder';
 import { DittoWebSocketClient, DittoWebSocketLiveClient } from '../../../src/client/ditto-client-websocket';
+import { ContentType } from '../../../src/client/constants/content-type';
+import { Header } from '../../../src/client/constants/header';
 
 export enum MockWebSocketStates {
   CONNECTED = 'connected',
@@ -83,7 +85,7 @@ export class WebSocketHelper extends Helper {
   public static get standardHeaders(): { [key: string]: any } {
     return {
       version: 2,
-      'content-type': 'application/json'
+      [Header.CONTENT_TYPE]: ContentType.JSON
     };
   }
 

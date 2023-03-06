@@ -71,6 +71,24 @@ export interface FeaturesHandle {
   putFeatures(features: Features, options?: MatchOptions): Promise<PutResponse<Features>>;
 
   /**
+   * Merges a Feature of this handle's Thing.
+   *
+   * @param feature - The patched Feature.
+   * @param options - Options to use for the request.
+   * @returns A Promise for the response
+   */
+  patchFeature(feature: Feature, options?: MatchOptions): Promise<PutResponse<Feature>>;
+
+  /**
+   * Merges all Features of this handle's Thing.
+   *
+   * @param features - The patched Features.
+   * @param options - Options to use for the request.
+   * @returns A Promise for a response containing the new Features if provided by the response
+   */
+  patchFeatures(features: Features, options?: MatchOptions): Promise<PutResponse<Features>>;
+
+  /**
    * Adds or updates a Feature of this handle's Thing.
    *
    * @param feature - The new Feature.
@@ -88,6 +106,16 @@ export interface FeaturesHandle {
    * @returns A Promise for a response containing the new Definition if provided by the response
    */
   putDefinition(featureId: string, definition: string[], options?: MatchOptions): Promise<PutResponse<string[]>>;
+
+  /**
+   * Merges the definition of the specified Feature.
+   *
+   * @param featureId - The ID of the Feature.
+   * @param definition - The patched definition.
+   * @param options - Options to use for the request.
+   * @returns A Promise for a response containing the new Definition if provided by the response
+   */
+  patchDefinition(featureId: string, definition: string[], options?: MatchOptions): Promise<PutResponse<string[]>>;
 
   /**
    * Adds or updates the properties of the specified Feature.
@@ -109,6 +137,27 @@ export interface FeaturesHandle {
    * @returns A Promise for a response containing the new Property if provided by the response
    */
   putProperty(featureId: string, propertyPath: string, property: any, options?: MatchOptions): Promise<PutResponse<any>>;
+
+  /**
+   * Merges the properties of the specified Feature.
+   *
+   * @param featureId - The ID of the Feature.
+   * @param properties - The patched properties.
+   * @param options - Options to use for the request.
+   * @returns A Promise for the response
+   */
+  patchProperties(featureId: string, properties: object, options?: MatchOptions): Promise<PutResponse<Object>>;
+
+  /**
+   * Merge a Property of the specified Feature.
+   *
+   * @param featureId - The ID of the Feature.
+   * @param propertyPath - The path to the Property to patch.
+   * @param property - The patched Property.
+   * @param options - Options to use for the request.
+   * @returns A Promise for a response containing the new Property if provided by the response
+   */
+  patchProperty(featureId: string, propertyPath: string, property: any, options?: MatchOptions): Promise<PutResponse<any>>;
 
   /**
    * Deletes all Features of this handle's Thing.

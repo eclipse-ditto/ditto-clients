@@ -67,6 +67,27 @@ export interface ThingsHandle {
   putAttribute(thingId: string, attributePath: string, attributeValue: any, options?: MatchOptions): Promise<PutResponse<any>>;
 
   /**
+   * Merges the Attributes of a Thing.
+   *
+   * @param thingId - The ID of the Thing.
+   * @param attributes - The patched Attributes.
+   * @param options - Options to use for the request.
+   * @returns A Promise for the response
+   */
+  patchAttributes(thingId: string, attributes: object, options?: MatchOptions): Promise<PutResponse<object>>;
+
+  /**
+   * merges an Attribute of a Thing.
+   *
+   * @param thingId - The ID of the Thing.
+   * @param attributePath - Path to the Attribute to patch.
+   * @param attributeValue - The patched Attribute value.
+   * @param options - Options to use for the request.
+   * @returns A Promise for the response
+   */
+  patchAttribute(thingId: string, attributePath: string, attributeValue: any, options?: MatchOptions): Promise<PutResponse<any>>;
+
+  /**
    * Deletes a Thing.
    *
    * @param thingId - The ID of the Thing to delete.
@@ -124,6 +145,15 @@ export interface HttpThingsHandle extends ThingsHandle {
   putThing(thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>>;
 
   /**
+   * Adds or merges a Thing.
+   *
+   * @param thing - The Thing to patch.
+   * @param options - Options to use for the request.
+   * @returns A Promise for a response containing the Thing if provided by the response
+   */
+  patchThing(thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>>;
+
+  /**
    * Gets the PolicyId of a Thing.
    *
    * @param thingId - The ID of the Thing.
@@ -141,6 +171,17 @@ export interface HttpThingsHandle extends ThingsHandle {
    * @returns A Promise for the new PolicyId provided in the response
    */
   putPolicyId(thingId: string, policyId: string, options?: MatchOptions): Promise<PutResponse<string>>;
+
+
+  /**
+   * Adds or updates the policyId of a Thing.
+   *
+   * @param thingId - The ID of the Thing.
+   * @param policyId - The patched PolicyId.
+   * @param options - Options to use for the request.
+   * @returns A Promise for the new PolicyId provided in the response
+   */
+  patchPolicyId(thingId: string, policyId: string, options?: MatchOptions): Promise<PutResponse<string>>;
 
   /**
    * Gets the definition of a Thing.
@@ -160,6 +201,16 @@ export interface HttpThingsHandle extends ThingsHandle {
    * @returns A Promise for the new definition provided in the response
    */
   putDefinition(thingId: string, definition: string, options?: MatchOptions): Promise<PutResponse<string>>;
+
+  /**
+   * merges the definition of a Thing.
+   *
+   * @param thingId - The ID of the Thing.
+   * @param definition - The patched definition.
+   * @param options - Options to use for the request.
+   * @returns A Promise for the new definition provided in the response
+   */
+  patchDefinition(thingId: string, definition: string, options?: MatchOptions): Promise<PutResponse<string>>;
 
   /**
    * Deletes the definition of a Thing.
@@ -190,6 +241,15 @@ export interface WebSocketThingsHandle extends ThingsHandle {
    * @returns A Promise for the response
    */
   putThing(thing: Thing, options?: MatchOptions): Promise<GenericResponse>;
+
+  /**
+   * Adds or merges a Thing.
+   *
+   * @param thing - The Thing to patch.
+   * @param options - Options to use for the request.
+   * @returns A Promise for a response containing the Thing if provided by the response
+   */
+  patchThing(thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>>;
 
 }
 

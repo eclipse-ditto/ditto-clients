@@ -14,7 +14,8 @@
 /* tslint:disable:no-nested-template-literals */
 import { GenericResponse, PutResponse } from '../../model/response';
 import { Feature, Features } from '../../model/things.model';
-import { FieldsOptions, MatchOptions } from '../../options/request.options';
+import { FieldsOptions, MatchOptions, MatchOptionsHelper } from '../../options/request.options';
+import { HttpVerb } from '../constants/http-verb';
 import { RequestSender, RequestSenderFactory } from '../request-factory/request-sender';
 import { FeaturesHandle } from './features.interfaces';
 
@@ -40,7 +41,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
 
   public getFeatures(options?: FieldsOptions): Promise<Features> {
     return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
+      verb: HttpVerb.GET,
       parser: Features.fromObject,
       id: this.thingId,
       path: 'features',
@@ -50,7 +51,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
 
   public getFeature(featureId: string, options?: FieldsOptions): Promise<Feature> {
     return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
+      verb: HttpVerb.GET,
       parser: o => Feature.fromObject(o, featureId),
       id: this.thingId,
       path: `features/${featureId}`,
@@ -60,7 +61,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
 
   public getDefinition(featureId: string, options?: MatchOptions): Promise<string[]> {
     return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
+      verb: HttpVerb.GET,
       parser: o => Object(o).map((obj: any) => String(obj)),
       id: this.thingId,
       path: `features/${featureId}/definition`,
@@ -70,7 +71,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
 
   public getProperties(featureId: string, options?: FieldsOptions): Promise<Object> {
     return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
+      verb: HttpVerb.GET,
       parser: o => o,
       id: this.thingId,
       path: `features/${featureId}/properties`,
@@ -80,7 +81,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
 
   public getProperty(featureId: string, propertyPath: string, options?: MatchOptions): Promise<any> {
     return this.requestFactory.fetchJsonRequest({
-      verb: 'GET',
+      verb: HttpVerb.GET,
       parser: o => o,
       id: this.thingId,
       path: `features/${featureId}/properties/${propertyPath}`,
@@ -90,7 +91,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
 
   public deleteFeatures(options?: MatchOptions): Promise<GenericResponse> {
     return this.requestFactory.fetchRequest({
-      verb: 'DELETE',
+      verb: HttpVerb.DELETE,
       id: this.thingId,
       path: 'features',
       requestOptions: options
@@ -99,7 +100,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
 
   public deleteFeature(featureId: string, options?: MatchOptions): Promise<GenericResponse> {
     return this.requestFactory.fetchRequest({
-      verb: 'DELETE',
+      verb: HttpVerb.DELETE,
       id: this.thingId,
       path: `features/${featureId}`,
       requestOptions: options
@@ -108,7 +109,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
 
   public deleteDefinition(featureId: string, options?: MatchOptions): Promise<GenericResponse> {
     return this.requestFactory.fetchRequest({
-      verb: 'DELETE',
+      verb: HttpVerb.DELETE,
       id: this.thingId,
       path: `features/${featureId}/definition`,
       requestOptions: options
@@ -117,7 +118,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
 
   public deleteProperties(featureId: string, options?: MatchOptions): Promise<GenericResponse> {
     return this.requestFactory.fetchRequest({
-      verb: 'DELETE',
+      verb: HttpVerb.DELETE,
       id: this.thingId,
       path: `features/${featureId}/properties`,
       requestOptions: options
@@ -126,7 +127,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
 
   public deleteProperty(featureId: string, propertyPath: string, options?: MatchOptions): Promise<GenericResponse> {
     return this.requestFactory.fetchRequest({
-      verb: 'DELETE',
+      verb: HttpVerb.DELETE,
       id: this.thingId,
       path: `features/${featureId}/properties/${propertyPath}`,
       requestOptions: options
@@ -135,7 +136,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
 
   public putFeatures(features: Features, options?: MatchOptions): Promise<PutResponse<Features>> {
     return this.requestFactory.fetchPutRequest({
-      verb: 'PUT',
+      verb: HttpVerb.PUT,
       parser: Features.fromObject,
       id: this.thingId,
       path: 'features',
@@ -146,7 +147,7 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
 
   public putFeature(feature: Feature, options?: MatchOptions): Promise<PutResponse<Feature>> {
     return this.requestFactory.fetchPutRequest({
-      verb: 'PUT',
+      verb: HttpVerb.PUT,
       parser: o => Feature.fromObject(o, feature.id),
       id: this.thingId,
       path: `features/${feature.id}`,
@@ -155,9 +156,31 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
     });
   }
 
+  public patchFeatures(features: Features, options?: MatchOptions): Promise<PutResponse<Features>> {
+    return this.requestFactory.fetchPutRequest({
+      verb: HttpVerb.PATCH,
+      parser: Features.fromObject,
+      id: this.thingId,
+      path: 'features',
+      requestOptions: MatchOptionsHelper.getWithMergeHeader(options),
+      payload: Features.toObject(features)
+    });
+  }
+
+  public patchFeature(feature: Feature, options?: MatchOptions): Promise<PutResponse<Feature>> {
+    return this.requestFactory.fetchPutRequest({
+      verb: HttpVerb.PATCH,
+      parser: o => Feature.fromObject(o, feature.id),
+      id: this.thingId,
+      path: `features/${feature.id}`,
+      requestOptions: MatchOptionsHelper.getWithMergeHeader(options),
+      payload: feature.toObject()
+    });
+  }
+
   public putDefinition(featureId: string, definition: string[], options?: MatchOptions): Promise<PutResponse<string[]>> {
     return this.requestFactory.fetchPutRequest({
-      verb: 'PUT',
+      verb: HttpVerb.PUT,
       parser: o => o !== undefined ? Object.values(o).map((obj: any) => String(obj)) : [],
       id: this.thingId,
       path: `features/${featureId}/definition`,
@@ -166,9 +189,20 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
     }); // `[${String(definition.map(s => `"${s}"`))}]`
   }
 
+  public patchDefinition(featureId: string, definition: string[], options?: MatchOptions): Promise<PutResponse<string[]>> {
+    return this.requestFactory.fetchPutRequest({
+      verb: HttpVerb.PATCH,
+      parser: o => o !== undefined ? Object.values(o).map((obj: any) => String(obj)) : [],
+      id: this.thingId,
+      path: `features/${featureId}/definition`,
+      requestOptions: MatchOptionsHelper.getWithMergeHeader(options),
+      payload: definition
+    });
+  }
+
   public putProperties(featureId: string, properties: object, options?: MatchOptions): Promise<PutResponse<Object>> {
     return this.requestFactory.fetchPutRequest({
-      verb: 'PUT',
+      verb: HttpVerb.PUT,
       parser: o => o,
       id: this.thingId,
       path: `features/${featureId}/properties`,
@@ -180,11 +214,33 @@ export class DefaultFeaturesHandle implements FeaturesHandle {
   public putProperty(featureId: string, propertyPath: string,
                       property: any, options?: MatchOptions): Promise<PutResponse<any>> {
     return this.requestFactory.fetchPutRequest({
-      verb: 'PUT',
+      verb: HttpVerb.PUT,
       parser: o => o,
       id: this.thingId,
       path: `features/${featureId}/properties/${propertyPath}`,
       requestOptions: options,
+      payload: property
+    });
+  }
+
+  public patchProperties(featureId: string, properties: object, options?: MatchOptions): Promise<PutResponse<Object>> {
+    return this.requestFactory.fetchPutRequest({
+      verb: HttpVerb.PATCH,
+      parser: o => o,
+      id: this.thingId,
+      path: `features/${featureId}/properties`,
+      requestOptions: MatchOptionsHelper.getWithMergeHeader(options),
+      payload: properties
+    });
+  }
+
+  public patchProperty(featureId: string, propertyPath: string, property: any, options?: MatchOptions): Promise<PutResponse<any>> {
+    return this.requestFactory.fetchPutRequest({
+      verb:  HttpVerb.PATCH,
+      parser: o => o,
+      id: this.thingId,
+      path: `features/${featureId}/properties/${propertyPath}`,
+      requestOptions: MatchOptionsHelper.getWithMergeHeader(options),
       payload: property
     });
   }

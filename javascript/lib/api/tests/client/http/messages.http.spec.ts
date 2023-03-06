@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { HttpVerb } from '../../../src/client/constants/http-verb';
 import { HttpHelper as H } from './http.helper';
 
 describe('Http Messages Handle', () => {
@@ -26,7 +27,7 @@ describe('Http Messages Handle', () => {
       testBody: { content: 'Information' },
       expected: { status: 200, headers: undefined as Map<string, string>, body: { content: 'Information' } },
       request: `${baseRequest}/inbox/claim`,
-      method: 'post',
+      method: HttpVerb.POST,
       status: 200,
       payload: JSON.stringify(message)
     });
@@ -36,7 +37,7 @@ describe('Http Messages Handle', () => {
     return H.test({
       toTest: () => handle.messageToThing(H.thing.thingId, messageSubject, message),
       request: `${baseRequest}/inbox/messages/${messageSubject}`,
-      method: 'post',
+      method: HttpVerb.POST,
       status: 202,
       payload: JSON.stringify(message)
     });
@@ -46,7 +47,7 @@ describe('Http Messages Handle', () => {
     return H.test({
       toTest: () => handle.messageFromThing(H.thing.thingId, messageSubject, message),
       request: `${baseRequest}/outbox/messages/${messageSubject}`,
-      method: 'post',
+      method: HttpVerb.POST,
       status: 202,
       payload: JSON.stringify(message)
     });
@@ -56,7 +57,7 @@ describe('Http Messages Handle', () => {
     return H.test({
       toTest: () => handle.messageToFeature(H.thing.thingId, H.feature.id, messageSubject, message),
       request: `${baseRequest}/features/${H.feature.id}/inbox/messages/${messageSubject}`,
-      method: 'post',
+      method: HttpVerb.POST,
       status: 202,
       payload: JSON.stringify(message)
     });
@@ -66,7 +67,7 @@ describe('Http Messages Handle', () => {
     return H.test({
       toTest: () => handle.messageFromFeature(H.thing.thingId, H.feature.id, messageSubject, message),
       request: `${baseRequest}/features/${H.feature.id}/outbox/messages/${messageSubject}`,
-      method: 'post',
+      method: HttpVerb.POST,
       status: 202,
       payload: JSON.stringify(message)
     });

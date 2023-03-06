@@ -12,6 +12,8 @@
  */
 
 import { jest } from '@jest/globals';
+import { ContentType } from '../../../src/client/constants/content-type';
+import { DittoAction } from '../../../src/client/constants/ditto-actions';
 import { DittoWebSocketLiveClient } from '../../../src/client/ditto-client-websocket';
 import {
   connectionUnavailableError
@@ -22,7 +24,7 @@ import { DefaultMockWebSocket } from './websocket.mock';
 describe('WebSocket Resilience Handler without buffer', () => {
   jest.setTimeout(5000); // we need to tell jest, that it should also wait on promises ... default is 0 ms
 
-  const topic = `${H.splitNamespace}/${H.splitThingId}/things/live/commands/retrieve`;
+  const topic = `${H.splitNamespace}/${H.splitThingId}/things/live/commands/${DittoAction.RETRIEVE}`;
   const pressureBody = {
     status: 429,
     error: 'things:thing.toomanymodifyingrequests',
@@ -33,7 +35,7 @@ describe('WebSocket Resilience Handler without buffer', () => {
   const thingRequest = H.buildRequest({ topic });
   const messageSubject = 'A SUBJECT';
   const message = 'CONTENT';
-  const contentType = 'text/plain';
+  const contentType = ContentType.TEXT;
   const pressureResponse = H.buildResponse({
     topic,
     status: 429,

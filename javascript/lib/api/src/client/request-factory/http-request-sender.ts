@@ -15,6 +15,8 @@ import { RequestOptions } from '../../options/request.options';
 import { FetchRequest, RequestSender, RequestSenderFactory } from './request-sender';
 import { AuthProvider, DittoHeaders, DittoURL, authenticateWithUrl } from '../../auth/auth-provider';
 import { GenericResponse } from '../../model/response';
+import { Header } from '../constants/header';
+import { ContentType } from '../constants/content-type';
 
 /**
  * Handle to send HTTP requests.
@@ -74,8 +76,8 @@ export class HttpRequestSender extends RequestSender {
     if (options) {
       options.getHeaders().forEach((v, k) => headers.set(k, v));
     }
-    if (!headers.has('Content-Type')) {
-      headers.set('Content-Type', 'application/json');
+    if (!headers.has(Header.CONTENT_TYPE)) {
+      headers.set(Header.CONTENT_TYPE, ContentType.JSON);
     }
     let authenticatedHeaders = headers;
     for (const authenticationProvider of this.authenticationProviders) {
