@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to the Ditto JavaScript client will be documented in this file.
 
+## [3.2.0] - 2023-03-08
+
+### Dependencies
+
+No dependencies were explicitly updated.
+
+### \#217 Added merge functionality to javascript client sdk
+
+PR #208 adds support for merge/patch functionality to the Ditto JS client.
+
 ## [3.1.0] - 2022-12-15
 
 ### Dependencies
