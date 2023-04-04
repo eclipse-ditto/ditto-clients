@@ -170,6 +170,18 @@ export const Like: (property: string, form: string) => Filter =
   };
 
 /**
+ * Builds a ilike-Filter. The body of the property must conform to the form provided.
+ *
+ * @param property - The property to check.
+ * @param form - The values to check for.
+ * @return The ilike-Filter.
+ */
+export const ILike: (property: string, form: string) => Filter =
+  (property: string, form: string) => {
+    return standardFilter('ilike', property, form);
+  };
+
+/**
  * Builds a exists-Filter. The property must exist.
  *
  * @param property - The property to check.

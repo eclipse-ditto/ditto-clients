@@ -11,7 +11,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-import { And, Eq, Exists, Ge, Gt, In, Le, Like, Lt, Ne, Not, Or } from '../../src/options/filter.options';
+import { And, Eq, Exists, Ge, Gt, ILike, In, Le, Like, Lt, Ne, Not, Or } from '../../src/options/filter.options';
 
 describe('Filters', () => {
 
@@ -96,6 +96,11 @@ describe('Filters', () => {
   it('builds a like', () => {
     const like = Like(prop, '*test*');
     expect(like.toString()).toEqual(`like(${prop},"*test*")`);
+  });
+
+  it('builds an ilike', () => {
+    const ilike = ILike(prop, '*test*');
+    expect(ilike.toString()).toEqual(`ilike(${prop},"*test*")`);
   });
 
   it('builds an exists', () => {
