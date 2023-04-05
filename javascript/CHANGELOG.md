@@ -1,6 +1,17 @@
 # Changelog
 All notable changes to the Ditto JavaScript client will be documented in this file.
 
+## [3.2.1] - 2023-04-05
+
+### Dependencies
+
+No dependencies were explicitly updated.
+
+### \#219 add ilike fiter to JS client
+
+PR #219 adds the in Ditto 3.2.0 added `ilike` RQL (search) predicate to the Ditto JS client
+
+
 ## [3.2.0] - 2023-03-08
 
 ### Dependencies
