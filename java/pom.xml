@@ -22,7 +22,7 @@
 
     <name>Eclipse Ditto Client</name>
     <description>Eclipse Ditto client SDK for Java.</description>
-    <url>https://eclipse.org/ditto/</url>
+    <url>https://eclipse.dev/ditto/</url>
     <inceptionYear>2019</inceptionYear>
 
     <organization>
@@ -484,7 +484,7 @@
                         <instructions>
                             <Bundle-Vendor>Eclipse Ditto</Bundle-Vendor>
                             <Bundle-License>EPL-2.0</Bundle-License>
-                            <Bundle-DocURL>https://eclipse.org/ditto/</Bundle-DocURL>
+                            <Bundle-DocURL>https://eclipse.dev/ditto/</Bundle-DocURL>
                             <_noee>true</_noee>
                             <Bundle-RequiredExecutionEnvironment>JavaSE-1.8</Bundle-RequiredExecutionEnvironment>
                             <Include-Resource>

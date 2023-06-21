@@ -30,7 +30,7 @@ No dependencies were explicitly updated.
 
 ### \#208 Add support for cursor pagination to JS clients
 
-As per the [documentation](https://www.eclipse.org/ditto/basic-search.html#rql-paging-deprecated), 
+As per the [documentation](https://www.eclipse.dev/ditto/basic-search.html#rql-paging-deprecated), 
 pagination via the `limit` parameter is deprecated and might get removed in the future.  
 PR #208 adds support for cursor pagination to the JS client so applications using the client can use the new 
 pagination style.

@@ -282,7 +282,7 @@ export interface SearchOptions extends AddRequestOptions<SearchOptions>, HasFilt
    * @param count - The number of things to return.
    * @returns The instance of SearchOptions with the added option
    *
-   * @Deprecated See {@link https://www.eclipse.org/ditto/basic-search.html#rql-paging-deprecated} Use cursor pagination instead
+   * @Deprecated See {@link https://www.eclipse.dev/ditto/basic-search.html#rql-paging-deprecated} Use cursor pagination instead
    * Sets a limit option.
    */
   withLimit(offset: number, count: number): SearchOptions;
