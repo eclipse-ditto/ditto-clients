@@ -1,13 +1,25 @@
 # Changelog
 All notable changes to the Ditto JavaScript client will be documented in this file.
 
+## [3.3.4] - 2023-06-23
+
+### Dependencies
+
+No dependencies were explicitly updated.
+
+### Features / Bug fixes
+
+None in this release.
+
 ## [3.2.1] - 2023-04-05
 
 ### Dependencies
 
 No dependencies were explicitly updated.
 
-### \#219 add ilike fiter to JS client
+### Features / Bug fixes
+
+#### \#219 add ilike fiter to JS client
 
 PR #219 adds the in Ditto 3.2.0 added `ilike` RQL (search) predicate to the Ditto JS client
 
@@ -18,7 +30,9 @@ PR #219 adds the in Ditto 3.2.0 added `ilike` RQL (search) predicate to the Ditt
 
 No dependencies were explicitly updated.
 
-### \#217 Added merge functionality to javascript client sdk
+### Features / Bug fixes
+
+#### \#217 Added merge functionality to javascript client sdk
 
 PR #208 adds support for merge/patch functionality to the Ditto JS client.
 
@@ -28,7 +42,9 @@ PR #208 adds support for merge/patch functionality to the Ditto JS client.
 
 No dependencies were explicitly updated.
 
-### \#208 Add support for cursor pagination to JS clients
+### Features / Bug fixes
+
+#### \#208 Add support for cursor pagination to JS clients
 
 As per the [documentation](https://www.eclipse.dev/ditto/basic-search.html#rql-paging-deprecated), 
 pagination via the `limit` parameter is deprecated and might get removed in the future.  
@@ -42,7 +58,9 @@ pagination style.
 
 No dependencies were explicitly updated.
 
-### \#202 JS Client was incompatible with Typescript 4.7
+### Features / Bug fixes
+
+#### \#202 JS Client was incompatible with Typescript 4.7
 
 The released Ditto JavaScript client 3.0.0 did not work in Typescript projects.  
 PR #203 provides a fix for that.
@@ -54,7 +72,9 @@ PR #203 provides a fix for that.
 
 No dependencies were explicitly updated.
 
-### \#169 Improved error handling for HTTP rejections
+### Features / Bug fixes
+
+#### \#169 Improved error handling for HTTP rejections
 
 Error handling for the Ditto JavaScript client did not return the status code.
 And if the error response was not JSON formatted, the error could not be parsed and `undefined` was resolved as `error`.
@@ -71,7 +91,7 @@ interface ErrorResponse {
 }
 ```
 
-### \#193 Preserve headers when responding to messages
+#### \#193 Preserve headers when responding to messages
 
 The `DittoHeaders` of a message were not preserved when subscribing to consume messages via the Ditto JavaScript client.  
 Without access to the headers and the contained `correlation-id` it was not possible to send back a correlated 
