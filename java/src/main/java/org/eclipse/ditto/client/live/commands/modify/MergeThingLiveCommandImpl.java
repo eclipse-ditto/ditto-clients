@@ -16,10 +16,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.concurrent.Immutable;
 
-import org.eclipse.ditto.json.JsonPointer;
-import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.base.model.signals.commands.Command;
+import org.eclipse.ditto.json.JsonPointer;
+import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.things.model.signals.commands.modify.MergeThing;
 
 /**
@@ -38,7 +38,7 @@ final class MergeThingLiveCommandImpl extends AbstractModifyLiveCommand<MergeThi
     private MergeThingLiveCommandImpl(final MergeThing command) {
         super(command);
         path = command.getPath();
-        value = command.getValue();
+        value = command.getEntity().orElseGet(command::getValue);
     }
 
     /**
