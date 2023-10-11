@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-ditto/ditto-javascript-client-dom",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "description": "DOM implementation of Eclipse Ditto JavaScript API to be used in browsers.",
   "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
   "repository": "https://github.com/eclipse-ditto/ditto-clients",

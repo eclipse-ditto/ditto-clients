@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to the Ditto JavaScript client will be documented in this file.
 
+## [3.4.0] - 2023-10-12
+
+### Dependencies
+
+No dependencies were explicitly updated.
+
+### Features / Bug fixes
+
+None in this release.
+
 ## [3.3.4] - 2023-06-23
 
 ### Dependencies
