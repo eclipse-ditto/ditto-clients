@@ -810,7 +810,7 @@ public abstract class CommonManagementImpl<T extends ThingHandle<F>, F extends F
     @Nullable
     private static Thing transformModifyResponse(final CommandResponse<?> response) {
         if (response instanceof WithOptionalEntity) {
-            return ((WithOptionalEntity) response).getEntity(response.getImplementedSchemaVersion())
+            return ((WithOptionalEntity<?>) response).getEntity(response.getImplementedSchemaVersion())
                     .filter(JsonValue::isObject)
                     .map(JsonValue::asObject)
                     .map(ThingsModelFactory::newThing)

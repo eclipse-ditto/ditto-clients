@@ -14,11 +14,11 @@ package org.eclipse.ditto.client.live.commands.modify;
 
 import java.util.Optional;
 
+import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
 import org.eclipse.ditto.client.live.commands.base.AbstractLiveCommand;
 import org.eclipse.ditto.client.live.commands.base.LiveCommand;
 import org.eclipse.ditto.client.live.commands.base.LiveCommandAnswerBuilder;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
 import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.things.model.signals.commands.modify.ThingModifyCommand;
 
@@ -57,4 +57,9 @@ abstract class AbstractModifyLiveCommand<T extends LiveCommand<T, B> & ThingModi
         return thingModifyCommand.getEntity(schemaVersion);
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
+    public T setEntity(final JsonValue entity) {
+        return (T) this;
+    }
 }

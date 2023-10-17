@@ -337,6 +337,11 @@ public abstract class AbstractHandle {
             }
 
             @Override
+            public T setEntity(final JsonValue entity) {
+                return (T) this;
+            }
+
+            @Override
             public T setDittoHeaders(final DittoHeaders dittoHeaders) {
                 return (T) this;
             }

@@ -20,6 +20,8 @@ import java.util.concurrent.CompletionStage;
 
 import javax.annotation.Nonnull;
 
+import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
+import org.eclipse.ditto.base.model.acks.DittoAcknowledgementLabel;
 import org.eclipse.ditto.client.internal.AbstractHandle;
 import org.eclipse.ditto.client.internal.OutgoingMessageFactory;
 import org.eclipse.ditto.client.internal.bus.PointerBus;
@@ -29,12 +31,9 @@ import org.eclipse.ditto.client.policies.Policies;
 import org.eclipse.ditto.json.JsonFieldSelector;
 import org.eclipse.ditto.json.JsonObject;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
-import org.eclipse.ditto.base.model.acks.DittoAcknowledgementLabel;
 import org.eclipse.ditto.policies.model.PoliciesModelFactory;
 import org.eclipse.ditto.policies.model.Policy;
 import org.eclipse.ditto.policies.model.PolicyId;
-import org.eclipse.ditto.protocol.TopicPath;
 import org.eclipse.ditto.policies.model.signals.commands.modify.CreatePolicy;
 import org.eclipse.ditto.policies.model.signals.commands.modify.CreatePolicyResponse;
 import org.eclipse.ditto.policies.model.signals.commands.modify.DeletePolicy;
@@ -43,6 +42,7 @@ import org.eclipse.ditto.policies.model.signals.commands.modify.ModifyPolicyResp
 import org.eclipse.ditto.policies.model.signals.commands.modify.PolicyModifyCommandResponse;
 import org.eclipse.ditto.policies.model.signals.commands.query.RetrievePolicy;
 import org.eclipse.ditto.policies.model.signals.commands.query.RetrievePolicyResponse;
+import org.eclipse.ditto.protocol.TopicPath;
 
 /**
  * Default implementation for {@link Policies}.
@@ -102,9 +102,12 @@ public final class PoliciesImpl extends AbstractHandle implements Policies {
         return askPolicyCommand(outgoingMessageFactory.putPolicy(policy, options),
                 // response could be either CreatePolicyResponse or ModifyPolicyResponse.
                 PolicyModifyCommandResponse.class,
-                response -> response.getEntity(response.getImplementedSchemaVersion())
-                        .map(JsonValue::asObject)
-                        .map(PoliciesModelFactory::newPolicy)
+                response -> {
+                    final Optional<JsonValue> entity = response.getEntity(response.getImplementedSchemaVersion());
+                    return entity
+                            .map(JsonValue::asObject)
+                            .map(PoliciesModelFactory::newPolicy);
+                }
         );
     }
 
