@@ -209,7 +209,7 @@
         <jsr305.version>3.0.2</jsr305.version>
 
         <!-- ### Testing dependencies versions -->
-        <logback.version>1.2.12</logback.version>
+        <logback.version>1.2.13</logback.version>
         <junit.version>4.13.2</junit.version>
         <assertj.version>3.24.2</assertj.version>
         <mutability-detector.version>0.10.6</mutability-detector.version>
