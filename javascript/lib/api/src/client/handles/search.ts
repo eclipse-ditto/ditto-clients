@@ -26,12 +26,28 @@ export interface SearchHandle {
   search(options?: SearchOptions): Promise<SearchThingsResponse>;
 
   /**
+   * Searches for Things that match the restrictions set in options using a http post request.
+   *
+   * @param options - Options to use for the search.
+   * @returns The search result
+   */
+  postSearch(options?: SearchOptions): Promise<SearchThingsResponse>;
+
+  /**
    * Counts the Things that match the restrictions set in options.
    *
    * @param options - Options to use for the search.
    * @returns The count
    */
   count(options?: CountOptions): Promise<number>;
+
+  /**
+   * Counts the Things that match the restrictions set in options using a http post request.
+   *
+   * @param options - Options to use for the search.
+   * @returns The count
+   */
+  postCount(options?: CountOptions): Promise<number>;
 }
 
 /**
@@ -67,6 +83,20 @@ export class DefaultSearchHandle implements SearchHandle {
   }
 
   /**
+   * Searches for Things that match the restrictions set in options using a http post request.
+   *
+   * @param options - Options to use for the search.
+   * @returns The search result
+   */
+  postSearch(options?: SearchOptions): Promise<SearchThingsResponse> {
+    return this.requestFactory.fetchFormRequest({
+      verb: HttpVerb.POST,
+      parser: SearchThingsResponse.fromObject,
+      payload: options?.getOptions()
+    });
+  }
+
+  /**
    * Counts the Things that match the restrictions set in options.
    *
    * @param options - Options to use for the search.
@@ -81,4 +111,18 @@ export class DefaultSearchHandle implements SearchHandle {
     });
   }
 
+  /**
+   * Counts the Things that match the restrictions set in options using a http post request.
+   *
+   * @param options - Options to use for the search.
+   * @returns The count
+   */
+  postCount(options?: CountOptions): Promise<number> {
+    return this.requestFactory.fetchFormRequest({
+      verb: HttpVerb.POST,
+      parser: Number,
+      path: 'count',
+      payload: options?.getOptions()
+    });
+  }
 }

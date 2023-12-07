@@ -18,7 +18,6 @@ import { RequestOptions } from '../../options/request.options';
  * Handle to send requests.
  */
 export abstract class RequestSender {
-
   /**
    * Fetches the specified request and returns an object of type T.
    *
@@ -27,8 +26,31 @@ export abstract class RequestSender {
    * @returns A Promise for the specified object
    */
   public fetchJsonRequest<T>(options: ParseRequest<T>): Promise<T> {
-    return this.fetchRequest(options)
-      .then(response => options.parser(response.body));
+    return this.fetchGenericJsonRequest(options).then(response => options.parser(response.body));
+  }
+
+  /**
+   * Fetches the specified request and returns an object of type T.
+   *
+   * @typeParam T - The type of object to return
+   * @param options - The options to use for the request.
+   * @returns A Promise for the specified object
+   */
+  public fetchFormRequest<T>(options: FetchFormRequest<T>): Promise<T> {
+    return this.fetchRequest({
+      ...options,
+      payload: options.payload
+        ? this.mapToQueryParams(options.payload)
+        : undefined
+    }).then(response => options.parser(response.body));
+  }
+
+  protected mapToQueryParams(map: Map<string, string>): string {
+    let result = '';
+    map.forEach((value, key) => {
+      result += `&${key}=${value}`;
+    });
+    return result.substring(1);
   }
 
   /**
@@ -39,16 +61,32 @@ export abstract class RequestSender {
    * @returns A Promise for the specified object
    */
   public fetchPutRequest<T>(options: ParseRequest<T>): Promise<PutResponse<T>> {
-    return this.fetchRequest(options)
-      .then(response => {
-        if (response.status === 201) {
-          return new PutResponse(options.parser(response.body), response.status, response.headers);
-        }
-        if (response.status === 204) {
-          return new PutResponse<T>(null, response.status, response.headers);
-        }
-        return Promise.reject(`Received unknown status code: ${response.status}`);
-      });
+    return this.fetchGenericJsonRequest(options).then(response => {
+      if (response.status === 201) {
+        return new PutResponse(
+          options.parser(response.body),
+          response.status,
+          response.headers
+        );
+      }
+      if (response.status === 204) {
+        return new PutResponse<T>(null, response.status, response.headers);
+      }
+      return Promise.reject(`Received unknown status code: ${response.status}`);
+    });
+  }
+
+  /**
+   * Fetches the specified request and checks if the request was successful.
+   *
+   * @param options - The options to use for the request.
+   * @returns A Promise for the response
+   */
+  public fetchGenericJsonRequest(options: FetchRequest): Promise<GenericResponse> {
+    return this.fetchRequest({
+      ...options,
+      payload: JSON.stringify(options.payload)
+    });
   }
 
   /**
@@ -88,6 +126,14 @@ export interface FetchRequest {
   requestOptions?: RequestOptions;
   /** The payload to send with he request. */
   payload?: any;
+}
+
+/**
+ * The options needed for a Request.
+ */
+export interface FetchFormRequest<T> extends ParseRequest<T> {
+  /** The payload to send with he request. */
+  payload?: Map<string, string>;
 }
 
 /**

@@ -31,7 +31,7 @@ export class HttpRequestSender extends RequestSender {
 
   public fetchRequest(options: FetchRequest): Promise<GenericResponse> {
     return this.requester.doRequest(options.verb, this.buildUrl(options.id, options.path, options.requestOptions),
-      this.buildHeader(options.requestOptions), JSON.stringify(options.payload))
+      this.buildHeader(options.requestOptions), options.payload)
       .then(response => {
         if (response.status >= 200 && response.status < 300) {
           return response;
@@ -52,12 +52,7 @@ export class HttpRequestSender extends RequestSender {
     let urlSuffix = id === undefined ? '' : `/${id}`;
     urlSuffix = path === undefined ? urlSuffix : `${urlSuffix}/${path}`;
     if (options !== undefined && options.getOptions().size > 0) {
-      const values = options.getOptions();
-      let result = '';
-      values.forEach((v, k) => {
-        result += `&${k}=${v}`;
-      });
-      urlSuffix = `${urlSuffix}?${result.substr(1)}`;
+      urlSuffix = `${urlSuffix}?${this.mapToQueryParams(options.getOptions())}`;
     }
     const baseUrlWithSuffix = this.baseUrl.withPath(`${this.baseUrl.path}${urlSuffix}`);
     const authenticatedBaseUrl = authenticateWithUrl(baseUrlWithSuffix, this.authenticationProviders);
