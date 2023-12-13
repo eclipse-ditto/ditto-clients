@@ -112,7 +112,7 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
   claim(thingId: string, claimMessage: any, options?: MessagesOptions): Promise<GenericResponse> {
     const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
     messageOptions.addHeader(Header.CONTENT_TYPE, ContentType.JSON);
-    return this.requestFactory.fetchRequest({
+    return this.requestFactory.fetchGenericJsonRequest({
       verb: HttpVerb.POST,
       id: thingId,
       path: 'inbox/claim',
@@ -135,7 +135,7 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
                  contentType: string = ContentType.JSON, options?: MessagesOptions): Promise<GenericResponse> {
     const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
     messageOptions.addHeader(Header.CONTENT_TYPE, contentType);
-    return this.requestFactory.fetchRequest({
+    return this.requestFactory.fetchGenericJsonRequest({
       verb: HttpVerb.POST,
       id: thingId,
       path: `inbox/messages/${messageSubject}`,
@@ -158,7 +158,7 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
                    contentType: string = ContentType.JSON, options?: MessagesOptions): Promise<GenericResponse> {
     const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
     messageOptions.addHeader(Header.CONTENT_TYPE, contentType);
-    return this.requestFactory.fetchRequest({
+    return this.requestFactory.fetchGenericJsonRequest({
       verb: HttpVerb.POST,
       id: thingId,
       path: `outbox/messages/${messageSubject}`,
@@ -183,7 +183,7 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
     Promise<GenericResponse> {
     const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
     messageOptions.addHeader(Header.CONTENT_TYPE, contentType);
-    return this.requestFactory.fetchRequest({
+    return this.requestFactory.fetchGenericJsonRequest({
       verb: HttpVerb.POST,
       id: thingId,
       path: `features/${featureId}/inbox/messages/${messageSubject}`,
@@ -208,7 +208,7 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
     Promise<GenericResponse> {
     const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
     messageOptions.addHeader(Header.CONTENT_TYPE, contentType);
-    return this.requestFactory.fetchRequest({
+    return this.requestFactory.fetchGenericJsonRequest({
       verb: HttpVerb.POST,
       id: thingId,
       path: `features/${featureId}/outbox/messages/${messageSubject}`,

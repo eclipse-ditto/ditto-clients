@@ -120,6 +120,16 @@ export class WebSocketRequestSender extends RequestSender {
   }
 
   /**
+   * Fetches the specified request and checks if the request was successful.
+   *
+   * @param options - The options to use for the request.
+   * @returns A Promise for the response
+   */
+  public fetchGenericJsonRequest(options: FetchRequest): Promise<GenericResponse> {
+    return this.fetchRequest(options);
+  }
+
+  /**
    * Sends a Message and returns the response.
    *
    * @param options - The options to use for the Message.
