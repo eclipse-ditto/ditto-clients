@@ -678,6 +678,7 @@
                         <header>../legal/headers/license-header-2020.txt</header>
                         <header>../legal/headers/license-header-2021.txt</header>
                         <header>../legal/headers/license-header-2022.txt</header>
+                        <header>../legal/headers/license-header-2023.txt</header>
                     </validHeaders>
                     <aggregate>true</aggregate>
                     <quiet>false</quiet>
