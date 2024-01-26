@@ -1,6 +1,18 @@
 # Changelog
 All notable changes to the Ditto JavaScript client will be documented in this file.
 
+## [3.5.0] - 2024-01-26
+
+### Dependencies
+
+No dependencies were explicitly updated.
+
+### Features / Bug fixes
+
+#### \#226 Search and count by post in JS client
+
+PR #226 adds support for performing search via HTTP `POST` verb to the Ditto JS client
+
 ## [3.4.0] - 2023-10-12
 
 ### Dependencies
