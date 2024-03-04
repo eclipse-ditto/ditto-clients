@@ -12,7 +12,9 @@
  */
 
 import { SearchThingsResponse } from '../../model/response';
-import { CountOptions, SearchOptions } from '../../options/request.options';
+import { CountOptions, DefaultSearchOptions, RequestOptions, SearchOptions } from '../../options/request.options';
+import { ContentType } from '../constants/content-type';
+import { Header } from '../constants/header';
 import { HttpVerb } from '../constants/http-verb';
 import { RequestSender, RequestSenderFactory } from '../request-factory/request-sender';
 
@@ -54,9 +56,7 @@ export interface SearchHandle {
  * Handle to send Search requests.
  */
 export class DefaultSearchHandle implements SearchHandle {
-
-  private constructor(readonly requestFactory: RequestSender) {
-  }
+  private constructor(readonly requestFactory: RequestSender) {}
 
   /**
    * returns an instance of SearchHandle using the provided RequestSender.
@@ -92,7 +92,8 @@ export class DefaultSearchHandle implements SearchHandle {
     return this.requestFactory.fetchFormRequest({
       verb: HttpVerb.POST,
       parser: SearchThingsResponse.fromObject,
-      payload: options?.getOptions()
+      payload: options?.getOptions(),
+      requestOptions: this.getFormRequestOptions(options)
     });
   }
 
@@ -122,7 +123,19 @@ export class DefaultSearchHandle implements SearchHandle {
       verb: HttpVerb.POST,
       parser: Number,
       path: 'count',
-      payload: options?.getOptions()
+      payload: options?.getOptions(),
+      requestOptions: this.getFormRequestOptions(options)
     });
+  }
+
+  private getFormRequestOptions(options?: SearchOptions | CountOptions): RequestOptions | undefined {
+    const requestOptions = DefaultSearchOptions.getInstance();
+    options?.getHeaders().forEach((value, key) => {
+      requestOptions.addHeader(key, value);
+    });
+    if (!requestOptions?.getHeaders().has(Header.CONTENT_TYPE)) {
+      requestOptions?.addHeader(Header.CONTENT_TYPE, ContentType.FORM_URLENCODED);
+    }
+    return requestOptions;
   }
 }

@@ -11,6 +11,8 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+import { ContentType } from '../../../src/client/constants/content-type';
+import { Header } from '../../../src/client/constants/header';
 import { HttpVerb } from '../../../src/client/constants/http-verb';
 import { SearchHandle } from '../../../src/client/handles/search';
 import { SearchThingsResponse } from '../../../src/model/response';
@@ -39,10 +41,13 @@ describe('Http Search Handle', () => {
       toTest: () => handle.postSearch(searchOptions),
       testBody: response.toObject(),
       expected: response,
-      payload:expectedPayload,
+      payload: expectedPayload,
       request: baseRequest,
       method: HttpVerb.POST,
       status: 200,
+      requestHeaders: new Map<string, string>([
+        [Header.CONTENT_TYPE, ContentType.FORM_URLENCODED],
+      ]),
     });
   });
 
@@ -55,6 +60,9 @@ describe('Http Search Handle', () => {
       request: baseRequest,
       method: HttpVerb.POST,
       status: 200,
+      requestHeaders: new Map<string, string>([
+        [Header.CONTENT_TYPE, ContentType.FORM_URLENCODED],
+      ]),
     });
   });
 
@@ -90,6 +98,9 @@ describe('Http Search Handle', () => {
       method: HttpVerb.POST,
       payload: expectedPayload,
       status: 200,
+      requestHeaders: new Map<string, string>([
+        [Header.CONTENT_TYPE, ContentType.FORM_URLENCODED],
+      ]),
     });
   });
 
@@ -101,6 +112,28 @@ describe('Http Search Handle', () => {
       request: `${baseRequest}/count`,
       method: HttpVerb.POST,
       status: 200,
+      requestHeaders: new Map<string, string>([
+        [Header.CONTENT_TYPE, ContentType.FORM_URLENCODED],
+      ]),
+    });
+  });
+
+  it("counts Things by post with text/plain Content-Type", () => {
+    const contentTypeHeader = DefaultSearchOptions.getInstance().addHeader(
+      Header.CONTENT_TYPE,
+      ContentType.TEXT
+    );
+    return H.test({
+      toTest: () => handle.postCount(contentTypeHeader),
+      testBody: 4,
+      expected: 4,
+      request: `${baseRequest}/count`,
+      method: HttpVerb.POST,
+      status: 200,
+      payload: '',
+      requestHeaders: new Map<string, string>([
+        [Header.CONTENT_TYPE, ContentType.TEXT],
+      ]),
     });
   });
 

@@ -12,7 +12,8 @@
  */
 
 export enum ContentType {
-    MERGE_PATCH_JSON = 'application/merge-patch+json',
-    JSON = 'application/json',
-    TEXT = 'text/plain'
+  MERGE_PATCH_JSON = 'application/merge-patch+json',
+  JSON = 'application/json',
+  FORM_URLENCODED = 'application/x-www-form-urlencoded',
+  TEXT = 'text/plain'
 }

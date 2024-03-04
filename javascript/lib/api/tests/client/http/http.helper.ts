@@ -49,8 +49,13 @@ export class HttpHelper extends Helper {
       headers: options.responseHeaders,
       body: options.testBody
     };
-    this.requester.addResponse(options.method,
-      `${HttpHelper.matcher}${api}/${options.request}`, options.requestHeaders, options.payload, requestResponse);
+    this.requester.addResponse(
+      options.method,
+      `${HttpHelper.matcher}${api}/${options.request}`,
+      options.requestHeaders,
+      options.payload,
+      requestResponse
+    );
     if (options.expected !== undefined) {
       return options.toTest()
         .then(response => {
