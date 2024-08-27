@@ -1,6 +1,18 @@
 # Changelog
 All notable changes to the Ditto JavaScript client will be documented in this file.
 
+## [3.5.4] - 2024-08-27
+
+### Dependencies
+
+No dependencies were explicitly updated.
+
+### Features / Bug fixes
+
+#### \#228 Set correct Content-Type for postCount() and postSearch()
+
+PR #228 fixes the content-type which was set wrongly for methods `postCount()` and `postSearch()`
+
 ## [3.5.0] - 2024-01-26
 
 ### Dependencies
