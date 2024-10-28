@@ -372,10 +372,15 @@ public final class WebSocketMessagingProvider extends WebSocketAdapter implement
                         LOGGER.debug("Reconnecting is completed -> emitting subscriptionMessages: {}", subscriptionMessages);
                         subscriptionMessages.values().forEach(this::emit);
                     }
-                } catch (TimeoutException | InterruptedException | ExecutionException e) {
+                } catch (TimeoutException | ExecutionException e) {
                     isReconnecting.complete(false);
                     fixedRateChecker.cancel(true);
                     LOGGER.error("Reconnecting failed: {}", e.getMessage());
+                } catch (InterruptedException e) {
+                    isReconnecting.complete(false);
+                    fixedRateChecker.cancel(true);
+                    LOGGER.error("Reconnecting failed due to thread being interrupted: {}", e.getMessage());
+                    Thread.currentThread().interrupt();
                 }
             }
         });
