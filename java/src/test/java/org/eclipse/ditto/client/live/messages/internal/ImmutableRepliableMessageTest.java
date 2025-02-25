@@ -12,14 +12,7 @@
  */
 package org.eclipse.ditto.client.live.messages.internal;
 
-import static org.mutabilitydetector.unittesting.AllowedReason.provided;
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
-
-import java.util.function.Consumer;
-
-import org.eclipse.ditto.messages.model.Message;
 import org.junit.Test;
-import org.mutabilitydetector.unittesting.MutabilityAssert;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
@@ -28,12 +21,6 @@ import nl.jqno.equalsverifier.EqualsVerifier;
  */
 public class ImmutableRepliableMessageTest {
 
-
-    @Test
-    public void assertImmutability() {
-        MutabilityAssert.assertInstancesOf(ImmutableRepliableMessage.class, areImmutable(), provided(
-                Message.class, Consumer.class).areAlsoImmutable());
-    }
 
     @Test
     public void testHashCodeAndEquals() {

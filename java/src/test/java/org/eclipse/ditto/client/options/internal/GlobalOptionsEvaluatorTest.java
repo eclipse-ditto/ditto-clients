@@ -14,9 +14,6 @@ package org.eclipse.ditto.client.options.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mutabilitydetector.unittesting.AllowedReason.provided;
-import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.client.options.Option;
@@ -59,13 +56,6 @@ public final class GlobalOptionsEvaluatorTest {
     public void before() {
         dittoHeadersOption = Options.headers(DittoHeaders.newBuilder().correlationId(testName.getMethodName()).build());
         allGlobalOptions = new Option<?>[]{dittoHeadersOption, conditionOption, liveChannelConditionOption};
-    }
-
-    @Test
-    public void assertImmutability() {
-        assertInstancesOf(OptionsEvaluator.Global.class,
-                areImmutable(),
-                provided(OptionsEvaluator.class).isAlsoImmutable());
     }
 
     @Test

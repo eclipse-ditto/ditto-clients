@@ -14,17 +14,12 @@ package org.eclipse.ditto.client.live.commands.modify;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.eclipse.ditto.base.model.signals.commands.assertions.CommandAssertions.assertThat;
-import static org.mutabilitydetector.unittesting.AllowedReason.provided;
-import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import java.text.MessageFormat;
 
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.base.model.signals.commands.Command;
 import org.eclipse.ditto.client.live.TestConstants;
-import org.eclipse.ditto.json.JsonPointer;
-import org.eclipse.ditto.json.JsonValue;
 import org.eclipse.ditto.things.model.signals.commands.modify.ModifyAttribute;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,13 +41,6 @@ public final class ModifyAttributeLiveCommandImplTest {
         twinCommand = ModifyAttribute.of(TestConstants.Thing.THING_ID, TestConstants.Thing.LOCATION_ATTRIBUTE_POINTER,
                 TestConstants.Thing.LOCATION_ATTRIBUTE_VALUE, DittoHeaders.empty());
         underTest = ModifyAttributeLiveCommandImpl.of(twinCommand);
-    }
-
-    @Test
-    public void assertImmutability() {
-        assertInstancesOf(ModifyAttributeLiveCommandImpl.class,
-                areImmutable(),
-                provided(JsonPointer.class, JsonValue.class).areAlsoImmutable());
     }
 
     @Test

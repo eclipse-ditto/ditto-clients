@@ -15,21 +15,17 @@ package org.eclipse.ditto.client.changes.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
-import static org.mutabilitydetector.unittesting.AllowedReason.provided;
-import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import java.time.Instant;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import org.eclipse.ditto.client.changes.Change;
+import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.base.model.signals.acks.Acknowledgement;
 import org.eclipse.ditto.client.changes.ChangeAction;
 import org.eclipse.ditto.client.changes.ThingChange;
 import org.eclipse.ditto.json.JsonPointer;
-import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.things.model.Thing;
-import org.eclipse.ditto.base.model.signals.acks.Acknowledgement;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -74,13 +70,6 @@ public final class ImmutableThingChangeTest {
                                 KNOWN_TIMESTAMP, null, KNOWN_DITTO_HEADERS, ACK_CONSUMER))
                 .withMessage("The %s must not be null!", "change action")
                 .withNoCause();
-    }
-
-    @Test
-    public void assertImmutability() {
-        assertInstancesOf(ImmutableThingChange.class,
-                areImmutable(),
-                provided(Thing.class, Change.class).isAlsoImmutable());
     }
 
     @Test

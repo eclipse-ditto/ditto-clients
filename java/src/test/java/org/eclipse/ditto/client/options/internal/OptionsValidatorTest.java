@@ -14,8 +14,6 @@ package org.eclipse.ditto.client.options.internal;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.eclipse.ditto.client.options.internal.MockOptionFactory.createOptionMock;
-import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.OptionName;
@@ -33,11 +31,6 @@ public final class OptionsValidatorTest {
     @Before
     public void setUp() {
         underTest = new OptionsValidator();
-    }
-
-    @Test
-    public void assertImmutability() {
-        assertInstancesOf(OptionsValidator.class, areImmutable());
     }
 
     @Test

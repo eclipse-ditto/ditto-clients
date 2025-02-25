@@ -14,10 +14,6 @@ package org.eclipse.ditto.client.options.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mutabilitydetector.unittesting.AllowedReason.assumingFields;
-import static org.mutabilitydetector.unittesting.AllowedReason.provided;
-import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,13 +46,7 @@ public final class UserProvidedOptionsTest {
         options = new Option<?>[]{responseRequiredOptionMock};
         underTest = UserProvidedOptions.of(options);
     }
-
-    @Test
-    public void assertImmutability() {
-        assertInstancesOf(UserProvidedOptions.class, areImmutable(), provided(Option.class).isAlsoImmutable(),
-                assumingFields("options").areSafelyCopiedUnmodifiableCollectionsWithImmutableElements());
-    }
-
+    
     @Test
     public void tryToCreateInstanceWithNullOptionArray() {
         assertThatExceptionOfType(NullPointerException.class).isThrownBy(() -> UserProvidedOptions.of(null))

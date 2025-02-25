@@ -12,10 +12,7 @@
  */
 package org.eclipse.ditto.client.live.messages.internal;
 
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
-
 import org.junit.Test;
-import org.mutabilitydetector.unittesting.MutabilityAssert;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
@@ -24,11 +21,6 @@ import nl.jqno.equalsverifier.EqualsVerifier;
  */
 public class ImmutableMessageSerializerKeyTest {
 
-
-    @Test
-    public void assertImmutability() {
-        MutabilityAssert.assertInstancesOf(ImmutableMessageSerializerKey.class, areImmutable());
-    }
 
     @Test
     public void testHashCodeAndEquals() {

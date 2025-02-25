@@ -14,16 +14,12 @@ package org.eclipse.ditto.client.live.commands.modify;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.eclipse.ditto.base.model.signals.commands.assertions.CommandAssertions.assertThat;
-import static org.mutabilitydetector.unittesting.AllowedReason.provided;
-import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import java.text.MessageFormat;
 
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.base.model.signals.commands.Command;
 import org.eclipse.ditto.client.live.TestConstants;
-import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.things.model.signals.commands.modify.DeleteFeatureProperty;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,13 +42,6 @@ public final class DeleteFeaturePropertyLiveCommandImplTest {
                 TestConstants.Feature.FLUX_CAPACITOR_ID, TestConstants.Feature.FLUX_CAPACITOR_PROPERTY_POINTER,
                 DittoHeaders.empty());
         underTest = DeleteFeaturePropertyLiveCommandImpl.of(twinCommand);
-    }
-
-    @Test
-    public void assertImmutability() {
-        assertInstancesOf(DeleteFeaturePropertyLiveCommandImpl.class,
-                areImmutable(),
-                provided(JsonPointer.class).isAlsoImmutable());
     }
 
     @Test

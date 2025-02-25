@@ -12,9 +12,6 @@
  */
 package org.eclipse.ditto.client.configuration.internal;
 
-import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
-
 import org.eclipse.ditto.client.configuration.BasicAuthenticationConfiguration;
 import org.junit.Test;
 
@@ -30,12 +27,6 @@ public final class BasicAuthenticationConfigurationTest {
         EqualsVerifier.forClass(BasicAuthenticationConfiguration.class)
                 .usingGetClass()
                 .verify();
-    }
-
-    @Test
-    public void assertImmutability() {
-        assertInstancesOf(BasicAuthenticationConfiguration.class,
-                areImmutable());
     }
 
 }

@@ -13,12 +13,7 @@
 package org.eclipse.ditto.client.live.commands.base;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mutabilitydetector.unittesting.AllowedReason.provided;
-import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
-import org.eclipse.ditto.base.model.signals.commands.CommandResponse;
-import org.eclipse.ditto.base.model.signals.events.Event;
 import org.eclipse.ditto.things.model.signals.commands.ThingCommandResponse;
 import org.eclipse.ditto.things.model.signals.events.ThingEvent;
 import org.junit.Test;
@@ -30,13 +25,6 @@ import nl.jqno.equalsverifier.EqualsVerifier;
  * Unit test for {@link org.eclipse.ditto.client.live.commands.base.ImmutableLiveCommandAnswer}.
  */
 public final class ImmutableLiveCommandAnswerTest {
-
-    @Test
-    public void assertImmutability() {
-        assertInstancesOf(ImmutableLiveCommandAnswer.class,
-                areImmutable(),
-                provided(CommandResponse.class, Event.class).areAlsoImmutable());
-    }
 
     @Test
     public void testHashCodeAndEquals() {

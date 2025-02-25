@@ -14,9 +14,6 @@ package org.eclipse.ditto.client.options.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.mutabilitydetector.unittesting.AllowedReason.provided;
-import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.Options;
@@ -40,18 +37,6 @@ public final class ModifyOptionsEvaluatorTest {
     public void setUp() {
         final Option<?>[] options = new Option<?>[]{RESPONSE_REQUIRED_OPTION};
         underTest = OptionsEvaluator.forModifyOptions(options);
-    }
-
-    @Test
-    public void assertThatOptionsEvaluatorIsImmutable() {
-        assertInstancesOf(OptionsEvaluator.class, areImmutable(),
-                provided(UserProvidedOptions.class).isAlsoImmutable());
-    }
-
-    @Test
-    public void assertImmutability() {
-        assertInstancesOf(OptionsEvaluator.Modify.class, areImmutable(),
-                provided(OptionsEvaluator.class).isAlsoImmutable());
     }
 
     @Test

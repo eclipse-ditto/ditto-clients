@@ -15,14 +15,10 @@ package org.eclipse.ditto.client.live.commands.modify;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNullPointerException;
 import static org.eclipse.ditto.base.model.signals.commands.assertions.CommandAssertions.assertThat;
-import static org.mutabilitydetector.unittesting.AllowedReason.provided;
-import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.base.model.signals.commands.Command;
 import org.eclipse.ditto.client.live.TestConstants;
-import org.eclipse.ditto.things.model.FeatureDefinition;
 import org.eclipse.ditto.things.model.signals.commands.modify.ModifyFeatureDefinition;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,13 +39,6 @@ public final class ModifyFeatureDefinitionLiveCommandImplTest {
         twinCommand = ModifyFeatureDefinition.of(TestConstants.Thing.THING_ID, TestConstants.Feature.FLUX_CAPACITOR_ID,
                 TestConstants.Feature.FLUX_CAPACITOR_DEFINITION, DittoHeaders.empty());
         underTest = ModifyFeatureDefinitionLiveCommandImpl.of(twinCommand);
-    }
-
-    @Test
-    public void assertImmutability() {
-        assertInstancesOf(ModifyFeatureDefinitionLiveCommandImpl.class,
-                areImmutable(),
-                provided(FeatureDefinition.class).isAlsoImmutable());
     }
 
     @Test

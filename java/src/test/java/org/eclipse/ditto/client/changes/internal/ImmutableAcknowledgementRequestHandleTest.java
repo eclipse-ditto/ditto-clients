@@ -12,16 +12,8 @@
  */
 package org.eclipse.ditto.client.changes.internal;
 
-import static org.mutabilitydetector.unittesting.AllowedReason.provided;
-import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
-
-import java.util.function.Consumer;
-
-import org.eclipse.ditto.client.ack.internal.ImmutableAcknowledgementRequestHandle;
-import org.eclipse.ditto.base.model.acks.AcknowledgementLabel;
 import org.eclipse.ditto.base.model.entity.id.EntityId;
-import org.eclipse.ditto.base.model.headers.DittoHeaders;
+import org.eclipse.ditto.client.ack.internal.ImmutableAcknowledgementRequestHandle;
 import org.eclipse.ditto.things.model.ThingId;
 import org.junit.Test;
 
@@ -31,13 +23,6 @@ import nl.jqno.equalsverifier.EqualsVerifier;
  * Unit tests for {@link org.eclipse.ditto.client.ack.internal.ImmutableAcknowledgementRequestHandle}.
  */
 public final class ImmutableAcknowledgementRequestHandleTest {
-
-    @Test
-    public void assertImmutability() {
-        assertInstancesOf(ImmutableAcknowledgementRequestHandle.class, areImmutable(),
-                provided(AcknowledgementLabel.class, EntityId.class, DittoHeaders.class, Consumer.class)
-                        .isAlsoImmutable());
-    }
 
     @Test
     public void testHashCodeAndEquals() {

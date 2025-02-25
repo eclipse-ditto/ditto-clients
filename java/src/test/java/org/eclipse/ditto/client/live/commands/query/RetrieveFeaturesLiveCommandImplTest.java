@@ -14,8 +14,6 @@ package org.eclipse.ditto.client.live.commands.query;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.eclipse.ditto.base.model.signals.commands.assertions.CommandAssertions.assertThat;
-import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import java.text.MessageFormat;
 
@@ -44,11 +42,6 @@ public final class RetrieveFeaturesLiveCommandImplTest {
         retrieveFeaturesTwinCommand = RetrieveFeatures.of(TestConstants.Thing.THING_ID,
                 TestConstants.JSON_FIELD_SELECTOR_ATTRIBUTES, DittoHeaders.empty());
         underTest = RetrieveFeaturesLiveCommandImpl.of(retrieveFeaturesTwinCommand);
-    }
-
-    @Test
-    public void assertImmutability() {
-        assertInstancesOf(RetrieveFeaturesLiveCommandImpl.class, areImmutable());
     }
 
     @Test

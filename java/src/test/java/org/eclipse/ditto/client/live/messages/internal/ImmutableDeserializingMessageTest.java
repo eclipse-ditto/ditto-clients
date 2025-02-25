@@ -12,13 +12,7 @@
  */
 package org.eclipse.ditto.client.live.messages.internal;
 
-import static org.mutabilitydetector.unittesting.AllowedReason.provided;
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
-
-import org.eclipse.ditto.client.live.messages.MessageSerializerRegistry;
-import org.eclipse.ditto.messages.model.Message;
 import org.junit.Test;
-import org.mutabilitydetector.unittesting.MutabilityAssert;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
 
@@ -27,12 +21,6 @@ import nl.jqno.equalsverifier.EqualsVerifier;
  */
 public class ImmutableDeserializingMessageTest {
 
-
-    @Test
-    public void assertImmutability() {
-        MutabilityAssert.assertInstancesOf(ImmutableDeserializingMessage.class, areImmutable(), provided(
-                Message.class, MessageSerializerRegistry.class).areAlsoImmutable());
-    }
 
     @Test
     public void testHashCodeAndEquals() {

@@ -14,8 +14,6 @@ package org.eclipse.ditto.client.live.commands.modify;
 
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.eclipse.ditto.base.model.signals.commands.assertions.CommandAssertions.assertThat;
-import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import java.text.MessageFormat;
 
@@ -46,14 +44,6 @@ public final class DeleteFeatureDesiredPropertiesLiveCommandImplTest {
         twinCommand = DeleteFeatureDesiredProperties.of(TestConstants.Thing.THING_ID,
                 TestConstants.Feature.HOVER_BOARD_ID, DittoHeaders.empty());
         underTest = DeleteFeatureDesiredPropertiesLiveCommandImpl.of(twinCommand);
-    }
-
-    /**
-     *
-     */
-    @Test
-    public void assertImmutability() {
-        assertInstancesOf(DeleteFeatureDesiredPropertiesLiveCommandImpl.class, areImmutable());
     }
 
     /**

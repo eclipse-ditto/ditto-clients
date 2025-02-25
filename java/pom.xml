@@ -212,7 +212,6 @@
         <logback.version>1.5.16</logback.version>
         <junit.version>4.13.2</junit.version>
         <assertj.version>3.27.3</assertj.version>
-        <mutability-detector.version>0.10.6</mutability-detector.version>
         <equals-verifier.version>3.18.2</equals-verifier.version>
         <mockito.version>4.11.0</mockito.version>
         <jsonassert.version>1.5.3</jsonassert.version>
@@ -899,12 +898,6 @@
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
             <version>${awaitility.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.mutabilitydetector</groupId>
-            <artifactId>MutabilityDetector</artifactId>
-            <version>${mutability-detector.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

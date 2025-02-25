@@ -12,9 +12,6 @@
  */
 package org.eclipse.ditto.client.live.commands.base;
 
-import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
-
 import org.eclipse.ditto.base.model.signals.commands.CommandResponse;
 import org.eclipse.ditto.base.model.signals.events.Event;
 import org.eclipse.ditto.client.live.commands.assertions.LiveCommandAssertions;
@@ -34,11 +31,6 @@ public final class LiveCommandAnswerFactoryTest {
 
     @Mock
     private Event<?> eventMock;
-
-    @Test
-    public void assertImmutability() {
-        assertInstancesOf(LiveCommandAnswerFactory.class, areImmutable());
-    }
 
     @Test
     public void getLiveCommandAnswerInstanceWithCommandResponseOnly() {

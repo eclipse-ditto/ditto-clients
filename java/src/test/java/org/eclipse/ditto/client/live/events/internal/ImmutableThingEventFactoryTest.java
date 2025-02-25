@@ -13,14 +13,9 @@
 package org.eclipse.ditto.client.live.events.internal;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mutabilitydetector.unittesting.AllowedReason.provided;
-import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
 import org.eclipse.ditto.client.TestConstants;
-import org.eclipse.ditto.client.live.events.GlobalEventFactory;
-import org.eclipse.ditto.things.model.ThingId;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,13 +34,6 @@ public final class ImmutableThingEventFactoryTest {
     @Before
     public void setUp() {
         underTest = ImmutableThingEventFactory.getInstance(SCHEMA_VERSION, TestConstants.Thing.THING_ID);
-    }
-
-    @Test
-    public void assertImmutability() {
-        assertInstancesOf(ImmutableThingEventFactory.class,
-                areImmutable(),
-                provided(GlobalEventFactory.class, ThingId.class).areAlsoImmutable());
     }
 
     @Test

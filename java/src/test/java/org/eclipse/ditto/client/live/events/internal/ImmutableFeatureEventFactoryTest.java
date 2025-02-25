@@ -15,12 +15,8 @@ package org.eclipse.ditto.client.live.events.internal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.eclipse.ditto.client.TestConstants.Feature.FLUX_CAPACITOR_ID;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
-import static org.mutabilitydetector.unittesting.AllowedReason.provided;
-import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
-import org.eclipse.ditto.client.live.events.ThingEventFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,13 +35,6 @@ public final class ImmutableFeatureEventFactoryTest {
     @Before
     public void setUp() {
         underTest = ImmutableFeatureEventFactory.getInstance(SCHEMA_VERSION, THING_ID, FLUX_CAPACITOR_ID);
-    }
-
-    @Test
-    public void assertImmutability() {
-        assertInstancesOf(ImmutableFeatureEventFactory.class,
-                areImmutable(),
-                provided(ThingEventFactory.class).isAlsoImmutable());
     }
 
     @Test

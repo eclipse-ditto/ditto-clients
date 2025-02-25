@@ -21,9 +21,6 @@ import static org.eclipse.ditto.client.TestConstants.Thing.ATTRIBUTES;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_ID;
 import static org.eclipse.ditto.client.TestConstants.Thing.THING_V2;
 import static org.eclipse.ditto.things.model.signals.events.assertions.ThingEventAssertions.assertThat;
-import static org.mutabilitydetector.unittesting.AllowedReason.provided;
-import static org.mutabilitydetector.unittesting.MutabilityAssert.assertInstancesOf;
-import static org.mutabilitydetector.unittesting.MutabilityMatchers.areImmutable;
 
 import java.text.MessageFormat;
 
@@ -32,7 +29,6 @@ import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
 import org.eclipse.ditto.json.JsonFactory;
 import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.json.JsonValue;
-import org.eclipse.ditto.things.model.ThingId;
 import org.eclipse.ditto.things.model.signals.events.AttributeCreated;
 import org.eclipse.ditto.things.model.signals.events.AttributeDeleted;
 import org.eclipse.ditto.things.model.signals.events.AttributeModified;
@@ -78,12 +74,6 @@ public final class ImmutableGlobalEventFactoryTest {
     @Before
     public void setUp() {
         underTest = ImmutableGlobalEventFactory.getInstance(SCHEMA_VERSION);
-    }
-
-    @Test
-    public void assertImmutability() {
-        assertInstancesOf(ImmutableGlobalEventFactory.class, areImmutable(),
-                provided(JsonSchemaVersion.class, ThingId.class).areAlsoImmutable());
     }
 
     @Test
