@@ -40,13 +40,13 @@
    * Maven sources: https://search.maven.org/remotecontent?filepath=org/reactivestreams/reactive-streams/1.0.4/reactive-streams-1.0.4-sources.jar
 
 
-## SLF4J API Module (1.7.36)
+## SLF4J API Module (2.0.16)
 
-* Maven coordinates: `org.slf4j:slf4j-api:1.7.36`
+* Maven coordinates: `org.slf4j:slf4j-api:2.0.16`
 * License: [MIT](https://spdx.org/licenses/MIT.html)
 * Project: http://www.slf4j.org
 * Sources: 
-   * declared as SCM: https://github.com/qos-ch/slf4j/slf4j-api
-   * Maven sources: https://search.maven.org/remotecontent?filepath=org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36-sources.jar
+   * declared as SCM: https://github.com/qos-ch/slf4j/slf4j-parent/slf4j-api
+   * Maven sources: https://search.maven.org/remotecontent?filepath=org/slf4j/slf4j-api/2.0.16/slf4j-api-2.0.16-sources.jar
 
 
