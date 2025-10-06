@@ -15,6 +15,7 @@ package org.eclipse.ditto.client.internal;
 import static org.eclipse.ditto.base.model.common.ConditionChecker.checkNotNull;
 import static org.eclipse.ditto.client.options.OptionName.Global.CONDITION;
 import static org.eclipse.ditto.client.options.OptionName.Global.LIVE_CHANNEL_CONDITION;
+import static org.eclipse.ditto.client.options.OptionName.Global.MERGE_THING_PATCH_CONDITIONS;
 import static org.eclipse.ditto.client.options.OptionName.Modify.EXISTS;
 
 import java.nio.charset.Charset;
@@ -341,7 +342,7 @@ public final class OutgoingMessageFactory {
         return MergeThing.withAttribute(thingId,
                 path,
                 value,
-                buildDittoHeaders(setOf(EXISTS, CONDITION), options));
+                buildDittoHeaders(setOf(EXISTS, CONDITION, MERGE_THING_PATCH_CONDITIONS), options));
     }
 
     public ModifyAttributes setAttributes(final ThingId thingId,
@@ -356,7 +357,7 @@ public final class OutgoingMessageFactory {
     public MergeThing mergeAttributes(final ThingId thingId, final JsonObject attributes, final Option<?>[] options) {
         return MergeThing.withAttributes(thingId,
                 ThingsModelFactory.newAttributes(attributes),
-                buildDittoHeaders(setOf(EXISTS, CONDITION), options));
+                buildDittoHeaders(setOf(EXISTS, CONDITION, MERGE_THING_PATCH_CONDITIONS), options));
     }
 
     public DeleteAttribute deleteAttribute(final ThingId thingId, final JsonPointer path, final Option<?>... options) {
@@ -372,7 +373,7 @@ public final class OutgoingMessageFactory {
     }
 
     public MergeThing mergeFeature(final ThingId thingId, final Feature feature, final Option<?>... options) {
-        return MergeThing.withFeature(thingId, feature, buildDittoHeaders(setOf(EXISTS, CONDITION), options));
+        return MergeThing.withFeature(thingId, feature, buildDittoHeaders(setOf(EXISTS, CONDITION, MERGE_THING_PATCH_CONDITIONS), options));
     }
 
     public ModifyFeatures setFeatures(final ThingId thingId, final Features features, final Option<?>... options) {
@@ -380,7 +381,7 @@ public final class OutgoingMessageFactory {
     }
 
     public MergeThing mergeFeatures(final ThingId thingId, final Features features, final Option<?>[] options) {
-        return MergeThing.withFeatures(thingId, features, buildDittoHeaders(setOf(EXISTS, CONDITION), options));
+        return MergeThing.withFeatures(thingId, features, buildDittoHeaders(setOf(EXISTS, CONDITION, MERGE_THING_PATCH_CONDITIONS), options));
     }
 
     public ModifyPolicyId setPolicyId(final ThingId thingId, final PolicyId policyId, final Option<?>... options) {
@@ -388,7 +389,7 @@ public final class OutgoingMessageFactory {
     }
 
     public MergeThing mergePolicyId(final ThingId thingId, final PolicyId policyId, final Option<?>... options) {
-        return MergeThing.withPolicyId(thingId, policyId, buildDittoHeaders(setOf(EXISTS, CONDITION), options));
+        return MergeThing.withPolicyId(thingId, policyId, buildDittoHeaders(setOf(EXISTS, CONDITION, MERGE_THING_PATCH_CONDITIONS), options));
     }
 
     public RetrieveFeature retrieveFeature(final ThingId thingId, final String featureId, final Option<?>... options) {
@@ -455,7 +456,7 @@ public final class OutgoingMessageFactory {
         return MergeThing.withFeatureDefinition(thingId,
                 featureId,
                 featureDefinition,
-                buildDittoHeaders(setOf(EXISTS, CONDITION), options));
+                buildDittoHeaders(setOf(EXISTS, CONDITION, MERGE_THING_PATCH_CONDITIONS), options));
     }
 
     /**
@@ -497,7 +498,7 @@ public final class OutgoingMessageFactory {
                 featureId,
                 path,
                 value,
-                buildDittoHeaders(setOf(EXISTS, CONDITION), options));
+                buildDittoHeaders(setOf(EXISTS, CONDITION, MERGE_THING_PATCH_CONDITIONS), options));
     }
 
     public ModifyFeatureProperties setFeatureProperties(final ThingId thingId,
@@ -519,7 +520,7 @@ public final class OutgoingMessageFactory {
         return MergeThing.withFeatureProperties(thingId,
                 featureId,
                 ThingsModelFactory.newFeatureProperties(properties),
-                buildDittoHeaders(setOf(EXISTS, CONDITION), options));
+                buildDittoHeaders(setOf(EXISTS, CONDITION, MERGE_THING_PATCH_CONDITIONS), options));
     }
 
     public DeleteFeatureProperty deleteFeatureProperty(final ThingId thingId,

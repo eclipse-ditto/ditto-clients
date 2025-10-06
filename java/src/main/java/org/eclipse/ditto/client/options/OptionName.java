@@ -62,6 +62,14 @@ public interface OptionName extends Predicate<Object> {
          */
         LIVE_CHANNEL_CONDITION,
 
+        /**
+         * Name of the option for defining merge thing patch conditions, which map JSON pointer paths to RQL condition expressions.
+         * These conditions determine which parts of a merge payload should be applied based on the current state of the Thing.
+         *
+         * @since 3.8.0
+         */
+        MERGE_THING_PATCH_CONDITIONS,
+
     }
 
     /**

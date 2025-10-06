@@ -12,8 +12,12 @@
  */
 package org.eclipse.ditto.client.options;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.JUnitSoftAssertions;
+import org.eclipse.ditto.json.JsonPointer;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -57,6 +61,36 @@ public final class OptionsTest {
 
         softly.assertThat(option.getName()).as("option name").isEqualTo(OptionName.Global.LIVE_CHANNEL_CONDITION);
         softly.assertThat(option.getValue()).as("option value").isEqualTo(liveChannelConditionExpression);
+    }
+
+    @Test
+    public void mergeThingPatchConditionsWithNullMapThrowsException() {
+        Assertions.assertThatNullPointerException()
+                .isThrownBy(() -> Options.mergeThingPatchConditions(null))
+                .withMessage("The patchConditions must not be null!")
+                .withNoCause();
+    }
+
+    @Test
+    public void mergeThingPatchConditionsWithEmptyMapThrowsException() {
+        final Map<JsonPointer, String> emptyMap = new HashMap<>();
+
+        Assertions.assertThatIllegalArgumentException()
+                .isThrownBy(() -> Options.mergeThingPatchConditions(emptyMap))
+                .withMessage("The patchConditions map must not be empty.")
+                .withNoCause();
+    }
+
+    @Test
+    public void mergeThingPatchConditionsWithValidMapReturnsExpected() {
+        final Map<JsonPointer, String> patchConditions = new HashMap<>();
+        patchConditions.put(JsonPointer.of("features/temperature/properties/value"), "gt(features/temperature/properties/value, 20)");
+        patchConditions.put(JsonPointer.of("features/humidity/properties/value"), "lt(features/humidity/properties/value, 80)");
+
+        final Option<Map<JsonPointer, String>> option = Options.mergeThingPatchConditions(patchConditions);
+
+        softly.assertThat(option.getName()).as("option name").isEqualTo(OptionName.Global.MERGE_THING_PATCH_CONDITIONS);
+        softly.assertThat(option.getValue()).as("option value").isEqualTo(patchConditions);
     }
 
 }

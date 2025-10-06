@@ -16,6 +16,7 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -29,6 +30,9 @@ import org.eclipse.ditto.base.model.json.JsonSchemaVersion;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.client.options.OptionName;
 import org.eclipse.ditto.client.options.internal.OptionsEvaluator;
+import org.eclipse.ditto.json.JsonObject;
+import org.eclipse.ditto.json.JsonObjectBuilder;
+import org.eclipse.ditto.json.JsonPointer;
 
 /**
  * This class provides the means to build {@link DittoHeaders} for a particular outgoing message.
@@ -97,6 +101,7 @@ final class OptionsToDittoHeaders {
         setEntityTagMatchers();
         setCondition();
         setLiveChannelCondition();
+        setMergeThingPatchConditions();
         return buildDittoHeaders();
     }
 
@@ -163,6 +168,18 @@ final class OptionsToDittoHeaders {
                 .ifPresent(liveChannelCondition -> {
                     validateIfOptionIsAllowed(OptionName.Global.LIVE_CHANNEL_CONDITION);
                     headersBuilder.liveChannelCondition(liveChannelCondition);
+                });
+    }
+
+    private void setMergeThingPatchConditions() {
+        globalOptionsEvaluator.getMergeThingPatchConditions()
+                .ifPresent(patchConditions -> {
+                    validateIfOptionIsAllowed(OptionName.Global.MERGE_THING_PATCH_CONDITIONS);
+                    final JsonObjectBuilder builder = JsonObject.newBuilder();
+                    for (final Map.Entry<JsonPointer, String> entry : patchConditions.entrySet()) {
+                        builder.set(entry.getKey().toString(), entry.getValue());
+                    }
+                    headersBuilder.putHeader("merge-thing-patch-conditions", builder.build().toString());
                 });
     }
 
