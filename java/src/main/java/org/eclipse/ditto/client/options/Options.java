@@ -13,11 +13,13 @@
 package org.eclipse.ditto.client.options;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import org.eclipse.ditto.base.model.common.ConditionChecker;
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.client.management.CommonManagement;
 import org.eclipse.ditto.json.JsonFieldSelector;
+import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.policies.model.PolicyId;
 import org.eclipse.ditto.things.model.ThingId;
 
@@ -88,6 +90,31 @@ public final class Options {
 
         return DefaultOption.newInstance(OptionName.Global.LIVE_CHANNEL_CONDITION,
                 liveChannelConditionExpression.toString());
+    }
+
+    /**
+     * Creates an option for specifying merge thing patch conditions.
+     * <p>
+     * The returned option has the name {@link OptionName.Global#MERGE_THING_PATCH_CONDITIONS} and the given argument value.
+     * </p>
+     * <p>
+     * The patch conditions map JSON pointer paths to RQL condition expressions. These conditions determine which parts
+     * of a merge payload should be applied based on the current state of the Thing.
+     * </p>
+     *
+     * @param patchConditions the map of JSON pointer paths to RQL condition expressions
+     * @return the new {@code Option}.
+     * @throws NullPointerException if {@code patchConditions} is {@code null}.
+     * @throws IllegalArgumentException if {@code patchConditions} is empty.
+     * @since 3.8.0
+     */
+    public static Option<Map<JsonPointer, String>> mergeThingPatchConditions(final Map<JsonPointer, String> patchConditions) {
+        ConditionChecker.checkNotNull(patchConditions, "patchConditions");
+        ConditionChecker.checkArgument(patchConditions,
+                argument -> !argument.isEmpty(),
+                () -> "The patchConditions map must not be empty.");
+
+        return DefaultOption.newInstance(OptionName.Global.MERGE_THING_PATCH_CONDITIONS, patchConditions);
     }
 
     /**

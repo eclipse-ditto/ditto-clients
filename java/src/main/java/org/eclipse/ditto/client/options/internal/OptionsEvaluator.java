@@ -12,6 +12,7 @@
  */
 package org.eclipse.ditto.client.options.internal;
 
+import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.concurrent.Immutable;
@@ -19,6 +20,7 @@ import javax.annotation.concurrent.Immutable;
 import org.eclipse.ditto.base.model.headers.DittoHeaders;
 import org.eclipse.ditto.client.options.Option;
 import org.eclipse.ditto.json.JsonFieldSelector;
+import org.eclipse.ditto.json.JsonPointer;
 import org.eclipse.ditto.policies.model.PolicyId;
 import org.eclipse.ditto.things.model.ThingId;
 
@@ -130,6 +132,17 @@ public final class OptionsEvaluator {
          */
         public Optional<String> getLiveChannelCondition() {
             return getValue(new LiveChannelConditionOptionVisitor());
+        }
+
+        /**
+         * Returns the merge thing patch conditions as provided by the user.
+         *
+         * @return an Optional containing the map of JSON pointer paths to RQL condition expressions
+         * if provided by the user, an empty Optional else.
+         * @since 3.8.0
+         */
+        public Optional<Map<JsonPointer, String>> getMergeThingPatchConditions() {
+            return getValue(new MergeThingPatchConditionsOptionVisitor());
         }
 
     }
