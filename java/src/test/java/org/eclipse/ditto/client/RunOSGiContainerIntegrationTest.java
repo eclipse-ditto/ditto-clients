@@ -132,8 +132,8 @@ public class RunOSGiContainerIntegrationTest {
         final List<Option> allOptions = new ArrayList<>();
         allOptions.add(cleanCaches());
         allOptions.addAll(bundleOptions);
-        allOptions.add(mavenBundle("ch.qos.logback", "logback-core", "1.2.6"));
-        allOptions.add(mavenBundle("ch.qos.logback", "logback-classic", "1.2.6"));
+        allOptions.add(mavenBundle("ch.qos.logback", "logback-core", "1.2.13"));
+        allOptions.add(mavenBundle("ch.qos.logback", "logback-classic", "1.2.13"));
         allOptions.add(junitBundles());
         allOptions.add(systemProperty("org.ops4j.pax.logging.DefaultServiceLog.level").value("INFO"));
 
