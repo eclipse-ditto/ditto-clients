@@ -6,9 +6,9 @@ These versions of Eclipse Ditto Clients are currently being supported with secur
 
 | Version | Supported          |
 |---------| ------------------ |
+| 3.8.x   | :white_check_mark: |
 | 3.7.x   | :white_check_mark: |
-| 3.6.x   | :white_check_mark: |
-| < 3.6.0 | :x:                |
+| < 3.7.0 | :x:                |
 
 ## Reporting a Vulnerability
 
