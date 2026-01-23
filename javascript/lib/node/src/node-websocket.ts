@@ -13,14 +13,14 @@
 
 import { WebSocketImplementationBuilderUrl } from '../../api/src/client/request-factory/websocket-request-handler';
 import {
-  ResponseHandler,
-  WebSocketImplementation,
-  WebSocketImplementationBuilderHandler
+    ResponseHandler,
+    WebSocketImplementation,
+    WebSocketImplementationBuilderHandler
 } from '../../api/src/client/request-factory/resilience/websocket-resilience-interfaces';
 import {
-  authenticateWithUrlAndHeaders,
-  AuthProvider,
-  DittoURL
+    authenticateWithUrlAndHeaders,
+    AuthProvider,
+    DittoURL
 } from '../../api/src/auth/auth-provider';
 import { ProxyAgent } from './proxy-settings';
 import * as WebSocket from 'ws';
@@ -33,8 +33,8 @@ import * as http from 'http';
  * @return the plain js object.
  */
 const mapToPlainObject = (aMap: Map<string, string>): { [key: string]: string } => {
-  const objects = [...aMap.entries()].map(([k, v]) => ({ [k]: v }));
-  return Object.assign({}, ...objects);
+    const objects = [...aMap.entries()].map(([k, v]) => ({ [k]: v }));
+    return Object.assign({}, ...objects);
 };
 
 /**
@@ -78,16 +78,16 @@ export class NodeWebSocket implements WebSocketImplementation {
     });
   }
 
-  private static getProxyAgentForProtocol(url: DittoURL, agent: ProxyAgent): http.Agent | undefined {
-    if ('wss' === url.protocol) {
-      return agent.proxyAgent;
+    private static getProxyAgentForProtocol(url: DittoURL, agent: ProxyAgent): http.Agent | undefined {
+        if ('wss' === url.protocol) {
+            return agent.proxyAgent;
+        }
+        return agent.httpProxyAgent;
     }
-    return agent.httpProxyAgent;
-  }
 
-  public executeCommand(request: string): void {
-    this.webSocket.send(request);
-  }
+    public executeCommand(request: string): void {
+        this.webSocket.send(request);
+    }
 
   /**
    * Reestablishes a failed web socket connection.
@@ -120,37 +120,37 @@ export class NodeWebSocket implements WebSocketImplementation {
   /**
    * Sets up the handler so it receives events from the web socket.
    */
-  private setHandles(): void {
-    this.webSocket.on('message', data => {
-      this.handler.handleInput(data.toString());
-    });
-    this.webSocket.on('close', () => {
-      this.connected = false;
-      this.handler.handleClose(Promise.resolve(this.reconnect(1000)));
-    });
-    this.webSocket.on('error', event => {
-      this.handler.handleError(event.toString());
-    });
-  }
+    private setHandles(): void {
+        this.webSocket.on('message', data => {
+            this.handler.handleInput(data.toString());
+        });
+        this.webSocket.on('close', () => {
+            this.connected = false;
+            this.handler.handleClose(Promise.resolve(this.reconnect(1000)));
+        });
+        this.webSocket.on('error', event => {
+            this.handler.handleError(event.toString());
+        });
+    }
 }
 
 /**
  * Builder for the Node implementation of a web socket.
  */
 export class NodeWebSocketBuilder implements WebSocketImplementationBuilderUrl, WebSocketImplementationBuilderHandler {
-  private authProviders!: AuthProvider[];
-  private dittoUrl!: DittoURL;
+    private authProviders!: AuthProvider[];
+    private dittoUrl!: DittoURL;
 
-  public constructor(private readonly agent: ProxyAgent) {
-  }
+    public constructor(private readonly agent: ProxyAgent) {
+    }
 
   public withHandler(handler: ResponseHandler): Promise<NodeWebSocket> {
     return NodeWebSocket.buildInstance(this.dittoUrl, handler, this.authProviders, this.agent);
   }
 
-  withConnectionDetails(url: DittoURL, authProviders: AuthProvider[]): WebSocketImplementationBuilderHandler {
-    this.dittoUrl = url;
-    this.authProviders = authProviders;
-    return this;
-  }
+    withConnectionDetails(url: DittoURL, authProviders: AuthProvider[]): WebSocketImplementationBuilderHandler {
+        this.dittoUrl = url;
+        this.authProviders = authProviders;
+        return this;
+    }
 }

@@ -22,68 +22,68 @@ import { ProxyAgent } from './proxy-settings';
  */
 export class NodeRequester implements HttpRequester {
 
-  public constructor(private readonly agent: ProxyAgent) {
-  }
+    public constructor(private readonly agent: ProxyAgent) {
+    }
 
-  private static createResponseHandler(resolve: (value?: (PromiseLike<GenericResponse> | GenericResponse)) => void,
-                                       reject: (reason?: ErrorResponse) => void):
-    (response: http.IncomingMessage) => void {
-    return response => {
-      this.handleResponse(resolve, reject, response);
-    };
-  }
+    private static createResponseHandler(resolve: (value: (PromiseLike<GenericResponse> | GenericResponse)) => void,
+        reject: (reason: ErrorResponse) => void):
+        (response: http.IncomingMessage) => void {
+        return response => {
+            this.handleResponse(resolve, reject, response);
+        };
+    }
 
-  private static handleResponse(resolve: (value?: (PromiseLike<GenericResponse> | GenericResponse)) => void,
-                                reject: (reason?: ErrorResponse) => void,
-                                response: http.IncomingMessage): void {
-    let data = '';
-    response.on('data', chunk => {
-      data += chunk;
-    });
-    response.on('end', () => {
-      let body: any;
-      if (data === '') {
-        body = {};
-      } else {
-        try {
-          body = JSON.parse(data);
-        } catch (e) {
-          body = data;
-        }
-      }
+    private static handleResponse(resolve: (value: (PromiseLike<GenericResponse> | GenericResponse)) => void,
+        reject: (reason: ErrorResponse) => void,
+        response: http.IncomingMessage): void {
+        let data = '';
+        response.on('data', chunk => {
+            data += chunk;
+        });
+        response.on('end', () => {
+            let body: any;
+            if (data === '') {
+                body = {};
+            } else {
+                try {
+                    body = JSON.parse(data);
+                } catch (e) {
+                    body = data;
+                }
+            }
 
-      const headersObj = response.headers;
-      const headers = Object.keys(headersObj).reduce((map, name) => {
-        map.set(name, headersObj[name] as string);
-        return map;
-      }, new Map<string, string>());
+            const headersObj = response.headers;
+            const headers = Object.keys(headersObj).reduce((map, name) => {
+                map.set(name, headersObj[name] as string);
+                return map;
+            }, new Map<string, string>());
 
-      const status: number = response.statusCode !== undefined ? response.statusCode : 0;
-      if (status < 200 || status >= 300) {
-        reject(new BasicErrorResponse(body, status, headers));
-      }
-      resolve({ status, headers, body });
-    });
-  }
+            const status: number = response.statusCode !== undefined ? response.statusCode : 0;
+            if (status < 200 || status >= 300) {
+                reject(new BasicErrorResponse(body, status, headers));
+            }
+            resolve({ status, headers, body });
+        });
+    }
 
-  public async doRequest(method: string, url: string, header: Map<string, string>, payload: string): Promise<GenericResponse> {
-    return new Promise<GenericResponse>(((resolve, reject) => {
-      const parsedUrl = new URL(url);
-      const isSecureRequest = parsedUrl.protocol === 'https:';
-      const client = isSecureRequest ? https : http;
-      const requestOptions = this.buildRequest(method, parsedUrl, header, payload, isSecureRequest);
-      const req = client.request(requestOptions, NodeRequester.createResponseHandler(resolve, reject));
-      req.on('error', e => {
-        throw new Error(String(e));
-      });
-      if (payload !== undefined) {
-        req.write(payload);
-      }
-      req.end();
-    }));
-  }
+    public async doRequest(method: string, url: string, header: Map<string, string>, payload: string): Promise<GenericResponse> {
+        return new Promise<GenericResponse>(((resolve, reject) => {
+            const parsedUrl = new URL(url);
+            const isSecureRequest = parsedUrl.protocol === 'https:';
+            const client = isSecureRequest ? https : http;
+            const requestOptions = this.buildRequest(method, parsedUrl, header, payload, isSecureRequest);
+            const req = client.request(requestOptions, NodeRequester.createResponseHandler(resolve, reject));
+            req.on('error', e => {
+                throw new Error(String(e));
+            });
+            if (payload !== undefined) {
+                req.write(payload);
+            }
+            req.end();
+        }));
+    }
 
-  /**
+    /**
    * Builds an options object to perform a Http request with.
    *
    * @param method - The type of action to perform.
@@ -111,8 +111,8 @@ export class NodeRequester implements HttpRequester {
     };
   }
 
-  private getAgentForRequestType(isSecureRequest: boolean): http.Agent | undefined {
-    return isSecureRequest ? this.agent.proxyAgent : this.agent.httpProxyAgent;
-  }
+    private getAgentForRequestType(isSecureRequest: boolean): http.Agent | undefined {
+        return isSecureRequest ? this.agent.proxyAgent : this.agent.httpProxyAgent;
+    }
 
 }

@@ -12,16 +12,25 @@
  */
 
 module.exports = {
+    preset: 'ts-jest',
+    testEnvironment: 'jsdom',
     roots: [
         "tests"
     ],
     transform: {
         "^.+\\.tsx?$": "ts-jest"
     },
-    testEnvironment: "node", // use node env instead of jsdom for the node implementation tests
+    testMatch: [
+        '**/tests/**/*.spec.ts'
+    ],
     collectCoverage: true,
     collectCoverageFrom: [
         "src/**/*.ts"
     ],
-    coverageReporters: ["text"]
+    coverageReporters: ["text"],
+    globals: {
+        'ts-jest': {
+            diagnostics: false
+        }
+    }
 };

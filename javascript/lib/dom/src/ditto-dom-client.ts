@@ -21,23 +21,23 @@ import { WebSocketBuilderInitialStep, WebSocketClientBuilder } from '../../api/s
  */
 export class DittoDomClient {
 
-  /**
+    /**
    * Returns a mutable builder with a fluent API for creating a Http-Ditto-Client.
    * The returned builder utilizes *Object scoping* to guide you through the building process.
    *
    * @return the builder.
    */
-  public static newHttpClient(): HttpBuilderInitialStep {
-    return HttpClientBuilder.newBuilder(new FetchRequester());
-  }
+    public static newHttpClient(): HttpBuilderInitialStep {
+        return HttpClientBuilder.newBuilder(new FetchRequester());
+    }
 
-  /**
+    /**
    * Returns a mutable builder with a fluent API for creating a Web-Socket-Ditto-Client.
    * The returned builder utilizes *Object scoping* to guide you through the building process.
    *
    * @return the builder.
    */
-  public static newWebSocketClient(): WebSocketBuilderInitialStep {
-    return WebSocketClientBuilder.newBuilder(new FetchWebSocketBuilder());
-  }
+    public static newWebSocketClient(): WebSocketBuilderInitialStep {
+        return WebSocketClientBuilder.newBuilder(new FetchWebSocketBuilder());
+    }
 }

@@ -18,25 +18,25 @@ import { HttpVerb } from '../constants/http-verb';
 import { RequestSender, RequestSenderFactory } from '../request-factory/request-sender';
 
 export interface PoliciesHandle {
-  /**
+    /**
    * Gets a Policy.
    *
    * @param policyId - The ID of the Policy to get.
    * @param options - Options to use for the request.
    * @returns A Promise for the Policy
    */
-  getPolicy(policyId: string, options?: MatchOptions): Promise<Policy>;
+    getPolicy(policyId: string, options?: MatchOptions): Promise<Policy>;
 
-  /**
+    /**
    * Gets the Entries of a Policy.
    *
    * @param policyId - The ID of the Policy.
    * @param options - Options to use for the request.
    * @returns A Promise for the Entries
    */
-  getEntries(policyId: string, options?: MatchOptions): Promise<Entries>;
+    getEntries(policyId: string, options?: MatchOptions): Promise<Entries>;
 
-  /**
+    /**
    * Gets an Entry of a Policy.
    *
    * @param policyId - The ID of the Policy.
@@ -44,9 +44,9 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the Entry
    */
-  getEntry(policyId: string, label: string, options?: MatchOptions): Promise<Entry>;
+    getEntry(policyId: string, label: string, options?: MatchOptions): Promise<Entry>;
 
-  /**
+    /**
    * Gets the Subjects of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -54,9 +54,9 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the Subjects
    */
-  getSubjects(policyId: string, label: string, options?: MatchOptions): Promise<Subjects>;
+    getSubjects(policyId: string, label: string, options?: MatchOptions): Promise<Subjects>;
 
-  /**
+    /**
    * Gets a Subject of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -65,9 +65,9 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the Subject
    */
-  getSubject(policyId: string, label: string, subjectId: string, options?: MatchOptions): Promise<Subject>;
+    getSubject(policyId: string, label: string, subjectId: string, options?: MatchOptions): Promise<Subject>;
 
-  /**
+    /**
    * Gets the Resources of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -75,9 +75,9 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the Resources
    */
-  getResources(policyId: string, label: string, options?: MatchOptions): Promise<Resources>;
+    getResources(policyId: string, label: string, options?: MatchOptions): Promise<Resources>;
 
-  /**
+    /**
    * Gets a Resource of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -86,18 +86,18 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the Resource
    */
-  getResource(policyId: string, label: string, resourcePath: string, options?: MatchOptions): Promise<Resource>;
+    getResource(policyId: string, label: string, resourcePath: string, options?: MatchOptions): Promise<Resource>;
 
-  /**
+    /**
    * Adds or updates a Policy.
    *
    * @param policy - The new Policy.
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Policy if provided by the response
    */
-  putPolicy(policy: Policy, options?: MatchOptions): Promise<PutResponse<Policy>>;
+    putPolicy(policy: Policy, options?: MatchOptions): Promise<PutResponse<Policy>>;
 
-  /**
+    /**
    * Adds or updates the Entries of a Policy.
    *
    * @param policyId - The ID of the Policy.
@@ -105,9 +105,9 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise a response containing the new Entries if provided by the response
    */
-  putEntries(policyId: string, entries: Entries, options?: MatchOptions): Promise<PutResponse<Entries>>;
+    putEntries(policyId: string, entries: Entries, options?: MatchOptions): Promise<PutResponse<Entries>>;
 
-  /**
+    /**
    * Adds or updates an Entry of a Policy.
    *
    * @param policyId - The ID of the Policy.
@@ -115,9 +115,9 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Entry if provided by the response
    */
-  putEntry(policyId: string, entry: Entry, options?: MatchOptions): Promise<PutResponse<Entry>>;
+    putEntry(policyId: string, entry: Entry, options?: MatchOptions): Promise<PutResponse<Entry>>;
 
-  /**
+    /**
    * Adds or updates the Subjects of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -126,9 +126,9 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Subjects if provided by the response
    */
-  putSubjects(policyId: string, label: string, subjects: Subjects, options?: MatchOptions): Promise<PutResponse<Subjects>>;
+    putSubjects(policyId: string, label: string, subjects: Subjects, options?: MatchOptions): Promise<PutResponse<Subjects>>;
 
-  /**
+    /**
    * Adds or updates a Subject of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -137,9 +137,9 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Subject if provided by the response
    */
-  putSubject(policyId: string, label: string, subject: Subject, options?: MatchOptions): Promise<PutResponse<Subject>>;
+    putSubject(policyId: string, label: string, subject: Subject, options?: MatchOptions): Promise<PutResponse<Subject>>;
 
-  /**
+    /**
    * Adds or updates the Resources of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -148,9 +148,9 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Resources if provided by the response
    */
-  putResources(policyId: string, label: string, resources: Resources, options?: MatchOptions): Promise<PutResponse<Resources>>;
+    putResources(policyId: string, label: string, resources: Resources, options?: MatchOptions): Promise<PutResponse<Resources>>;
 
-  /**
+    /**
    * Adds or updates a Resource of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -159,21 +159,21 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Resource if provided by the response
    */
-  putResource(policyId: string,
-              label: string,
-              resource: Resource,
-              options?: MatchOptions): Promise<PutResponse<Resource>>;
+    putResource(policyId: string,
+        label: string,
+        resource: Resource,
+        options?: MatchOptions): Promise<PutResponse<Resource>>;
 
-  /**
+    /**
    * Deletes a Policy.
    *
    * @param policyId - The ID of the Policy to delete.
    * @param options - Options to use for the request.
    * @returns A Promise for the response
    */
-  deletePolicy(policyId: string, options?: MatchOptions): Promise<GenericResponse>;
+    deletePolicy(policyId: string, options?: MatchOptions): Promise<GenericResponse>;
 
-  /**
+    /**
    * Deletes an Entry of a Policy.
    *
    * @param policyId - The ID of the Policy.
@@ -181,9 +181,9 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the response
    */
-  deleteEntry(policyId: string, label: string, options?: MatchOptions): Promise<GenericResponse>;
+    deleteEntry(policyId: string, label: string, options?: MatchOptions): Promise<GenericResponse>;
 
-  /**
+    /**
    * Deletes a Subject of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -192,9 +192,9 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the response
    */
-  deleteSubject(policyId: string, label: string, subjectId: string, options?: MatchOptions): Promise<GenericResponse>;
+    deleteSubject(policyId: string, label: string, subjectId: string, options?: MatchOptions): Promise<GenericResponse>;
 
-  /**
+    /**
    * Deletes a Subject of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -203,7 +203,7 @@ export interface PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the response
    */
-  deleteResource(policyId: string, label: string, resourcePath: string, options?: MatchOptions): Promise<GenericResponse>;
+    deleteResource(policyId: string, label: string, resourcePath: string, options?: MatchOptions): Promise<GenericResponse>;
 }
 
 /**
@@ -211,53 +211,53 @@ export interface PoliciesHandle {
  */
 export class DefaultPoliciesHandle implements PoliciesHandle {
 
-  private constructor(private readonly requestFactory: RequestSender) {
-  }
+    private constructor(private readonly requestFactory: RequestSender) {
+    }
 
-  /**
+    /**
    * returns an instance of PoliciesHandle using the provided RequestSender.
    *
    * @param builder - The builder for the RequestSender to work with.
    * @returns The PoliciesHandle
    */
-  public static getInstance(builder: RequestSenderFactory) {
-    return new DefaultPoliciesHandle(builder.buildInstance('policies'));
-  }
+    public static getInstance(builder: RequestSenderFactory) {
+        return new DefaultPoliciesHandle(builder.buildInstance('policies'));
+    }
 
-  /**
+    /**
    * Gets a Policy.
    *
    * @param policyId - The ID of the Policy to get.
    * @param options - Options to use for the request.
    * @returns A Promise for the Policy
    */
-  getPolicy(policyId: string, options?: MatchOptions): Promise<Policy> {
-    return this.requestFactory.fetchJsonRequest({
-      verb: HttpVerb.GET,
-      parser: o => Policy.fromObject(o, policyId),
-      id: policyId,
-      requestOptions: options
-    });
-  }
+    getPolicy(policyId: string, options?: MatchOptions): Promise<Policy> {
+        return this.requestFactory.fetchJsonRequest({
+            verb: HttpVerb.GET,
+            parser: o => Policy.fromObject(o, policyId),
+            id: policyId,
+            requestOptions: options
+        });
+    }
 
-  /**
+    /**
    * Gets the Entries of a Policy.
    *
    * @param policyId - The ID of the Policy.
    * @param options - Options to use for the request.
    * @returns A Promise for the Entries
    */
-  getEntries(policyId: string, options?: MatchOptions): Promise<Entries> {
-    return this.requestFactory.fetchJsonRequest({
-      verb: HttpVerb.GET,
-      parser: Entries.fromObject,
-      id: policyId,
-      path: 'entries',
-      requestOptions: options
-    });
-  }
+    getEntries(policyId: string, options?: MatchOptions): Promise<Entries> {
+        return this.requestFactory.fetchJsonRequest({
+            verb: HttpVerb.GET,
+            parser: Entries.fromObject,
+            id: policyId,
+            path: 'entries',
+            requestOptions: options
+        });
+    }
 
-  /**
+    /**
    * Gets an Entry of a Policy.
    *
    * @param policyId - The ID of the Policy.
@@ -265,17 +265,17 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the Entry
    */
-  getEntry(policyId: string, label: string, options?: MatchOptions): Promise<Entry> {
-    return this.requestFactory.fetchJsonRequest({
-      verb: HttpVerb.GET,
-      parser: o => Entry.fromObject(o, label),
-      id: policyId,
-      path: `entries/${label}`,
-      requestOptions: options
-    });
-  }
+    getEntry(policyId: string, label: string, options?: MatchOptions): Promise<Entry> {
+        return this.requestFactory.fetchJsonRequest({
+            verb: HttpVerb.GET,
+            parser: o => Entry.fromObject(o, label),
+            id: policyId,
+            path: `entries/${label}`,
+            requestOptions: options
+        });
+    }
 
-  /**
+    /**
    * Gets the Subjects of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -283,17 +283,17 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the Subjects
    */
-  getSubjects(policyId: string, label: string, options?: MatchOptions): Promise<Subjects> {
-    return this.requestFactory.fetchJsonRequest({
-      verb: HttpVerb.GET,
-      parser: Subjects.fromObject,
-      id: policyId,
-      path: `entries/${label}/subjects`,
-      requestOptions: options
-    });
-  }
+    getSubjects(policyId: string, label: string, options?: MatchOptions): Promise<Subjects> {
+        return this.requestFactory.fetchJsonRequest({
+            verb: HttpVerb.GET,
+            parser: Subjects.fromObject,
+            id: policyId,
+            path: `entries/${label}/subjects`,
+            requestOptions: options
+        });
+    }
 
-  /**
+    /**
    * Gets a Subject of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -302,17 +302,17 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the Subject
    */
-  getSubject(policyId: string, label: string, subjectId: string, options?: MatchOptions): Promise<Subject> {
-    return this.requestFactory.fetchJsonRequest({
-      verb: HttpVerb.GET,
-      parser: o => Subject.fromObject(o, subjectId),
-      id: policyId,
-      path: `entries/${label}/subjects/${subjectId}`,
-      requestOptions: options
-    });
-  }
+    getSubject(policyId: string, label: string, subjectId: string, options?: MatchOptions): Promise<Subject> {
+        return this.requestFactory.fetchJsonRequest({
+            verb: HttpVerb.GET,
+            parser: o => Subject.fromObject(o, subjectId),
+            id: policyId,
+            path: `entries/${label}/subjects/${subjectId}`,
+            requestOptions: options
+        });
+    }
 
-  /**
+    /**
    * Gets the Resources of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -320,17 +320,17 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the Resources
    */
-  getResources(policyId: string, label: string, options?: MatchOptions): Promise<Resources> {
-    return this.requestFactory.fetchJsonRequest({
-      verb: HttpVerb.GET,
-      parser: Resources.fromObject,
-      id: policyId,
-      path: `entries/${label}/resources`,
-      requestOptions: options
-    });
-  }
+    getResources(policyId: string, label: string, options?: MatchOptions): Promise<Resources> {
+        return this.requestFactory.fetchJsonRequest({
+            verb: HttpVerb.GET,
+            parser: Resources.fromObject,
+            id: policyId,
+            path: `entries/${label}/resources`,
+            requestOptions: options
+        });
+    }
 
-  /**
+    /**
    * Gets a Resource of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -339,34 +339,34 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the Resource
    */
-  getResource(policyId: string, label: string, resourcePath: string, options?: MatchOptions): Promise<Resource> {
-    return this.requestFactory.fetchJsonRequest({
-      verb: HttpVerb.GET,
-      parser: o => Resource.fromObject(o, resourcePath),
-      id: policyId,
-      path: `entries/${label}/resources/${resourcePath}`,
-      requestOptions: options
-    });
-  }
+    getResource(policyId: string, label: string, resourcePath: string, options?: MatchOptions): Promise<Resource> {
+        return this.requestFactory.fetchJsonRequest({
+            verb: HttpVerb.GET,
+            parser: o => Resource.fromObject(o, resourcePath),
+            id: policyId,
+            path: `entries/${label}/resources/${resourcePath}`,
+            requestOptions: options
+        });
+    }
 
-  /**
+    /**
    * Adds or updates a Policy.
    *
    * @param policy - The new Policy.
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Policy if provided by the response
    */
-  putPolicy(policy: Policy, options?: MatchOptions): Promise<PutResponse<Policy>> {
-    return this.requestFactory.fetchPutRequest({
-      verb: HttpVerb.PUT,
-      parser: o => Policy.fromObject(o, policy.id),
-      id: policy.id,
-      requestOptions: options,
-      payload: policy.toObject()
-    });
-  }
+    putPolicy(policy: Policy, options?: MatchOptions): Promise<PutResponse<Policy>> {
+        return this.requestFactory.fetchPutRequest({
+            verb: HttpVerb.PUT,
+            parser: o => Policy.fromObject(o, policy.id),
+            id: policy.id,
+            requestOptions: options,
+            payload: policy.toObject()
+        });
+    }
 
-  /**
+    /**
    * Adds or updates the Entries of a Policy.
    *
    * @param policyId - The ID of the Policy.
@@ -374,18 +374,18 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise a response containing the new Entries if provided by the response
    */
-  putEntries(policyId: string, entries: Entries, options?: MatchOptions): Promise<PutResponse<Entries>> {
-    return this.requestFactory.fetchPutRequest({
-      verb: HttpVerb.PUT,
-      parser: Entries.fromObject,
-      id: policyId,
-      path: 'entries',
-      requestOptions: options,
-      payload: Entries.toObject(entries)
-    });
-  }
+    putEntries(policyId: string, entries: Entries, options?: MatchOptions): Promise<PutResponse<Entries>> {
+        return this.requestFactory.fetchPutRequest({
+            verb: HttpVerb.PUT,
+            parser: Entries.fromObject,
+            id: policyId,
+            path: 'entries',
+            requestOptions: options,
+            payload: Entries.toObject(entries)
+        });
+    }
 
-  /**
+    /**
    * Adds or updates an Entry of a Policy.
    *
    * @param policyId - The ID of the Policy.
@@ -393,18 +393,18 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Entry if provided by the response
    */
-  putEntry(policyId: string, entry: Entry, options?: MatchOptions): Promise<PutResponse<Entry>> {
-    return this.requestFactory.fetchPutRequest({
-      verb: HttpVerb.PUT,
-      parser: o => Entry.fromObject(o, entry.id),
-      id: policyId,
-      path: `entries/${entry.id}`,
-      requestOptions: options,
-      payload: entry.toObject()
-    });
-  }
+    putEntry(policyId: string, entry: Entry, options?: MatchOptions): Promise<PutResponse<Entry>> {
+        return this.requestFactory.fetchPutRequest({
+            verb: HttpVerb.PUT,
+            parser: o => Entry.fromObject(o, entry.id),
+            id: policyId,
+            path: `entries/${entry.id}`,
+            requestOptions: options,
+            payload: entry.toObject()
+        });
+    }
 
-  /**
+    /**
    * Adds or updates the Subjects of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -413,18 +413,18 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Subjects if provided by the response
    */
-  putSubjects(policyId: string, label: string, subjects: Subjects, options?: MatchOptions): Promise<PutResponse<Subjects>> {
-    return this.requestFactory.fetchPutRequest({
-      verb: HttpVerb.PUT,
-      parser: Subjects.fromObject,
-      id: policyId,
-      path: `entries/${label}/subjects`,
-      requestOptions: options,
-      payload: Subjects.toObject(subjects)
-    });
-  }
+    putSubjects(policyId: string, label: string, subjects: Subjects, options?: MatchOptions): Promise<PutResponse<Subjects>> {
+        return this.requestFactory.fetchPutRequest({
+            verb: HttpVerb.PUT,
+            parser: Subjects.fromObject,
+            id: policyId,
+            path: `entries/${label}/subjects`,
+            requestOptions: options,
+            payload: Subjects.toObject(subjects)
+        });
+    }
 
-  /**
+    /**
    * Adds or updates a Subject of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -433,18 +433,18 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Subject if provided by the response
    */
-  putSubject(policyId: string, label: string, subject: Subject, options?: MatchOptions): Promise<PutResponse<Subject>> {
-    return this.requestFactory.fetchPutRequest({
-      verb: HttpVerb.PUT,
-      parser: o => Subject.fromObject(o, subject.id),
-      id: policyId,
-      path: `entries/${label}/subjects/${subject.id}`,
-      requestOptions: options,
-      payload: subject.toObject()
-    });
-  }
+    putSubject(policyId: string, label: string, subject: Subject, options?: MatchOptions): Promise<PutResponse<Subject>> {
+        return this.requestFactory.fetchPutRequest({
+            verb: HttpVerb.PUT,
+            parser: o => Subject.fromObject(o, subject.id),
+            id: policyId,
+            path: `entries/${label}/subjects/${subject.id}`,
+            requestOptions: options,
+            payload: subject.toObject()
+        });
+    }
 
-  /**
+    /**
    * Adds or updates the Resources of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -453,18 +453,18 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Resources if provided by the response
    */
-  putResources(policyId: string, label: string, resources: Resources, options?: MatchOptions): Promise<PutResponse<Resources>> {
-    return this.requestFactory.fetchPutRequest({
-      verb: HttpVerb.PUT,
-      parser: Resources.fromObject,
-      id: policyId,
-      path: `entries/${label}/resources`,
-      requestOptions: options,
-      payload: Resources.toObject(resources)
-    });
-  }
+    putResources(policyId: string, label: string, resources: Resources, options?: MatchOptions): Promise<PutResponse<Resources>> {
+        return this.requestFactory.fetchPutRequest({
+            verb: HttpVerb.PUT,
+            parser: Resources.fromObject,
+            id: policyId,
+            path: `entries/${label}/resources`,
+            requestOptions: options,
+            payload: Resources.toObject(resources)
+        });
+    }
 
-  /**
+    /**
    * Adds or updates a Resource of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -473,36 +473,36 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for a response containing the new Resource if provided by the response
    */
-  putResource(policyId: string,
-              label: string,
-              resource: Resource,
-              options?: MatchOptions): Promise<PutResponse<Resource>> {
-    return this.requestFactory.fetchPutRequest({
-      verb: HttpVerb.PUT,
-      parser: o => Resource.fromObject(o, resource.id),
-      id: policyId,
-      path: `entries/${label}/resources/${resource.id}`,
-      requestOptions: options,
-      payload: resource.toObject()
-    });
-  }
+    putResource(policyId: string,
+        label: string,
+        resource: Resource,
+        options?: MatchOptions): Promise<PutResponse<Resource>> {
+        return this.requestFactory.fetchPutRequest({
+            verb: HttpVerb.PUT,
+            parser: o => Resource.fromObject(o, resource.id),
+            id: policyId,
+            path: `entries/${label}/resources/${resource.id}`,
+            requestOptions: options,
+            payload: resource.toObject()
+        });
+    }
 
-  /**
+    /**
    * Deletes a Policy.
    *
    * @param policyId - The ID of the Policy to delete.
    * @param options - Options to use for the request.
    * @returns A Promise for the response
    */
-  deletePolicy(policyId: string, options?: MatchOptions): Promise<GenericResponse> {
-    return this.requestFactory.fetchRequest({
-      verb: HttpVerb.DELETE,
-      id: policyId,
-      requestOptions: options
-    });
-  }
+    deletePolicy(policyId: string, options?: MatchOptions): Promise<GenericResponse> {
+        return this.requestFactory.fetchRequest({
+            verb: HttpVerb.DELETE,
+            id: policyId,
+            requestOptions: options
+        });
+    }
 
-  /**
+    /**
    * Deletes an Entry of a Policy.
    *
    * @param policyId - The ID of the Policy.
@@ -510,16 +510,16 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the response
    */
-  deleteEntry(policyId: string, label: string, options?: MatchOptions): Promise<GenericResponse> {
-    return this.requestFactory.fetchRequest({
-      verb: HttpVerb.DELETE,
-      id: policyId,
-      path: `entries/${label}`,
-      requestOptions: options
-    });
-  }
+    deleteEntry(policyId: string, label: string, options?: MatchOptions): Promise<GenericResponse> {
+        return this.requestFactory.fetchRequest({
+            verb: HttpVerb.DELETE,
+            id: policyId,
+            path: `entries/${label}`,
+            requestOptions: options
+        });
+    }
 
-  /**
+    /**
    * Deletes a Subject of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -528,16 +528,16 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the response
    */
-  deleteSubject(policyId: string, label: string, subjectId: string, options?: MatchOptions): Promise<GenericResponse> {
-    return this.requestFactory.fetchRequest({
-      verb: HttpVerb.DELETE,
-      id: policyId,
-      path: `entries/${label}/subjects/${subjectId}`,
-      requestOptions: options
-    });
-  }
+    deleteSubject(policyId: string, label: string, subjectId: string, options?: MatchOptions): Promise<GenericResponse> {
+        return this.requestFactory.fetchRequest({
+            verb: HttpVerb.DELETE,
+            id: policyId,
+            path: `entries/${label}/subjects/${subjectId}`,
+            requestOptions: options
+        });
+    }
 
-  /**
+    /**
    * Deletes a Subject of an Entry.
    *
    * @param policyId - The ID of the Policy the Entry belongs to.
@@ -546,12 +546,12 @@ export class DefaultPoliciesHandle implements PoliciesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the response
    */
-  deleteResource(policyId: string, label: string, resourcePath: string, options?: MatchOptions): Promise<GenericResponse> {
-    return this.requestFactory.fetchRequest({
-      verb: HttpVerb.DELETE,
-      id: policyId,
-      path: `entries/${label}/resources/${resourcePath}`,
-      requestOptions: options
-    });
-  }
+    deleteResource(policyId: string, label: string, resourcePath: string, options?: MatchOptions): Promise<GenericResponse> {
+        return this.requestFactory.fetchRequest({
+            verb: HttpVerb.DELETE,
+            id: policyId,
+            path: `entries/${label}/resources/${resourcePath}`,
+            requestOptions: options
+        });
+    }
 }

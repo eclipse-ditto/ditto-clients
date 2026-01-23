@@ -23,13 +23,18 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-export default {
+module.exports = {
+    preset: 'ts-jest',
+    testEnvironment: 'node',
     roots: [
         "tests"
     ],
     transform: {
         "^.+\\.tsx?$": "ts-jest"
     },
+    testMatch: [
+        '**/tests/**/*.spec.ts'
+    ],
     collectCoverage: true,
     collectCoverageFrom: [
         "src/**/*.ts"

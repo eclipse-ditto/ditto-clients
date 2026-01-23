@@ -13,14 +13,14 @@
 
 import { WebSocketImplementationBuilderUrl } from '../../api/src/client/request-factory/websocket-request-handler';
 import {
-  ResponseHandler,
-  WebSocketImplementation,
-  WebSocketImplementationBuilderHandler
+    ResponseHandler,
+    WebSocketImplementation,
+    WebSocketImplementationBuilderHandler
 } from '../../api/src/client/request-factory/resilience/websocket-resilience-interfaces';
 import {
-  authenticateWithUrl,
-  AuthProvider,
-  DittoURL
+    authenticateWithUrl,
+    AuthProvider,
+    DittoURL
 } from '../../api/src/auth/auth-provider';
 
 /**
@@ -89,37 +89,37 @@ export class FetchWebSocket implements WebSocketImplementation {
   /**
    * Sets up the handler so it receives events from the web socket.
    */
-  private setHandles(): void {
-    this.webSocket.addEventListener('message', event => {
-      this.handler.handleInput(event.data);
-    });
-    this.webSocket.addEventListener('close', () => {
-      this.connected = false;
-      this.handler.handleClose(Promise.resolve(this.reconnect(1000)));
-    });
-    this.webSocket.addEventListener('error', event => {
-      this.handler.handleError(`WebSocket: ${event}`);
-    });
-  }
+    private setHandles(): void {
+        this.webSocket.addEventListener('message', event => {
+            this.handler.handleInput(event.data);
+        });
+        this.webSocket.addEventListener('close', () => {
+            this.connected = false;
+            this.handler.handleClose(Promise.resolve(this.reconnect(1000)));
+        });
+        this.webSocket.addEventListener('error', event => {
+            this.handler.handleError(`WebSocket: ${event}`);
+        });
+    }
 }
 
 /**
  * Builder for the Browser implementation of a web socket.
  */
 export class FetchWebSocketBuilder implements WebSocketImplementationBuilderUrl, WebSocketImplementationBuilderHandler {
-  private dittoUrl!: DittoURL;
-  private authProviders!: AuthProvider[];
+    private dittoUrl!: DittoURL;
+    private authProviders!: AuthProvider[];
 
-  public constructor() {
-  }
+    public constructor() {
+    }
 
   withHandler(handler: ResponseHandler): Promise<FetchWebSocket> {
     return FetchWebSocket.buildInstance(this.dittoUrl, handler, this.authProviders);
   }
 
-  withConnectionDetails(url: DittoURL, authProviders: AuthProvider[]): WebSocketImplementationBuilderHandler {
-    this.authProviders = authProviders;
-    this.dittoUrl = url;
-    return this;
-  }
+    withConnectionDetails(url: DittoURL, authProviders: AuthProvider[]): WebSocketImplementationBuilderHandler {
+        this.authProviders = authProviders;
+        this.dittoUrl = url;
+        return this;
+    }
 }

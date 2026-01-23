@@ -23,24 +23,24 @@ import { ContentType } from '../constants/content-type';
  */
 export class HttpRequestSender extends RequestSender {
 
-  public constructor(private readonly requester: HttpRequester,
-                     private readonly baseUrl: DittoURL,
-                     private readonly authenticationProviders: AuthProvider[]) {
-    super();
-  }
+    public constructor(private readonly requester: HttpRequester,
+        private readonly baseUrl: DittoURL,
+        private readonly authenticationProviders: AuthProvider[]) {
+        super();
+    }
 
-  public fetchRequest(options: FetchRequest): Promise<GenericResponse> {
-    return this.requester.doRequest(options.verb, this.buildUrl(options.id, options.path, options.requestOptions),
-      this.buildHeader(options.requestOptions), options.payload)
-      .then(response => {
-        if (response.status >= 200 && response.status < 300) {
-          return response;
-        }
-        return Promise.reject(response.body);
-      });
-  }
+    public fetchRequest(options: FetchRequest): Promise<GenericResponse> {
+        return this.requester.doRequest(options.verb, this.buildUrl(options.id, options.path, options.requestOptions),
+            this.buildHeader(options.requestOptions), options.payload)
+            .then(response => {
+                if (response.status >= 200 && response.status < 300) {
+                    return response;
+                }
+                return Promise.reject(response.body);
+            });
+    }
 
-  /**
+    /**
    * Builds a URL to make HTTP calls with.
    *
    * @param id - The id of the basic entity the request is for.
@@ -48,38 +48,38 @@ export class HttpRequestSender extends RequestSender {
    * @param options - The options provided in the request.
    * @returns The request URL
    */
-  private buildUrl(id: string | undefined, path: string | undefined, options: RequestOptions | undefined): string {
-    let urlSuffix = id === undefined ? '' : `/${id}`;
-    urlSuffix = path === undefined ? urlSuffix : `${urlSuffix}/${path}`;
-    if (options !== undefined && options.getOptions().size > 0) {
-      urlSuffix = `${urlSuffix}?${this.mapToQueryParams(options.getOptions())}`;
+    private buildUrl(id: string | undefined, path: string | undefined, options: RequestOptions | undefined): string {
+        let urlSuffix = id === undefined ? '' : `/${id}`;
+        urlSuffix = path === undefined ? urlSuffix : `${urlSuffix}/${path}`;
+        if (options !== undefined && options.getOptions().size > 0) {
+            urlSuffix = `${urlSuffix}?${this.mapToQueryParams(options.getOptions())}`;
+        }
+        const baseUrlWithSuffix = this.baseUrl.withPath(`${this.baseUrl.path}${urlSuffix}`);
+        const authenticatedBaseUrl = authenticateWithUrl(baseUrlWithSuffix, this.authenticationProviders);
+        return authenticatedBaseUrl.toString();
     }
-    const baseUrlWithSuffix = this.baseUrl.withPath(`${this.baseUrl.path}${urlSuffix}`);
-    const authenticatedBaseUrl = authenticateWithUrl(baseUrlWithSuffix, this.authenticationProviders);
-    return authenticatedBaseUrl.toString();
-  }
 
-  /**
+    /**
    * Builds headers to make HTTP calls with by combining authentication and options headers.
    * Options headers will override authentication headers.
    *
    * @param options - The options to provided in the request.
    * @returns The combined headers
    */
-  private buildHeader(options: RequestOptions | undefined): Map<string, string> {
-    const headers: DittoHeaders = new Map();
-    if (options) {
-      options.getHeaders().forEach((v, k) => headers.set(k, v));
+    private buildHeader(options: RequestOptions | undefined): Map<string, string> {
+        const headers: DittoHeaders = new Map();
+        if (options) {
+            options.getHeaders().forEach((v, k) => headers.set(k, v));
+        }
+        if (!headers.has(Header.CONTENT_TYPE)) {
+            headers.set(Header.CONTENT_TYPE, ContentType.JSON);
+        }
+        let authenticatedHeaders = headers;
+        for (const authenticationProvider of this.authenticationProviders) {
+            authenticatedHeaders = authenticationProvider.authenticateWithHeaders(authenticatedHeaders);
+        }
+        return authenticatedHeaders;
     }
-    if (!headers.has(Header.CONTENT_TYPE)) {
-      headers.set(Header.CONTENT_TYPE, ContentType.JSON);
-    }
-    let authenticatedHeaders = headers;
-    for (const authenticationProvider of this.authenticationProviders) {
-      authenticatedHeaders = authenticationProvider.authenticateWithHeaders(authenticatedHeaders);
-    }
-    return authenticatedHeaders;
-  }
 }
 
 /**
@@ -96,7 +96,7 @@ export interface HttpRequester {
    * @param body - The request body.
    * @returns The response
    */
-  doRequest(method: string, url: string, header: Map<string, string>, body: string): Promise<GenericResponse>;
+    doRequest(method: string, url: string, header: Map<string, string>, body: string): Promise<GenericResponse>;
 }
 
 
@@ -105,14 +105,14 @@ export interface HttpRequester {
  */
 export class HttpRequestSenderBuilder implements RequestSenderFactory {
 
-  public constructor(private readonly requester: HttpRequester,
-                     private readonly url: DittoURL,
-                     private readonly authProviders: AuthProvider[]) {
-  }
+    public constructor(private readonly requester: HttpRequester,
+        private readonly url: DittoURL,
+        private readonly authProviders: AuthProvider[]) {
+    }
 
-  public buildInstance(group: string): HttpRequestSender {
-    return new HttpRequestSender(this.requester,
-      this.url.withPath(`${this.url.path}/${group}`),
-      this.authProviders);
-  }
+    public buildInstance(group: string): HttpRequestSender {
+        return new HttpRequestSender(this.requester,
+            this.url.withPath(`${this.url.path}/${group}`),
+            this.authProviders);
+    }
 }

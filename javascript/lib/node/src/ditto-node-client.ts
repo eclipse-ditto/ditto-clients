@@ -22,25 +22,25 @@ import { ProxyAgent, ProxyOptions } from './proxy-settings';
  */
 export class DittoNodeClient {
 
-  /**
+    /**
    * Returns a mutable builder with a fluent API for creating a Http-Ditto-Client.
    * The returned builder utilizes *Object scoping* to guide you through the building process.
    *
    * @param proxyOptions - Options to establish a proxy connection.
    * @return the builder.
    */
-  public static newHttpClient(proxyOptions?: ProxyOptions): HttpBuilderInitialStep {
-    return HttpClientBuilder.newBuilder(new NodeRequester(new ProxyAgent(proxyOptions)));
-  }
+    public static newHttpClient(proxyOptions?: ProxyOptions): HttpBuilderInitialStep {
+        return HttpClientBuilder.newBuilder(new NodeRequester(new ProxyAgent(proxyOptions)));
+    }
 
-  /**
+    /**
    * Returns a mutable builder with a fluent API for creating a Web-Socket-Ditto-Client.
    * The returned builder utilizes *Object scoping* to guide you through the building process.
    *
    * @param proxyOptions - Options to establish a proxy connection.
    * @return the builder.
    */
-  public static newWebSocketClient(proxyOptions?: ProxyOptions): WebSocketBuilderInitialStep {
-    return WebSocketClientBuilder.newBuilder(new NodeWebSocketBuilder(new ProxyAgent(proxyOptions)));
-  }
+    public static newWebSocketClient(proxyOptions?: ProxyOptions): WebSocketBuilderInitialStep {
+        return WebSocketClientBuilder.newBuilder(new NodeWebSocketBuilder(new ProxyAgent(proxyOptions)));
+    }
 }

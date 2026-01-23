@@ -11,16 +11,26 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
-export default {
+module.exports = {
+    preset: 'ts-jest',
+    testEnvironment: "node", // use node env instead of jsdom for the node implementation tests
     roots: [
         "tests"
     ],
     transform: {
         "^.+\\.tsx?$": "ts-jest"
     },
+    testMatch: [
+        '**/tests/**/*.spec.ts'
+    ],
     collectCoverage: true,
     collectCoverageFrom: [
         "src/**/*.ts"
     ],
-    coverageReporters: ["text"]
+    coverageReporters: ["text"],
+    globals: {
+        'ts-jest': {
+            diagnostics: false
+        }
+    }
 };

@@ -18,70 +18,70 @@ import { Thing } from './things.model';
  * A generic server response to a request.
  */
 export interface GenericResponse {
-  /** The status code of the response. */
-  status: number;
-  /** The body of the response. */
-  body: any;
-  /** The headers of the response inside a map. */
-  headers: Map<string, string>;
+    /** The status code of the response. */
+    status: number;
+    /** The body of the response. */
+    body: any;
+    /** The headers of the response inside a map. */
+    headers: Map<string, string>;
 }
 
 /**
  * A generic server response to a request.
  */
 export interface ErrorResponse {
-  /** The status code of the error response. */
-  status: number;
-  /** The body of the error response. */
-  body: any;
-  /** The headers of the error response inside a map. */
-  headers: Map<string, string>;
+    /** The status code of the error response. */
+    status: number;
+    /** The body of the error response. */
+    body: any;
+    /** The headers of the error response inside a map. */
+    headers: Map<string, string>;
 }
 
 export class PutResponse<T> implements GenericResponse {
-  public constructor(private readonly _value: T | null,
-                     private readonly _status: number,
-                     private readonly _headers: Map<string, string>) {
-  }
+    public constructor(private readonly _value: T | null,
+        private readonly _status: number,
+        private readonly _headers: Map<string, string>) {
+    }
 
-  public wasCreated(): boolean {
-    return this.body !== undefined && this.body !== null;
-  }
+    public wasCreated(): boolean {
+        return this.body !== undefined && this.body !== null;
+    }
 
-  public wasUpdated(): boolean {
-    return !this.wasCreated();
-  }
+    public wasUpdated(): boolean {
+        return !this.wasCreated();
+    }
 
-  get body(): T | null {
-    return this._value;
-  }
+    get body(): T | null {
+        return this._value;
+    }
 
-  get status(): number {
-    return this._status;
-  }
+    get status(): number {
+        return this._status;
+    }
 
-  get headers(): Map<string, string> {
-    return this._headers;
-  }
+    get headers(): Map<string, string> {
+        return this._headers;
+    }
 }
 
 export class BasicErrorResponse<T> implements ErrorResponse {
-  public constructor(private readonly _value: T | null,
-                     private readonly _status: number,
-                     private readonly _headers: Map<string, string>) {
-  }
+    public constructor(private readonly _value: T | null,
+        private readonly _status: number,
+        private readonly _headers: Map<string, string>) {
+    }
 
-  get body(): T | null {
-    return this._value;
-  }
+    get body(): T | null {
+        return this._value;
+    }
 
-  get status(): number {
-    return this._status;
-  }
+    get status(): number {
+        return this._status;
+    }
 
-  get headers(): Map<string, string> {
-    return this._headers;
-  }
+    get headers(): Map<string, string> {
+        return this._headers;
+    }
 }
 
 
@@ -90,43 +90,43 @@ export class BasicErrorResponse<T> implements ErrorResponse {
  */
 export class SearchThingsResponse extends EntityModel {
 
-  public constructor(private readonly _items: Thing[],
-                     private readonly _nextPageOffset?: number,
-                     private readonly _cursor?: string) {
-    super();
-  }
+    public constructor(private readonly _items: Thing[],
+        private readonly _nextPageOffset?: number,
+        private readonly _cursor?: string) {
+        super();
+    }
 
-  /**
+    /**
    * Parses a SearchThingsResponse.
    *
    * @param o - The object to parse.
    * @returns The SearchThingsResponse
    */
-  public static fromObject(o: any): SearchThingsResponse {
-    if (o === undefined) {
-      return o;
+    public static fromObject(o: any): SearchThingsResponse {
+        if (o === undefined) {
+            return o;
+        }
+        // @ts-ignore
+        return new SearchThingsResponse(o['items'].map((t: object) => Thing.fromObject(t)), o['nextPageOffset'], o['cursor']);
     }
-    // @ts-ignore
-    return new SearchThingsResponse(o['items'].map((t: object) => Thing.fromObject(t)), o['nextPageOffset'], o['cursor']);
-  }
 
-  public toObject(): object {
-    return EntityModel.buildObject(new Map<string, any>([
-      ['items', this._items.map((t: Thing) => t.toObject())],
-      ['nextPageOffset', this.nextPageOffset],
-      ['cursor', this.cursor]
-    ]));
-  }
+    public toObject(): object {
+        return EntityModel.buildObject(new Map<string, any>([
+            ['items', this._items.map((t: Thing) => t.toObject())],
+            ['nextPageOffset', this.nextPageOffset],
+            ['cursor', this.cursor]
+        ]));
+    }
 
-  get items(): Thing[] {
-    return this._items;
-  }
+    get items(): Thing[] {
+        return this._items;
+    }
 
-  get nextPageOffset(): number {
-    return this._nextPageOffset !== undefined ? this._nextPageOffset : 0;
-  }
+    get nextPageOffset(): number {
+        return this._nextPageOffset !== undefined ? this._nextPageOffset : 0;
+    }
 
-  get cursor(): string {
-    return this._cursor !== undefined ? this._cursor : '';
-  }
+    get cursor(): string {
+        return this._cursor !== undefined ? this._cursor : '';
+    }
 }

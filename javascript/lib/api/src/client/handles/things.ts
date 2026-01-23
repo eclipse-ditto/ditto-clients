@@ -25,225 +25,225 @@ import { HttpThingsHandle, WebSocketThingsHandle } from './things.interfaces';
  */
 export class DefaultThingsHandle implements WebSocketThingsHandle, HttpThingsHandle {
 
-  protected constructor(protected readonly requestFactory: RequestSender) {
-  }
+    protected constructor(protected readonly requestFactory: RequestSender) {
+    }
 
-  /**
+    /**
    * returns an instance of DefaultThingsHandle using the provided RequestSender.
    *
    * @param builder - The builder for the RequestSender to work with.
    * @returns The DefaultThingsHandle
    */
-  public static getInstance(builder: RequestSenderFactory): DefaultThingsHandle {
-    return new DefaultThingsHandle(builder.buildInstance('things'));
-  }
-
-  public getThing(thingId: string, options?: FieldsOptions): Promise<Thing> {
-    return this.requestFactory.fetchJsonRequest({
-      verb: HttpVerb.GET,
-      parser: Thing.fromObject,
-      id: thingId,
-      requestOptions: options
-    });
-  }
-
-  public getAttributes(thingId: string, options?: FieldsOptions): Promise<object> {
-    return this.requestFactory.fetchJsonRequest({
-      verb: HttpVerb.GET,
-      parser: o => o,
-      id: thingId,
-      path: 'attributes',
-      requestOptions: options
-    });
-  }
-
-  public getAttribute(thingId: string, attributePath: string, options?: MatchOptions): Promise<any> {
-    return this.requestFactory.fetchJsonRequest({
-      verb: HttpVerb.GET,
-      parser: o => o,
-      id: thingId,
-      path: `attributes/${attributePath}`,
-      requestOptions: options
-    });
-  }
-
-  public getPolicyId(thingId: string, options?: MatchOptions): Promise<string> {
-    return this.getStringAtPath(thingId, 'policyId', options);
-  }
-
-  public getDefinition(thingId: string, options?: MatchOptions): Promise<string> {
-    return this.getStringAtPath(thingId, 'definition', options);
-  }
-
-  public deleteThing(thingId: string, options?: MatchOptions): Promise<GenericResponse> {
-    return this.requestFactory.fetchRequest({
-      verb: HttpVerb.DELETE,
-      id: thingId,
-      requestOptions: options
-    });
-  }
-
-  public deleteAttributes(thingId: string, options?: MatchOptions): Promise<GenericResponse> {
-    return this.deleteItemAtPath(thingId, 'attributes', options);
-  }
-
-  public deleteAttribute(thingId: string, attributePath: string, options?: MatchOptions): Promise<GenericResponse> {
-    return this.deleteItemAtPath(thingId, `attributes/${attributePath}`, options);
-  }
-  public deleteDefinition(thingId: string, options?: MatchOptions): Promise<GenericResponse> {
-    return this.deleteItemAtPath(thingId, 'definition', options);
-  }
-
-  public getThings(thingIds: string[], options?: GetThingsOptions): Promise<Thing[]> {
-    let actualOptions: GetThingsOptions;
-    if (options === undefined) {
-      actualOptions = DefaultGetThingsOptions.getInstance().setThingIds(thingIds);
-    } else {
-      actualOptions = options.setThingIds(thingIds);
+    public static getInstance(builder: RequestSenderFactory): DefaultThingsHandle {
+        return new DefaultThingsHandle(builder.buildInstance('things'));
     }
-    return this.requestFactory.fetchJsonRequest({
-      verb: HttpVerb.GET,
-      parser: o => Object(o).map((obj: any) => Thing.fromObject(obj)),
-      requestOptions: actualOptions
-    });
-  }
 
-  public postThing(thingWithoutId: Object): Promise<Thing> {
-    return this.requestFactory.fetchJsonRequest({
-      verb: HttpVerb.POST,
-      parser: Thing.fromObject,
-      payload: thingWithoutId
-    });
-  }
+    public getThing(thingId: string, options?: FieldsOptions): Promise<Thing> {
+        return this.requestFactory.fetchJsonRequest({
+            verb: HttpVerb.GET,
+            parser: Thing.fromObject,
+            id: thingId,
+            requestOptions: options
+        });
+    }
 
-  public putThing(thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>> {
-    return this.changeThing(HttpVerb.PUT, thing, options);
-  }
+    public getAttributes(thingId: string, options?: FieldsOptions): Promise<object> {
+        return this.requestFactory.fetchJsonRequest({
+            verb: HttpVerb.GET,
+            parser: o => o,
+            id: thingId,
+            path: 'attributes',
+            requestOptions: options
+        });
+    }
 
-  public createThing(thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>> {
-    return this.changeThing(DittoAction.CREATE, thing, options);
-  }
+    public getAttribute(thingId: string, attributePath: string, options?: MatchOptions): Promise<any> {
+        return this.requestFactory.fetchJsonRequest({
+            verb: HttpVerb.GET,
+            parser: o => o,
+            id: thingId,
+            path: `attributes/${attributePath}`,
+            requestOptions: options
+        });
+    }
 
-  public patchThing(thing: Thing, options?: MatchOptions | undefined): Promise<PutResponse<Thing>> {
-    return this.changeThing(HttpVerb.PATCH, thing, MatchOptionsHelper.getWithMergeHeader(options));
-  }
+    public getPolicyId(thingId: string, options?: MatchOptions): Promise<string> {
+        return this.getStringAtPath(thingId, 'policyId', options);
+    }
 
-  public putAttributes(thingId: string, attributes: object, options?: MatchOptions): Promise<PutResponse<object>> {
-    return this.requestFactory.fetchPutRequest({
-      verb: HttpVerb.PUT,
-      parser: o => o,
-      id: thingId,
-      path: 'attributes',
-      requestOptions: options,
-      payload: attributes
-    });
-  }
+    public getDefinition(thingId: string, options?: MatchOptions): Promise<string> {
+        return this.getStringAtPath(thingId, 'definition', options);
+    }
 
-  public putAttribute(thingId: string, attributePath: string,
-                      attributeValue: any, options?: MatchOptions): Promise<PutResponse<any>> {
-    return this.requestFactory.fetchPutRequest({
-      verb: HttpVerb.PUT,
-      parser: o => o,
-      id: thingId,
-      path: `attributes/${attributePath}`,
-      requestOptions: options,
-      payload: attributeValue
-    });
-  }
+    public deleteThing(thingId: string, options?: MatchOptions): Promise<GenericResponse> {
+        return this.requestFactory.fetchRequest({
+            verb: HttpVerb.DELETE,
+            id: thingId,
+            requestOptions: options
+        });
+    }
 
-  public patchAttributes(thingId: string, attributes: object, options?: MatchOptions): Promise<PutResponse<object>> {
-    return this.requestFactory.fetchPutRequest({
-      verb: HttpVerb.PATCH,
-      parser: o => o,
-      id: thingId,
-      path: 'attributes',
-      requestOptions: MatchOptionsHelper.getWithMergeHeader(options),
-      payload: attributes
-    });
-  }
+    public deleteAttributes(thingId: string, options?: MatchOptions): Promise<GenericResponse> {
+        return this.deleteItemAtPath(thingId, 'attributes', options);
+    }
 
-  public patchAttribute(thingId: string, attributePath: string,
-                      attributeValue: any, options?: MatchOptions): Promise<PutResponse<any>> {
-    return this.requestFactory.fetchPutRequest({
-      verb: HttpVerb.PATCH,
-      parser: o => o,
-      id: thingId,
-      path: `attributes/${attributePath}`,
-      requestOptions: MatchOptionsHelper.getWithMergeHeader(options),
-      payload: attributeValue
-    });
-  }
+    public deleteAttribute(thingId: string, attributePath: string, options?: MatchOptions): Promise<GenericResponse> {
+        return this.deleteItemAtPath(thingId, `attributes/${attributePath}`, options);
+    }
+    public deleteDefinition(thingId: string, options?: MatchOptions): Promise<GenericResponse> {
+        return this.deleteItemAtPath(thingId, 'definition', options);
+    }
 
-  public putPolicyId(thingId: string, policyId: string, options?: MatchOptions): Promise<PutResponse<string>> {
-    return this.requestFactory.fetchPutRequest({
-      verb: HttpVerb.PUT,
-      parser: String,
-      id: thingId,
-      path: 'policyId',
-      requestOptions: options,
-      payload: policyId
-    });
-  }
+    public getThings(thingIds: string[], options?: GetThingsOptions): Promise<Thing[]> {
+        let actualOptions: GetThingsOptions;
+        if (options === undefined) {
+            actualOptions = DefaultGetThingsOptions.getInstance().setThingIds(thingIds);
+        } else {
+            actualOptions = options.setThingIds(thingIds);
+        }
+        return this.requestFactory.fetchJsonRequest({
+            verb: HttpVerb.GET,
+            parser: o => Object(o).map((obj: any) => Thing.fromObject(obj)),
+            requestOptions: actualOptions
+        });
+    }
 
-  public patchPolicyId(thingId: string, policyId: string, options?: MatchOptions): Promise<PutResponse<string>> {
-    return this.requestFactory.fetchPutRequest({
-      verb: HttpVerb.PATCH,
-      parser: String,
-      id: thingId,
-      path: 'policyId',
-      requestOptions: MatchOptionsHelper.getWithMergeHeader(options),
-      payload: policyId
-    });
-  }
+    public postThing(thingWithoutId: Object): Promise<Thing> {
+        return this.requestFactory.fetchJsonRequest({
+            verb: HttpVerb.POST,
+            parser: Thing.fromObject,
+            payload: thingWithoutId
+        });
+    }
 
-  public putDefinition(thingId: string, definition: string, options?: MatchOptions): Promise<PutResponse<string>> {
-    return this.requestFactory.fetchPutRequest({
-      verb: HttpVerb.PUT,
-      parser: String,
-      id: thingId,
-      path: 'definition',
-      requestOptions: options,
-      payload: definition
-    });
-  }
+    public putThing(thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>> {
+        return this.changeThing(HttpVerb.PUT, thing, options);
+    }
 
-  public patchDefinition(thingId: string, definition: string, options?: MatchOptions): Promise<PutResponse<string>> {
-    return this.requestFactory.fetchPutRequest({
-      verb: HttpVerb.PATCH,
-      parser: String,
-      id: thingId,
-      path: 'definition',
-      requestOptions: MatchOptionsHelper.getWithMergeHeader(options),
-      payload: definition
-    });
-  }
+    public createThing(thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>> {
+        return this.changeThing(DittoAction.CREATE, thing, options);
+    }
 
-  private changeThing(verb: string, thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>> {
-    return this.requestFactory.fetchPutRequest({
-      verb,
-      parser: Thing.fromObject,
-      id: thing.thingId,
-      requestOptions: options,
-      payload: thing.toObject()
-    });
-  }
+    public patchThing(thing: Thing, options?: MatchOptions | undefined): Promise<PutResponse<Thing>> {
+        return this.changeThing(HttpVerb.PATCH, thing, MatchOptionsHelper.getWithMergeHeader(options));
+    }
 
-  public getStringAtPath(thingId: string, path: string, options?: MatchOptions): Promise<string> {
-    return this.requestFactory.fetchJsonRequest({
-      path,
-      verb: HttpVerb.GET,
-      parser: String,
-      id: thingId,
-      requestOptions: options
-    });
-  }
+    public putAttributes(thingId: string, attributes: object, options?: MatchOptions): Promise<PutResponse<object>> {
+        return this.requestFactory.fetchPutRequest({
+            verb: HttpVerb.PUT,
+            parser: o => o,
+            id: thingId,
+            path: 'attributes',
+            requestOptions: options,
+            payload: attributes
+        });
+    }
 
-  public deleteItemAtPath(thingId: string, path: string, options?: MatchOptions): Promise<GenericResponse> {
-    return this.requestFactory.fetchRequest({
-      path,
-      verb: HttpVerb.DELETE,
-      id: thingId,
-      requestOptions: options
-    });
-  }
+    public putAttribute(thingId: string, attributePath: string,
+        attributeValue: any, options?: MatchOptions): Promise<PutResponse<any>> {
+        return this.requestFactory.fetchPutRequest({
+            verb: HttpVerb.PUT,
+            parser: o => o,
+            id: thingId,
+            path: `attributes/${attributePath}`,
+            requestOptions: options,
+            payload: attributeValue
+        });
+    }
+
+    public patchAttributes(thingId: string, attributes: object, options?: MatchOptions): Promise<PutResponse<object>> {
+        return this.requestFactory.fetchPutRequest({
+            verb: HttpVerb.PATCH,
+            parser: o => o,
+            id: thingId,
+            path: 'attributes',
+            requestOptions: MatchOptionsHelper.getWithMergeHeader(options),
+            payload: attributes
+        });
+    }
+
+    public patchAttribute(thingId: string, attributePath: string,
+        attributeValue: any, options?: MatchOptions): Promise<PutResponse<any>> {
+        return this.requestFactory.fetchPutRequest({
+            verb: HttpVerb.PATCH,
+            parser: o => o,
+            id: thingId,
+            path: `attributes/${attributePath}`,
+            requestOptions: MatchOptionsHelper.getWithMergeHeader(options),
+            payload: attributeValue
+        });
+    }
+
+    public putPolicyId(thingId: string, policyId: string, options?: MatchOptions): Promise<PutResponse<string>> {
+        return this.requestFactory.fetchPutRequest({
+            verb: HttpVerb.PUT,
+            parser: String,
+            id: thingId,
+            path: 'policyId',
+            requestOptions: options,
+            payload: policyId
+        });
+    }
+
+    public patchPolicyId(thingId: string, policyId: string, options?: MatchOptions): Promise<PutResponse<string>> {
+        return this.requestFactory.fetchPutRequest({
+            verb: HttpVerb.PATCH,
+            parser: String,
+            id: thingId,
+            path: 'policyId',
+            requestOptions: MatchOptionsHelper.getWithMergeHeader(options),
+            payload: policyId
+        });
+    }
+
+    public putDefinition(thingId: string, definition: string, options?: MatchOptions): Promise<PutResponse<string>> {
+        return this.requestFactory.fetchPutRequest({
+            verb: HttpVerb.PUT,
+            parser: String,
+            id: thingId,
+            path: 'definition',
+            requestOptions: options,
+            payload: definition
+        });
+    }
+
+    public patchDefinition(thingId: string, definition: string, options?: MatchOptions): Promise<PutResponse<string>> {
+        return this.requestFactory.fetchPutRequest({
+            verb: HttpVerb.PATCH,
+            parser: String,
+            id: thingId,
+            path: 'definition',
+            requestOptions: MatchOptionsHelper.getWithMergeHeader(options),
+            payload: definition
+        });
+    }
+
+    private changeThing(verb: string, thing: Thing, options?: MatchOptions): Promise<PutResponse<Thing>> {
+        return this.requestFactory.fetchPutRequest({
+            verb,
+            parser: Thing.fromObject,
+            id: thing.thingId,
+            requestOptions: options,
+            payload: thing.toObject()
+        });
+    }
+
+    public getStringAtPath(thingId: string, path: string, options?: MatchOptions): Promise<string> {
+        return this.requestFactory.fetchJsonRequest({
+            path,
+            verb: HttpVerb.GET,
+            parser: String,
+            id: thingId,
+            requestOptions: options
+        });
+    }
+
+    public deleteItemAtPath(thingId: string, path: string, options?: MatchOptions): Promise<GenericResponse> {
+        return this.requestFactory.fetchRequest({
+            path,
+            verb: HttpVerb.DELETE,
+            id: thingId,
+            requestOptions: options
+        });
+    }
 }

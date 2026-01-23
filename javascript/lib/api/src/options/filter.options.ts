@@ -16,26 +16,26 @@
  * Class that can provide a filter string
  */
 export interface Filter {
-  /**
+    /**
    * Returns the filter string.
    *
    * @return the filter in string form.
    */
-  toString(): string;
+    toString(): string;
 }
 
 class DefaultFilter implements Filter {
-  constructor(private readonly _value: string) {
-  }
+    constructor(private readonly _value: string) {
+    }
 
-  /**
+    /**
    * Returns the filter string.
    *
    * @return the filter in string form.
    */
-  toString(): string {
-    return this._value;
-  }
+    toString(): string {
+        return this._value;
+    }
 }
 
 /**
@@ -46,7 +46,7 @@ class DefaultFilter implements Filter {
  */
 export const And: (...filter: Filter[]) => Filter =
   (...filter: Filter[]) => {
-    return new DefaultFilter(`and(${toList(filter)})`);
+      return new DefaultFilter(`and(${toList(filter)})`);
   };
 
 /**
@@ -57,7 +57,7 @@ export const And: (...filter: Filter[]) => Filter =
  */
 export const Or: (...filter: Filter[]) => Filter =
   (...filter: Filter[]) => {
-    return new DefaultFilter(`or(${toList(filter)})`);
+      return new DefaultFilter(`or(${toList(filter)})`);
   };
 
 /**
@@ -68,7 +68,7 @@ export const Or: (...filter: Filter[]) => Filter =
  */
 export const Not: (query: Filter) => Filter =
   (query: Filter) => {
-    return new DefaultFilter(`not(${query.toString()})`);
+      return new DefaultFilter(`not(${query.toString()})`);
   };
 
 
@@ -81,7 +81,7 @@ export const Not: (query: Filter) => Filter =
  */
 export const Eq: (property: string, value: any) => Filter =
   (property: string, value: any) => {
-    return standardFilter('eq', property, value);
+      return standardFilter('eq', property, value);
   };
 
 /**
@@ -93,7 +93,7 @@ export const Eq: (property: string, value: any) => Filter =
  */
 export const Ne: (property: string, value: any) => Filter =
   (property: string, value: any) => {
-    return standardFilter('ne', property, value);
+      return standardFilter('ne', property, value);
   };
 
 /**
@@ -105,7 +105,7 @@ export const Ne: (property: string, value: any) => Filter =
  */
 export const Gt: (property: string, value: any) => Filter =
   (property: string, value: any) => {
-    return standardFilter('gt', property, value);
+      return standardFilter('gt', property, value);
   };
 
 /**
@@ -117,7 +117,7 @@ export const Gt: (property: string, value: any) => Filter =
  */
 export const Ge: (property: string, value: any) => Filter =
   (property: string, value: any) => {
-    return standardFilter('ge', property, value);
+      return standardFilter('ge', property, value);
   };
 
 /**
@@ -129,7 +129,7 @@ export const Ge: (property: string, value: any) => Filter =
  */
 export const Lt: (property: string, value: any) => Filter =
   (property: string, value: any) => {
-    return standardFilter('lt', property, value);
+      return standardFilter('lt', property, value);
   };
 
 /**
@@ -141,7 +141,7 @@ export const Lt: (property: string, value: any) => Filter =
  */
 export const Le: (property: string, value: any) => Filter =
   (property: string, value: any) => {
-    return standardFilter('le', property, value);
+      return standardFilter('le', property, value);
   };
 
 
@@ -154,7 +154,7 @@ export const Le: (property: string, value: any) => Filter =
  */
 export const In: (property: string, ...value: any[]) => Filter =
   (property: string, ...value: any[]) => {
-    return new DefaultFilter(`in(${property},${value.map(stringify).join()})`);
+      return new DefaultFilter(`in(${property},${value.map(stringify).join()})`);
   };
 
 /**
@@ -166,7 +166,7 @@ export const In: (property: string, ...value: any[]) => Filter =
  */
 export const Like: (property: string, form: string) => Filter =
   (property: string, form: string) => {
-    return standardFilter('like', property, form);
+      return standardFilter('like', property, form);
   };
 
 /**
@@ -178,7 +178,7 @@ export const Like: (property: string, form: string) => Filter =
  */
 export const ILike: (property: string, form: string) => Filter =
   (property: string, form: string) => {
-    return standardFilter('ilike', property, form);
+      return standardFilter('ilike', property, form);
   };
 
 /**
@@ -189,7 +189,7 @@ export const ILike: (property: string, form: string) => Filter =
  */
 export const Exists: (property: string) => Filter =
   (property: string) => {
-    return new DefaultFilter(`exists(${property})`);
+      return new DefaultFilter(`exists(${property})`);
   };
 
 
@@ -201,7 +201,7 @@ export const Exists: (property: string) => Filter =
  */
 const toList: (filter: Filter[]) => string =
   (filter: Filter[]) => {
-    return filter.map(f => f.toString()).join();
+      return filter.map(f => f.toString()).join();
   };
 
 /**
@@ -214,13 +214,13 @@ const toList: (filter: Filter[]) => string =
  */
 const stringify: (value: any) => string =
   (value => {
-    if (typeof value === 'boolean' || typeof value === 'number') {
-      return value.toString();
-    }
-    if (typeof value === 'object') {
-      return JSON.stringify(value);
-    }
-    return `"${value}"`;
+      if (typeof value === 'boolean' || typeof value === 'number') {
+          return value.toString();
+      }
+      if (typeof value === 'object') {
+          return JSON.stringify(value);
+      }
+      return `"${value}"`;
   });
 
 /**
@@ -233,5 +233,5 @@ const stringify: (value: any) => string =
  */
 const standardFilter: (operation: string, property: string, value: any) => Filter =
   (operation: string, property: string, value: any) => {
-    return new DefaultFilter(`${operation}(${property},${stringify(value)})`);
+      return new DefaultFilter(`${operation}(${property},${stringify(value)})`);
   };

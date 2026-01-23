@@ -17,16 +17,16 @@ import { AllSubscription, ProtocolResponseValue, WebSocketRequestHandler } from 
 import { WebSocketBindingMessage } from '../request-factory/resilience/websocket-resilience-interfaces';
 
 export interface CommandsHandle {
-  /**
+    /**
    * Registers the provided callback function. registerCommands() needs to be called first.
    * It will be called every time a Command is received
    *
    * @param callback - The function that gets called for every Command.
    * @returns The id for the registered subscription.
    */
-  subscribeToAllCommands(callback: (command: ProtocolResponseValue) => any): string;
+    subscribeToAllCommands(callback: (command: ProtocolResponseValue) => any): string;
 
-  /**
+    /**
    * Registers the provided callback function. registerCommands() needs to be called first.
    * It will be called every time a Command concerning the specified Thing is received
    *
@@ -37,10 +37,10 @@ export interface CommandsHandle {
    * @returns The id for the registered subscription.
    * @throws Error - Throws an Error if Commands were not requested by calling requestCommands()
    */
-  subscribeToThing(thingId: string,
-                   callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string;
+    subscribeToThing(thingId: string,
+        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string;
 
-  /**
+    /**
    * Registers the provided callback function. registerCommands() needs to be called first.
    * It will be called every time a Command concerning the Attributes of the specified Thing is received
    *
@@ -51,10 +51,10 @@ export interface CommandsHandle {
    * @returns The id for the registered subscription.
    * @throws Error - Throws an Error if Commands were not requested by calling requestCommands()
    */
-  subscribeToAttributes(thingId: string,
-                        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string;
+    subscribeToAttributes(thingId: string,
+        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string;
 
-  /**
+    /**
    * Registers the provided callback function. registerCommands() needs to be called first.
    * It will be called every time a Command concerning the specified Attribute is received
    *
@@ -66,10 +66,10 @@ export interface CommandsHandle {
    * @returns The id for the registered subscription.
    * @throws Error - Throws an Error if Commands were not requested by calling requestCommands()
    */
-  subscribeToAttribute(thingId: string, attributePath: string,
-                       callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string;
+    subscribeToAttribute(thingId: string, attributePath: string,
+        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string;
 
-  /**
+    /**
    * Registers the provided callback function. registerCommands() needs to be called first.
    * It will be called every time a Command concerning the Features of the specified Thing is received
    *
@@ -80,11 +80,11 @@ export interface CommandsHandle {
    * @returns The id for the registered subscription.
    * @throws Error - Throws an Error if Commands were not requested by calling requestCommands()
    */
-  // tslint:disable-next-line:no-identical-functions
-  subscribeToFeatures(thingId: string,
-                      callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string;
+    // tslint:disable-next-line:no-identical-functions
+    subscribeToFeatures(thingId: string,
+        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string;
 
-  /**
+    /**
    * Registers the provided callback function. registerCommands() needs to be called first.
    * It will be called every time a Command concerning the specified Feature is received
    *
@@ -96,10 +96,10 @@ export interface CommandsHandle {
    * @returns The id for the registered subscription.
    * @throws Error - Throws an Error if Commands were not requested by calling requestCommands()
    */
-  subscribeToFeature(thingId: string, featureId: string,
-                     callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string;
+    subscribeToFeature(thingId: string, featureId: string,
+        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string;
 
-  /**
+    /**
    * Registers the provided callback function. registerCommands() needs to be called first.
    * It will be called every time a Command concerning the Definition of the specified Feature is received
    *
@@ -111,10 +111,10 @@ export interface CommandsHandle {
    * @returns The id for the registered subscription.
    * @throws Error - Throws an Error if Commands were not requested by calling requestCommands()
    */
-  subscribeToDefinition(thingId: string, featureId: string,
-                        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string;
+    subscribeToDefinition(thingId: string, featureId: string,
+        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string;
 
-  /**
+    /**
    * Registers the provided callback function. registerCommands() needs to be called first.
    * It will be called every time a Command concerning the Properties of the specified Feature is received
    *
@@ -126,10 +126,10 @@ export interface CommandsHandle {
    * @returns The id for the registered subscription.
    * @throws Error - Throws an Error if Commands were not requested by calling requestCommands()
    */
-  subscribeToProperties(thingId: string, featureId: string,
-                        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string;
+    subscribeToProperties(thingId: string, featureId: string,
+        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string;
 
-  /**
+    /**
    * Registers the provided callback function. registerCommands() needs to be called first.
    * It will be called every time a Command concerning the Property of the specified Feature is received
    *
@@ -142,82 +142,82 @@ export interface CommandsHandle {
    * @returns The id for the registered subscription.
    * @throws Error - Throws an Error if Commands were not requested by calling requestCommands()
    */
-  subscribeToProperty(thingId: string, featureId: string, propertyPath: string,
-                      callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string;
+    subscribeToProperty(thingId: string, featureId: string, propertyPath: string,
+        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string;
 
-  /**
+    /**
    * Deletes the subscription with the specified ID so it's callback function will no longer be called.
    * If you want to stop receiving any Commands you need to call stopCommands().
    *
    * @param id - The ID of the subscription to remove.
    */
-  deleteSubscription(id: string): void;
+    deleteSubscription(id: string): void;
 
-  /**
+    /**
    * Requests that Commands be sent from the server. This is needed in order to register subscriptions.
    *
    * @returns A Promise that resolves once the server acknowledges the request or if Commands are already registered.
    */
-  requestCommands(): Promise<void>;
+    requestCommands(): Promise<void>;
 
-  /**
+    /**
    * Requests that Commands no longer be sent from the server.
    *
    * @returns A Promise that resolves once the server acknowledges the request or if Commands are already stopped.
    */
-  stopCommands(): Promise<void>;
+    stopCommands(): Promise<void>;
 
-  /**
+    /**
    * Builds and registers the subscription with the specified options.
    *
    * @param options - The options to use for the subscription.
    * @returns The ID of the subscription that was registered.
    * @throws Error - Throws an Error if Commands were not requested.
    */
-  buildSubscription(options: SubscribeRequest): string;
+    buildSubscription(options: SubscribeRequest): string;
 
-  /**
+    /**
    * Checks if Commands were requested.
    *
    * @throws Error - Throws an Error if Commands were not requested.
    */
-  checkCommands(): void;
+    checkCommands(): void;
 }
 
 /**
  * Handle to receive Commands. To be able to subscribe to Commands requestCommands() needs to be called first
  */
 export class DefaultCommandsHandle implements CommandsHandle {
-  private commands = false;
+    private commands = false;
 
-  public constructor(private readonly requestFactory: WebSocketRequestSender,
-                     private readonly requester: WebSocketRequestHandler) {
-  }
+    public constructor(private readonly requestFactory: WebSocketRequestSender,
+        private readonly requester: WebSocketRequestHandler) {
+    }
 
-  /**
+    /**
    * returns an instance of CommandsHandle using the requester provided.
    *
    * @param builder - The builder for the RequestSender to use.
    * @param requester - Requester to use for subscriptions.
    * @returns The CommandsHandle
    */
-  public static getInstance(builder: WebSocketRequestSenderFactory, requester: WebSocketRequestHandler): DefaultCommandsHandle {
-    return new DefaultCommandsHandle(builder.buildInstance('things'), requester);
-  }
+    public static getInstance(builder: WebSocketRequestSenderFactory, requester: WebSocketRequestHandler): DefaultCommandsHandle {
+        return new DefaultCommandsHandle(builder.buildInstance('things'), requester);
+    }
 
-  /**
+    /**
    * Registers the provided callback function. registerCommands() needs to be called first.
    * It will be called every time a Command is received
    *
    * @param callback - The function that gets called for every Command.
    * @returns The id for the registered subscription.
    */
-  subscribeToAllCommands(callback: (command: ProtocolResponseValue) => any): string {
-    this.checkCommands();
-    return this.requester.subscribe(new AllSubscription(callback, 'commands'));
-  }
+    subscribeToAllCommands(callback: (command: ProtocolResponseValue) => any): string {
+        this.checkCommands();
+        return this.requester.subscribe(new AllSubscription(callback, 'commands'));
+    }
 
-  /**
+    /**
    * Registers the provided callback function. registerCommands() needs to be called first.
    * It will be called every time a Command concerning the specified Thing is received
    *
@@ -228,18 +228,18 @@ export class DefaultCommandsHandle implements CommandsHandle {
    * @returns The id for the registered subscription.
    * @throws Error - Throws an Error if Commands were not requested by calling requestCommands()
    */
-  subscribeToThing(thingId: string,
-                   callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string {
-    return this.buildSubscription({
-      callback,
-      action,
-      subResources,
-      id: thingId,
-      type: 'commands'
-    });
-  }
+    subscribeToThing(thingId: string,
+        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string {
+        return this.buildSubscription({
+            callback,
+            action,
+            subResources,
+            id: thingId,
+            type: 'commands'
+        });
+    }
 
-  /**
+    /**
    * Registers the provided callback function. registerCommands() needs to be called first.
    * It will be called every time a Command concerning the Attributes of the specified Thing is received
    *
@@ -250,19 +250,19 @@ export class DefaultCommandsHandle implements CommandsHandle {
    * @returns The id for the registered subscription.
    * @throws Error - Throws an Error if Commands were not requested by calling requestCommands()
    */
-  subscribeToAttributes(thingId: string,
-                        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string {
-    return this.buildSubscription({
-      callback,
-      action,
-      subResources,
-      id: thingId,
-      path: '/attributes',
-      type: 'commands'
-    });
-  }
+    subscribeToAttributes(thingId: string,
+        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string {
+        return this.buildSubscription({
+            callback,
+            action,
+            subResources,
+            id: thingId,
+            path: '/attributes',
+            type: 'commands'
+        });
+    }
 
-  /**
+    /**
    * Registers the provided callback function. registerCommands() needs to be called first.
    * It will be called every time a Command concerning the specified Attribute is received
    *
@@ -274,19 +274,19 @@ export class DefaultCommandsHandle implements CommandsHandle {
    * @returns The id for the registered subscription.
    * @throws Error - Throws an Error if Commands were not requested by calling requestCommands()
    */
-  subscribeToAttribute(thingId: string, attributePath: string,
-                       callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string {
-    return this.buildSubscription({
-      callback,
-      action,
-      subResources,
-      id: thingId,
-      path: `/attributes/${attributePath}`,
-      type: 'commands'
-    });
-  }
+    subscribeToAttribute(thingId: string, attributePath: string,
+        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string {
+        return this.buildSubscription({
+            callback,
+            action,
+            subResources,
+            id: thingId,
+            path: `/attributes/${attributePath}`,
+            type: 'commands'
+        });
+    }
 
-  /**
+    /**
    * Registers the provided callback function. registerCommands() needs to be called first.
    * It will be called every time a Command concerning the Features of the specified Thing is received
    *
@@ -297,21 +297,21 @@ export class DefaultCommandsHandle implements CommandsHandle {
    * @returns The id for the registered subscription.
    * @throws Error - Throws an Error if Commands were not requested by calling requestCommands()
    */
-  // tslint:disable-next-line:no-identical-functions
-  subscribeToFeatures(thingId: string,
-                      callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string {
-    return this.buildSubscription({
-      callback,
-      action,
-      subResources,
-      id: thingId,
-      path: '/features',
-      type: 'commands'
-    });
-  }
+    // tslint:disable-next-line:no-identical-functions
+    subscribeToFeatures(thingId: string,
+        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string {
+        return this.buildSubscription({
+            callback,
+            action,
+            subResources,
+            id: thingId,
+            path: '/features',
+            type: 'commands'
+        });
+    }
 
 
-  /**
+    /**
    * Registers the provided callback function. registerCommands() needs to be called first.
    * It will be called every time a Command concerning the specified Feature is received
    *
@@ -323,19 +323,19 @@ export class DefaultCommandsHandle implements CommandsHandle {
    * @returns The id for the registered subscription.
    * @throws Error - Throws an Error if Commands were not requested by calling requestCommands()
    */
-  subscribeToFeature(thingId: string, featureId: string,
-                     callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string {
-    return this.buildSubscription({
-      callback,
-      action,
-      subResources,
-      id: thingId,
-      path: `/features/${featureId}`,
-      type: 'commands'
-    });
-  }
+    subscribeToFeature(thingId: string, featureId: string,
+        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string {
+        return this.buildSubscription({
+            callback,
+            action,
+            subResources,
+            id: thingId,
+            path: `/features/${featureId}`,
+            type: 'commands'
+        });
+    }
 
-  /**
+    /**
    * Registers the provided callback function. registerCommands() needs to be called first.
    * It will be called every time a Command concerning the Definition of the specified Feature is received
    *
@@ -347,19 +347,19 @@ export class DefaultCommandsHandle implements CommandsHandle {
    * @returns The id for the registered subscription.
    * @throws Error - Throws an Error if Commands were not requested by calling requestCommands()
    */
-  subscribeToDefinition(thingId: string, featureId: string,
-                        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string {
-    return this.buildSubscription({
-      callback,
-      action,
-      subResources,
-      id: thingId,
-      path: `/features/${featureId}/definition`,
-      type: 'commands'
-    });
-  }
+    subscribeToDefinition(thingId: string, featureId: string,
+        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string {
+        return this.buildSubscription({
+            callback,
+            action,
+            subResources,
+            id: thingId,
+            path: `/features/${featureId}/definition`,
+            type: 'commands'
+        });
+    }
 
-  /**
+    /**
    * Registers the provided callback function. registerCommands() needs to be called first.
    * It will be called every time a Command concerning the Properties of the specified Feature is received
    *
@@ -371,19 +371,19 @@ export class DefaultCommandsHandle implements CommandsHandle {
    * @returns The id for the registered subscription.
    * @throws Error - Throws an Error if Commands were not requested by calling requestCommands()
    */
-  subscribeToProperties(thingId: string, featureId: string,
-                        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string {
-    return this.buildSubscription({
-      callback,
-      action,
-      subResources,
-      id: thingId,
-      path: `/features/${featureId}/properties`,
-      type: 'commands'
-    });
-  }
+    subscribeToProperties(thingId: string, featureId: string,
+        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string {
+        return this.buildSubscription({
+            callback,
+            action,
+            subResources,
+            id: thingId,
+            path: `/features/${featureId}/properties`,
+            type: 'commands'
+        });
+    }
 
-  /**
+    /**
    * Registers the provided callback function. registerCommands() needs to be called first.
    * It will be called every time a Command concerning the Property of the specified Feature is received
    *
@@ -396,78 +396,78 @@ export class DefaultCommandsHandle implements CommandsHandle {
    * @returns The id for the registered subscription.
    * @throws Error - Throws an Error if Commands were not requested by calling requestCommands()
    */
-  subscribeToProperty(thingId: string, featureId: string, propertyPath: string,
-                      callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string {
-    return this.buildSubscription({
-      callback,
-      action,
-      subResources,
-      id: thingId,
-      path: `/features/${featureId}/properties/${propertyPath}`,
-      type: 'commands'
-    });
-  }
+    subscribeToProperty(thingId: string, featureId: string, propertyPath: string,
+        callback: (message: ProtocolResponseValue) => any, action?: string, subResources?: boolean): string {
+        return this.buildSubscription({
+            callback,
+            action,
+            subResources,
+            id: thingId,
+            path: `/features/${featureId}/properties/${propertyPath}`,
+            type: 'commands'
+        });
+    }
 
-  /**
+    /**
    * Deletes the subscription with the specified ID so it's callback function will no longer be called.
    * If you want to stop receiving any Commands you need to call stopCommands().
    *
    * @param id - The ID of the subscription to remove.
    */
-  deleteSubscription(id: string): void {
-    this.requester.deleteSubscription(id);
-  }
+    deleteSubscription(id: string): void {
+        this.requester.deleteSubscription(id);
+    }
 
-  /**
+    /**
    * Requests that Commands be sent from the server. This is needed in order to register subscriptions.
    *
    * @returns A Promise that resolves once the server acknowledges the request or if Commands are already registered.
    */
-  requestCommands(): Promise<void> {
-    if (this.commands) {
-      return Promise.resolve();
+    requestCommands(): Promise<void> {
+        if (this.commands) {
+            return Promise.resolve();
+        }
+        return this.requester.sendProtocolMessage(WebSocketBindingMessage.START_SEND_LIVE_COMMANDS)
+            .then(() => {
+                this.commands = true;
+            });
     }
-    return this.requester.sendProtocolMessage(WebSocketBindingMessage.START_SEND_LIVE_COMMANDS)
-      .then(() => {
-        this.commands = true;
-      });
-  }
 
-  /**
+    /**
    * Requests that Commands no longer be sent from the server.
    *
    * @returns A Promise that resolves once the server acknowledges the request or if Commands are already stopped.
    */
-  stopCommands(): Promise<void> {
-    if (!this.commands) {
-      return Promise.resolve();
+    stopCommands(): Promise<void> {
+        if (!this.commands) {
+            return Promise.resolve();
+        }
+        return this.requester.sendProtocolMessage(WebSocketBindingMessage.STOP_SEND_LIVE_COMMANDS)
+            .then(() => {
+                this.commands = false;
+            });
     }
-    return this.requester.sendProtocolMessage(WebSocketBindingMessage.STOP_SEND_LIVE_COMMANDS)
-      .then(() => {
-        this.commands = false;
-      });
-  }
 
-  /**
+    /**
    * Builds and registers the subscription with the specified options.
    *
    * @param options - The options to use for the subscription.
    * @returns The ID of the subscription that was registered.
    * @throws Error - Throws an Error if Commands were not requested.
    */
-  buildSubscription(options: SubscribeRequest): string {
-    this.checkCommands();
-    return this.requestFactory.subscribe(options);
-  }
+    buildSubscription(options: SubscribeRequest): string {
+        this.checkCommands();
+        return this.requestFactory.subscribe(options);
+    }
 
-  /**
+    /**
    * Checks if Commands were requested.
    *
    * @throws Error - Throws an Error if Commands were not requested.
    */
-  checkCommands(): void {
-    if (!this.commands) {
-      throw Error('No Commands were requested. Please call requestCommands() first');
+    checkCommands(): void {
+        if (!this.commands) {
+            throw Error('No Commands were requested. Please call requestCommands() first');
+        }
     }
-  }
 }

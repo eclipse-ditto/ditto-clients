@@ -22,19 +22,19 @@ import { CommandsHandle } from './handles/commands';
 import { ApiVersion } from '../model/ditto-protocol';
 
 export {
-  AbstractBuilder,
-  AuthenticationStep,
-  BuildStep,
-  CustomBuilderContext,
-  CustomCommandsHandleStep,
-  CustomEventsHandleStep,
-  CustomFeaturesHandleStep,
-  CustomMessagesHandleStep,
-  CustomPoliciesHandleStep,
-  CustomSearchHandleStep,
-  CustomThingsHandleStep,
-  EnvironmentStep,
-  ProtocolStep
+    AbstractBuilder,
+    AuthenticationStep,
+    BuildStep,
+    CustomBuilderContext,
+    CustomCommandsHandleStep,
+    CustomEventsHandleStep,
+    CustomFeaturesHandleStep,
+    CustomMessagesHandleStep,
+    CustomPoliciesHandleStep,
+    CustomSearchHandleStep,
+    CustomThingsHandleStep,
+    EnvironmentStep,
+    ProtocolStep
 };
 
 /**
@@ -49,15 +49,15 @@ interface BuildStep {
  * @param <U> - type of build steps.
  */
 interface ProtocolStep<U extends BuildStep> extends BuildStep {
-  /**
+    /**
    * Use with TLS (e.g. wss:// or https://).
    */
-  withTls(): EnvironmentStep<U>;
+    withTls(): EnvironmentStep<U>;
 
-  /**
+    /**
    * Use without TLS (e.g. ws:// or http://).
    */
-  withoutTls(): EnvironmentStep<U>;
+    withoutTls(): EnvironmentStep<U>;
 }
 
 /**
@@ -67,20 +67,20 @@ interface ProtocolStep<U extends BuildStep> extends BuildStep {
  */
 interface EnvironmentStep<U extends BuildStep> extends BuildStep {
 
-  /**
+    /**
    * Sets a custom path for the api endpoint (optional step)
    *
    * @param path custom ditto api path, e.g. /custom - will be used instead of the default /api
    */
-  withCustomPath(path: string): EnvironmentStep<U>;
+    withCustomPath(path: string): EnvironmentStep<U>;
 
-  /**
+    /**
    * Sets a custom domain to use for requests.
    *
    * @param domain - The domain where Ditto is hosted, e.g. ditto.eclipse.org, localhost:8080, ...
    * @returns The next step to take
    */
-  withDomain(domain: string): AuthenticationStep<U>;
+    withDomain(domain: string): AuthenticationStep<U>;
 }
 
 /**
@@ -88,13 +88,13 @@ interface EnvironmentStep<U extends BuildStep> extends BuildStep {
  * @param <U> - type of API 2 Build steps.
  */
 interface AuthenticationStep<U extends BuildStep> extends BuildStep {
-  /**
+    /**
    * Sets the auth providers for the client.
    *
    * @param authProvider The authentication to use.
    * @param additionalAuthProviders Additional auth providers to use.
    */
-  withAuthProvider(authProvider: AuthProvider, ...additionalAuthProviders: AuthProvider[]): U;
+    withAuthProvider(authProvider: AuthProvider, ...additionalAuthProviders: AuthProvider[]): U;
 }
 
 /**
@@ -109,11 +109,11 @@ interface CustomBuilderContext {
  * @param <H> - Type of the handle.
  */
 interface CustomThingsHandleStep<R, H extends ThingsHandle> extends BuildStep {
-  /**
+    /**
    * Use a custom things handle.
    * @param factory - factory for building the custom things handle.
    */
-  withCustomThingsHandle(factory: (requestSenderBuilder: R, customBuilderContext?: CustomBuilderContext) => H): this;
+    withCustomThingsHandle(factory: (requestSenderBuilder: R, customBuilderContext?: CustomBuilderContext) => H): this;
 }
 
 /**
@@ -121,11 +121,11 @@ interface CustomThingsHandleStep<R, H extends ThingsHandle> extends BuildStep {
  * @param <H> - Type of the handle.
  */
 interface CustomFeaturesHandleStep<R, H extends FeaturesHandle> extends BuildStep {
-  /**
+    /**
    * Use a custom features handle.
    * @param factory - factory for building the custom features handle.
    */
-  withCustomFeaturesHandle(factory: (requestSenderBuilder: R, thingId: string, customBuilderContext?: CustomBuilderContext) => H): this;
+    withCustomFeaturesHandle(factory: (requestSenderBuilder: R, thingId: string, customBuilderContext?: CustomBuilderContext) => H): this;
 }
 
 /**
@@ -133,11 +133,11 @@ interface CustomFeaturesHandleStep<R, H extends FeaturesHandle> extends BuildSte
  * @param <H> - Type of the handle.
  */
 interface CustomMessagesHandleStep<R, H extends MessagesHandle> extends BuildStep {
-  /**
+    /**
    * Use a custom messages handle.
    * @param factory - factory for building the custom handle.
    */
-  withCustomMessagesHandle(factory: (requestSenderBuilder: R, customBuilderContext?: CustomBuilderContext) => H): this;
+    withCustomMessagesHandle(factory: (requestSenderBuilder: R, customBuilderContext?: CustomBuilderContext) => H): this;
 }
 
 /**
@@ -145,11 +145,11 @@ interface CustomMessagesHandleStep<R, H extends MessagesHandle> extends BuildSte
  * @param <H> - Type of the handle.
  */
 interface CustomEventsHandleStep<R, H extends EventsHandle> extends BuildStep {
-  /**
+    /**
    * Use a custom events handle.
    * @param factory - factory for building the custom handle.
    */
-  withCustomEventsHandle(factory: (requestSenderBuilder: R, customBuilderContext?: CustomBuilderContext) => H): this;
+    withCustomEventsHandle(factory: (requestSenderBuilder: R, customBuilderContext?: CustomBuilderContext) => H): this;
 }
 
 /**
@@ -157,11 +157,11 @@ interface CustomEventsHandleStep<R, H extends EventsHandle> extends BuildStep {
  * @param <H> - Type of the handle.
  */
 interface CustomCommandsHandleStep<R, H extends CommandsHandle> extends BuildStep {
-  /**
+    /**
    * Use a custom commands handle.
    * @param factory - factory for building the custom handle.
    */
-  withCustomCommandsHandle(factory: (requestSenderBuilder: R, customBuilderContext?: CustomBuilderContext) => H): this;
+    withCustomCommandsHandle(factory: (requestSenderBuilder: R, customBuilderContext?: CustomBuilderContext) => H): this;
 }
 
 /**
@@ -169,11 +169,11 @@ interface CustomCommandsHandleStep<R, H extends CommandsHandle> extends BuildSte
  * @param <H> - Type of the handle.
  */
 interface CustomPoliciesHandleStep<R, H extends PoliciesHandle> extends BuildStep {
-  /**
+    /**
    * Use a custom policies handle.
    * @param factory - factory for building the custom handle.
    */
-  withCustomPoliciesHandle(factory: (requestSenderBuilder: R, customBuilderContext?: CustomBuilderContext) => H): this;
+    withCustomPoliciesHandle(factory: (requestSenderBuilder: R, customBuilderContext?: CustomBuilderContext) => H): this;
 }
 
 /**
@@ -181,48 +181,48 @@ interface CustomPoliciesHandleStep<R, H extends PoliciesHandle> extends BuildSte
  * @param <H> - Type of the handle.
  */
 interface CustomSearchHandleStep<R, H extends SearchHandle> extends BuildStep {
-  /**
+    /**
    * Use a custom search handle.
    * @param factory - factory for building the custom handle.
    */
-  withCustomSearchHandle(factory: (requestSenderBuilder: R, customBuilderContext?: CustomBuilderContext) => H): this;
+    withCustomSearchHandle(factory: (requestSenderBuilder: R, customBuilderContext?: CustomBuilderContext) => H): this;
 }
 
 /**
  * Abstract implementation of the relevant builder steps that are probably the same for all builder implementations.
  */
 abstract class AbstractBuilder<U extends BuildStep> implements ProtocolStep<U>, EnvironmentStep<U>, AuthenticationStep<U> {
-  protected domain!: string;
-  protected customPath?: string;
-  protected apiVersion: ApiVersion = ApiVersion.V2;
-  protected authProviders!: AuthProvider[];
-  protected tls!: boolean;
+    protected domain!: string;
+    protected customPath?: string;
+    protected apiVersion: ApiVersion = ApiVersion.V2;
+    protected authProviders!: AuthProvider[];
+    protected tls!: boolean;
 
 
-  withTls(): EnvironmentStep<U> {
-    this.tls = true;
-    return this;
-  }
+    withTls(): EnvironmentStep<U> {
+        this.tls = true;
+        return this;
+    }
 
-  withoutTls(): EnvironmentStep<U> {
-    this.tls = false;
-    return this;
-  }
+    withoutTls(): EnvironmentStep<U> {
+        this.tls = false;
+        return this;
+    }
 
-  withCustomPath(path: string): EnvironmentStep<U> {
-    this.customPath = path;
-    return this;
-  }
+    withCustomPath(path: string): EnvironmentStep<U> {
+        this.customPath = path;
+        return this;
+    }
 
-  withDomain(url: string): AuthenticationStep<U> {
-    this.domain = url;
-    return this;
-  }
+    withDomain(url: string): AuthenticationStep<U> {
+        this.domain = url;
+        return this;
+    }
 
-  withAuthProvider(authProvider: AuthProvider, ...additionalAuthProviders: AuthProvider[]): U {
-    this.authProviders = [authProvider, ...additionalAuthProviders];
-    return this.finalize();
-  }
+    withAuthProvider(authProvider: AuthProvider, ...additionalAuthProviders: AuthProvider[]): U {
+        this.authProviders = [authProvider, ...additionalAuthProviders];
+        return this.finalize();
+    }
 
-  abstract finalize(): U;
+    abstract finalize(): U;
 }

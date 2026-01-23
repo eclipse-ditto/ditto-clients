@@ -17,4 +17,4 @@ export enum HttpVerb {
     PUT = 'PUT',
     PATCH = 'PATCH',
     DELETE = 'DELETE'
-  }
+}

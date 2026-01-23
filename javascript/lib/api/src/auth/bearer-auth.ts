@@ -18,22 +18,22 @@ import { AuthProvider, DittoHeaders, DittoURL } from './auth-provider';
  */
 export abstract class BearerAuth implements AuthProvider {
 
-  /**
+    /**
    * The bearer token used for authentication
    */
-  protected supplier!: TokenSupplier;
+    protected supplier!: TokenSupplier;
 
-  /**
+    /**
    * Build a new instance of bearer auth
    * @param tokenSupplier Implementation of the TokenSupplier class to provide tokens for authentication
    */
-  constructor(tokenSupplier: TokenSupplier) {
-    this.supplier = tokenSupplier;
-  }
+    constructor(tokenSupplier: TokenSupplier) {
+        this.supplier = tokenSupplier;
+    }
 
-  abstract authenticateWithHeaders(originalHeaders: DittoHeaders): DittoHeaders;
+    abstract authenticateWithHeaders(originalHeaders: DittoHeaders): DittoHeaders;
 
-  abstract authenticateWithUrl(originalUrl: DittoURL): DittoURL;
+    abstract authenticateWithUrl(originalUrl: DittoURL): DittoURL;
 }
 
 /**
@@ -41,21 +41,21 @@ export abstract class BearerAuth implements AuthProvider {
  */
 export class HttpBearerAuth extends BearerAuth {
 
-  /**
+    /**
    * Creates a new instance for HTTP connections
    * @param supplier TokenSupplier used to get a token
    */
-  static newInstance(supplier: TokenSupplier): HttpBearerAuth {
-    return new HttpBearerAuth(supplier);
-  }
+    static newInstance(supplier: TokenSupplier): HttpBearerAuth {
+        return new HttpBearerAuth(supplier);
+    }
 
-  authenticateWithUrl(originalUrl: DittoURL): DittoURL {
-    return originalUrl;
-  }
+    authenticateWithUrl(originalUrl: DittoURL): DittoURL {
+        return originalUrl;
+    }
 
-  authenticateWithHeaders(originalHeaders: DittoHeaders): DittoHeaders {
-    return originalHeaders.set('Authorization', `Bearer ${this.supplier.getToken()}`);
-  }
+    authenticateWithHeaders(originalHeaders: DittoHeaders): DittoHeaders {
+        return originalHeaders.set('Authorization', `Bearer ${this.supplier.getToken()}`);
+    }
 
 }
 
@@ -64,10 +64,10 @@ export class HttpBearerAuth extends BearerAuth {
  */
 export interface TokenSupplier {
 
-  /**
+    /**
    * Called by the AuthProvider when a token is needed
    */
-  getToken(): string;
+    getToken(): string;
 }
 
 
@@ -76,11 +76,11 @@ export interface TokenSupplier {
  */
 export class DefaultTokenSupplier implements TokenSupplier {
 
-  constructor(readonly token: string) {
-  }
+    constructor(readonly token: string) {
+    }
 
-  getToken(): string {
-    return this.token;
-  }
+    getToken(): string {
+        return this.token;
+    }
 
 }

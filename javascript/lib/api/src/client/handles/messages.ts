@@ -18,7 +18,7 @@ import { GenericResponse } from '../../model/response';
  * Handle for sending Messages.
  */
 export interface MessagesHandle {
-  /**
+    /**
    * Initiates claiming the specified Thing.
    *
    * @param thingId - The ID of the Thing to claim.
@@ -26,9 +26,9 @@ export interface MessagesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the server response
    */
-  claim(thingId: string, claimMessage: any, options?: MessagesOptions): Promise<GenericResponse>;
+    claim(thingId: string, claimMessage: any, options?: MessagesOptions): Promise<GenericResponse>;
 
-  /**
+    /**
    * Sends a message to a Thing.
    *
    * @param thingId - The ID of the Thing to message.
@@ -38,10 +38,10 @@ export interface MessagesHandle {
    * @param options?? - Options to use for the request.
    * @returns A Promise for the server response
    */
-  messageToThing(thingId: string, messageSubject: string, message: string,
-                 contentType: string, options?: MessagesOptions): Promise<GenericResponse>;
+    messageToThing(thingId: string, messageSubject: string, message: string,
+        contentType: string, options?: MessagesOptions): Promise<GenericResponse>;
 
-  /**
+    /**
    * Sends a message from a Thing.
    *
    * @param thingId - The ID of the Thing to message from.
@@ -51,10 +51,10 @@ export interface MessagesHandle {
    * @param options?? - Options to use for the request.
    * @returns A Promise for the server response
    */
-  messageFromThing(thingId: string, messageSubject: string, message: string,
-                   contentType: string, options?: MessagesOptions): Promise<GenericResponse>;
+    messageFromThing(thingId: string, messageSubject: string, message: string,
+        contentType: string, options?: MessagesOptions): Promise<GenericResponse>;
 
-  /**
+    /**
    * Sends a message to a Feature.
    *
    * @param thingId - The ID of the Thing the Feature belongs to.
@@ -65,11 +65,11 @@ export interface MessagesHandle {
    * @param options?? - Options to use for the request.
    * @returns A Promise for the server response
    */
-  messageToFeature(thingId: string, featureId: string, messageSubject: string, message: string,
-                   contentType: string, options?: MessagesOptions):
+    messageToFeature(thingId: string, featureId: string, messageSubject: string, message: string,
+        contentType: string, options?: MessagesOptions):
     Promise<GenericResponse>;
 
-  /**
+    /**
    * Sends a message from a Feature.
    *
    * @param thingId - The ID of the Thing the Feature belongs to.
@@ -80,7 +80,7 @@ export interface MessagesHandle {
    * @param options?? - Options to use for the request.
    * @returns A Promise for the server response
    */
-  messageFromFeature(thingId: string, featureId: string, messageSubject: string, message: string,
-                     contentType: string, options?: MessagesOptions):
+    messageFromFeature(thingId: string, featureId: string, messageSubject: string, message: string,
+        contentType: string, options?: MessagesOptions):
     Promise<GenericResponse>;
 }

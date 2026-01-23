@@ -26,7 +26,7 @@ import { ContentType } from '../constants/content-type';
 export interface HttpMessagesHandle extends MessagesHandle {
 
 
-  /**
+    /**
    * Sends a message to a Thing.
    *
    * @param thingId - The ID of the Thing to message.
@@ -36,10 +36,10 @@ export interface HttpMessagesHandle extends MessagesHandle {
    * @param options?? - Options to use for the request.
    * @returns A Promise for the server response
    */
-  messageToThing(thingId: string, messageSubject: string, message: string,
-                 contentType?: string, options?: MessagesOptions): Promise<GenericResponse>;
+    messageToThing(thingId: string, messageSubject: string, message: string,
+        contentType?: string, options?: MessagesOptions): Promise<GenericResponse>;
 
-  /**
+    /**
    * Sends a message from a Thing.
    *
    * @param thingId - The ID of the Thing to message from.
@@ -49,10 +49,10 @@ export interface HttpMessagesHandle extends MessagesHandle {
    * @param options?? - Options to use for the request.
    * @returns A Promise for the server response
    */
-  messageFromThing(thingId: string, messageSubject: string, message: string,
-                   contentType?: string, options?: MessagesOptions): Promise<GenericResponse>;
+    messageFromThing(thingId: string, messageSubject: string, message: string,
+        contentType?: string, options?: MessagesOptions): Promise<GenericResponse>;
 
-  /**
+    /**
    * Sends a message to a Feature.
    *
    * @param thingId - The ID of the Thing the Feature belongs to.
@@ -63,11 +63,11 @@ export interface HttpMessagesHandle extends MessagesHandle {
    * @param options?? - Options to use for the request.
    * @returns A Promise for the server response
    */
-  messageToFeature(thingId: string, featureId: string, messageSubject: string, message: string,
-                   contentType?: string, options?: MessagesOptions):
+    messageToFeature(thingId: string, featureId: string, messageSubject: string, message: string,
+        contentType?: string, options?: MessagesOptions):
     Promise<GenericResponse>;
 
-  /**
+    /**
    * Sends a message from a Feature.
    *
    * @param thingId - The ID of the Thing the Feature belongs to.
@@ -78,8 +78,8 @@ export interface HttpMessagesHandle extends MessagesHandle {
    * @param options?? - Options to use for the request.
    * @returns A Promise for the server response
    */
-  messageFromFeature(thingId: string, featureId: string, messageSubject: string, message: string,
-                     contentType?: string, options?: MessagesOptions):
+    messageFromFeature(thingId: string, featureId: string, messageSubject: string, message: string,
+        contentType?: string, options?: MessagesOptions):
     Promise<GenericResponse>;
 }
 
@@ -88,20 +88,20 @@ export interface HttpMessagesHandle extends MessagesHandle {
  */
 export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
 
-  private constructor(private readonly requestFactory: RequestSender) {
-  }
+    private constructor(private readonly requestFactory: RequestSender) {
+    }
 
-  /**
+    /**
    * returns an instance of HttpMessagesHandle based on the Context provided.
    *
    * @param factory - The factory to build with.
    * @returns The HttpMessagesHandle
    */
-  public static getInstance(factory: RequestSenderFactory): DefaultHttpMessagesHandle {
-    return new DefaultHttpMessagesHandle(factory.buildInstance('things'));
-  }
+    public static getInstance(factory: RequestSenderFactory): DefaultHttpMessagesHandle {
+        return new DefaultHttpMessagesHandle(factory.buildInstance('things'));
+    }
 
-  /**
+    /**
    * Initiates claiming the specified Thing.
    *
    * @param thingId - The ID of the Thing to claim.
@@ -109,19 +109,19 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
    * @param options - Options to use for the request.
    * @returns A Promise for the server response
    */
-  claim(thingId: string, claimMessage: any, options?: MessagesOptions): Promise<GenericResponse> {
-    const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
-    messageOptions.addHeader(Header.CONTENT_TYPE, ContentType.JSON);
-    return this.requestFactory.fetchGenericJsonRequest({
-      verb: HttpVerb.POST,
-      id: thingId,
-      path: 'inbox/claim',
-      requestOptions: messageOptions,
-      payload: claimMessage
-    });
-  }
+    claim(thingId: string, claimMessage: any, options?: MessagesOptions): Promise<GenericResponse> {
+        const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
+        messageOptions.addHeader(Header.CONTENT_TYPE, ContentType.JSON);
+        return this.requestFactory.fetchGenericJsonRequest({
+            verb: HttpVerb.POST,
+            id: thingId,
+            path: 'inbox/claim',
+            requestOptions: messageOptions,
+            payload: claimMessage
+        });
+    }
 
-  /**
+    /**
    * Sends a message to a Thing.
    *
    * @param thingId - The ID of the Thing to message.
@@ -131,20 +131,20 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
    * @param options?? - Options to use for the request.
    * @returns A Promise for the server response
    */
-  messageToThing(thingId: string, messageSubject: string, message: string,
-                 contentType: string = ContentType.JSON, options?: MessagesOptions): Promise<GenericResponse> {
-    const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
-    messageOptions.addHeader(Header.CONTENT_TYPE, contentType);
-    return this.requestFactory.fetchGenericJsonRequest({
-      verb: HttpVerb.POST,
-      id: thingId,
-      path: `inbox/messages/${messageSubject}`,
-      requestOptions: messageOptions,
-      payload: message
-    });
-  }
+    messageToThing(thingId: string, messageSubject: string, message: string,
+        contentType: string = ContentType.JSON, options?: MessagesOptions): Promise<GenericResponse> {
+        const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
+        messageOptions.addHeader(Header.CONTENT_TYPE, contentType);
+        return this.requestFactory.fetchGenericJsonRequest({
+            verb: HttpVerb.POST,
+            id: thingId,
+            path: `inbox/messages/${messageSubject}`,
+            requestOptions: messageOptions,
+            payload: message
+        });
+    }
 
-  /**
+    /**
    * Sends a message from a Thing.
    *
    * @param thingId - The ID of the Thing to message from.
@@ -154,20 +154,20 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
    * @param options?? - Options to use for the request.
    * @returns A Promise for the server response
    */
-  messageFromThing(thingId: string, messageSubject: string, message: string,
-                   contentType: string = ContentType.JSON, options?: MessagesOptions): Promise<GenericResponse> {
-    const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
-    messageOptions.addHeader(Header.CONTENT_TYPE, contentType);
-    return this.requestFactory.fetchGenericJsonRequest({
-      verb: HttpVerb.POST,
-      id: thingId,
-      path: `outbox/messages/${messageSubject}`,
-      requestOptions: messageOptions,
-      payload: message
-    });
-  }
+    messageFromThing(thingId: string, messageSubject: string, message: string,
+        contentType: string = ContentType.JSON, options?: MessagesOptions): Promise<GenericResponse> {
+        const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
+        messageOptions.addHeader(Header.CONTENT_TYPE, contentType);
+        return this.requestFactory.fetchGenericJsonRequest({
+            verb: HttpVerb.POST,
+            id: thingId,
+            path: `outbox/messages/${messageSubject}`,
+            requestOptions: messageOptions,
+            payload: message
+        });
+    }
 
-  /**
+    /**
    * Sends a message to a Feature.
    *
    * @param thingId - The ID of the Thing the Feature belongs to.
@@ -178,21 +178,21 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
    * @param options?? - Options to use for the request.
    * @returns A Promise for the server response
    */
-  messageToFeature(thingId: string, featureId: string, messageSubject: string, message: string,
-                   contentType: string = ContentType.JSON, options?: MessagesOptions):
-    Promise<GenericResponse> {
-    const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
-    messageOptions.addHeader(Header.CONTENT_TYPE, contentType);
-    return this.requestFactory.fetchGenericJsonRequest({
-      verb: HttpVerb.POST,
-      id: thingId,
-      path: `features/${featureId}/inbox/messages/${messageSubject}`,
-      requestOptions: messageOptions,
-      payload: message
-    });
-  }
+    messageToFeature(thingId: string, featureId: string, messageSubject: string, message: string,
+        contentType: string = ContentType.JSON, options?: MessagesOptions):
+        Promise<GenericResponse> {
+        const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
+        messageOptions.addHeader(Header.CONTENT_TYPE, contentType);
+        return this.requestFactory.fetchGenericJsonRequest({
+            verb: HttpVerb.POST,
+            id: thingId,
+            path: `features/${featureId}/inbox/messages/${messageSubject}`,
+            requestOptions: messageOptions,
+            payload: message
+        });
+    }
 
-  /**
+    /**
    * Sends a message from a Feature.
    *
    * @param thingId - The ID of the Thing the Feature belongs to.
@@ -203,17 +203,17 @@ export class DefaultHttpMessagesHandle implements HttpMessagesHandle {
    * @param options?? - Options to use for the request.
    * @returns A Promise for the server response
    */
-  messageFromFeature(thingId: string, featureId: string, messageSubject: string, message: string,
-                     contentType: string = ContentType.JSON, options?: MessagesOptions):
-    Promise<GenericResponse> {
-    const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
-    messageOptions.addHeader(Header.CONTENT_TYPE, contentType);
-    return this.requestFactory.fetchGenericJsonRequest({
-      verb: HttpVerb.POST,
-      id: thingId,
-      path: `features/${featureId}/outbox/messages/${messageSubject}`,
-      requestOptions: messageOptions,
-      payload: message
-    });
-  }
+    messageFromFeature(thingId: string, featureId: string, messageSubject: string, message: string,
+        contentType: string = ContentType.JSON, options?: MessagesOptions):
+        Promise<GenericResponse> {
+        const messageOptions = options === undefined ? DefaultMessagesOptions.getInstance() : options;
+        messageOptions.addHeader(Header.CONTENT_TYPE, contentType);
+        return this.requestFactory.fetchGenericJsonRequest({
+            verb: HttpVerb.POST,
+            id: thingId,
+            path: `features/${featureId}/outbox/messages/${messageSubject}`,
+            requestOptions: messageOptions,
+            payload: message
+        });
+    }
 }

@@ -14,9 +14,9 @@
 import { HttpThingsHandle } from './handles/things.interfaces';
 import { HttpRequester, HttpRequestSenderBuilder } from './request-factory/http-request-sender';
 import {
-  DefaultDittoHttpClient,
-  DittoHttpClient,
-  DittoHttpClientHandles
+    DefaultDittoHttpClient,
+    DittoHttpClient,
+    DittoHttpClientHandles
 } from './ditto-client-http';
 import { HttpMessagesHandle } from './handles/messages-http';
 import { PoliciesHandle } from './handles/policies';
@@ -25,17 +25,17 @@ import { FeaturesHandle } from './handles/features.interfaces';
 import { AuthProvider, DittoURL, ImmutableURL } from '../auth/auth-provider';
 import { ApiVersion } from '../model/ditto-protocol';
 import {
-  AbstractBuilder,
-  AuthenticationStep,
-  BuildStep,
-  CustomBuilderContext,
-  CustomFeaturesHandleStep,
-  CustomMessagesHandleStep,
-  CustomPoliciesHandleStep,
-  CustomSearchHandleStep,
-  CustomThingsHandleStep,
-  EnvironmentStep,
-  ProtocolStep
+    AbstractBuilder,
+    AuthenticationStep,
+    BuildStep,
+    CustomBuilderContext,
+    CustomFeaturesHandleStep,
+    CustomMessagesHandleStep,
+    CustomPoliciesHandleStep,
+    CustomSearchHandleStep,
+    CustomThingsHandleStep,
+    EnvironmentStep,
+    ProtocolStep
 } from './builder-steps';
 
 export interface HttpBuilderInitialStep extends ProtocolStep<HttpClientBuildStep> {
@@ -48,7 +48,7 @@ export interface HttpBuildStep<C extends DittoHttpClient> extends BuildStep {
    *
    * @returns The DittoClient
    */
-  build(): C;
+    build(): C;
 }
 
 /**
@@ -57,7 +57,7 @@ export interface HttpBuildStep<C extends DittoHttpClient> extends BuildStep {
  * @param <C> - Type of the client.
  */
 export interface HttpCustomHandlesBuildStep<H extends HttpThingsHandle, C extends DittoHttpClient>
-  extends HttpBuildStep<C>,
+    extends HttpBuildStep<C>,
     BuildStep,
     CustomThingsHandleStep<HttpRequestSenderBuilder, H>,
     CustomFeaturesHandleStep<HttpRequestSenderBuilder, FeaturesHandle>,
@@ -80,22 +80,22 @@ export class HttpClientBuilder extends AbstractBuilder<HttpClientBuildStep> impl
   EnvironmentStep<HttpClientBuildStep>, AuthenticationStep<HttpClientBuildStep>, HttpClientBuildStep {
   private customHandles: DittoHttpClientHandles = {};
 
-  private constructor(private readonly requester: HttpRequester) {
-    super();
-  }
+    private constructor(private readonly requester: HttpRequester) {
+        super();
+    }
 
-  /**
+    /**
    * Build a new HttpClientBuilder.
    *
    * @param requester - The requester to use.
    */
-  public static newBuilder(requester: HttpRequester): HttpBuilderInitialStep {
-    return new HttpClientBuilder(requester);
-  }
+    public static newBuilder(requester: HttpRequester): HttpBuilderInitialStep {
+        return new HttpClientBuilder(requester);
+    }
 
-  finalize(): HttpClientBuildStep {
-    return this;
-  }
+    finalize(): HttpClientBuildStep {
+        return this;
+    }
 
   // TODO: rebuild so that DittoHttpClient interface can be used
   build(): DefaultDittoHttpClient {
@@ -103,48 +103,48 @@ export class HttpClientBuilder extends AbstractBuilder<HttpClientBuildStep> impl
     return DefaultDittoHttpClient.getInstance(new HttpRequestSenderBuilder(this.requester, url, this.authProviders), this.customHandles);
   }
 
-  buildClient(tls: boolean, domain: string, apiVersion: ApiVersion, authProviders: AuthProvider[]) {
-    this.tls = tls;
-    this.domain = domain;
-    this.apiVersion = apiVersion;
-    this.authProviders = authProviders;
-    return this.build();
-  }
+    buildClient(tls: boolean, domain: string, apiVersion: ApiVersion, authProviders: AuthProvider[]) {
+        this.tls = tls;
+        this.domain = domain;
+        this.apiVersion = apiVersion;
+        this.authProviders = authProviders;
+        return this.build();
+    }
 
-  private buildUrl(): DittoURL {
-    const protocol = this.tls ? 'https' : 'http';
-    const path = (this.customPath === undefined) ? '/api' : this.customPath;
-    return ImmutableURL.newInstance(protocol, this.domain, `${path}/${this.apiVersion}`);
-  }
+    private buildUrl(): DittoURL {
+        const protocol = this.tls ? 'https' : 'http';
+        const path = (this.customPath === undefined) ? '/api' : this.customPath;
+        return ImmutableURL.newInstance(protocol, this.domain, `${path}/${this.apiVersion}`);
+    }
 
-  withCustomThingsHandle(factory: (requestSenderBuilder: HttpRequestSenderBuilder,
-                                   customBuilderContext?: CustomBuilderContext) => HttpThingsHandle): this {
-    this.customHandles = Object.assign(this.customHandles, { thingsHandle: factory });
-    return this;
-  }
+    withCustomThingsHandle(factory: (requestSenderBuilder: HttpRequestSenderBuilder,
+        customBuilderContext?: CustomBuilderContext) => HttpThingsHandle): this {
+        this.customHandles = Object.assign(this.customHandles, { thingsHandle: factory });
+        return this;
+    }
 
-  withCustomFeaturesHandle(factory: (requestSenderBuilder: HttpRequestSenderBuilder, thingId: string,
-                                     customBuilderContext?: CustomBuilderContext) => FeaturesHandle): this {
-    this.customHandles = Object.assign(this.customHandles, { featuresHandle: factory });
-    return this;
-  }
+    withCustomFeaturesHandle(factory: (requestSenderBuilder: HttpRequestSenderBuilder, thingId: string,
+        customBuilderContext?: CustomBuilderContext) => FeaturesHandle): this {
+        this.customHandles = Object.assign(this.customHandles, { featuresHandle: factory });
+        return this;
+    }
 
-  withCustomMessagesHandle(factory: (requestSenderBuilder: HttpRequestSenderBuilder,
-                                     customBuilderContext?: CustomBuilderContext) => HttpMessagesHandle): this {
-    this.customHandles = Object.assign(this.customHandles, { messagesHandle: factory });
-    return this;
-  }
+    withCustomMessagesHandle(factory: (requestSenderBuilder: HttpRequestSenderBuilder,
+        customBuilderContext?: CustomBuilderContext) => HttpMessagesHandle): this {
+        this.customHandles = Object.assign(this.customHandles, { messagesHandle: factory });
+        return this;
+    }
 
-  withCustomPoliciesHandle(factory: (requestSenderBuilder: HttpRequestSenderBuilder,
-                                     customBuilderContext?: CustomBuilderContext) => PoliciesHandle): this {
-    this.customHandles = Object.assign(this.customHandles, { policiesHandle: factory });
-    return this;
-  }
+    withCustomPoliciesHandle(factory: (requestSenderBuilder: HttpRequestSenderBuilder,
+        customBuilderContext?: CustomBuilderContext) => PoliciesHandle): this {
+        this.customHandles = Object.assign(this.customHandles, { policiesHandle: factory });
+        return this;
+    }
 
-  withCustomSearchHandle(factory: (requestSenderBuilder: HttpRequestSenderBuilder,
-                                   customBuilderContext?: CustomBuilderContext) => SearchHandle): this {
-    this.customHandles = Object.assign(this.customHandles, { searchHandle: factory });
-    return this;
-  }
+    withCustomSearchHandle(factory: (requestSenderBuilder: HttpRequestSenderBuilder,
+        customBuilderContext?: CustomBuilderContext) => SearchHandle): this {
+        this.customHandles = Object.assign(this.customHandles, { searchHandle: factory });
+        return this;
+    }
 
 }

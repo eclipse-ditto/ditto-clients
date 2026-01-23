@@ -19,123 +19,123 @@ import { HttpVerb } from '../constants/http-verb';
 import { RequestSender, RequestSenderFactory } from '../request-factory/request-sender';
 
 export interface SearchHandle {
-  /**
+    /**
    * Searches for Things that match the restrictions set in options.
    *
    * @param options - Options to use for the search.
    * @returns The search result
    */
-  search(options?: SearchOptions): Promise<SearchThingsResponse>;
+    search(options?: SearchOptions): Promise<SearchThingsResponse>;
 
-  /**
+    /**
    * Searches for Things that match the restrictions set in options using a http post request.
    *
    * @param options - Options to use for the search.
    * @returns The search result
    */
-  postSearch(options?: SearchOptions): Promise<SearchThingsResponse>;
+    postSearch(options?: SearchOptions): Promise<SearchThingsResponse>;
 
-  /**
+    /**
    * Counts the Things that match the restrictions set in options.
    *
    * @param options - Options to use for the search.
    * @returns The count
    */
-  count(options?: CountOptions): Promise<number>;
+    count(options?: CountOptions): Promise<number>;
 
-  /**
+    /**
    * Counts the Things that match the restrictions set in options using a http post request.
    *
    * @param options - Options to use for the search.
    * @returns The count
    */
-  postCount(options?: CountOptions): Promise<number>;
+    postCount(options?: CountOptions): Promise<number>;
 }
 
 /**
  * Handle to send Search requests.
  */
 export class DefaultSearchHandle implements SearchHandle {
-  private constructor(readonly requestFactory: RequestSender) {}
+    private constructor(readonly requestFactory: RequestSender) {}
 
-  /**
+    /**
    * returns an instance of SearchHandle using the provided RequestSender.
    *
    * @param builder - The builder for the RequestSender to work with.
    * @returns The SearchHandle
    */
-  public static getInstance(builder: RequestSenderFactory): DefaultSearchHandle {
-    return new DefaultSearchHandle(builder.buildInstance('search/things'));
-  }
+    public static getInstance(builder: RequestSenderFactory): DefaultSearchHandle {
+        return new DefaultSearchHandle(builder.buildInstance('search/things'));
+    }
 
-  /**
+    /**
    * Searches for Things that match the restrictions set in options.
    *
    * @param options - Options to use for the search.
    * @returns The search result
    */
-  search(options?: SearchOptions): Promise<SearchThingsResponse> {
-    return this.requestFactory.fetchJsonRequest({
-      verb: HttpVerb.GET,
-      parser: SearchThingsResponse.fromObject,
-      requestOptions: options
-    });
-  }
+    search(options?: SearchOptions): Promise<SearchThingsResponse> {
+        return this.requestFactory.fetchJsonRequest({
+            verb: HttpVerb.GET,
+            parser: SearchThingsResponse.fromObject,
+            requestOptions: options
+        });
+    }
 
-  /**
+    /**
    * Searches for Things that match the restrictions set in options using a http post request.
    *
    * @param options - Options to use for the search.
    * @returns The search result
    */
-  postSearch(options?: SearchOptions): Promise<SearchThingsResponse> {
-    return this.requestFactory.fetchFormRequest({
-      verb: HttpVerb.POST,
-      parser: SearchThingsResponse.fromObject,
-      payload: options?.getOptions(),
-      requestOptions: this.getFormRequestOptions(options)
-    });
-  }
+    postSearch(options?: SearchOptions): Promise<SearchThingsResponse> {
+        return this.requestFactory.fetchFormRequest({
+            verb: HttpVerb.POST,
+            parser: SearchThingsResponse.fromObject,
+            payload: options?.getOptions(),
+            requestOptions: this.getFormRequestOptions(options)
+        });
+    }
 
-  /**
+    /**
    * Counts the Things that match the restrictions set in options.
    *
    * @param options - Options to use for the search.
    * @returns The count
    */
-  count(options?: CountOptions): Promise<number> {
-    return this.requestFactory.fetchJsonRequest({
-      verb: HttpVerb.GET,
-      parser: Number,
-      path: 'count',
-      requestOptions: options
-    });
-  }
+    count(options?: CountOptions): Promise<number> {
+        return this.requestFactory.fetchJsonRequest({
+            verb: HttpVerb.GET,
+            parser: Number,
+            path: 'count',
+            requestOptions: options
+        });
+    }
 
-  /**
+    /**
    * Counts the Things that match the restrictions set in options using a http post request.
    *
    * @param options - Options to use for the search.
    * @returns The count
    */
-  postCount(options?: CountOptions): Promise<number> {
-    return this.requestFactory.fetchFormRequest({
-      verb: HttpVerb.POST,
-      parser: Number,
-      path: 'count',
-      payload: options?.getOptions(),
-      requestOptions: this.getFormRequestOptions(options)
-    });
-  }
-
-  private getFormRequestOptions(options?: SearchOptions | CountOptions): RequestOptions | undefined {
-    const requestOptions = DefaultSearchOptions.getInstance();
-    options?.getHeaders().forEach((value, key) => {
-      requestOptions.addHeader(key, value);
-    });
-    if (!requestOptions?.getHeaders().has(Header.CONTENT_TYPE)) {
-      requestOptions?.addHeader(Header.CONTENT_TYPE, ContentType.FORM_URLENCODED);
+    postCount(options?: CountOptions): Promise<number> {
+        return this.requestFactory.fetchFormRequest({
+            verb: HttpVerb.POST,
+            parser: Number,
+            path: 'count',
+            payload: options?.getOptions(),
+            requestOptions: this.getFormRequestOptions(options)
+        });
     }
-    return requestOptions;
-  }
+
+    private getFormRequestOptions(options?: SearchOptions | CountOptions): RequestOptions | undefined {
+        const requestOptions = DefaultSearchOptions.getInstance();
+        options?.getHeaders().forEach((value, key) => {
+            requestOptions.addHeader(key, value);
+        });
+        if (!requestOptions?.getHeaders().has(Header.CONTENT_TYPE)) {
+            requestOptions?.addHeader(Header.CONTENT_TYPE, ContentType.FORM_URLENCODED);
+        }
+        return requestOptions;
+    }
 }
