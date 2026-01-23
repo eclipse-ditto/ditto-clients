@@ -17,15 +17,18 @@ import { DefaultDittoProtocolResponse, DittoProtocolEnvelope, DittoProtocolRespo
  * An abstract factory that builds ResilienceHandlers.
  */
 export abstract class ResilienceHandlerFactory implements ResilienceHandlerFactoryBuildStep, ResilienceHandlerFactoryContextStep {
-  protected webSocketBuilder!: WebSocketImplementationBuilderHandler;
-  protected stateHandler!: WebSocketStateHandler;
+    protected webSocketBuilder!: WebSocketImplementationBuilderHandler;
+    protected stateHandler!: WebSocketStateHandler;
+    protected reconnect = true;
 
-  public withContext(webSocketBuilder: WebSocketImplementationBuilderHandler,
-                     stateHandler: WebSocketStateHandler): ResilienceHandlerFactoryBuildStep {
-    this.webSocketBuilder = webSocketBuilder;
-    this.stateHandler = stateHandler;
-    return this;
-  }
+    public withContext(webSocketBuilder: WebSocketImplementationBuilderHandler,
+        stateHandler: WebSocketStateHandler,
+        reconnect: boolean = true): ResilienceHandlerFactoryBuildStep {
+        this.webSocketBuilder = webSocketBuilder;
+        this.stateHandler = stateHandler;
+        this.reconnect = reconnect;
+        return this;
+    }
 
     public abstract withRequestHandler(requestHandler: RequestHandler): ResilienceHandler;
 }
@@ -48,10 +51,12 @@ export interface ResilienceHandlerFactoryContextStep {
    *
    * @param webSocketBuilder - The web socket to use.
    * @param stateHandler - The state handler to use.
+   * @param reconnect - Whether to automatically reconnect on connection loss.
    * @returns The ResilienceHandlerFactoryBuildStep
    */
-  withContext(webSocketBuilder: WebSocketImplementationBuilderHandler,
-              stateHandler: WebSocketStateHandler): ResilienceHandlerFactoryBuildStep;
+    withContext(webSocketBuilder: WebSocketImplementationBuilderHandler,
+        stateHandler: WebSocketStateHandler,
+        reconnect?: boolean): ResilienceHandlerFactoryBuildStep;
 }
 
 export interface RequestHandler {
@@ -115,9 +120,9 @@ export interface ResilienceHandler extends ResponseHandler {
    * @param message - The message to send.
    * @returns A Promise that resolves once the message was sent and rejects if the sending was unsuccessful
    */
-  send(message: string): Promise<void>;
     send(message: string): Promise<void>;
 
+    close(code?: number, reason?: string): void;
 }
 
 export abstract class AbstractResilienceHandler implements ResilienceHandler {
@@ -176,7 +181,9 @@ export abstract class AbstractResilienceHandler implements ResilienceHandler {
         console.error(error);
     }
 
-  protected abstract rejectAllOngoing(reason: object): void;
+    abstract close(code?: number, reason?: string): void;
+
+    protected abstract rejectAllOngoing(reason: object): void;
 
     protected abstract resolveWebSocket(promise: Promise<WebSocketImplementation>): void;
 
@@ -254,7 +261,9 @@ export interface WebSocketImplementation {
    * @param request - The request to send.
    * @return a Promise for the reestablished web socket connection.
    */
-  executeCommand(request: string): void;
+    executeCommand(request: string): void;
+
+    close(code?: number, reason?: string): void;
 }
 
 export interface WebSocketImplementationBuilderHandler {
@@ -263,9 +272,10 @@ export interface WebSocketImplementationBuilderHandler {
    * Sets the handler to send responses to.
    *
    * @param handler - The handler that gets called for responses from the web socket.
+   * @param reconnect - Whether to automatically reconnect on connection loss.
    * @return a Promise for the established web socket connection.
    */
-  withHandler(handler: ResponseHandler): Promise<WebSocketImplementation>;
+    withHandler(handler: ResponseHandler, reconnect?: boolean): Promise<WebSocketImplementation>;
 }
 
 export interface ResponseHandler {

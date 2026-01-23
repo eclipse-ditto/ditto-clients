@@ -15,38 +15,50 @@ import { GenericResponse } from '../../api/src/model/response';
 import { HttpRequester } from '../../api/src/client/request-factory/http-request-sender';
 
 export class FetchRequester implements HttpRequester {
+    public timeout?: number;
 
-  public doRequest(method: string, url: string, header: Map<string, string>, body: string): Promise<GenericResponse> {
-    return fetch(this.prepareRequest(method, url, header, body))
-      .then(response => {
-        const headers = new Map<string, string>();
-        response.headers.forEach((v, k) => headers.set(k, v));
-        return response.json()
-          .then(
-            json => ({ headers, status: response.status, body: json }),
-            () => ({ headers, status: response.status, body: undefined })
-          );
-      });
-  }
+    public doRequest(method: string, url: string, header: Map<string, string>, body: string): Promise<GenericResponse> {
+    // Use AbortSignal.timeout() for cleaner timeout handling when available
+        const signal = this.timeout !== undefined
+            ? AbortSignal.timeout(this.timeout)
+            : undefined;
 
-  /**
+        return fetch(this.prepareRequest(method, url, header, body, signal))
+            .then(response => {
+                const headers = new Map<string, string>();
+                response.headers.forEach((v, k) => headers.set(k, v));
+                return response.json()
+                    .then(
+                        json => ({ headers, status: response.status, body: json }),
+                        () => ({ headers, status: response.status, body: undefined })
+                    );
+            })
+            .catch(error => {
+                throw error;
+            });
+    }
+
+    /**
    * Builds a Request object to perform a fetch request with.
    *
    * @param method - The type of action to perform.
    * @param url - The Url to send the request to.
    * @param header - The headers of the request.
    * @param body - The payload to send with the request.
+   * @param signal - Optional abort signal for timeout handling.
    * @return the builder.
    */
-  private prepareRequest(method: string, url: string, header: Map<string, string>, body: string): Request {
-    const headers = new Headers();
-    header.forEach((v, k) => headers.append(k, v));
+    private prepareRequest(method: string, url: string, header: Map<string, string>, body: string,
+        signal?: AbortSignal): Request {
+        const headers = new Headers();
+        header.forEach((v, k) => headers.append(k, v));
 
-    return new Request(url, {
-      headers,
-      method,
-      body,
-      mode: 'cors'
-    });
-  }
+        return new Request(url, {
+            headers,
+            method,
+            body,
+            mode: 'cors',
+            signal
+        });
+    }
 }

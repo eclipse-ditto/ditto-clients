@@ -43,7 +43,17 @@ export interface HttpBuilderInitialStep extends ProtocolStep<HttpClientBuildStep
 
 export interface HttpBuildStep<C extends DittoHttpClient> extends BuildStep {
 
-  /**
+    /**
+   * Sets the request timeout in milliseconds.
+   *
+   * This is important because by default HTTP requests have no timeout
+   * and may hang indefinitely waiting for a response.
+   *
+   * @param timeout - The timeout in milliseconds to use.
+   */
+    withTimeout(timeout: number): this;
+
+    /**
    * Builds a DittoClient for the selected API.
    *
    * @returns The DittoClient
@@ -77,8 +87,9 @@ export interface HttpClientBuildStep extends HttpCustomHandlesBuildStep<HttpThin
  * Implementation of all the methods to build a Context.
  */
 export class HttpClientBuilder extends AbstractBuilder<HttpClientBuildStep> implements HttpBuilderInitialStep,
-  EnvironmentStep<HttpClientBuildStep>, AuthenticationStep<HttpClientBuildStep>, HttpClientBuildStep {
-  private customHandles: DittoHttpClientHandles = {};
+    EnvironmentStep<HttpClientBuildStep>, AuthenticationStep<HttpClientBuildStep>, HttpClientBuildStep {
+    private customHandles: DittoHttpClientHandles = {};
+    private timeout?: number;
 
     private constructor(private readonly requester: HttpRequester) {
         super();
@@ -97,11 +108,21 @@ export class HttpClientBuilder extends AbstractBuilder<HttpClientBuildStep> impl
         return this;
     }
 
-  // TODO: rebuild so that DittoHttpClient interface can be used
-  build(): DefaultDittoHttpClient {
-    const url = this.buildUrl();
-    return DefaultDittoHttpClient.getInstance(new HttpRequestSenderBuilder(this.requester, url, this.authProviders), this.customHandles);
-  }
+    withTimeout(timeout: number): this {
+        this.timeout = timeout;
+        return this;
+    }
+
+    // TODO: rebuild so that DittoHttpClient interface can be used
+    build(): DefaultDittoHttpClient {
+        if (this.timeout !== undefined) {
+            this.requester.timeout = this.timeout;
+        }
+        const url = this.buildUrl();
+        return DefaultDittoHttpClient.getInstance(
+            new HttpRequestSenderBuilder(this.requester, url, this.authProviders),
+            this.customHandles);
+    }
 
     buildClient(tls: boolean, domain: string, apiVersion: ApiVersion, authProviders: AuthProvider[]) {
         this.tls = tls;

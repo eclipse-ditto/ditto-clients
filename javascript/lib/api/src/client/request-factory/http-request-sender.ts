@@ -87,7 +87,12 @@ export class HttpRequestSender extends RequestSender {
  */
 export interface HttpRequester {
 
-  /**
+    /**
+   * Request timeout in milliseconds. If not set, implementation-specific defaults apply.
+   */
+    timeout?: number;
+
+    /**
    * Executes a HTTP request and returns the response.
    *
    * @param method - The method to use for the request (eg. GET).

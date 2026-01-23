@@ -33,12 +33,13 @@ export class BufferlessResilienceHandler extends AbstractResilienceHandler {
     private readonly requests: Map<string, string> = new Map();
     private webSocket!: WebSocketImplementation;
 
-  public constructor(webSocketBuilder: WebSocketImplementationBuilderHandler,
-                     stateHandler: WebSocketStateHandler,
-                     requestHandler: RequestHandler) {
-    super(stateHandler, requestHandler);
-    this.resolveWebSocket(webSocketBuilder.withHandler(this));
-  }
+    public constructor(webSocketBuilder: WebSocketImplementationBuilderHandler,
+        stateHandler: WebSocketStateHandler,
+        requestHandler: RequestHandler,
+        reconnect: boolean = true) {
+        super(stateHandler, requestHandler);
+        this.resolveWebSocket(webSocketBuilder.withHandler(this, reconnect));
+    }
 
     public sendRequest(id: string, request: DittoProtocolEnvelope): void {
         if (this.stateHandler.isConnected()) {
@@ -69,7 +70,11 @@ export class BufferlessResilienceHandler extends AbstractResilienceHandler {
         this.requestHandler.handleError(id, reason);
     }
 
-  /**
+    public close(code?: number, reason?: string): void {
+        this.webSocket.close(code, reason);
+    }
+
+    /**
    * Returns the reason to reject a Promise based on the current state of the connection.
    *
    * @returns The error to reject with

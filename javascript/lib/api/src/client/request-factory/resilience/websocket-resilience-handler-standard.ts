@@ -35,24 +35,25 @@ export class StandardResilienceHandler extends AbstractResilienceHandler {
     private readonly messageBuffer: ResilienceMessageBuffer;
     private webSocket!: WebSocketImplementation;
 
-  public constructor(webSocketBuilder: WebSocketImplementationBuilderHandler,
-                     stateHandler: WebSocketStateHandler,
-                     requestHandler: RequestHandler,
-                     size: number) {
-    super(stateHandler, requestHandler);
-    this.resolveWebSocket(webSocketBuilder.withHandler(this));
-    if (size !== undefined) {
-      if (size > 0) {
-        this.requestBuffer = new ResilienceRequestBuffer(size);
-        this.messageBuffer = new ResilienceMessageBuffer(size);
-      } else {
-        throw Error('Buffer size needs to be at least one');
-      }
-    } else {
-      this.requestBuffer = new ResilienceRequestBuffer();
-      this.messageBuffer = new ResilienceMessageBuffer();
+    public constructor(webSocketBuilder: WebSocketImplementationBuilderHandler,
+        stateHandler: WebSocketStateHandler,
+        requestHandler: RequestHandler,
+        size: number,
+        reconnect: boolean = true) {
+        super(stateHandler, requestHandler);
+        this.resolveWebSocket(webSocketBuilder.withHandler(this, reconnect));
+        if (size !== undefined) {
+            if (size > 0) {
+                this.requestBuffer = new ResilienceRequestBuffer(size);
+                this.messageBuffer = new ResilienceMessageBuffer(size);
+            } else {
+                throw Error('Buffer size needs to be at least one');
+            }
+        } else {
+            this.requestBuffer = new ResilienceRequestBuffer();
+            this.messageBuffer = new ResilienceMessageBuffer();
+        }
     }
-  }
 
     sendRequest(correlationId: string, request: DittoProtocolEnvelope): void {
         const jsonified = request.toJson();
@@ -104,7 +105,11 @@ export class StandardResilienceHandler extends AbstractResilienceHandler {
         this.requestHandler.handleError(correlationId, reason);
     }
 
-  /**
+    public close(code?: number, reason?: string): void {
+        this.webSocket.close(code, reason);
+    }
+
+    /**
    * Handles the promise for a new web socket. Once the Promise is resolved it will be set as the web socket for the resilience handler.
    * If the Promise gets rejected the reconnection process will be stopped and all further requests rejected.
    * After the Promise is resolved emptying of the buffer will be initiated. As long as there are requests left in the buffer new

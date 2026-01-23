@@ -439,7 +439,7 @@ export interface MessagesOptions extends AddRequestOptions<MessagesOptions> {
     /**
    * Sets a timeout option.
    *
-   * @param timeout - The timeout to use.
+   * @param timeout - The timeout in milliseconds to use.
    * @returns The instance of MessagesOptions with the added option
    */
     withTimeout(timeout: number): MessagesOptions;

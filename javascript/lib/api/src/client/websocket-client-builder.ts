@@ -53,7 +53,15 @@ export interface WebSocketBuilderInitialStep extends ProtocolStep<WebSocketBuffe
 export interface WebSocketBufferStep extends BuildStep {
     withoutBuffer(): WebSocketChannelStep;
 
-  withBuffer(size: number): WebSocketChannelStep;
+    withBuffer(size: number): WebSocketChannelStep;
+
+    /**
+   * Enables or disables automatic reconnection on connection loss.
+   * Default is true (reconnect enabled).
+   *
+   * @param enabled - Whether to enable automatic reconnection.
+   */
+    withReconnect(enabled: boolean): this;
 }
 
 export interface WebSocketChannelStep extends BuildStep {
@@ -102,10 +110,11 @@ export class WebSocketClientBuilder extends AbstractBuilder<WebSocketBufferStep>
     implements WebSocketBufferStep, WebSocketChannelStep, WebSocketBuildStepLive,
     WebSocketBuildStepTwin {
 
-  private channel!: Channel;
-  private stateHandler: WebSocketStateHandler;
-  private resilienceFactory!: ResilienceHandlerFactoryContextStep;
-  private customHandles: AllDittoWebSocketHandles;
+    private channel!: Channel;
+    private stateHandler: WebSocketStateHandler;
+    private resilienceFactory!: ResilienceHandlerFactoryContextStep;
+    private customHandles: AllDittoWebSocketHandles;
+    private reconnect = true;
 
     private constructor(private readonly builder: WebSocketImplementationBuilderUrl) {
         super();
@@ -131,10 +140,15 @@ export class WebSocketClientBuilder extends AbstractBuilder<WebSocketBufferStep>
         return this;
     }
 
-  withBuffer(size: number): WebSocketChannelStep {
-    this.resilienceFactory = StandardResilienceHandlerFactory.getInstance(size);
-    return this;
-  }
+    withReconnect(enabled: boolean): this {
+        this.reconnect = enabled;
+        return this;
+    }
+
+    withBuffer(size: number): WebSocketChannelStep {
+        this.resilienceFactory = StandardResilienceHandlerFactory.getInstance(size);
+        return this;
+    }
 
     withoutBuffer(): WebSocketChannelStep {
         this.resilienceFactory = BufferlessResilienceHandlerFactory.getInstance();
@@ -185,15 +199,18 @@ export class WebSocketClientBuilder extends AbstractBuilder<WebSocketBufferStep>
         const protocol = this.tls ? 'wss' : 'ws';
         const path = (this.customPath === undefined) ? '/ws' : this.customPath;
 
-    const resilienceHandlerFactory = this.resilienceFactory.withContext(
-      this.builder.withConnectionDetails(
-        ImmutableURL.newInstance(protocol, this.domain, `${path}/${this.apiVersion}`),
-        this.authProviders),
-      this.stateHandler);
-    const requester = new WebSocketRequestHandler(resilienceHandlerFactory);
-    return DefaultDittoWebSocketClient.getInstance(new WebSocketRequestSenderFactory(this.apiVersion, this.channel, requester), requester,
-      this.customHandles);
-  }
+        const resilienceHandlerFactory = this.resilienceFactory.withContext(
+            this.builder.withConnectionDetails(
+                ImmutableURL.newInstance(protocol, this.domain, `${path}/${this.apiVersion}`),
+                this.authProviders),
+            this.stateHandler,
+            this.reconnect);
+        const requester = new WebSocketRequestHandler(resilienceHandlerFactory);
+        return DefaultDittoWebSocketClient.getInstance(
+            new WebSocketRequestSenderFactory(this.apiVersion, this.channel, requester),
+            requester,
+            this.customHandles);
+    }
 
     buildClient(tls: boolean, domain: string, apiVersion: ApiVersion, stateHandler: WebSocketStateHandler, channel: Channel,
         authProviders: AuthProvider[]): DittoWebSocketClient {

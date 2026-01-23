@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-ditto/ditto-javascript-client-dom",
-  "version": "3.8.0",
+  "version": "3.8.1",
   "description": "DOM implementation of Eclipse Ditto JavaScript API to be used in browsers.",
   "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
   "repository": "https://github.com/eclipse-ditto/ditto-clients",
@@ -31,7 +31,7 @@
     "build:tsc": "tsc -p tsconfig.json",
     "build:barrels": "npm run build:barrels:generate-sources && npm run build:barrels:copyright-header && npm run build:barrels:compile",
     "build:barrels:generate-sources": "barrelsby --config barrelsby.json",
-    "build:barrels:copyright-header": "eslint --config .eslintrc.js --fix dist/index.ts",
+    "build:barrels:copyright-header": "eslint --config .eslintrc.cjs --fix dist/index.ts",
     "build:barrels:compile": "tsc --project tsconfig-barrels.json",
     "lint": "eslint 'src/**/*.{ts,tsx}' ",
     "lint:fix": "eslint 'src/**/*.{ts,tsx}' --fix",

@@ -21,6 +21,7 @@ import { ProxyAgent } from './proxy-settings';
  * NodeJs implementation of a Http Requester.
  */
 export class NodeRequester implements HttpRequester {
+    public timeout?: number;
 
     public constructor(private readonly agent: ProxyAgent) {
     }
@@ -93,23 +94,24 @@ export class NodeRequester implements HttpRequester {
    * @param isSecureRequest - If the request is a secure HTTPS request.
    * @return the builder.
    */
-  private buildRequest(method: string, parsedUrl: URL, header: Map<string, string>, body: string,
-                       isSecureRequest: boolean): object {
-    if (body !== undefined && body !== '') {
-      header.set('Content-Length', Buffer.byteLength(body).toString());
+    private buildRequest(method: string, parsedUrl: URL, header: Map<string, string>, body: string,
+        isSecureRequest: boolean): object {
+        if (body !== undefined && body !== '') {
+            header.set('Content-Length', Buffer.byteLength(body).toString());
+        }
+        const pathWithQueryParams = `${parsedUrl.pathname}${parsedUrl.search}`;
+        const headers: { [key: string]: any } = {};
+        header.forEach((v, k) => headers[k] = v);
+        return {
+            method,
+            headers,
+            hostname: parsedUrl.hostname,
+            port: parsedUrl.port,
+            path: pathWithQueryParams,
+            agent: this.getAgentForRequestType(isSecureRequest),
+            timeout: this.timeout
+        };
     }
-    const pathWithQueryParams = `${parsedUrl.pathname}${parsedUrl.search}`;
-    const headers: { [key: string]: any } = {};
-    header.forEach((v, k) => headers[k] = v);
-    return {
-      method,
-      headers,
-      hostname: parsedUrl.hostname,
-      port: parsedUrl.port,
-      path: pathWithQueryParams,
-      agent: this.getAgentForRequestType(isSecureRequest)
-    };
-  }
 
     private getAgentForRequestType(isSecureRequest: boolean): http.Agent | undefined {
         return isSecureRequest ? this.agent.proxyAgent : this.agent.httpProxyAgent;

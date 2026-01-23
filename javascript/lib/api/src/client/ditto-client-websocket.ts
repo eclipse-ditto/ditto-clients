@@ -26,12 +26,17 @@ import { WebSocketEventsHandle } from './handles/events-websocket';
 
 export interface DittoWebSocketClient extends DittoClient<WebSocketThingsHandle, FeaturesHandle> {
 
-  /**
+    /**
    * Builds a handle to subscribe to Events.
    *
    * @return an EventsHandle.
    */
-  getEventsHandle(customBuildContext?: CustomBuilderContext): EventsHandle;
+    getEventsHandle(customBuildContext?: CustomBuilderContext): EventsHandle;
+
+    /**
+   * Close underlying websocket
+   */
+    close(code?: number, data?: string): void;
 }
 
 export interface DittoWebSocketClientHandles extends DittoClientHandles<WebSocketRequestSenderFactory> {
@@ -113,7 +118,11 @@ export class DefaultDittoWebSocketClient extends AbstractDittoClient<WebSocketRe
         return this.handles.messagesHandle!(this.builder, this.responseHandler, customBuildContext);
     }
 
-  public getCommandsHandle(customBuildContext?: CustomBuilderContext): CommandsHandle {
-    return this.handles.commandsHandle!(this.builder, this.responseHandler, customBuildContext);
-  }
+    public getCommandsHandle(customBuildContext?: CustomBuilderContext): CommandsHandle {
+        return this.handles.commandsHandle!(this.builder, this.responseHandler, customBuildContext);
+    }
+
+    public close(code?: number, data?: string): void {
+        this.responseHandler.close(code, data);
+    }
 }
