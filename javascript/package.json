@@ -23,7 +23,7 @@
     "lint:fix": "lerna run lint:fix --stream"
   },
   "devDependencies": {
-    "@types/node": "^18.16.19",
+    "@types/node": "^24.0.0",
     "lerna": "^5.5.0",
     "npm": "^9.9.4"
   },
