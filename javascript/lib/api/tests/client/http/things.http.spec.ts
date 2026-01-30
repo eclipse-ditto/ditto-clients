@@ -113,7 +113,7 @@ describe('Http Things Handle', () => {
 
   it('posts a Thing', () => {
     const thing = H.thing.toObject();
-    // @ts-ignore
+    // @ts-expect-error legacy ignored
     delete thing.thingId;
     return H.test({
       toTest: () => handle.postThing(thing),

@@ -26,7 +26,7 @@ export abstract class EntityModel {
    */
   static objectToArray<T extends EntityWithId>(o: Object, parser: (obj: Object, key: string) => T): T[] {
     return Object.keys(o).map((key: string) => {
-      // @ts-ignore
+      // @ts-expect-error legacy ignored
       return parser(o[key], key);
     });
   }
@@ -52,7 +52,6 @@ export abstract class EntityModel {
   }
 
   equals(toCompare: EntityModel): boolean {
-    // @ts-ignore
     return toCompare !== undefined && (this === toCompare || this.toJson() === toCompare.toJson());
   }
 
@@ -104,9 +103,9 @@ export abstract class IndexedEntityModel<EntryType extends EntityModel> implemen
     if (objectToMap) {
       const entries = Object.keys(objectToMap)
         .map(k => {
-          // @ts-ignore
+          // @ts-expect-error legacy ignored
           const theKey = mapKey(k, objectToMap[k]);
-          // @ts-ignore
+          // @ts-expect-error legacy ignored
           const theVal = mapValue(objectToMap[k], k);
           return { [theKey]: theVal };
         });

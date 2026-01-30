@@ -10,3 +10,9 @@
 .lerna_backup
 lerna-debug.log
 *.gdsl
+*.js.map
+*.d.ts
+*.d.ts.map
+*.js
+!eslint.config.js
+!jest.config.js

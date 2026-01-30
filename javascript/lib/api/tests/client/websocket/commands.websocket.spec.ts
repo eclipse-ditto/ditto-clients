@@ -167,6 +167,6 @@ describe('WebSocket Commands Handle', () => {
     await handle.stopCommands();
     await handle.stopCommands();
     expect(() => handle.subscribeToAllCommands(() => {
-    })).toThrowError();
+    })).toThrow();
   });
 });

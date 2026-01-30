@@ -25,16 +25,16 @@ export class NodeRequester implements HttpRequester {
   public constructor(private readonly agent: ProxyAgent) {
   }
 
-  private static createResponseHandler(resolve: (value?: (PromiseLike<GenericResponse> | GenericResponse)) => void,
-                                       reject: (reason?: ErrorResponse) => void):
+  private static createResponseHandler(resolve: (value: (PromiseLike<GenericResponse> | GenericResponse)) => void,
+                                       reject: (reason: ErrorResponse) => void):
     (response: http.IncomingMessage) => void {
     return response => {
       this.handleResponse(resolve, reject, response);
     };
   }
 
-  private static handleResponse(resolve: (value?: (PromiseLike<GenericResponse> | GenericResponse)) => void,
-                                reject: (reason?: ErrorResponse) => void,
+  private static handleResponse(resolve: (value: (PromiseLike<GenericResponse> | GenericResponse)) => void,
+                                reject: (reason: ErrorResponse) => void,
                                 response: http.IncomingMessage): void {
     let data = '';
     response.on('data', chunk => {

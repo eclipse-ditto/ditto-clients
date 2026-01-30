@@ -16,8 +16,9 @@ export default {
         "tests"
     ],
     transform: {
-        "^.+\\.tsx?$": "ts-jest"
+        "^.+\\.tsx?$": ["ts-jest", { diagnostics: false }]
     },
+    testEnvironment: "node",
     collectCoverage: true,
     collectCoverageFrom: [
         "src/**/*.ts"

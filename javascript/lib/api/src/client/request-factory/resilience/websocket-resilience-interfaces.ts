@@ -447,6 +447,7 @@ export enum ConnectionState {
   Buffering = 1,
   BackPressure = 2,
   Reconnecting = 3,
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   Connecting = 3,
   BufferFull = 4,
   Disconnected = 5

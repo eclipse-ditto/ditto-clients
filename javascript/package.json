@@ -6,6 +6,7 @@
   "repository": "https://github.com/eclipse-ditto/ditto-clients",
   "license": "EPL-2.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "postinstall": "npm run bootstrap",
     "bootstrap": "lerna bootstrap --no-ci",
@@ -19,10 +20,15 @@
     "test:watch": "lerna run test:watch --parallel",
     "release": "lerna publish --yes --force-publish=*",
     "update-version": "lerna version --no-git-tag-version --no-push --force-publish=*",
-    "lint": "lerna run lint --stream"
+    "lint": "eslint lib",
+    "lint:fix": "eslint lib --fix"
   },
   "devDependencies": {
-    "lerna": "^5.5.0"
+    "@eslint/js": "^9.32.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-yet-another-license-header": "^0.2.0",
+    "lerna": "^5.5.0",
+    "typescript-eslint": "^8.0.0"
   },
   "keywords": [
     "ditto",

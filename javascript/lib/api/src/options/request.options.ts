@@ -181,6 +181,7 @@ export abstract class AbstractRequestOptionsWithMatchOptions<T extends AbstractR
 /**
  * Option provider for If-Match / If-None-Match headers
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface MatchOptions extends RequestOptionsWithMatchOptions<MatchOptions> {
 }
 

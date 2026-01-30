@@ -16,24 +16,21 @@
     "dist"
   ],
   "devDependencies": {
-    "@types/jest": "^26.0.24",
+    "@types/jest": "^29.5.14",
     "@types/prettier": "<2.6.0",
     "barrelsby": "^2.1.1",
-    "jest": "^26.6.3",
-    "ts-jest": "^26.5.6",
-    "tslint": "^5.18.x",
-    "tslint-config-airbnb": "^5.11.1",
-    "tslint-sonarts": "^1.8.0",
-    "typescript": "^3.9.10"
+    "jest": "^30.0.0",
+    "ts-jest": "^29.0.0",
+    "typescript": "^5.3.0"
   },
   "scripts": {
     "build": "npm run build:tsc && npm run build:barrels",
     "build:tsc": "tsc -p tsconfig.json",
     "build:barrels": "npm run build:barrels:generate-sources && npm run build:barrels:copyright-header && npm run build:barrels:compile",
     "build:barrels:generate-sources": "barrelsby --config barrelsby.json",
-    "build:barrels:copyright-header": "tslint --config tslint.json --project tsconfig-barrels.json --quiet --fix dist/index.ts",
+    "build:barrels:copyright-header": "eslint -c ../../eslint.config.js --fix dist/index.ts",
     "build:barrels:compile": "tsc --project tsconfig-barrels.json",
-    "lint": "tslint --project tsconfig.json",
+    "lint": "eslint .",
     "test": "jest",
     "test:watch": "jest --watch"
   },

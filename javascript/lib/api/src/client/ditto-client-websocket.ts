@@ -40,7 +40,7 @@ export interface DittoWebSocketClientHandles extends DittoClientHandles<WebSocke
                   customBuildContext?: CustomBuilderContext) => EventsHandle;
 }
 
-// tslint:disable-next-line:no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface DittoWebSocketTwinClient extends DittoWebSocketClient {
 }
 

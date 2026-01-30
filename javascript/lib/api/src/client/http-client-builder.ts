@@ -38,6 +38,7 @@ import {
   ProtocolStep
 } from './builder-steps';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface HttpBuilderInitialStep extends ProtocolStep<HttpClientBuildStep> {
 }
 
@@ -70,6 +71,7 @@ export interface HttpCustomHandlesBuildStep<H extends HttpThingsHandle, C extend
 /**
  * Interface to build the Context.
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface HttpClientBuildStep extends HttpCustomHandlesBuildStep<HttpThingsHandle, DittoHttpClient> {
 }
 

@@ -236,15 +236,15 @@ describe('Search Options', () => {
   });
   it('throws an error when setting limit and cursor is already set', () => {
     searchOptions.withCursor('foo');
-    expect(() => searchOptions.withLimit(10, 10)).toThrowError();
+    expect(() => searchOptions.withLimit(10, 10)).toThrow();
   });
   it('throws an error when setting pageSize and limit is already set', () => {
     searchOptions.withLimit(10, 10);
-    expect(() => searchOptions.withPageSize(10)).toThrowError();
+    expect(() => searchOptions.withPageSize(10)).toThrow();
   });
   it('throws an error when setting cursor and limit is already set', () => {
     searchOptions.withLimit(10, 10);
-    expect(() => searchOptions.withCursor('foo')).toThrowError();
+    expect(() => searchOptions.withCursor('foo')).toThrow();
   });
 
 });
