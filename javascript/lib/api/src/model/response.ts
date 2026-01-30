@@ -106,7 +106,6 @@ export class SearchThingsResponse extends EntityModel {
     if (o === undefined) {
       return o;
     }
-    // @ts-ignore
     return new SearchThingsResponse(o['items'].map((t: object) => Thing.fromObject(t)), o['nextPageOffset'], o['cursor']);
   }
 

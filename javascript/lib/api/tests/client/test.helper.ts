@@ -14,7 +14,7 @@
 import { Feature, Thing } from '../../src/model/things.model';
 import { AuthProvider, DittoHeaders, DittoURL } from '../../src/auth/auth-provider';
 
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 0;
+jest.setTimeout(500000)
 
 export class Helper {
   public static readonly apiToken = '60ab384eb8a7d7c26dd';

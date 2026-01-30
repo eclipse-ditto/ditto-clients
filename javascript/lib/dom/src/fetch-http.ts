@@ -15,9 +15,15 @@ import { GenericResponse } from '../../api/src/model/response';
 import { HttpRequester } from '../../api/src/client/request-factory/http-request-sender';
 
 export class FetchRequester implements HttpRequester {
+  public timeout?: number;
 
   public doRequest(method: string, url: string, header: Map<string, string>, body: string): Promise<GenericResponse> {
-    return fetch(this.prepareRequest(method, url, header, body))
+    // Use AbortSignal.timeout() for cleaner timeout handling when available
+    const signal = this.timeout !== undefined
+      ? AbortSignal.timeout(this.timeout)
+      : undefined;
+
+    return fetch(this.prepareRequest(method, url, header, body, signal))
       .then(response => {
         const headers = new Map<string, string>();
         response.headers.forEach((v, k) => headers.set(k, v));
@@ -26,6 +32,9 @@ export class FetchRequester implements HttpRequester {
             json => ({ headers, status: response.status, body: json }),
             () => ({ headers, status: response.status, body: undefined })
           );
+      })
+      .catch(error => {
+        throw error;
       });
   }
 
@@ -36,9 +45,11 @@ export class FetchRequester implements HttpRequester {
    * @param url - The Url to send the request to.
    * @param header - The headers of the request.
    * @param body - The payload to send with the request.
+   * @param signal - Optional abort signal for timeout handling.
    * @return the builder.
    */
-  private prepareRequest(method: string, url: string, header: Map<string, string>, body: string): Request {
+  private prepareRequest(method: string, url: string, header: Map<string, string>, body: string,
+        signal?: AbortSignal): Request {
     const headers = new Headers();
     header.forEach((v, k) => headers.append(k, v));
 
@@ -46,7 +57,8 @@ export class FetchRequester implements HttpRequester {
       headers,
       method,
       body,
-      mode: 'cors'
+      mode: 'cors',
+      signal
     });
   }
 }

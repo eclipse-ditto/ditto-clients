@@ -34,7 +34,6 @@ export class Policy extends EntityWithId {
     if (o === undefined) {
       return o;
     }
-    // @ts-ignore
     return new Policy(id, Entries.fromObject(o['entries']));
   }
 
@@ -98,7 +97,6 @@ export class Entry extends EntityWithId {
     if (o === undefined) {
       return o;
     }
-    // @ts-ignore
     return new Entry(label, Subjects.fromObject(o['subjects']), Resources.fromObject(o['resources']));
   }
 
@@ -211,7 +209,6 @@ export class Subject extends EntityWithId {
     if (o === undefined) {
       return o;
     }
-    // @ts-ignore
     return new Subject(SubjectId.fromString(id), o['type']);
   }
 
@@ -257,7 +254,6 @@ export class Resource extends EntityWithId {
     if (o === undefined) {
       return o;
     }
-    // @ts-ignore
     return new Resource(id, o['grant'], o['revoke']);
   }
 

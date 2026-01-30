@@ -16,7 +16,7 @@ module.exports = {
         "tests"
     ],
     transform: {
-        "^.+\\.tsx?$": "ts-jest"
+        "^.+\\.tsx?$": ["ts-jest", { diagnostics: false }]
     },
     testEnvironment: "node", // use node env instead of jsdom for the node implementation tests
     collectCoverage: true,

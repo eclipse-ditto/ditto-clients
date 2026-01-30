@@ -14,7 +14,6 @@
 /* tslint:disable:no-duplicate-string */
 import { ContentType } from '../../../src/client/constants/content-type';
 import { DittoAction } from '../../../src/client/constants/ditto-actions';
-import { Header } from '../../../src/client/constants/header';
 import { PutResponse } from '../../../src/model/response';
 import {  DefaultFieldsOptions } from '../../../src/options/request.options';
 import { WebSocketHelper as H } from './websocket.helper';
@@ -79,7 +78,6 @@ describe('WebSocket Things Handle', () => {
   });
 
   it('merges a Thing', () => {
-    Header.CONTENT_TYPE
     return H.test({
       toTest: () => handle.patchThing(H.thing),
       topic: `${baseTopic}/${DittoAction.MERGE}`,

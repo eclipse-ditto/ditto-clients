@@ -28,10 +28,13 @@ import {
  */
 export class FetchWebSocket implements WebSocketImplementation {
   private connected = true;
+  private shouldReconnect: boolean;
 
   private constructor(private webSocket: WebSocket,
                       private readonly webSocketUrl: string,
-                      private readonly handler: ResponseHandler) {
+                      private readonly handler: ResponseHandler,
+                      reconnect: boolean = true) {
+    this.shouldReconnect = reconnect;
     this.setHandles();
   }
 
@@ -41,21 +44,30 @@ export class FetchWebSocket implements WebSocketImplementation {
    * @param url - The Url of the service.
    * @param handler - The handler that gets called for responses from the web socket.
    * @param authProviders - The auth providers to use.
+   * @param reconnect - Whether to automatically reconnect on connection loss.
    * @return a Promise for the web socket connection.
    */
-  public static buildInstance(url: DittoURL, handler: ResponseHandler, authProviders: AuthProvider[]): Promise<FetchWebSocket> {
+  public static buildInstance(url: DittoURL, handler: ResponseHandler, authProviders: AuthProvider[],
+        reconnect: boolean = true): Promise<FetchWebSocket> {
     return new Promise(resolve => {
       const authenticatedUrl = authenticateWithUrl(url, authProviders);
       const finalUrl = authenticatedUrl.toString();
       const webSocket = new WebSocket(finalUrl);
       webSocket.addEventListener('open', () => {
-        resolve(new FetchWebSocket(webSocket, finalUrl, handler));
+        resolve(new FetchWebSocket(webSocket, finalUrl, handler, reconnect));
       });
     });
   }
 
   public executeCommand(request: string): void {
     this.webSocket.send(request);
+  }
+
+  public close(code?: number, reason?: string): void {
+    this.shouldReconnect = false;
+    if (this.connected) {
+      this.webSocket.close(code, reason);
+    }
   }
 
   /**
@@ -65,25 +77,29 @@ export class FetchWebSocket implements WebSocketImplementation {
    * @return a Promise for the reestablished web socket connection.
    */
   private reconnect(retry: number): Promise<WebSocketImplementation> {
-    return new Promise<WebSocketImplementation>((resolve, reject) => {
-      this.webSocket = new WebSocket(this.webSocketUrl);
-      this.webSocket.addEventListener('open', () => {
-        this.connected = true;
-        this.setHandles();
-        resolve(this);
+    if (this.shouldReconnect) {
+      return new Promise<WebSocketImplementation>((resolve, reject) => {
+        this.webSocket = new WebSocket(this.webSocketUrl);
+        this.webSocket.addEventListener('open', () => {
+          this.connected = true;
+          this.setHandles();
+          resolve(this);
+        });
+        setTimeout(() => {
+          if (this.connected) {
+            return;
+          }
+          if (retry <= 120000) {
+            console.log('Reconnect failed! Trying again!');
+            resolve(this.reconnect(retry * 2));
+          }
+          console.log('Reconnect failed!');
+          reject('Reconnect failed: Timed out');
+        }, retry);
       });
-      setTimeout(() => {
-        if (this.connected) {
-          return;
-        }
-        if (retry <= 120000) {
-          console.log('Reconnect failed! Trying again!');
-          resolve(this.reconnect(retry * 2));
-        }
-        console.log('Reconnect failed!');
-        reject('Reconnect failed: Timed out');
-      }, retry);
-    });
+    } else {
+      return Promise.reject('Reconnect disabled');
+    }
   }
 
   /**
@@ -113,8 +129,8 @@ export class FetchWebSocketBuilder implements WebSocketImplementationBuilderUrl,
   public constructor() {
   }
 
-  withHandler(handler: ResponseHandler): Promise<FetchWebSocket> {
-    return FetchWebSocket.buildInstance(this.dittoUrl, handler, this.authProviders);
+  withHandler(handler: ResponseHandler, reconnect: boolean = true): Promise<FetchWebSocket> {
+    return FetchWebSocket.buildInstance(this.dittoUrl, handler, this.authProviders, reconnect);
   }
 
   withConnectionDetails(url: DittoURL, authProviders: AuthProvider[]): WebSocketImplementationBuilderHandler {

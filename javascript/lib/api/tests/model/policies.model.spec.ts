@@ -21,8 +21,7 @@ import {
   Resources,
   Subject,
   SubjectId,
-  Subjects,
-  SubjectType
+  Subjects
 } from '../../src/model/policies.model';
 
 const aResourceObj = { grant: ['READ'], revoke: ['READ'] };

@@ -71,7 +71,7 @@ describe('WebSocket Resilience Handler without buffer', () => {
       });
   });
 
-  it('rejects messages while reconnecting', async (done) => {
+  it('rejects messages while reconnecting', async () => {
     const handle = thingsClient.getMessagesHandle();
     requester.closeWebSocket(1000);
     handle.messageToThingWithoutResponse(H.thing.thingId, messageSubject, message, contentType)
@@ -83,10 +83,9 @@ describe('WebSocket Resilience Handler without buffer', () => {
       });
 
     await new Promise(resolve => setTimeout(resolve, 1100));
-    handle.messageToThingWithoutResponse(H.thing.thingId, messageSubject, message, contentType)
+    await handle.messageToThingWithoutResponse(H.thing.thingId, messageSubject, message, contentType)
       .finally(() => {
         expect(stateTracker.events).toEqual([MockWebSocketStates.CONNECTED, MockWebSocketStates.RECONNECTING, MockWebSocketStates.CONNECTED]);
-        done();
       });
 
   });

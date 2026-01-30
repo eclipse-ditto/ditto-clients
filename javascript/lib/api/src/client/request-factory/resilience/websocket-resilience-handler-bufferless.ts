@@ -35,9 +35,10 @@ export class BufferlessResilienceHandler extends AbstractResilienceHandler {
 
   public constructor(webSocketBuilder: WebSocketImplementationBuilderHandler,
                      stateHandler: WebSocketStateHandler,
-                     requestHandler: RequestHandler) {
+                     requestHandler: RequestHandler,
+                     reconnect: boolean = true) {
     super(stateHandler, requestHandler);
-    this.resolveWebSocket(webSocketBuilder.withHandler(this));
+    this.resolveWebSocket(webSocketBuilder.withHandler(this, reconnect));
   }
 
   public sendRequest(id: string, request: DittoProtocolEnvelope): void {
@@ -67,6 +68,10 @@ export class BufferlessResilienceHandler extends AbstractResilienceHandler {
   public handleFailure(id: string, reason: any): void {
     this.requests.delete(id);
     this.requestHandler.handleError(id, reason);
+  }
+
+  public close(code?: number, reason?: string): void {
+    this.webSocket.close(code, reason);
   }
 
   /**
@@ -126,6 +131,6 @@ export class BufferlessResilienceHandlerFactory extends ResilienceHandlerFactory
   }
 
   public withRequestHandler(requestHandler: RequestHandler): ResilienceHandler {
-    return new BufferlessResilienceHandler(this.webSocketBuilder, this.stateHandler, requestHandler);
+    return new BufferlessResilienceHandler(this.webSocketBuilder, this.stateHandler, requestHandler, this.reconnect);
   }
 }

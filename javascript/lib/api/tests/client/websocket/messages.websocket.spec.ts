@@ -215,7 +215,7 @@ describe('WebSocket Messages Handle', () => {
     await handle.requestMessages();
     await handle.stopMessages();
     await handle.stopMessages();
-    expect(() => handle.subscribeToAllMessages(() => {})).toThrowError();
+    expect(() => handle.subscribeToAllMessages(() => {})).toThrow();
   });
 });
 

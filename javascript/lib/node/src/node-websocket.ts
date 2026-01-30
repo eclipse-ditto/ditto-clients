@@ -42,11 +42,14 @@ const mapToPlainObject = (aMap: Map<string, string>): { [key: string]: string } 
  */
 export class NodeWebSocket implements WebSocketImplementation {
   private connected = true;
+  private shouldReconnect: boolean;
 
   private constructor(private webSocket: WebSocket,
                       private readonly webSocketUrl: string,
                       private readonly handler: ResponseHandler,
-                      private readonly options: WebSocket.ClientOptions) {
+                      private readonly options: WebSocket.ClientOptions,
+    reconnect: boolean = true) {
+    this.shouldReconnect = reconnect;
     this.setHandles();
   }
 
@@ -57,10 +60,11 @@ export class NodeWebSocket implements WebSocketImplementation {
    * @param handler - The handler that gets called for responses from the web socket.
    * @param authProviders - The auth providers to use.
    * @param agent - The proxy agent to use to establish the connection.
+   * @param reconnect - Whether to automatically reconnect on connection loss.
    * @return a Promise for the web socket connection.
    */
   public static buildInstance(url: DittoURL, handler: ResponseHandler,
-                              authProviders: AuthProvider[], agent: ProxyAgent): Promise<NodeWebSocket> {
+                              authProviders: AuthProvider[], agent: ProxyAgent, reconnect: boolean = true): Promise<NodeWebSocket> {
     return new Promise<NodeWebSocket>(resolve => {
       const [authenticatedUrl, authenticatedHeaders] = authenticateWithUrlAndHeaders(url, new Map(), authProviders);
       const plainHeaders = mapToPlainObject(authenticatedHeaders);
@@ -73,7 +77,7 @@ export class NodeWebSocket implements WebSocketImplementation {
       const plainUrl = authenticatedUrl.toString();
       const webSocket = new WebSocket(plainUrl, options);
       webSocket.on('open', () => {
-        resolve(new NodeWebSocket(webSocket, plainUrl, handler, options));
+        resolve(new NodeWebSocket(webSocket, plainUrl, handler, options, reconnect));
       });
     });
   }
@@ -89,6 +93,13 @@ export class NodeWebSocket implements WebSocketImplementation {
     this.webSocket.send(request);
   }
 
+  public close(code?: number, reason?: string): void {
+    this.shouldReconnect = false;
+    if (this.connected) {
+      this.webSocket.close(code, reason);
+    }
+  }
+
   /**
    * Reestablishes a failed web socket connection.
    *
@@ -96,25 +107,29 @@ export class NodeWebSocket implements WebSocketImplementation {
    * @return a Promise for the reestablished web socket connection.
    */
   private reconnect(retry: number): Promise<WebSocketImplementation> {
-    return new Promise<WebSocketImplementation>((resolve, reject) => {
-      this.webSocket = new WebSocket(this.webSocketUrl, this.options);
-      this.webSocket.on('open', () => {
-        this.connected = true;
-        this.setHandles();
-        resolve(this);
+    if (this.shouldReconnect) {
+      return new Promise<WebSocketImplementation>((resolve, reject) => {
+        this.webSocket = new WebSocket(this.webSocketUrl, this.options);
+        this.webSocket.on('open', () => {
+          this.connected = true;
+          this.setHandles();
+          resolve(this);
+        });
+        setTimeout(() => {
+          if (this.connected) {
+            return;
+          }
+          if (retry <= 120000) {
+            console.log('Reconnect failed! Trying again!');
+            resolve(this.reconnect(retry * 2));
+          }
+          console.log('Reconnect failed!');
+          reject('Reconnect failed: Timed out');
+        }, retry);
       });
-      setTimeout(() => {
-        if (this.connected) {
-          return;
-        }
-        if (retry <= 120000) {
-          console.log('Reconnect failed! Trying again!');
-          resolve(this.reconnect(retry * 2));
-        }
-        console.log('Reconnect failed!');
-        reject('Reconnect failed: Timed out');
-      }, retry);
-    });
+    } else {
+      return Promise.reject('Reconnect disabled');
+    }
   }
 
   /**
@@ -144,8 +159,8 @@ export class NodeWebSocketBuilder implements WebSocketImplementationBuilderUrl, 
   public constructor(private readonly agent: ProxyAgent) {
   }
 
-  public withHandler(handler: ResponseHandler): Promise<NodeWebSocket> {
-    return NodeWebSocket.buildInstance(this.dittoUrl, handler, this.authProviders, this.agent);
+  public withHandler(handler: ResponseHandler, reconnect: boolean = true): Promise<NodeWebSocket> {
+    return NodeWebSocket.buildInstance(this.dittoUrl, handler, this.authProviders, this.agent, reconnect);
   }
 
   withConnectionDetails(url: DittoURL, authProviders: AuthProvider[]): WebSocketImplementationBuilderHandler {

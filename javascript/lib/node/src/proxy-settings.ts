@@ -11,6 +11,7 @@
  * SPDX-License-Identifier: EPL-2.0
  */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { UrlWithStringQuery, parse } = require('url');
 const HttpsProxyAgent = require('https-proxy-agent');
 const HttpProxyAgent = require('http-proxy-agent');
