@@ -34,9 +34,10 @@ export interface WebSocketImplementationBuilderUrl {
    *
    * @param url - The Url of the service.
    * @param authProviders - The auth providers to use.
+   * @param reconnect - Whether to automatically reconnect on connection loss.
    * @return a Promise for the reestablished web socket connection.
    */
-  withConnectionDetails(url: DittoURL, authProviders: AuthProvider[]): WebSocketImplementationBuilderHandler;
+  withConnectionDetails(url: DittoURL, authProviders: AuthProvider[], reconnect?: boolean): WebSocketImplementationBuilderHandler;
 }
 
 export class WebSocketRequestHandler implements RequestHandler {
@@ -155,6 +156,10 @@ export class WebSocketRequestHandler implements RequestHandler {
       }
     });
     return found;
+  }
+
+  public close(code?: number, reason?: string): void {
+    this.resilienceHandler.close(code, reason);
   }
 
   /**

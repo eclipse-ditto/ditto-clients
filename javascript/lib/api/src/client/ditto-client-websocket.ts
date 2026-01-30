@@ -32,6 +32,11 @@ export interface DittoWebSocketClient extends DittoClient<WebSocketThingsHandle,
    * @return an EventsHandle.
    */
   getEventsHandle(customBuildContext?: CustomBuilderContext): EventsHandle;
+
+  /**
+   * Close underlying websocket
+   */
+  close(code?: number, data?: string): void;
 }
 
 export interface DittoWebSocketClientHandles extends DittoClientHandles<WebSocketRequestSenderFactory> {
@@ -115,5 +120,9 @@ export class DefaultDittoWebSocketClient extends AbstractDittoClient<WebSocketRe
 
   public getCommandsHandle(customBuildContext?: CustomBuilderContext): CommandsHandle {
     return this.handles.commandsHandle!(this.builder, this.responseHandler, customBuildContext);
+  }
+
+  public close(code?: number, data?: string): void {
+    this.responseHandler.close(code, data);
   }
 }

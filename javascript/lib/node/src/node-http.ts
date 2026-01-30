@@ -21,6 +21,7 @@ import { ProxyAgent } from './proxy-settings';
  * NodeJs implementation of a Http Requester.
  */
 export class NodeRequester implements HttpRequester {
+  public timeout?: number;
 
   public constructor(private readonly agent: ProxyAgent) {
   }
@@ -107,7 +108,8 @@ export class NodeRequester implements HttpRequester {
       hostname: parsedUrl.hostname,
       port: parsedUrl.port,
       path: pathWithQueryParams,
-      agent: this.getAgentForRequestType(isSecureRequest)
+      agent: this.getAgentForRequestType(isSecureRequest),
+      timeout: this.timeout
     };
   }
 
