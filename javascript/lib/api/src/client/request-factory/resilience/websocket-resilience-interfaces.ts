@@ -19,11 +19,14 @@ import { DefaultDittoProtocolResponse, DittoProtocolEnvelope, DittoProtocolRespo
 export abstract class ResilienceHandlerFactory implements ResilienceHandlerFactoryBuildStep, ResilienceHandlerFactoryContextStep {
   protected webSocketBuilder!: WebSocketImplementationBuilderHandler;
   protected stateHandler!: WebSocketStateHandler;
+  protected reconnect = true;
 
   public withContext(webSocketBuilder: WebSocketImplementationBuilderHandler,
-                     stateHandler: WebSocketStateHandler): ResilienceHandlerFactoryBuildStep {
+                     stateHandler: WebSocketStateHandler,
+                     reconnect: boolean = true): ResilienceHandlerFactoryBuildStep {
     this.webSocketBuilder = webSocketBuilder;
     this.stateHandler = stateHandler;
+    this.reconnect = reconnect;
     return this;
   }
 
@@ -48,10 +51,12 @@ export interface ResilienceHandlerFactoryContextStep {
    *
    * @param webSocketBuilder - The web socket to use.
    * @param stateHandler - The state handler to use.
+   * @param reconnect - Whether to automatically reconnect on connection loss.
    * @returns The ResilienceHandlerFactoryBuildStep
    */
   withContext(webSocketBuilder: WebSocketImplementationBuilderHandler,
-              stateHandler: WebSocketStateHandler): ResilienceHandlerFactoryBuildStep;
+              stateHandler: WebSocketStateHandler,
+              reconnect?: boolean): ResilienceHandlerFactoryBuildStep;
 }
 
 export interface RequestHandler {
@@ -116,6 +121,8 @@ export interface ResilienceHandler extends ResponseHandler {
    * @returns A Promise that resolves once the message was sent and rejects if the sending was unsuccessful
    */
   send(message: string): Promise<void>;
+
+  close(code?: number, reason?: string): void;
 }
 
 export abstract class AbstractResilienceHandler implements ResilienceHandler {
@@ -173,6 +180,8 @@ export abstract class AbstractResilienceHandler implements ResilienceHandler {
   public handleError(error: string): void {
     console.error(error);
   }
+
+  abstract close(code?: number, reason?: string): void;
 
   protected abstract rejectAllOngoing(reason: object): void;
 
@@ -253,6 +262,8 @@ export interface WebSocketImplementation {
    * @return a Promise for the reestablished web socket connection.
    */
   executeCommand(request: string): void;
+
+  close(code?: number, reason?: string): void;
 }
 
 export interface WebSocketImplementationBuilderHandler {
@@ -261,9 +272,10 @@ export interface WebSocketImplementationBuilderHandler {
    * Sets the handler to send responses to.
    *
    * @param handler - The handler that gets called for responses from the web socket.
+   * @param reconnect - Whether to automatically reconnect on connection loss.
    * @return a Promise for the established web socket connection.
    */
-  withHandler(handler: ResponseHandler): Promise<WebSocketImplementation>;
+  withHandler(handler: ResponseHandler, reconnect?: boolean): Promise<WebSocketImplementation>;
 }
 
 export interface ResponseHandler {
@@ -447,6 +459,7 @@ export enum ConnectionState {
   Buffering = 1,
   BackPressure = 2,
   Reconnecting = 3,
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   Connecting = 3,
   BufferFull = 4,
   Disconnected = 5

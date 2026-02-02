@@ -40,7 +40,7 @@ export {
 /**
  * Default interface for builder steps.
  */
-// tslint:disable-next-line:no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface BuildStep {
 }
 
@@ -100,7 +100,7 @@ interface AuthenticationStep<U extends BuildStep> extends BuildStep {
 /**
  * Custom builder context can be used when providing custom handles. The will be called with the given custom context.
  */
-// tslint:disable-next-line:no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface CustomBuilderContext {
 }
 

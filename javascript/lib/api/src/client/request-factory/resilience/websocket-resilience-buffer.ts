@@ -162,7 +162,7 @@ export class ResilienceRequestBuffer {
       for (id of this.outstanding) {
         if (this.polling.indexOf(id) < 0) {
           this.polling.push(id);
-          // @ts-ignore
+          // @ts-expect-error legacy ignored
           webSocket.executeCommand(this.requests.get(id));
           return true;
         }

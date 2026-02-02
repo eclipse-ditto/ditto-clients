@@ -47,6 +47,7 @@ import {
   ProtocolStep
 } from './builder-steps';
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface WebSocketBuilderInitialStep extends ProtocolStep<WebSocketBufferStep> {
 }
 
@@ -54,6 +55,14 @@ export interface WebSocketBufferStep extends BuildStep {
   withoutBuffer(): WebSocketChannelStep;
 
   withBuffer(size: number): WebSocketChannelStep;
+
+  /**
+   * Enables or disables automatic reconnection on connection loss.
+   * Default is true (reconnect enabled).
+   *
+   * @param enabled - Whether to enable automatic reconnection.
+   */
+  withReconnect(enabled: boolean): this;
 }
 
 export interface WebSocketChannelStep extends BuildStep {
@@ -106,6 +115,7 @@ export class WebSocketClientBuilder extends AbstractBuilder<WebSocketBufferStep>
   private stateHandler: WebSocketStateHandler;
   private resilienceFactory!: ResilienceHandlerFactoryContextStep;
   private customHandles: AllDittoWebSocketHandles;
+  private reconnect = true;
 
   private constructor(private readonly builder: WebSocketImplementationBuilderUrl) {
     super();
@@ -128,6 +138,11 @@ export class WebSocketClientBuilder extends AbstractBuilder<WebSocketBufferStep>
 
   withStateHandler(handler: WebSocketStateHandler): this {
     this.stateHandler = handler;
+    return this;
+  }
+
+  withReconnect(enabled: boolean): this {
+    this.reconnect = enabled;
     return this;
   }
 
@@ -189,9 +204,12 @@ export class WebSocketClientBuilder extends AbstractBuilder<WebSocketBufferStep>
       this.builder.withConnectionDetails(
         ImmutableURL.newInstance(protocol, this.domain, `${path}/${this.apiVersion}`),
         this.authProviders),
-      this.stateHandler);
+        this.stateHandler,
+        this.reconnect);
     const requester = new WebSocketRequestHandler(resilienceHandlerFactory);
-    return DefaultDittoWebSocketClient.getInstance(new WebSocketRequestSenderFactory(this.apiVersion, this.channel, requester), requester,
+    return DefaultDittoWebSocketClient.getInstance(
+        new WebSocketRequestSenderFactory(this.apiVersion, this.channel, requester),
+        requester,
       this.customHandles);
   }
 

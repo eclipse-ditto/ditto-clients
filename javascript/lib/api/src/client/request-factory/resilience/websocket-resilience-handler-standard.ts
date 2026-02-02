@@ -38,9 +38,10 @@ export class StandardResilienceHandler extends AbstractResilienceHandler {
   public constructor(webSocketBuilder: WebSocketImplementationBuilderHandler,
                      stateHandler: WebSocketStateHandler,
                      requestHandler: RequestHandler,
-                     size: number) {
+                     size: number,
+                     reconnect: boolean = true) {
     super(stateHandler, requestHandler);
-    this.resolveWebSocket(webSocketBuilder.withHandler(this));
+    this.resolveWebSocket(webSocketBuilder.withHandler(this, reconnect));
     if (size !== undefined) {
       if (size > 0) {
         this.requestBuffer = new ResilienceRequestBuffer(size);
@@ -102,6 +103,10 @@ export class StandardResilienceHandler extends AbstractResilienceHandler {
   public handleFailure(correlationId: string, reason: any): void {
     this.requestBuffer.deleteRequest(correlationId);
     this.requestHandler.handleError(correlationId, reason);
+  }
+
+  public close(code?: number, reason?: string): void {
+    this.webSocket.close(code, reason);
   }
 
   /**
@@ -213,6 +218,6 @@ export class StandardResilienceHandlerFactory extends ResilienceHandlerFactory {
   }
 
   public withRequestHandler(requestHandler: RequestHandler): ResilienceHandler {
-    return new StandardResilienceHandler(this.webSocketBuilder, this.stateHandler, requestHandler, this.size);
+    return new StandardResilienceHandler(this.webSocketBuilder, this.stateHandler, requestHandler, this.size, this.reconnect);
   }
 }

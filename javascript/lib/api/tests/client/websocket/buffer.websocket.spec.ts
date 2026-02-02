@@ -20,7 +20,7 @@ import { bufferFullError } from '../../../src/client/request-factory/resilience/
 import { MockWebSocketStates, MockWebSocketStateTracker, WebSocketHelper as H } from './websocket.helper';
 import { DefaultMockWebSocket } from './websocket.mock';
 
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
+jest.setTimeout(5000)
 
 describe('WebSocket Resilience Handler with buffer', () => {
   jest.setTimeout(5000); // we need to tell jest, that it should also wait on promises ... default is 0 ms

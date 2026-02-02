@@ -29,6 +29,7 @@ enum Channel {
 /**
  * Represents headers that can be used with Ditto.
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 interface DittoHeaders extends Map<string, string> {
 }
 

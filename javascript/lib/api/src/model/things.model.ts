@@ -43,7 +43,6 @@ export class Thing extends EntityWithId {
     if (o === undefined) {
       return o;
     }
-    // @ts-ignore
     return new Thing(o['thingId'],
       o['policyId'],
       o['attributes'],
@@ -215,7 +214,6 @@ export class Feature extends EntityWithId {
     if (o === undefined) {
       return o;
     }
-    // @ts-ignore
     return new Feature(key, o['definition'], o['properties']);
   }
 

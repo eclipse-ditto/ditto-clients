@@ -181,6 +181,7 @@ export abstract class AbstractRequestOptionsWithMatchOptions<T extends AbstractR
 /**
  * Option provider for If-Match / If-None-Match headers
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface MatchOptions extends RequestOptionsWithMatchOptions<MatchOptions> {
 }
 
@@ -363,7 +364,7 @@ export class DefaultSearchOptions extends AbstractRequestOptions<DefaultSearchOp
   }
 
   public withSort(sortOperation: string): DefaultSearchOptions {
-    this.optionParameters.set(`sort`, sortOperation);
+    this.optionParameters.set('sort', sortOperation);
     return this.setOption();
   }
 
@@ -371,7 +372,7 @@ export class DefaultSearchOptions extends AbstractRequestOptions<DefaultSearchOp
     if (this.optionParameters.has('limit')) {
       throw new Error('Limit and cursor options cannot be set at the same time');
     }
-    this.optionParameters.set(`cursor`, cursor);
+    this.optionParameters.set('cursor', cursor);
     return this.setOption();
   }
 
@@ -439,7 +440,7 @@ export interface MessagesOptions extends AddRequestOptions<MessagesOptions> {
   /**
    * Sets a timeout option.
    *
-   * @param timeout - The timeout to use.
+   * @param timeout - The timeout in milliseconds to use.
    * @returns The instance of MessagesOptions with the added option
    */
   withTimeout(timeout: number): MessagesOptions;

@@ -18,9 +18,8 @@ import { WebSocketHelper as H, WebSocketHelper } from './websocket.helper';
 export class EventsHelper extends WebSocketHelper {
 
   public static async testEvent(options: EventsTestOptions) {
-    let id: string;
     let timesCalled = 0;
-    id = options.method(response => {
+    const id = options.method(response => {
       timesCalled += 1;
       if (!_.isEqual(options.message, response)) {
         fail('Request didn\'t match');

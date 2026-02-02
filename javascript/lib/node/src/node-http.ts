@@ -21,20 +21,21 @@ import { ProxyAgent } from './proxy-settings';
  * NodeJs implementation of a Http Requester.
  */
 export class NodeRequester implements HttpRequester {
+  public timeout?: number;
 
   public constructor(private readonly agent: ProxyAgent) {
   }
 
-  private static createResponseHandler(resolve: (value?: (PromiseLike<GenericResponse> | GenericResponse)) => void,
-                                       reject: (reason?: ErrorResponse) => void):
+  private static createResponseHandler(resolve: (value: (PromiseLike<GenericResponse> | GenericResponse)) => void,
+                                       reject: (reason: ErrorResponse) => void):
     (response: http.IncomingMessage) => void {
     return response => {
       this.handleResponse(resolve, reject, response);
     };
   }
 
-  private static handleResponse(resolve: (value?: (PromiseLike<GenericResponse> | GenericResponse)) => void,
-                                reject: (reason?: ErrorResponse) => void,
+  private static handleResponse(resolve: (value: (PromiseLike<GenericResponse> | GenericResponse)) => void,
+                                reject: (reason: ErrorResponse) => void,
                                 response: http.IncomingMessage): void {
     let data = '';
     response.on('data', chunk => {
@@ -107,7 +108,8 @@ export class NodeRequester implements HttpRequester {
       hostname: parsedUrl.hostname,
       port: parsedUrl.port,
       path: pathWithQueryParams,
-      agent: this.getAgentForRequestType(isSecureRequest)
+      agent: this.getAgentForRequestType(isSecureRequest),
+      timeout: this.timeout
     };
   }
 

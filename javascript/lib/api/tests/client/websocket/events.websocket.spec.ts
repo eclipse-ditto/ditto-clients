@@ -165,6 +165,6 @@ describe('WebSocket Events Handle', () => {
     await handle.requestEvents();
     await handle.stopEvents();
     await handle.stopEvents();
-    expect(() => handle.subscribeToAllEvents(() => {})).toThrowError();
+    expect(() => handle.subscribeToAllEvents(() => {})).toThrow();
   });
 });
