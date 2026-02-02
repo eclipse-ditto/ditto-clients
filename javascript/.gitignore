@@ -16,3 +16,5 @@ lerna-debug.log
 *.js
 !eslint.config.js
 !jest.config.js
+# Only track root package-lock.json (npm workspaces manages all dependencies)
+lib/*/package-lock.json
