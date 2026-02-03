@@ -1,7 +1,5 @@
 {
-  "packages": [
-    "lib/*"
-  ],
+  "$schema": "node_modules/lerna/schemas/lerna-schema.json",
   "command": {
     "publish": {
       "ignoreChanges": [
