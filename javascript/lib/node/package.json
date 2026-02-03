@@ -39,7 +39,7 @@
     "build:barrels:copyright-header": "eslint -c ../../eslint.config.js --quiet --fix dist/index.ts",
     "build:barrels:compile": "tsc --project tsconfig-barrels.json",
     "lint": "eslint .",
-    "test": "jest --forceExit",
+    "test": "jest --forceExit --detectOpenHandles",
     "test:watch": "jest --watch"
   },
   "keywords": [
