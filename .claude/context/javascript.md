@@ -23,8 +23,8 @@ Barrelsby auto-generates barrel files during build.
 
 ## Key Dependencies
 
-- TypeScript 3.9.x
-- Lerna 5.x
+- TypeScript 5.x
+- Lerna 9.x
 
 ## Code Style
 
