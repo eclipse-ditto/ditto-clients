@@ -9,3 +9,4 @@
 .vscode/
 target/
 yarn.lock
+/.claude/settings.local.json
