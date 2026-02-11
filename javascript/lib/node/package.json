@@ -1,6 +1,6 @@
 {
   "name": "@eclipse-ditto/ditto-javascript-client-node",
-  "version": "3.9.0-M1.0",
+  "version": "3.9.0-M1.1",
   "description": "Node.js(r) implementation of Eclipse Ditto JavaScript API.",
   "author": "Eclipse Ditto committers <ditto-dev@eclipse.org>",
   "repository": "https://github.com/eclipse-ditto/ditto-clients",
