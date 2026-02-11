@@ -75,7 +75,7 @@ export class NodeRequester implements HttpRequester {
       const requestOptions = this.buildRequest(method, parsedUrl, header, payload, isSecureRequest);
       const req = client.request(requestOptions, NodeRequester.createResponseHandler(resolve, reject));
       req.on('error', e => {
-        throw new Error(String(e));
+        reject(new Error(String(e)));
       });
       if (payload !== undefined) {
         req.write(payload);
