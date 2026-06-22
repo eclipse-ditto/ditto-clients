@@ -112,7 +112,7 @@
         <!-- ### Testing dependencies versions -->
         <logback.version>1.2.13</logback.version>
         <junit.version>4.13.2</junit.version>
-        <assertj.version>3.27.3</assertj.version>
+        <assertj.version>3.27.7</assertj.version>
         <equals-verifier.version>3.18.2</equals-verifier.version>
         <mockito.version>4.11.0</mockito.version>
         <jsonassert.version>1.5.3</jsonassert.version>
