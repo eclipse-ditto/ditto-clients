@@ -115,8 +115,19 @@ export class NodeWebSocket implements WebSocketImplementation {
   private reconnect(retry: number): Promise<WebSocketImplementation> {
     if (this.shouldReconnect) {
       return new Promise<WebSocketImplementation>((resolve, reject) => {
-        this.webSocket = new WebSocket(this.webSocketUrl, this.options);
-        this.webSocket.on('open', () => {
+        const webSocket = new WebSocket(this.webSocketUrl, this.options);
+        this.webSocket = webSocket;
+        // NodeJS escalates an 'error' event on an emitter without an 'error' listener to an
+        // uncaught exception, which by default terminates the host process. setHandles() only
+        // installs its listeners once the connection is open, so a reconnect attempt that fails
+        // during the handshake (e.g. because of a rotated or expired certificate) needs its own
+        // listener here. The retry ladder below keeps its backoff and drives the next attempt.
+        const handleConnectError = (error: Error) => {
+          this.handler.handleError(error.toString());
+        };
+        webSocket.on('error', handleConnectError);
+        webSocket.on('open', () => {
+          webSocket.removeListener('error', handleConnectError);
           this.connected = true;
           this.setHandles();
           resolve(this);
@@ -128,6 +139,7 @@ export class NodeWebSocket implements WebSocketImplementation {
           if (retry <= 120000) {
             console.log('Reconnect failed! Trying again!');
             resolve(this.reconnect(retry * 2));
+            return;
           }
           console.log('Reconnect failed!');
           reject('Reconnect failed: Timed out');
