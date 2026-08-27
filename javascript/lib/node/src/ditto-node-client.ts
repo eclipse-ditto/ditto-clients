@@ -16,6 +16,7 @@ import { WebSocketBuilderInitialStep, WebSocketClientBuilder } from '../../api/s
 import { NodeRequester } from './node-http';
 import { NodeWebSocketBuilder } from './node-websocket';
 import { ProxyAgent, ProxyOptions } from './proxy-settings';
+import { TlsOptions } from './tls-settings';
 
 /**
  * Starting point to build clients that can be used to get handles for NodeJS.
@@ -38,9 +39,11 @@ export class DittoNodeClient {
    * The returned builder utilizes *Object scoping* to guide you through the building process.
    *
    * @param proxyOptions - Options to establish a proxy connection.
+   * @param tlsOptions - Options to configure TLS for {@code wss://} connections (e.g. custom trusted CAs).
+   *  When omitted, NodeJS' secure defaults are used and the server certificate is validated.
    * @return the builder.
    */
-  public static newWebSocketClient(proxyOptions?: ProxyOptions): WebSocketBuilderInitialStep {
-    return WebSocketClientBuilder.newBuilder(new NodeWebSocketBuilder(new ProxyAgent(proxyOptions)));
+  public static newWebSocketClient(proxyOptions?: ProxyOptions, tlsOptions?: TlsOptions): WebSocketBuilderInitialStep {
+    return WebSocketClientBuilder.newBuilder(new NodeWebSocketBuilder(new ProxyAgent(proxyOptions), tlsOptions));
   }
 }

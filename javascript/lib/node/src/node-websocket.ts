@@ -23,6 +23,7 @@ import {
   DittoURL
 } from '../../api/src/auth/auth-provider';
 import { ProxyAgent } from './proxy-settings';
+import { TlsOptions } from './tls-settings';
 import * as WebSocket from 'ws';
 import * as http from 'http';
 
@@ -61,16 +62,18 @@ export class NodeWebSocket implements WebSocketImplementation {
    * @param authProviders - The auth providers to use.
    * @param agent - The proxy agent to use to establish the connection.
    * @param reconnect - Whether to automatically reconnect on connection loss.
+   * @param tlsOptions - Optional TLS options for {@code wss://} connections (e.g. custom trusted CAs).
    * @return a Promise for the web socket connection.
    */
   public static buildInstance(url: DittoURL, handler: ResponseHandler,
-                              authProviders: AuthProvider[], agent: ProxyAgent, reconnect: boolean = true): Promise<NodeWebSocket> {
-    return new Promise<NodeWebSocket>(resolve => {
+                              authProviders: AuthProvider[], agent: ProxyAgent, reconnect: boolean = true,
+                              tlsOptions?: TlsOptions): Promise<NodeWebSocket> {
+    return new Promise<NodeWebSocket>((resolve, reject) => {
       const [authenticatedUrl, authenticatedHeaders] = authenticateWithUrlAndHeaders(url, new Map(), authProviders);
       const plainHeaders = mapToPlainObject(authenticatedHeaders);
       const options: WebSocket.ClientOptions = {
+        ...tlsOptions,
         agent: NodeWebSocket.getProxyAgentForProtocol(url, agent),
-        rejectUnauthorized: false,
         headers: plainHeaders
       };
 
@@ -78,6 +81,9 @@ export class NodeWebSocket implements WebSocketImplementation {
       const webSocket = new WebSocket(plainUrl, options);
       webSocket.on('open', () => {
         resolve(new NodeWebSocket(webSocket, plainUrl, handler, options, reconnect));
+      });
+      webSocket.once('error', error => {
+        reject(error);
       });
     });
   }
@@ -109,8 +115,19 @@ export class NodeWebSocket implements WebSocketImplementation {
   private reconnect(retry: number): Promise<WebSocketImplementation> {
     if (this.shouldReconnect) {
       return new Promise<WebSocketImplementation>((resolve, reject) => {
-        this.webSocket = new WebSocket(this.webSocketUrl, this.options);
-        this.webSocket.on('open', () => {
+        const webSocket = new WebSocket(this.webSocketUrl, this.options);
+        this.webSocket = webSocket;
+        // NodeJS escalates an 'error' event on an emitter without an 'error' listener to an
+        // uncaught exception, which by default terminates the host process. setHandles() only
+        // installs its listeners once the connection is open, so a reconnect attempt that fails
+        // during the handshake (e.g. because of a rotated or expired certificate) needs its own
+        // listener here. The retry ladder below keeps its backoff and drives the next attempt.
+        const handleConnectError = (error: Error) => {
+          this.handler.handleError(error.toString());
+        };
+        webSocket.on('error', handleConnectError);
+        webSocket.on('open', () => {
+          webSocket.removeListener('error', handleConnectError);
           this.connected = true;
           this.setHandles();
           resolve(this);
@@ -122,6 +139,7 @@ export class NodeWebSocket implements WebSocketImplementation {
           if (retry <= 120000) {
             console.log('Reconnect failed! Trying again!');
             resolve(this.reconnect(retry * 2));
+            return;
           }
           console.log('Reconnect failed!');
           reject('Reconnect failed: Timed out');
@@ -156,11 +174,11 @@ export class NodeWebSocketBuilder implements WebSocketImplementationBuilderUrl, 
   private authProviders!: AuthProvider[];
   private dittoUrl!: DittoURL;
 
-  public constructor(private readonly agent: ProxyAgent) {
+  public constructor(private readonly agent: ProxyAgent, private readonly tlsOptions?: TlsOptions) {
   }
 
   public withHandler(handler: ResponseHandler, reconnect: boolean = true): Promise<NodeWebSocket> {
-    return NodeWebSocket.buildInstance(this.dittoUrl, handler, this.authProviders, this.agent, reconnect);
+    return NodeWebSocket.buildInstance(this.dittoUrl, handler, this.authProviders, this.agent, reconnect, this.tlsOptions);
   }
 
   withConnectionDetails(url: DittoURL, authProviders: AuthProvider[]): WebSocketImplementationBuilderHandler {

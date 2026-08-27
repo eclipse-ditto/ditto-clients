@@ -61,3 +61,32 @@ DittoNodeClient.newHttpClient(proxyOptions)
 //  ...
 ```
 Any options that are set manually will override options that are read from an environment variable.
+
+
+### TLS
+
+For `wss://` (and `https://`) connections the server certificate is validated against the
+system's trusted certificate authorities and the requested hostname, using Node.js' secure
+defaults. No configuration is required for the common case.
+
+If the server presents a certificate that is not part of the system trust store (e.g. a
+corporate root CA or a self-signed certificate), the trusted certificate(s) can be supplied
+via the optional `tlsOptions` parameter of `newWebSocketClient(...)`:
+
+```javascript
+const fs = require('fs');
+
+const tlsOptions = {
+  ca: fs.readFileSync('corp-root.pem')
+};
+
+DittoNodeClient.newWebSocketClient(undefined, tlsOptions)
+//  ...
+```
+
+`tlsOptions` also accepts `cert` / `key` / `passphrase` / `pfx` for mutual TLS.
+
+> **Warning:** certificate validation can be disabled explicitly with
+> `{ rejectUnauthorized: false }`. This exposes the connection to man-in-the-middle attacks
+> and must only be used for local development against a self-signed certificate — never in
+> production.
