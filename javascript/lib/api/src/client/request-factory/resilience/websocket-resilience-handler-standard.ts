@@ -33,7 +33,7 @@ export class StandardResilienceHandler extends AbstractResilienceHandler {
 
   private readonly requestBuffer: ResilienceRequestBuffer;
   private readonly messageBuffer: ResilienceMessageBuffer;
-  private webSocket!: WebSocketImplementation;
+  private webSocket: WebSocketImplementation | undefined;
 
   public constructor(webSocketBuilder: WebSocketImplementationBuilderHandler,
                      stateHandler: WebSocketStateHandler,
@@ -58,19 +58,21 @@ export class StandardResilienceHandler extends AbstractResilienceHandler {
   sendRequest(correlationId: string, request: DittoProtocolEnvelope): void {
     const jsonified = request.toJson();
     this.requestBuffer.addRequest(correlationId, jsonified);
-    if (this.stateHandler.isBuffering()) {
+    const webSocket = this.webSocket;
+    if (this.stateHandler.isBuffering() || webSocket === undefined) {
       if (!this.stateHandler.isWorking()) {
         this.rejectRequest(correlationId, connectionLostError);
       } else {
         this.addToOutstandingBuffer(correlationId);
       }
     } else {
-      this.webSocket.executeCommand(jsonified);
+      webSocket.executeCommand(jsonified);
     }
   }
 
   send(message: string): Promise<void> {
-    if (!this.stateHandler.canSend()) {
+    const webSocket = this.webSocket;
+    if (!this.stateHandler.canSend() || webSocket === undefined) {
       if (!this.stateHandler.isWorking()) {
         return Promise.reject(connectionLostError);
       }
@@ -81,7 +83,7 @@ export class StandardResilienceHandler extends AbstractResilienceHandler {
       return this.messageBuffer.addMessage(message);
 
     }
-    this.webSocket.executeCommand(message);
+    webSocket.executeCommand(message);
     return Promise.resolve();
   }
 
@@ -106,7 +108,9 @@ export class StandardResilienceHandler extends AbstractResilienceHandler {
   }
 
   public close(code?: number, reason?: string): void {
-    this.webSocket.close(code, reason);
+    if (this.webSocket !== undefined) {
+      this.webSocket.close(code, reason);
+    }
   }
 
   /**
@@ -118,12 +122,13 @@ export class StandardResilienceHandler extends AbstractResilienceHandler {
    * @param promise - The promise for the new web socket
    */
   protected resolveWebSocket(promise: Promise<WebSocketImplementation>) {
+    this.webSocket = undefined;
     promise
       .then(socket => {
         this.webSocket = socket;
         this.checkBufferState();
         this.poll();
-        if (!this.messageBuffer.sendMessages(this.webSocket)) {
+        if (!this.messageBuffer.sendMessages(socket)) {
           throw Error('Messages could not be sent from Buffer');
         }
         if (this.requestBuffer.empty() && this.messageBuffer.empty()) {
@@ -177,9 +182,14 @@ export class StandardResilienceHandler extends AbstractResilienceHandler {
 
   /**
    * Sends the next element of the request buffer and if there was such an element will do the same thing again in 500ms.
+   * Does nothing while the WebSocket is not yet connected so outstanding requests stay buffered.
    */
   private poll(): void {
-    if (this.requestBuffer.sendNextOutstanding(this.webSocket)) {
+    const webSocket = this.webSocket;
+    if (webSocket === undefined) {
+      return;
+    }
+    if (this.requestBuffer.sendNextOutstanding(webSocket)) {
       setTimeout(() => this.poll(), 500);
     }
   }
