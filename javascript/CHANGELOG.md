@@ -1,6 +1,55 @@
 # Changelog
 All notable changes to the Ditto JavaScript client will be documented in this file.
 
+## [3.8.1] - 2026-09-08
+
+### Dependencies
+
+No dependencies of the published packages were explicitly updated.
+
+### Features / Bug fixes
+
+#### \#265 TLS certificate validation for the Node WebSocket transport (CVE-2026-84197)
+
+The Node WebSocket transport passed `rejectUnauthorized: false` to the underlying `ws` connection,
+which silently disabled TLS certificate validation for `wss://` connections
+([CVE-2026-84197](https://www.cve.org/CVERecord?id=CVE-2026-84197), CWE-295). The server
+certificate was neither verified against a trust anchor nor matched against the requested
+hostname, so anyone able to intercept the connection could present an arbitrary certificate and
+read or modify the traffic. Every release of the `node` package before 3.8.1 and 3.9.1 is
+affected - the flag had been present since the initial commit of the JavaScript client.
+
+PR #265 removes that default, so Node.js' secure defaults apply and the server certificate is
+validated against the system trust store and the requested hostname. For the cases that
+legitimately need a different trust anchor - a corporate root CA, a self-signed certificate or
+mutual TLS - a new optional `tlsOptions` parameter was added to `newWebSocketClient(...)`:
+
+```javascript
+const tlsOptions = {
+  ca: fs.readFileSync('corp-root.pem')
+};
+
+DittoNodeClient.newWebSocketClient(undefined, tlsOptions)
+//  ...
+```
+It also accepts `cert` / `key` / `passphrase` / `pfx` for mutual TLS. Validation can still be
+switched off explicitly with `{ rejectUnauthorized: false }`, which should only ever be used for
+local development.
+
+The same PR fixes a related crash: with certificate validation in effect, a TLS error raised
+during an automatic reconnect was emitted on a socket that had no `'error'` listener yet, which
+NodeJS escalates to an uncaught exception and, by default, terminates the host process.
+
+This release is a backport of the security fix shipped in 3.9.1. It deliberately contains nothing
+else - in particular not the buffered WebSocket fixes of #276, which are 3.9.1 only.
+
+
+## [3.8.0] - 2025-10-10
+
+### No changes
+No changes comparing to 3.7.0 were done - the release only refreshed transitive dependencies
+via the lockfile.
+
 ## [3.7.0] - 2025-02-26
 
 ### Dependencies
