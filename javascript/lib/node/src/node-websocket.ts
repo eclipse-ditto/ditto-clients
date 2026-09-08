@@ -67,11 +67,15 @@ export class NodeWebSocket implements WebSocketImplementation {
     return new Promise<NodeWebSocket>((resolve, reject) => {
       const [authenticatedUrl, authenticatedHeaders] = authenticateWithUrlAndHeaders(url, new Map(), authProviders);
       const plainHeaders = mapToPlainObject(authenticatedHeaders);
-      const options: WebSocket.ClientOptions = {
+      // 'ws' forwards the TLS fields verbatim to tls.connect(). The @types/ws 7.4.x / @types/node
+      // 14.x versions pinned on the 3.8.x line type the array forms of `key` and `pfx` more
+      // narrowly than tls.connect actually accepts, so the assembled object is asserted here
+      // rather than narrowing TlsOptions - that keeps the public API identical to the 3.9.x line.
+      const options = {
         ...tlsOptions,
         agent: NodeWebSocket.getProxyAgentForProtocol(url, agent),
         headers: plainHeaders
-      };
+      } as WebSocket.ClientOptions;
 
       const plainUrl = authenticatedUrl.toString();
       const webSocket = new WebSocket(plainUrl, options);

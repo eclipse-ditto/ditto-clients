@@ -14,7 +14,8 @@
 import * as https from 'https';
 import * as crypto from 'crypto';
 import { execFileSync } from 'child_process';
-import { AddressInfo, Socket } from 'net';
+import { AddressInfo } from 'net';
+import { Duplex } from 'stream';
 import { IncomingMessage } from 'http';
 import { ImmutableURL } from '../../api/src/auth/auth-provider';
 import { NodeWebSocketBasicAuth } from '../src/node-auth';
@@ -39,7 +40,7 @@ const selfSigned = (() => {
  * Completes a WebSocket upgrade with a bare {@code 101} handshake response, which is all the
  * {@code ws} client needs to consider itself connected.
  */
-const acceptUpgrade = (req: IncomingMessage, socket: Socket): void => {
+const acceptUpgrade = (req: IncomingMessage, socket: Duplex): void => {
   const accept = crypto.createHash('sha1')
     .update(String(req.headers['sec-websocket-key']) + '258EAFA5-E914-47DA-95CA-C5AB0DC85B11')
     .digest('base64');
@@ -73,7 +74,7 @@ describe('NodeWebSocket TLS certificate validation', () => {
   let server: https.Server;
   let port: number;
   let capturedAuthorization: string | undefined;
-  const upgradedSockets: Socket[] = [];
+  const upgradedSockets: Duplex[] = [];
 
   const buildWss = (rejectUnauthorized?: boolean) => {
     const url = ImmutableURL.newInstance('wss', `127.0.0.1:${port}`, '/ws/2');
@@ -135,7 +136,7 @@ describe('NodeWebSocket reconnect', () => {
 
   let server: https.Server;
   let port: number;
-  let upgradedSocket: Socket;
+  let upgradedSocket: Duplex;
 
   beforeEach(done => {
     server = https.createServer(selfSigned);
@@ -156,13 +157,12 @@ describe('NodeWebSocket reconnect', () => {
     const reconnectErrorReported = new Promise<void>(resolve => {
       reportReconnectError = resolve;
     });
-    let reconnectSettled: Promise<unknown> = Promise.resolve();
     const handler: any = {
       ...noopHandler,
       handleClose: (promise: Promise<unknown>) => {
         closed = true;
         // the retry ladder eventually gives up; keep the rejection from becoming an unhandled one
-        reconnectSettled = promise.catch(() => { /* expected: the server is gone */ });
+        promise.catch(() => { /* expected: the server is gone */ });
       },
       handleError: (error: string) => {
         // errors reported after the close event originate from the reconnect attempt

@@ -12,6 +12,11 @@
  */
 
 /**
+ * A PEM (or DER) encoded credential, either as a single value or as a list of values.
+ */
+type PemOrPemList = string | Buffer | (string | Buffer)[];
+
+/**
  * Options to configure TLS for the NodeJS transports (e.g. {@code wss://} connections).
  *
  * By default (i.e. when no {@link TlsOptions} are provided) the client relies on NodeJS'
@@ -25,15 +30,15 @@ export interface TlsOptions {
    * certificates to trust, e.g. a self-signed or corporate root certificate that is not
    * part of the system trust store.
    */
-  ca?: string | Buffer | Array<string | Buffer>;
+  ca?: PemOrPemList;
   /** Optional client certificate chain (PEM) to present for mutual TLS. */
-  cert?: string | Buffer | Array<string | Buffer>;
+  cert?: PemOrPemList;
   /** Optional private key (PEM) belonging to {@link cert} for mutual TLS. */
-  key?: string | Buffer | Array<string | Buffer>;
+  key?: PemOrPemList;
   /** Optional passphrase for the private key. */
   passphrase?: string;
   /** Optional PKCS#12 encoded private key and certificate chain for mutual TLS. */
-  pfx?: string | Buffer | Array<string | Buffer>;
+  pfx?: PemOrPemList;
   /**
    * Whether to reject connections whose server certificate cannot be validated (invalid
    * chain, expired, or hostname mismatch).
