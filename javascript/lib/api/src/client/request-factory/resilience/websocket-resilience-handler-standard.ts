@@ -33,7 +33,11 @@ export class StandardResilienceHandler extends AbstractResilienceHandler {
 
   private readonly requestBuffer: ResilienceRequestBuffer;
   private readonly messageBuffer: ResilienceMessageBuffer;
-  private webSocket!: WebSocketImplementation;
+  private webSocket: WebSocketImplementation | undefined;
+  private lastWebSocket: WebSocketImplementation | undefined;
+  private closeRequested = false;
+  private closeCode?: number;
+  private closeReason?: string;
 
   public constructor(webSocketBuilder: WebSocketImplementationBuilderHandler,
                      stateHandler: WebSocketStateHandler,
@@ -58,19 +62,22 @@ export class StandardResilienceHandler extends AbstractResilienceHandler {
   sendRequest(correlationId: string, request: DittoProtocolEnvelope): void {
     const jsonified = request.toJson();
     this.requestBuffer.addRequest(correlationId, jsonified);
-    if (this.stateHandler.isBuffering()) {
+    const webSocket = this.webSocket;
+    // A late response can mark the state connected while a replacement socket is still pending.
+    if (this.stateHandler.isBuffering() || webSocket === undefined) {
       if (!this.stateHandler.isWorking()) {
         this.rejectRequest(correlationId, connectionLostError);
       } else {
         this.addToOutstandingBuffer(correlationId);
       }
     } else {
-      this.webSocket.executeCommand(jsonified);
+      webSocket.executeCommand(jsonified);
     }
   }
 
   send(message: string): Promise<void> {
-    if (!this.stateHandler.canSend()) {
+    const webSocket = this.webSocket;
+    if (!this.stateHandler.canSend() || webSocket === undefined) {
       if (!this.stateHandler.isWorking()) {
         return Promise.reject(connectionLostError);
       }
@@ -81,7 +88,7 @@ export class StandardResilienceHandler extends AbstractResilienceHandler {
       return this.messageBuffer.addMessage(message);
 
     }
-    this.webSocket.executeCommand(message);
+    webSocket.executeCommand(message);
     return Promise.resolve();
   }
 
@@ -106,7 +113,15 @@ export class StandardResilienceHandler extends AbstractResilienceHandler {
   }
 
   public close(code?: number, reason?: string): void {
-    this.webSocket.close(code, reason);
+    this.closeRequested = true;
+    this.closeCode = code;
+    this.closeReason = reason;
+    const socket = this.webSocket ?? this.lastWebSocket;
+    this.webSocket = undefined;
+    this.stateHandler.disconnected();
+    this.rejectAllOngoing(connectionLostError);
+    // The previous implementation owns the reconnect loop even while its replacement is pending.
+    socket?.close(code, reason);
   }
 
   /**
@@ -114,16 +129,26 @@ export class StandardResilienceHandler extends AbstractResilienceHandler {
    * If the Promise gets rejected the reconnection process will be stopped and all further requests rejected.
    * After the Promise is resolved emptying of the buffer will be initiated. As long as there are requests left in the buffer new
    * requests will continue to be added to the buffer.
+   * Clears the current socket immediately so polling cannot write to a stale connection during reconnect.
+   * A socket arriving after close() is closed without flushing buffered work.
    *
    * @param promise - The promise for the new web socket
    */
   protected resolveWebSocket(promise: Promise<WebSocketImplementation>) {
+    if (this.webSocket !== undefined) {
+      this.lastWebSocket = this.webSocket;
+    }
+    this.webSocket = undefined;
     promise
       .then(socket => {
+        if (this.closeRequested) {
+          socket.close(this.closeCode, this.closeReason);
+          return;
+        }
         this.webSocket = socket;
         this.checkBufferState();
         this.poll();
-        if (!this.messageBuffer.sendMessages(this.webSocket)) {
+        if (!this.messageBuffer.sendMessages(socket)) {
           throw Error('Messages could not be sent from Buffer');
         }
         if (this.requestBuffer.empty() && this.messageBuffer.empty()) {
@@ -177,9 +202,15 @@ export class StandardResilienceHandler extends AbstractResilienceHandler {
 
   /**
    * Sends the next element of the request buffer and if there was such an element will do the same thing again in 500ms.
+   * Does nothing while the WebSocket is not yet connected so outstanding requests stay buffered
+   * until resolveWebSocket restarts polling on open.
    */
   private poll(): void {
-    if (this.requestBuffer.sendNextOutstanding(this.webSocket)) {
+    const webSocket = this.webSocket;
+    if (webSocket === undefined) {
+      return;
+    }
+    if (this.requestBuffer.sendNextOutstanding(webSocket)) {
       setTimeout(() => this.poll(), 500);
     }
   }
