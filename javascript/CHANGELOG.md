@@ -1,6 +1,94 @@
 # Changelog
 All notable changes to the Ditto JavaScript client will be documented in this file.
 
+## [3.9.1] - 2026-09-08
+
+### Dependencies
+
+No dependencies of the published packages were explicitly updated.
+
+### Features / Bug fixes
+
+#### \#265 TLS certificate validation for the Node WebSocket transport
+
+The Node WebSocket transport passed `rejectUnauthorized: false` to the underlying `ws` connection,
+which silently disabled TLS certificate validation for `wss://` connections (CWE-295).
+
+PR #265 removes that default, so Node.js' secure defaults apply and the server certificate is
+validated against the system trust store and the requested hostname. For the cases that legitimately
+need a different trust anchor - a corporate root CA, a self-signed certificate or mutual TLS -
+a new optional `tlsOptions` parameter was added to `newWebSocketClient(...)`:
+
+```javascript
+const tlsOptions = {
+  ca: fs.readFileSync('corp-root.pem')
+};
+
+DittoNodeClient.newWebSocketClient(undefined, tlsOptions)
+//  ...
+```
+It also accepts `cert` / `key` / `passphrase` / `pfx` for mutual TLS. Validation can still be
+switched off explicitly with `{ rejectUnauthorized: false }`, which should only ever be used for
+local development.
+
+The same PR fixes a related crash: with certificate validation in effect, a TLS error raised during
+an automatic reconnect was emitted on a socket that had no `'error'` listener yet, which NodeJS
+escalates to an uncaught exception and, by default, terminates the host process.
+
+#### \#276 Buffered WebSocket client sent requests before being connected
+
+Fixes #158: the buffering WebSocket client started its 500ms poll as soon as a request was queued,
+without checking whether the connection had been established. A connect that took longer than 500ms
+therefore failed with `TypeError: Cannot read properties of undefined (reading 'executeCommand')`.
+Outstanding requests now remain buffered until the connection is open and are flushed from there.
+
+PR #276 additionally fixes `close()` being ignored while the client was reconnecting, which left the
+automatic reconnect loop running - and could silently reconnect a client that had already been
+closed.
+
+
+## [3.9.0] - 2026-05-13
+
+### Dependencies
+
+No dependencies of the published packages were explicitly updated.
+
+The build toolchain was modernized: the JavaScript client migrated to npm workspaces with a single
+root `package-lock.json` (#244), Lerna was upgraded from 5.x to 9.x (#244, #247), TSLint was
+replaced by ESLint and TypeScript and Jest were updated (#243).
+
+### Features / Bug fixes
+
+#### \#243 Closing WebSockets, disabling reconnect and HTTP request timeouts
+
+PR #243 adds three capabilities to the client APIs:
+
+* `close(code?, data?)` on the WebSocket client, to close the underlying WebSocket connection:
+  ```typescript
+  const client = DittoNodeClient.newWebSocketClient() /* ... */ .build();
+  client.close();
+  ```
+* `withReconnect(enabled)` on the WebSocket client builder, to turn off the automatic reconnect
+  which previously could not be disabled.
+* `withTimeout(timeout)` on the HTTP client builder, to bound requests which by default had no
+  timeout at all and could hang indefinitely waiting for a response.
+
+The same PR updates the supported NodeJS version matrix to 20, 22 and 24.
+
+#### \#248 Uncaught error in the Node HTTP client
+
+The Node HTTP client rethrew connection errors from inside the request's `'error'` handler instead
+of rejecting the surrounding Promise. The Promise of the HTTP call therefore never settled and the
+error surfaced as an uncaught exception that applications could not handle. PR #248 rejects the
+Promise instead.
+
+
+## [3.8.0] - 2025-10-10
+
+### No changes
+No changes comparing to 3.7.0 were done - the release only refreshed transitive dependencies
+via the lockfile.
+
 ## [3.7.0] - 2025-02-26
 
 ### Dependencies
