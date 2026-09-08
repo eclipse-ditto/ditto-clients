@@ -9,10 +9,15 @@ No dependencies of the published packages were explicitly updated.
 
 ### Features / Bug fixes
 
-#### \#265 TLS certificate validation for the Node WebSocket transport
+#### \#265 TLS certificate validation for the Node WebSocket transport (CVE-2026-84197)
 
 The Node WebSocket transport passed `rejectUnauthorized: false` to the underlying `ws` connection,
-which silently disabled TLS certificate validation for `wss://` connections (CWE-295).
+which silently disabled TLS certificate validation for `wss://` connections
+([CVE-2026-84197](https://www.cve.org/CVERecord?id=CVE-2026-84197), CWE-295). The server
+certificate was neither verified against a trust anchor nor matched against the requested
+hostname, so anyone able to intercept the connection could present an arbitrary certificate and
+read or modify the traffic. All releases of the `node` package up to and including 3.9.0 are
+affected - the flag had been present since the initial commit of the JavaScript client.
 
 PR #265 removes that default, so Node.js' secure defaults apply and the server certificate is
 validated against the system trust store and the requested hostname. For the cases that legitimately
