@@ -13,6 +13,7 @@
 
 import { ProxyAgent } from '../src/proxy-settings';
 import { parse } from 'url';
+import { clearProxyEnvironment } from './proxy-environment';
 
 function expectContainsUrl(agent: any, stringUrl: string) {
   const url = parse(stringUrl);
@@ -29,16 +30,15 @@ function expectContainsCredentials(agent: any, username: string, password: strin
 const PROXY_URL = 'http://localhost:3128';
 
 describe('ProxyAgent', () => {
-  let savedEnvironment: NodeJS.ProcessEnv;
+  let restoreEnvironment: () => void;
 
   beforeEach(() => {
-    savedEnvironment = { ...process.env };
-    ['HTTP_PROXY', 'http_proxy', 'HTTPS_PROXY', 'https_proxy', 'NO_PROXY', 'no_proxy']
-      .forEach(name => delete process.env[name]);
+    restoreEnvironment = clearProxyEnvironment();
   });
 
   afterEach(() => {
-    process.env = savedEnvironment;
+    restoreEnvironment();
+    jest.restoreAllMocks();
   });
 
   describe('destination exclusions', () => {
@@ -54,13 +54,17 @@ describe('ProxyAgent', () => {
       ['localhost', 'wss://localhost', true],
       ['localhost', 'http://notlocalhost', false],
       ['example.org', 'https://example.org.evil.test', false],
-      ['example.org', 'https://sub.example.org', false],
+      ['example.org', 'https://sub.example.org', true],
+      ['corp.example.com', 'https://ditto.corp.example.com', true],
+      ['example.org', 'https://badexample.org', false],
       ['.example.org', 'https://sub.example.org', true],
       ['*.example.org', 'https://sub.example.org', true],
       ['.example.org', 'https://example.org', false],
       ['.example.org', 'https://badexample.org', false],
       [' EXAMPLE.ORG, other.test ', 'http://example.org', true],
       ['*', 'https://anything.test', true],
+      ['*:8080', 'http://anything.test:8080', true],
+      ['*:8080', 'http://anything.test:8081', false],
       ['localhost:8080', 'http://localhost:8080', true],
       ['localhost:8080', 'http://localhost:8081', false],
       ['localhost:80', 'http://localhost', true],
@@ -70,6 +74,8 @@ describe('ProxyAgent', () => {
       ['localhost:80', 'https://localhost', false],
       ['127.0.0.1', 'http://127.0.0.1', true],
       ['[::1]', 'http://[::1]', true],
+      ['::1', 'http://[::1]', true],
+      ['2001:db8::1', 'http://[2001:db8::1]:8080', true],
       ['[::1]:8080', 'http://[::1]:8080', true],
       ['[::1]:8080', 'http://[::1]:8081', false],
       ['', 'http://localhost', false],
@@ -83,6 +89,36 @@ describe('ProxyAgent', () => {
       expect(agent.getAgentForUrl(new URL(destination as string)) === undefined).toBe(bypass);
     });
 
+    it('warns once for unsupported entries, without logging their values or reparsing per request', () => {
+      const warning = jest.spyOn(console, 'warn').mockImplementation(() => { /* captured below */ });
+      process.env.NO_PROXY = '10.0.0.0/8,http://example.org,*.,host:invalid,localhost';
+      const agent = new ProxyAgent();
+      expect(warning).toHaveBeenCalledTimes(1);
+      expect(warning.mock.calls[0][0]).not.toContain('10.0.0.0');
+      expect(agent.getAgentForUrl(new URL('http://localhost'))).toBeUndefined();
+      expect(agent.getAgentForUrl(new URL('http://10.1.2.3'))).toBe(agent.httpProxyAgent);
+      process.env.NO_PROXY = '*';
+      expect(agent.getAgentForUrl(new URL('http://remote.test'))).toBe(agent.httpProxyAgent);
+      expect(warning).toHaveBeenCalledTimes(1);
+    });
+
+    it('canonicalizes IDN hostnames and IPv6 literals', () => {
+      process.env.NO_PROXY = 'müller.example,[0:0:0:0:0:0:0:1]:8080';
+      const agent = new ProxyAgent();
+      expect(agent.getAgentForUrl(new URL('http://xn--mller-kva.example'))).toBeUndefined();
+      expect(agent.getAgentForUrl(new URL('http://[::1]:8080'))).toBeUndefined();
+      expect(agent.getAgentForUrl(new URL('http://[::1]:8081'))).toBe(agent.httpProxyAgent);
+    });
+
+    it('keeps the native environment object when restoring proxy keys', () => {
+      const original = process.env;
+      const restore = clearProxyEnvironment();
+      process.env.HTTP_PROXY = 'http://temporary.test';
+      restore();
+      expect(process.env).toBe(original);
+      expect(process.env.HTTP_PROXY).toBe(PROXY_URL);
+    });
+
     it('prefers nonempty lowercase no_proxy and evaluates each destination separately', () => {
       process.env.no_proxy = 'localhost';
       process.env.NO_PROXY = '*';
@@ -94,11 +130,11 @@ describe('ProxyAgent', () => {
       expect(agent.getAgentForUrl(new URL('wss://remote.test'))).toBe(agent.proxyAgent);
     });
 
-    it('keeps explicit proxy options authoritative over environment exclusions', () => {
+    it('applies environment exclusions to explicit proxies too', () => {
       process.env.NO_PROXY = '*';
       const agent = new ProxyAgent({ url: PROXY_URL });
-      expect(agent.getAgentForUrl(new URL('http://localhost'))).toBe(agent.httpProxyAgent);
-      expect(agent.getAgentForUrl(new URL('https://localhost'))).toBe(agent.proxyAgent);
+      expect(agent.getAgentForUrl(new URL('http://localhost'))).toBeUndefined();
+      expect(agent.getAgentForUrl(new URL('https://localhost'))).toBeUndefined();
     });
 
     it('falls back to uppercase NO_PROXY when lowercase no_proxy is empty', () => {

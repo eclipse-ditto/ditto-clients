@@ -46,20 +46,23 @@ since the API will stay the same no matter what implementation is used.
 
 ### Proxy
 The Node.js implementation supports setting up a proxy. 
-Currently, it supports either reading directly from 'https_proxy' (or 'HTTPS_PROXY') environment variable
-or manually setting the proxy settings.
+It supports reading `http_proxy` / `HTTP_PROXY` for HTTP and WS, and `https_proxy` / `HTTPS_PROXY`
+for HTTPS and WSS, or manually setting the proxy settings.
 
-For environment-configured proxies, `no_proxy` (or `NO_PROXY`) excludes destinations from proxying
+For both explicit and environment-configured proxies, `no_proxy` (or `NO_PROXY`) excludes destinations from proxying
 for HTTP, HTTPS, WS and WSS. A nonempty lowercase variable takes precedence. Settings are read when
 the client is constructed; each request is matched against its destination, not the proxy address.
 Entries may be separated by commas or whitespace and are case-insensitive; a trailing DNS root dot is ignored. A bare hostname or IP
-matches exactly; `.example.org` or `*.example.org` matches subdomains only (add `example.org` separately
-to exclude the domain itself). An optional `:port` limits the match to that port; omitted URL ports
-use 80 for HTTP/WS and 443 for HTTPS/WSS. IPv6 entries use brackets, e.g. `[::1]:8080`. `*` excludes all
-destinations. CIDR ranges and arbitrary wildcard patterns are not supported.
+matches the host and its subdomains; IP addresses match exactly. `.example.org` or `*.example.org`
+matches subdomains only. An optional `:port` limits the match to that port; omitted URL ports
+use 80 for HTTP/WS and 443 for HTTPS/WSS. IPv6 literals such as `::1` are accepted; use brackets when
+specifying a port, e.g. `[::1]:8080`. `*` excludes all destinations, including when it is an entry
+in a list; `*:8080` excludes all destinations on port 8080. CIDR ranges, URLs and arbitrary wildcard
+patterns are unsupported and cause one warning per client construction, not per request.
 
-Explicit `proxyOptions.url` takes precedence over these environment exclusions. Setting
-`ignoreProxyFromEnv: true` ignores all proxy environment variables, including exclusions.
+Explicit `proxyOptions.url` overrides environment proxy URLs, but still honors exclusions. Setting
+`ignoreProxyFromEnv: true` ignores all proxy environment variables, including exclusions, and can
+be used with an explicit URL to force every destination through that proxy.
 
 ```javascript
 // may also omit one or more of the options
