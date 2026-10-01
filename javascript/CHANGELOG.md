@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to the Ditto JavaScript client will be documented in this file.
 
+## [Unreleased]
+
+### Features / Bug fixes
+
+#### \#159 Honor proxy exclusions in the Node.js client
+
+The Node.js HTTP and WebSocket transports now honor `NO_PROXY` and `no_proxy` when selecting an environment-configured
+proxy for each destination. Explicit proxy URLs remain authoritative; supported exclusion syntax is documented in the
+Node.js client README.
+
 ## [3.9.1] - 2026-09-08
 
 ### Dependencies

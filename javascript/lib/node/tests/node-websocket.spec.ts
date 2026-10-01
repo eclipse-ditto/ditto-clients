@@ -16,10 +16,13 @@ import * as crypto from 'crypto';
 import { execFileSync } from 'child_process';
 import { AddressInfo, Socket } from 'net';
 import { IncomingMessage } from 'http';
+import * as http from 'http';
+import { clearProxyEnvironment } from './proxy-environment';
 import { ImmutableURL } from '../../api/src/auth/auth-provider';
 import { NodeWebSocketBasicAuth } from '../src/node-auth';
 import { NodeWebSocket } from '../src/node-websocket';
 import { ProxyAgent } from '../src/proxy-settings';
+import * as WebSocket from 'ws';
 
 /**
  * Self-signed certificate for a non-matching hostname (CN=evil.example) so that both the chain and
@@ -59,6 +62,63 @@ const noopHandler: any = {
   handleFailure: () => { /* noop */ },
   handleError: () => { /* noop */ }
 };
+
+let restoreEnvironment: () => void;
+beforeEach(() => { restoreEnvironment = clearProxyEnvironment(); });
+afterEach(() => restoreEnvironment());
+
+describe('NodeWebSocket environment proxy exclusions', () => {
+  it.each([false, true])('uses the excluded authenticated ws destination (URL rewritten=%s)', async rewritten => {
+    const server = new WebSocket.Server({ port: 0, host: '127.0.0.1' });
+    let proxyAuthorization: unknown = 'unset';
+    server.on('headers', (_headers, req) => { proxyAuthorization = req.headers['proxy-authorization']; });
+    let proxyRequests = 0;
+    const proxy = http.createServer((_req, res) => { proxyRequests++; res.writeHead(502); res.end(); });
+    proxy.on('connect', (_req, socket) => { proxyRequests++; socket.end('HTTP/1.1 502 Bad Gateway\r\n\r\n'); });
+    try {
+      await Promise.all([
+        new Promise<void>((resolve, reject) => {
+          server.once('error', reject);
+          server.once('listening', resolve);
+        }),
+        new Promise<void>((resolve, reject) => {
+          proxy.once('error', reject);
+          proxy.listen(0, '127.0.0.1', resolve);
+        })
+      ]);
+      process.env.HTTP_PROXY = `http://127.0.0.1:${(proxy.address() as AddressInfo).port}`;
+      delete process.env.http_proxy;
+      process.env.NO_PROXY = '127.0.0.1';
+      delete process.env.no_proxy;
+      const port = (server.address() as AddressInfo).port;
+      const url = ImmutableURL.newInstance('ws', `127.0.0.1:${port}`, '/ws/2');
+      const original = rewritten ? url.withDomain('original.invalid') : url;
+      const authProviders = rewritten ? [{
+        authenticateWithUrl: () => url,
+        authenticateWithHeaders: (headers: Map<string, string>) => headers
+      }] : [];
+      const options = { url: process.env.HTTP_PROXY, username: 'synthetic-user', password: 'synthetic-password' };
+      const client = await NodeWebSocket.buildInstance(original, noopHandler, authProviders, new ProxyAgent(options), false);
+      expect(client).toBeTruthy();
+      expect(proxyRequests).toBe(0);
+      expect(proxyAuthorization).toBeUndefined();
+      client.close();
+      delete process.env.NO_PROXY;
+      await expect(NodeWebSocket.buildInstance(original, noopHandler, authProviders, new ProxyAgent(options), false)).rejects.toBeDefined();
+      expect(proxyRequests).toBe(1);
+    } finally {
+      server.clients.forEach(client => client.terminate());
+      await new Promise<void>(resolve => server.close(() => resolve()));
+      await new Promise<void>(resolve => proxy.close(() => resolve()));
+    }
+  });
+
+  it('rejects an invalid authenticated URL instead of throwing outside the promise', async () => {
+    const url = ImmutableURL.newInstance('ws', 'invalid host:8080', '/ws/2');
+    await expect(NodeWebSocket.buildInstance(url, noopHandler, [], new ProxyAgent(), false))
+      .rejects.toMatchObject({ code: 'ERR_INVALID_URL' });
+  });
+});
 
 /**
  * Regression tests for the TLS certificate validation of the NodeJS WebSocket transport.
@@ -114,6 +174,22 @@ describe('NodeWebSocket TLS certificate validation', () => {
     expect(webSocket).toBeTruthy();
     expect(capturedAuthorization).toBeDefined();
     webSocket.close();
+  });
+
+  it('bypasses an excluded wss proxy without bypassing TLS certificate validation', async () => {
+    try {
+      process.env.HTTPS_PROXY = 'http://127.0.0.1:1';
+      delete process.env.https_proxy;
+      process.env.NO_PROXY = `127.0.0.1:${port}`;
+      delete process.env.no_proxy;
+      await expect(buildWss()).rejects.toMatchObject({ code: 'DEPTH_ZERO_SELF_SIGNED_CERT' });
+      expect(capturedAuthorization).toBeUndefined();
+      const client = await buildWss(false);
+      expect(capturedAuthorization).toBeDefined();
+      client.close();
+    } finally {
+      restoreEnvironment();
+    }
   });
 });
 

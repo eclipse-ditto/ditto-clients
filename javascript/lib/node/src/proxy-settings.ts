@@ -13,6 +13,7 @@
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const { UrlWithStringQuery, parse } = require('url');
+import { isIP } from 'net';
 const HttpsProxyAgent = require('https-proxy-agent');
 const HttpProxyAgent = require('http-proxy-agent');
 
@@ -83,6 +84,54 @@ function buildHttpProxyAgent(options: ProxyOptions | undefined): typeof HttpProx
   return proxyOptions.isEmpty() ? undefined : new HttpProxyAgent(proxyOptions.getOptions());
 }
 
+interface ProxyExclusion {
+  host: string;
+  subdomainsOnly: boolean;
+  ip: boolean;
+  port?: string;
+}
+
+/** Parses once per client; unsupported entries must not silently become literal hostnames. */
+function parseExclusions(value: string): ProxyExclusion[] {
+  const exclusions: ProxyExclusion[] = [];
+  let unsupported = false;
+  for (const entry of value.toLowerCase().split(/[\s,]+/).filter(Boolean)) {
+    // A bare IPv6 address has no port. Brackets are required when specifying one.
+    const normalizedEntry = isIP(entry) === 6 ? `[${entry}]` : entry;
+    const match = /^(\[[^\]]+\]|[^:]+)(?::(\d+))?$/.exec(normalizedEntry);
+    if (match === null) {
+      unsupported = true;
+      continue;
+    }
+    let host = match[1].replace(/^\*\./, '.').replace(/\.$/, '');
+    const subdomainsOnly = host.startsWith('.');
+    if (subdomainsOnly) {
+      host = host.slice(1);
+    }
+    if (!host || /[/@?#]/.test(host) || (host !== '*' && host.includes('*'))
+      || (match[2] !== undefined && (Number(match[2]) < 1 || Number(match[2]) > 65535))) {
+      unsupported = true;
+      continue;
+    }
+    try {
+      // Use the same canonical spelling for IDNs and IPv6 as the destination URL.
+      host = host === '*' ? host : new URL(`http://${host}`).hostname;
+      const ip = isIP(host.replace(/^\[|\]$/g, '')) !== 0;
+      if (subdomainsOnly && (ip || host === '*')) {
+        unsupported = true;
+        continue;
+      }
+      exclusions.push({ host, subdomainsOnly, ip, port: match[2] });
+    } catch {
+      unsupported = true;
+    }
+  }
+  if (unsupported) {
+    console.warn('Ignoring unsupported NO_PROXY entries; CIDR ranges, URLs and arbitrary wildcards are not supported.');
+  }
+  return exclusions;
+}
+
 /**
  * Provider of an Agent that establishes a proxy connection.
  */
@@ -90,12 +139,34 @@ export class ProxyAgent {
   /** The Agent that provides the proxy connection. */
   public readonly proxyAgent?: typeof HttpsProxyAgent;
   public readonly httpProxyAgent?: typeof HttpProxyAgent.HttpProxyAgent;
+  private readonly exclusions: ProxyExclusion[];
 
   public constructor(options?: ProxyOptions | undefined) {
     this.httpProxyAgent = buildHttpProxyAgent(options);
     this.proxyAgent = buildHttpsProxyAgent(options);
+    this.exclusions = parseExclusions(options?.ignoreProxyFromEnv
+      ? '' : process.env.no_proxy || process.env.NO_PROXY || '');
   }
 
+  /** Selects a proxy per destination, respecting exclusions unless environment settings are disabled. */
+  public getAgentForUrl(url: URL): typeof HttpsProxyAgent | undefined {
+    if (this.isExcluded(url)) {
+      return undefined;
+    }
+    return url.protocol === 'https:' || url.protocol === 'wss:' ? this.proxyAgent : this.httpProxyAgent;
+  }
+
+  private isExcluded(url: URL): boolean {
+    const hostname = url.hostname.toLowerCase().replace(/\.$/, '');
+    const port = url.port || (url.protocol === 'https:' || url.protocol === 'wss:' ? '443' : '80');
+    return this.exclusions.some(entry => {
+      if (entry.port !== undefined && Number(entry.port) !== Number(port)) {
+        return false;
+      }
+      return entry.host === '*' || (!entry.subdomainsOnly && hostname === entry.host)
+        || (!entry.ip && hostname.endsWith(`.${entry.host}`));
+    });
+  }
 }
 
 /**
@@ -108,6 +179,6 @@ export interface ProxyOptions {
   username?: string;
   /** The password to authenticate to the proxy server with. */
   password?: string;
-  /** If proxy environment variables HTTPS_PROXY, https_proxy, HTTP_PROXY and http_proxy should be ignored. */
+  /** If proxy environment variables, including NO_PROXY and no_proxy, should be ignored. */
   ignoreProxyFromEnv?: boolean;
 }

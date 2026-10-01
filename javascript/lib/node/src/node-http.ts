@@ -72,7 +72,7 @@ export class NodeRequester implements HttpRequester {
       const parsedUrl = new URL(url);
       const isSecureRequest = parsedUrl.protocol === 'https:';
       const client = isSecureRequest ? https : http;
-      const requestOptions = this.buildRequest(method, parsedUrl, header, payload, isSecureRequest);
+      const requestOptions = this.buildRequest(method, parsedUrl, header, payload);
       const req = client.request(requestOptions, NodeRequester.createResponseHandler(resolve, reject));
       req.on('error', e => {
         reject(new Error(String(e)));
@@ -91,11 +91,9 @@ export class NodeRequester implements HttpRequester {
    * @param parsedUrl - The Url to send the request to.
    * @param header - The headers of the request.
    * @param body - The payload to send with the request.
-   * @param isSecureRequest - If the request is a secure HTTPS request.
    * @return the builder.
    */
-  private buildRequest(method: string, parsedUrl: URL, header: Map<string, string>, body: string,
-                       isSecureRequest: boolean): object {
+  private buildRequest(method: string, parsedUrl: URL, header: Map<string, string>, body: string): object {
     if (body !== undefined && body !== '') {
       header.set('Content-Length', Buffer.byteLength(body).toString());
     }
@@ -108,13 +106,9 @@ export class NodeRequester implements HttpRequester {
       hostname: parsedUrl.hostname,
       port: parsedUrl.port,
       path: pathWithQueryParams,
-      agent: this.getAgentForRequestType(isSecureRequest),
+      agent: this.agent.getAgentForUrl(parsedUrl),
       timeout: this.timeout
     };
-  }
-
-  private getAgentForRequestType(isSecureRequest: boolean): http.Agent | undefined {
-    return isSecureRequest ? this.agent.proxyAgent : this.agent.httpProxyAgent;
   }
 
 }

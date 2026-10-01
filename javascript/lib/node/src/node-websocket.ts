@@ -25,7 +25,6 @@ import {
 import { ProxyAgent } from './proxy-settings';
 import { TlsOptions } from './tls-settings';
 import * as WebSocket from 'ws';
-import * as http from 'http';
 
 /**
  * Converts a Map to a plain js object.
@@ -70,14 +69,14 @@ export class NodeWebSocket implements WebSocketImplementation {
                               tlsOptions?: TlsOptions): Promise<NodeWebSocket> {
     return new Promise<NodeWebSocket>((resolve, reject) => {
       const [authenticatedUrl, authenticatedHeaders] = authenticateWithUrlAndHeaders(url, new Map(), authProviders);
+      const plainUrl = authenticatedUrl.toString();
       const plainHeaders = mapToPlainObject(authenticatedHeaders);
       const options: WebSocket.ClientOptions = {
         ...tlsOptions,
-        agent: NodeWebSocket.getProxyAgentForProtocol(url, agent),
+        agent: agent.getAgentForUrl(new URL(plainUrl)),
         headers: plainHeaders
       };
 
-      const plainUrl = authenticatedUrl.toString();
       const webSocket = new WebSocket(plainUrl, options);
       webSocket.on('open', () => {
         resolve(new NodeWebSocket(webSocket, plainUrl, handler, options, reconnect));
@@ -86,13 +85,6 @@ export class NodeWebSocket implements WebSocketImplementation {
         reject(error);
       });
     });
-  }
-
-  private static getProxyAgentForProtocol(url: DittoURL, agent: ProxyAgent): http.Agent | undefined {
-    if ('wss' === url.protocol) {
-      return agent.proxyAgent;
-    }
-    return agent.httpProxyAgent;
   }
 
   public executeCommand(request: string): void {
