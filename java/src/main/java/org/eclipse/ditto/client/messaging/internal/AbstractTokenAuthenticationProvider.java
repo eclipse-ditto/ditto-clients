@@ -14,6 +14,9 @@ package org.eclipse.ditto.client.messaging.internal;
 
 import static org.eclipse.ditto.base.model.common.ConditionChecker.checkNotNull;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
@@ -71,7 +74,15 @@ abstract class AbstractTokenAuthenticationProvider implements AuthenticationProv
     }
 
     private void sendJwt(final WebSocket webSocket, final JsonWebToken jsonWebToken) {
-        webSocket.sendText(String.format(PROTOCOL_CMD_JWT_TOKEN_TEMPLATE, jsonWebToken.getToken()));
+        webSocket.sendText(String.format(PROTOCOL_CMD_JWT_TOKEN_TEMPLATE, urlEncode(jsonWebToken.getToken())));
+    }
+
+    private static String urlEncode(final String value) {
+        try {
+            return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
+        } catch (final UnsupportedEncodingException e) {
+            throw new IllegalStateException("Missing standard charset UTF 8 for encoding.", e);
+        }
     }
 
     @Override
