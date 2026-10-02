@@ -19,10 +19,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import javax.annotation.concurrent.Immutable;
@@ -109,7 +112,15 @@ final class ClientCredentialsJsonWebTokenSupplier implements JsonWebTokenSupplie
         final String clientId = configuration.getClientId();
         final String clientSecret = configuration.getClientSecret();
         final String scope = String.join(" ", configuration.getScopes());
-        return String.format(PARAMETERS_TEMPLATE, clientId, clientSecret, scope);
+        return String.format(PARAMETERS_TEMPLATE, urlEncode(clientId), urlEncode(clientSecret), urlEncode(scope));
+    }
+
+    private static String urlEncode(final String value) {
+        try {
+            return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
+        } catch (final UnsupportedEncodingException e) {
+            throw new IllegalStateException("Missing standard charset UTF 8 for encoding.", e);
+        }
     }
 
     private JsonObject receiveTokenResponse(final HttpURLConnection connection) throws IOException {
