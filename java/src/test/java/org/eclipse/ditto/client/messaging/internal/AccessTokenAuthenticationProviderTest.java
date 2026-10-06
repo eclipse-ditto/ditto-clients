@@ -18,6 +18,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 
@@ -40,6 +41,18 @@ public final class AccessTokenAuthenticationProviderTest {
 
     private static final String JWT_TOKEN_COMMAND_PREFIX = "JWT-TOKEN?jwtToken=";
 
+    private static final long EXPIRES_IN_SECONDS = 6L;
+
+    /**
+     * The "exp" claim only has second precision, so a token created at {@code t} expires at
+     * {@code floor(t) + EXPIRES_IN_SECONDS} and the refresh is scheduled for
+     * {@code floor(t) + EXPIRES_IN_SECONDS - EXPIRY_GRACE_PERIOD}. With the default grace period of 5s that instant is
+     * less than a second away and {@link java.time.Instant#now()} can already have passed it by the time
+     * {@code scheduleRefresh} runs, in which case no refresh is scheduled at all. A smaller grace period keeps the
+     * scheduled instant 1-2s in the future regardless of where in the current second the token was created.
+     */
+    private static final Duration EXPIRY_GRACE_PERIOD = Duration.ofSeconds(4);
+
     /**
      * Standard base64 of {@code 0xF9 0x00 0x00 0x88 0x4F}, i.e. {@code +QAAiE8=}. The signature is the only segment of
      * a JWT that realistically contains a {@code '+'}, and only for issuers emitting standard base64 instead of
@@ -59,7 +72,7 @@ public final class AccessTokenAuthenticationProviderTest {
 
     @Test
     public void tokenRefreshIsCalledBeforeExpiry() {
-        final AccessTokenAuthenticationProvider underTest = getAccessTokenAuthenticationProvider(6L);
+        final AccessTokenAuthenticationProvider underTest = getAccessTokenAuthenticationProvider(EXPIRES_IN_SECONDS);
 
         try {
             underTest.prepareAuthentication(webSocket);
@@ -88,7 +101,7 @@ public final class AccessTokenAuthenticationProviderTest {
     @Test
     public void jwtTokenWithPlusCharacterIsUrlEncodedInProtocolCommand() {
         assertThat(SIGNATURE_INCLUDING_PLUS).isEqualTo("+QAAiE8=");
-        final JsonWebToken jwtIncludingPlus = getJsonWebToken(6L, SIGNATURE_INCLUDING_PLUS);
+        final JsonWebToken jwtIncludingPlus = getJsonWebToken(EXPIRES_IN_SECONDS, SIGNATURE_INCLUDING_PLUS);
         assertThat(jwtIncludingPlus.getToken()).contains("+");
         final AccessTokenAuthenticationProvider underTest = getAccessTokenAuthenticationProvider(jwtIncludingPlus);
 
@@ -112,7 +125,7 @@ public final class AccessTokenAuthenticationProviderTest {
 
     @Test
     public void conformingBase64UrlJwtIsSentUnchangedInProtocolCommand() {
-        final JsonWebToken conformingJwt = getBase64UrlJsonWebToken(6L);
+        final JsonWebToken conformingJwt = getBase64UrlJsonWebToken(EXPIRES_IN_SECONDS);
         assertThat(conformingJwt.getToken()).doesNotContain("+", "/", "=");
         final AccessTokenAuthenticationProvider underTest = getAccessTokenAuthenticationProvider(conformingJwt);
 
@@ -142,6 +155,7 @@ public final class AccessTokenAuthenticationProviderTest {
         return new AccessTokenAuthenticationProvider(AccessTokenAuthenticationConfiguration.newBuilder()
                 .identifier("bumlux")
                 .accessTokenSupplier(() -> jsonWebToken)
+                .expiryGracePeriod(EXPIRY_GRACE_PERIOD)
                 .build());
     }
 
