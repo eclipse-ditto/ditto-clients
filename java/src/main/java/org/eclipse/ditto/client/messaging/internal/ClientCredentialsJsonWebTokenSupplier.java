@@ -19,10 +19,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import javax.annotation.concurrent.Immutable;
@@ -51,8 +54,11 @@ final class ClientCredentialsJsonWebTokenSupplier implements JsonWebTokenSupplie
 
     private static final String UNEXPECTED_HTTP_STATUS_CODE_TEMPLATE =
             "Unexpected HTTP status code from token endpoint. Expected status code <200> but was: <{}>";
+    private static final String UNEXPECTED_HTTP_STATUS_CODE_ERROR_TEMPLATE =
+            "Token endpoint responded with HTTP status <%d>: %s";
     private static final String PARAMETERS_TEMPLATE =
             "grant_type=client_credentials&client_id=%s&client_secret=%s&scope=%s";
+    private static final String CONTENT_TYPE_FORM_URLENCODED = "application/x-www-form-urlencoded";
 
     private final ClientCredentialsAuthenticationConfiguration configuration;
 
@@ -98,6 +104,10 @@ final class ClientCredentialsJsonWebTokenSupplier implements JsonWebTokenSupplie
     private void sendTokenRequest(final HttpURLConnection connection) throws IOException {
         connection.setDoOutput(true);
         connection.setRequestMethod("POST");
+        // the parameters are URL encoded, so the endpoint must be told to form-decode the body; relying on the
+        // default of a particular HttpURLConnection implementation would make the encoding silently ineffective
+        connection.setRequestProperty("Content-Type", CONTENT_TYPE_FORM_URLENCODED);
+        connection.setRequestProperty("Accept", "application/json");
         try (final DataOutputStream out = new DataOutputStream(connection.getOutputStream())) {
             out.writeBytes(getTokenRequestParameters());
             out.flush();
@@ -109,7 +119,15 @@ final class ClientCredentialsJsonWebTokenSupplier implements JsonWebTokenSupplie
         final String clientId = configuration.getClientId();
         final String clientSecret = configuration.getClientSecret();
         final String scope = String.join(" ", configuration.getScopes());
-        return String.format(PARAMETERS_TEMPLATE, clientId, clientSecret, scope);
+        return String.format(PARAMETERS_TEMPLATE, urlEncode(clientId), urlEncode(clientSecret), urlEncode(scope));
+    }
+
+    private static String urlEncode(final String value) {
+        try {
+            return URLEncoder.encode(value, StandardCharsets.UTF_8.name());
+        } catch (final UnsupportedEncodingException e) {
+            throw new IllegalStateException("Missing standard charset UTF 8 for encoding.", e);
+        }
     }
 
     private JsonObject receiveTokenResponse(final HttpURLConnection connection) throws IOException {
@@ -119,7 +137,10 @@ final class ClientCredentialsJsonWebTokenSupplier implements JsonWebTokenSupplie
             return JsonObject.of(response);
         }
         LOGGER.error(UNEXPECTED_HTTP_STATUS_CODE_TEMPLATE, statusCode);
-        throw new IllegalStateException(readError(connection));
+        // an IOException is thrown on purpose: get() wraps it into an AuthenticationException, which is what callers
+        // expect when the token endpoint rejects the request, e.g. with 401 invalid_client
+        throw new IOException(
+                String.format(UNEXPECTED_HTTP_STATUS_CODE_ERROR_TEMPLATE, statusCode, readError(connection)));
     }
 
     private String readResponse(final HttpURLConnection connection) throws IOException {
@@ -127,7 +148,9 @@ final class ClientCredentialsJsonWebTokenSupplier implements JsonWebTokenSupplie
     }
 
     private String readError(final HttpURLConnection connection) throws IOException {
-        return readInputStream(connection.getErrorStream());
+        // the error stream is null if the response has no body, e.g. for a bare 401
+        final InputStream errorStream = connection.getErrorStream();
+        return null != errorStream ? readInputStream(errorStream) : "";
     }
 
     private String readInputStream(final InputStream inputStream) throws IOException {
